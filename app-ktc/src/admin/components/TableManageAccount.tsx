@@ -55,14 +55,6 @@ const TableManageAccount: React.FC = () => {
       status: 1,
       authorization: 2,
     },
-    {
-      key: "6",
-      name: "Jane Doe",
-      email: "djoaid@gmail  .com",
-      phonenumber: "9876543210",
-      status: 1,
-      authorization: 2,
-    },
   ]);
 
   const [editingKey, setEditingKey] = useState<React.Key | null>(null);
@@ -205,14 +197,12 @@ const TableManageAccount: React.FC = () => {
   ];
 
   return (
-    <div className="height-full p-4 bg-white dark:bg-[#171f2f] rounded-lg shadow">
-      <Table<DataType>
-        columns={columns}
-        dataSource={data}
-        pagination={{ pageSize: 5 }}
-        rowKey="key"
-      />
-    </div>
+    <Table<DataType>
+      columns={columns}
+      dataSource={data}
+      pagination={{ pageSize: 5 }}
+      rowKey="key"
+    />
   );
 };
 
