@@ -31,6 +31,10 @@ function Admin() {
         <AppSidebar collapsed={collapsed} />
         <Layout className="!min-h-screen bg-gray-50 dark:!bg-[#001529]">
           <AppHeader collapsed={collapsed} toggleCollapsed={toggleCollapsed} />
+<<<<<<< HEAD
+=======
+        
+>>>>>>> a36f2702034a68f59e23820ec423890ea67a74e6
           <Outlet />
         </Layout>
       </Layout>
