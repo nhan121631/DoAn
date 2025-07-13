@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { Table, Tag, Button, Modal, Popconfirm, message, Space } from "antd";
 import { Form, Input } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { AiOutlineMail, AiOutlineInfoCircle } from "react-icons/ai";
+import { ThemeContext } from "../context/ThemeContext";
 
 type RoomData = {
   key: string;
@@ -73,6 +74,7 @@ const TableManageRoom: React.FC = () => {
   const [selectedRoom, setSelectedRoom] = useState<RoomData | null>(null);
   const [isModalOpen, setModalOpen] = useState(false);
   const [isInfoModalOpen, setInfoModalOpen] = useState(false);
+  const { isDark } = useContext(ThemeContext);
 
   const updateApproval = (record: RoomData, value: 1 | 2) => {
     const updated = data.map((item) =>
@@ -235,6 +237,7 @@ const TableManageRoom: React.FC = () => {
         open={isModalOpen}
         onCancel={() => setModalOpen(false)}
         footer={null}
+        className="dark:!bg-[#171f2f] dark:!text-white"
       >
         <Form
           layout="vertical"
@@ -287,7 +290,7 @@ const TableManageRoom: React.FC = () => {
         onCancel={() => setInfoModalOpen(false)}
         footer={null}
         width={700}
-        className="dark:!bg-[#171f2f] dark:!text-white"
+        className={isDark ? "dark" : ""}
       >
         <p>
           <b>Name:</b> {selectedRoom?.name}

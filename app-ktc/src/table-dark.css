@@ -1,21 +1,21 @@
 /* Table border và cell */
 .dark .ant-table,
 .dark .ant-table-container,
-.dark .ant-table-thead > tr > th,
-.dark .ant-table-tbody > tr > td {
+.dark .ant-table-thead>tr>th,
+.dark .ant-table-tbody>tr>td {
   border-color: #334155 !important;
   background-color: #171f2f !important;
   color: #fff !important;
 }
 
 /* Header */
-.dark .ant-table-thead > tr > th {
+.dark .ant-table-thead>tr>th {
   background-color: #1e293b !important;
   color: #fff !important;
 }
 
 /* Hover row */
-.dark .ant-table-tbody > tr:hover > td {
+.dark .ant-table-tbody>tr:hover>td {
   background-color: #22304a !important;
   color: #fff !important;
 }
@@ -28,6 +28,7 @@
   color: #fff !important;
   border-color: #334155 !important;
 }
+
 .dark .ant-pagination-item-active {
   background: #22304a !important;
   color: #fff !important;
@@ -49,15 +50,18 @@
   color: #fff !important;
   border-color: #334155 !important;
 }
+
 .dark .ant-pagination-item-active,
 .dark .ant-pagination-item-active a {
   color: #fff !important;
   background: #22304a !important;
   border-color: #334155 !important;
 }
+
 .dark .ant-pagination-item a:hover {
   color: #60a5fa !important;
 }
+
 .dark .ant-pagination-options-quick-jumper input {
   background: #171f2f !important;
   color: #fff !important;
@@ -65,7 +69,7 @@
 }
 
 /* Icon (ví dụ svg trong button) */
-.dark .ant-btn > span > svg {
+.dark .ant-btn>span>svg {
   color: #fff !important;
 }
 
@@ -86,27 +90,51 @@ html.dark .ant-modal-content {
   color: #fff !important;
   border-color: #334155 !important;
 }
+
 .dark .ant-modal-header {
   background-color: #1e293b !important;
   color: #fff !important;
   border-bottom: 1px solid #334155 !important;
 }
+
 .dark .ant-modal-title {
   color: #fff !important;
 }
+
 .dark .ant-modal-close-x {
   color: #fff !important;
 }
+
 .dark .ant-modal-footer {
   background: #171f2f !important;
   border-top: 1px solid #334155 !important;
 }
+
 .dark .ant-modal-footer .ant-btn {
   background: #22304a !important;
   color: #fff !important;
   border-color: #334155 !important;
 }
+
 .dark .ant-modal-footer .ant-btn:hover {
   background: #334155 !important;
   color: #fff !important;
+}
+
+.dark .ant-modal-content label,
+.dark .ant-modal-content .ant-form-item-label label {
+  color: #fff !important;
+}
+
+.dark .ant-modal-content input,
+.dark .ant-modal-content textarea {
+  background: #22304a !important;
+  color: #fff !important;
+  border-color: #334155 !important;
+}
+
+.dark .ant-modal-content input::placeholder,
+.dark .ant-modal-content textarea::placeholder {
+  color: #94a3b8 !important;
+  opacity: 1 !important;
 }
