@@ -237,7 +237,6 @@ const TableManageRoom: React.FC = () => {
         open={isModalOpen}
         onCancel={() => setModalOpen(false)}
         footer={null}
-        className="dark:!bg-[#171f2f] dark:!text-white"
       >
         <Form
           layout="vertical"
