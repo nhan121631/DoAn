@@ -4,7 +4,6 @@ import StatisticPage from "./admin/pages/StatisticPage";
 import ManageAccountPage from "./admin/pages/ManageAccountPage";
 import ManageRoom from "./admin/pages/ManageRoomPage";
 
-// const { Header, Sider, Content } = Layout;
 function App() {
   return (
     <BrowserRouter>
