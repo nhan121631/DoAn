@@ -119,3 +119,21 @@ html.dark .ant-modal-content {
   background: #334155 !important;
   color: #fff !important;
 }
+
+.dark .ant-modal-content label,
+.dark .ant-modal-content .ant-form-item-label label {
+  color: #fff !important;
+}
+
+.dark .ant-modal-content input,
+.dark .ant-modal-content textarea {
+  background: #22304a !important;
+  color: #fff !important;
+  border-color: #334155 !important;
+}
+
+.dark .ant-modal-content input::placeholder,
+.dark .ant-modal-content textarea::placeholder {
+  color: #94a3b8 !important;
+  opacity: 1 !important;
+}

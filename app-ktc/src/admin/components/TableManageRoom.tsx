@@ -246,7 +246,6 @@ const TableManageRoom: React.FC = () => {
             message.success("Email sent successfully!");
             setModalOpen(false);
           }}
-          className="dark:!bg-[#171f2f] dark:!text-amber-50"
         >
           <Form.Item label="To">
             <Input value={selectedRoom?.name} disabled />
