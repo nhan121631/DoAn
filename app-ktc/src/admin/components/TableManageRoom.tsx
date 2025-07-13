@@ -172,7 +172,7 @@ const TableManageRoom: React.FC = () => {
             danger={record.hidden === 0}
             type={record.hidden === 1 ? "default" : "primary"}
           >
-            {record.hidden === 1 ? "Show" : "Remove"}
+            {record.hidden === 1 ? "Removed" : "Remove"}
           </Button>
         </Popconfirm>
       ),

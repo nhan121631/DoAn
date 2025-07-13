@@ -3,6 +3,7 @@ import { AiOutlineCheckCircle } from "react-icons/ai";
 import { MdAccountCircle } from "react-icons/md";
 import { RiFileListLine } from "react-icons/ri";
 import { TbClockCheck } from "react-icons/tb";
+import TableManageRoom from "../components/TableManageRoom";
 
 const { Content } = Layout;
 
@@ -85,30 +86,7 @@ function StatisticPage() {
       </div>
 
       <div className="mt-8 bg-white dark:bg-[#171f2f] rounded-lg shadow p-6">
-        <h2 className="text-xl font-semibold mb-4 dark:text-white">
-          Bảng dữ liệu
-        </h2>
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr>
-              <th className="border-b p-2 dark:text-white">STT</th>
-              <th className="border-b p-2 dark:text-white">Tên</th>
-              <th className="border-b p-2 dark:text-white">Trạng thái</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td className="p-2 border-b dark:text-white">1</td>
-              <td className="p-2 border-b dark:text-white">Nguyễn Văn A</td>
-              <td className="p-2 border-b dark:text-white">Đã duyệt</td>
-            </tr>
-            <tr>
-              <td className="p-2 border-b dark:text-white">2</td>
-              <td className="p-2 border-b dark:text-white">Trần Thị B</td>
-              <td className="p-2 border-b dark:text-white">Chờ duyệt</td>
-            </tr>
-          </tbody>
-        </table>
+        <TableManageRoom />
       </div>
     </Content>
   );
