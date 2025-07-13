@@ -207,10 +207,12 @@ const TableManageRoom: React.FC = () => {
       render: (available) => (
         <Tag color={available === "Rented" ? "green" : "blue"}>{available}</Tag>
       ),
+      sorter: (a, b) => a.available.localeCompare(b.available),
     },
     {
       title: "Approval",
       key: "approval",
+      sorter: (a, b) => a.approval - b.approval,
       render: (_, record) => {
         if (record.approval === 0) {
           return (

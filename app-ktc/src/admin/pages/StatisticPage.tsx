@@ -86,6 +86,9 @@ function StatisticPage() {
       </div>
 
       <div className="mt-8 bg-white dark:bg-[#171f2f] rounded-lg shadow p-6">
+        <h2 className="text-xl font-semibold mb-4 dark:text-white">
+          Room Management
+        </h2>
         <TableManageRoom />
       </div>
     </Content>
