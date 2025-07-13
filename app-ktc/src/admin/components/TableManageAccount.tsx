@@ -205,14 +205,12 @@ const TableManageAccount: React.FC = () => {
   ];
 
   return (
-    <div className="height-full p-4 bg-white dark:bg-[#171f2f] rounded-lg shadow">
-      <Table<DataType>
-        columns={columns}
-        dataSource={data}
-        pagination={{ pageSize: 5 }}
-        rowKey="key"
-      />
-    </div>
+    <Table<DataType>
+      columns={columns}
+      dataSource={data}
+      pagination={{ pageSize: 5 }}
+      rowKey="key"
+    />
   );
 };
 
