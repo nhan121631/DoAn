@@ -14,10 +14,6 @@ function Admin() {
     setIsDarkMode(theme === "dark");
   }, [isDarkMode]);
 
-  // const {
-  //   token: { colorBgContainer, borderRadiusLG },
-  // } = theme.useToken();
-
   const toggleCollapsed = () => {
     setCollapsed(!collapsed);
   };
@@ -28,12 +24,9 @@ function Admin() {
     >
       <Layout className={isDarkMode ? "dark" : ""}>
         <AppSidebar collapsed={collapsed} />
-        <Layout className="bg-gray-50 dark:!bg-[#001529]">
+        <Layout className="!min-h-screen bg-gray-50 dark:!bg-[#001529]">
           <AppHeader collapsed={collapsed} toggleCollapsed={toggleCollapsed} />
-          {/* <AppContent
-            background={colorBgContainer}
-            borderRadius={borderRadiusLG}
-          /> */}
+        
           <Outlet />
         </Layout>
       </Layout>

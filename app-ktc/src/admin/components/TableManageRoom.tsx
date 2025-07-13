@@ -194,7 +194,7 @@ const TableManageRoom: React.FC = () => {
       key: "address",
     },
     {
-      title: "Price",
+      title: "Price/month",
       dataIndex: "price",
       key: "price",
       sorter: (a, b) => a.price - b.price,
