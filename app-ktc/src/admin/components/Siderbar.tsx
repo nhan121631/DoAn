@@ -1,9 +1,4 @@
-import React, { useContext } from "react";
-import {
-  UploadOutlined,
-  UserOutlined,
-  VideoCameraOutlined,
-} from "@ant-design/icons";
+import { useContext } from "react";
 import { Menu, Layout } from "antd";
 import { ThemeContext } from "../context/ThemeContext";
 import { Link } from "react-router";
@@ -26,7 +21,7 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
       collapsed={collapsed}
       theme={isDark ? "dark" : "light"}
       style={{
-        height: "100vh",
+        height: "full",
         borderRight: isDark
           ? "1px solid #4A5565" // dark: slate-700
           : "1px solid #F8FAFC", // light: ant design default

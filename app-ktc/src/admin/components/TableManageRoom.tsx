@@ -45,6 +45,96 @@ const initialData: RoomData[] = [
     approval: 2,
     hidden: 1,
   },
+  {
+    key: "4",
+    name: "Ms. Lan’s Room 1",
+    description: "Spacious and bright, perfect for families.",
+    address: "Hoan Kiem, Hanoi",
+    price: 5000000,
+    available: "Available",
+    approval: 1,
+    hidden: 0,
+  },
+  {
+    key: "5",
+    name: "Ms. Lan’s Room 2",
+    description: "Modern amenities, great location.",
+    address: "Ba Dinh, Hanoi",
+    price: 4500000,
+    available: "Rented",
+    approval: 1,
+    hidden: 0,
+  },
+  {
+    key: "6",
+    name: "Ms. Lan’s Room 3",
+    description: "Quiet neighborhood, ideal for professionals.",
+    address: "Long Bien, Hanoi",
+    price: 4000000,
+    available: "Available",
+    approval: 2,
+    hidden: 1,
+  },
+  {
+    key: "7",
+    name: "Mr. Minh’s Room 1",
+    description: "Luxury room with all facilities.",
+    address: "Ho Chi Minh City",
+    price: 8000000,
+    available: "Available",
+    approval: 0,
+    hidden: 0,
+  },
+  {
+    key: "8",
+    name: "Mr. Minh’s Room 2",
+    description: "Affordable and comfortable.",
+    address: "Da Nang",
+    price: 3500000,
+    available: "Rented",
+    approval: 1,
+    hidden: 0,
+  },
+  {
+    key: "9",
+    name: "Mr. Minh’s Room 3",
+    description: "Near the beach, great for vacations.",
+    address: "Nha Trang",
+    price: 6000000,
+    available: "Available",
+    approval: 2,
+    hidden: 1,
+  },
+  {
+    key: "10",
+    name: "Ms. Hoa’s Room 1",
+    description: "Charming room with vintage decor.",
+    address: "Hue",
+    price: 3000000,
+    available: "Available",
+    approval: 0,
+    hidden: 0,
+  },
+  {
+    key: "11",
+    name: "Ms. Hoa’s Room 2",
+    description: "Cozy and affordable, perfect for students.",
+    address: "Can Tho",
+    price: 2500000,
+    available: "Rented",
+    approval: 1,
+    hidden: 0,
+  },
+  {
+    key: "12",
+    name: "Ms. Hoa’s Room 3",
+    description: "Spacious with a beautiful view.",
+    address: "Hai Phong",
+    price: 4000000,
+    available: "Available",
+    approval: 2,
+    hidden: 1,
+  },
 ];
 
 const TableManageRoom: React.FC = () => {
@@ -206,6 +296,7 @@ const TableManageRoom: React.FC = () => {
           rowKey="key"
           className="dark:!bg-[#171f2f] dark:!text-white"
           rowClassName={() => "dark:!bg-[#171f2f] dark:!text-white"}
+          pagination={{ pageSize: 7 }}
         />
       </div>
 
