@@ -1,0 +1,81 @@
+/* Table border và cell */
+.dark .ant-table,
+.dark .ant-table-container,
+.dark .ant-table-thead > tr > th,
+.dark .ant-table-tbody > tr > td {
+  border-color: #334155 !important;
+  background-color: #171f2f !important;
+  color: #fff !important;
+}
+
+/* Header */
+.dark .ant-table-thead > tr > th {
+  background-color: #1e293b !important;
+  color: #fff !important;
+}
+
+/* Hover row */
+.dark .ant-table-tbody > tr:hover > td {
+  background-color: #22304a !important;
+  color: #fff !important;
+}
+
+/* Pagination arrow và số */
+.dark .ant-pagination-item,
+.dark .ant-pagination-prev,
+.dark .ant-pagination-next {
+  background: transparent !important;
+  color: #fff !important;
+  border-color: #334155 !important;
+}
+.dark .ant-pagination-item-active {
+  background: #22304a !important;
+  color: #fff !important;
+  border-color: #334155 !important;
+}
+
+/* Icon (ví dụ svg trong button) */
+.dark .ant-btn > span > svg {
+  color: #fff !important;
+}
+
+/* Button hover */
+.dark .ant-btn:hover,
+.dark .ant-btn:focus {
+  background: #22304a !important;
+  color: #fff !important;
+  border-color: #334155 !important;
+}
+
+/* Modal dark mode */
+.dark .ant-modal-content,
+body.dark .ant-modal-content,
+html.dark .ant-modal-content {
+  background-color: #171f2f !important;
+  color: #fff !important;
+  border-color: #334155 !important;
+}
+.dark .ant-modal-header {
+  background-color: #1e293b !important;
+  color: #fff !important;
+  border-bottom: 1px solid #334155 !important;
+}
+.dark .ant-modal-title {
+  color: #fff !important;
+}
+.dark .ant-modal-close-x {
+  color: #fff !important;
+}
+.dark .ant-modal-footer {
+  background: #171f2f !important;
+  border-top: 1px solid #334155 !important;
+}
+.dark .ant-modal-footer .ant-btn {
+  background: #22304a !important;
+  color: #fff !important;
+  border-color: #334155 !important;
+}
+.dark .ant-modal-footer .ant-btn:hover {
+  background: #334155 !important;
+  color: #fff !important;
+}
