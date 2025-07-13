@@ -1,15 +1,10 @@
-import React, { useContext } from "react";
-import {
-  UploadOutlined,
-  UserOutlined,
-  VideoCameraOutlined,
-} from "@ant-design/icons";
 import { Menu, Layout } from "antd";
 import { ThemeContext } from "../context/ThemeContext";
-import { Link } from "react-router";
+import { Link, useLocation } from "react-router";
 import { FaChartLine } from "react-icons/fa";
 import { MdSupervisorAccount } from "react-icons/md";
 import { RiHotelLine } from "react-icons/ri";
+import { useContext } from "react";
 
 const { Sider } = Layout;
 
@@ -19,6 +14,13 @@ interface AppSidebarProps {
 
 function AppSidebar({ collapsed }: AppSidebarProps) {
   const { isDark } = useContext(ThemeContext);
+  const pathToKey: Record<string, string> = {
+    "/admin/statistics": "1",
+    "/admin/manage-accounts": "2",
+    "/admin/manage-rooms": "3",
+  };
+  const location = useLocation();
+  const selectedKey = pathToKey[location.pathname] || "1";
   return (
     <Sider
       trigger={null}
@@ -27,9 +29,7 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
       theme={isDark ? "dark" : "light"}
       style={{
         height: "100vh",
-        borderRight: isDark
-          ? "1px solid #4A5565" // dark: slate-700
-          : "1px solid #F8FAFC", // light: ant design default
+        borderRight: isDark ? "1px solid #4A5565" : "1px solid #F8FAFC",
       }}
     >
       <div className="flex items-center justify-center h-16 ">
@@ -41,7 +41,7 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
       <Menu
         theme={isDark ? "dark" : "light"}
         mode="inline"
-        defaultSelectedKeys={["1"]}
+        defaultSelectedKeys={[selectedKey]}
         items={[
           {
             key: "1",
@@ -51,12 +51,12 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
           {
             key: "2",
             icon: <MdSupervisorAccount />,
-            label: <Link to="/admin/manage-accounts">Manage Accounts</Link>,
+            label: <Link to="/admin/manage-accounts">Management Accounts</Link>,
           },
           {
             key: "3",
             icon: <RiHotelLine />,
-            label: <Link to="/admin/manage-rooms">Manage Rooms</Link>,
+            label: <Link to="/admin/manage-rooms">Managememt Rooms</Link>,
           },
         ]}
       />
