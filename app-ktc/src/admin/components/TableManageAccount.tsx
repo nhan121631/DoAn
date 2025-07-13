@@ -1,13 +1,5 @@
 import React, { useState } from "react";
-import {
-  Table,
-  Select,
-  Tag,
-  Button,
-  Popconfirm,
-  message,
-  Space,
-} from "antd";
+import { Table, Select, Tag, Button, Popconfirm, message, Space } from "antd";
 import type { TableColumnsType } from "antd";
 
 const { Option } = Select;
@@ -38,6 +30,38 @@ const TableManageAccount: React.FC = () => {
       phonenumber: "0987654321",
       status: 0,
       authorization: 1,
+    },
+    {
+      key: "3",
+      name: "Joe Black",
+      email: "jo@gmail.com",
+      phonenumber: "1234567890",
+      status: 0,
+      authorization: 1,
+    },
+    {
+      key: "4",
+      name: "Jane Doe",
+      email: "djoaid@gmail  .com",
+      phonenumber: "9876543210",
+      status: 1,
+      authorization: 2,
+    },
+    {
+      key: "5",
+      name: "Jane Doe",
+      email: "djoaid@gmail  .com",
+      phonenumber: "9876543210",
+      status: 1,
+      authorization: 2,
+    },
+    {
+      key: "6",
+      name: "Jane Doe",
+      email: "djoaid@gmail  .com",
+      phonenumber: "9876543210",
+      status: 1,
+      authorization: 2,
     },
   ]);
 
@@ -128,7 +152,11 @@ const TableManageAccount: React.FC = () => {
               <Option value={1}>User</Option>
               <Option value={2}>Landlord</Option>
             </Select>
-            <Button type="primary" size="small" onClick={() => saveAuthorization(record)}>
+            <Button
+              type="primary"
+              size="small"
+              onClick={() => saveAuthorization(record)}
+            >
               OK
             </Button>
             <Button size="small" onClick={cancelEdit}>

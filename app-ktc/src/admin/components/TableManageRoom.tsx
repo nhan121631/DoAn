@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Table, Tag, Button, Modal, Popconfirm, message, Space } from "antd";
+import { Form, Input } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { AiOutlineMail, AiOutlineInfoCircle } from "react-icons/ai";
 
@@ -305,12 +306,51 @@ const TableManageRoom: React.FC = () => {
         title="Send Email"
         open={isModalOpen}
         onCancel={() => setModalOpen(false)}
-        onOk={() => setModalOpen(false)}
+        footer={null}
         className="dark:!bg-[#171f2f] dark:!text-white"
       >
-        <p>
-          Send email to: <b>{selectedRoom?.name}</b>
-        </p>
+        <Form
+          layout="vertical"
+          onFinish={(values) => {
+            console.log("Email values:", values);
+            message.success("Email sent successfully!");
+            setModalOpen(false);
+          }}
+        >
+          <Form.Item label="To">
+            <Input value={selectedRoom?.name} disabled />
+          </Form.Item>
+
+          <Form.Item
+            label="Subject"
+            name="subject"
+            rules={[{ required: true, message: "Please enter email subject" }]}
+          >
+            <Input placeholder="Enter email subject" />
+          </Form.Item>
+
+          <Form.Item
+            label="Message"
+            name="message"
+            rules={[
+              { required: true, message: "Please enter your message" },
+              { min: 10, message: "Message should be at least 10 characters" },
+            ]}
+          >
+            <Input.TextArea
+              rows={4}
+              placeholder="Enter your message"
+              maxLength={500}
+              showCount
+            />
+          </Form.Item>
+
+          <Form.Item>
+            <Button type="primary" htmlType="submit" className="w-full">
+              Send
+            </Button>
+          </Form.Item>
+        </Form>
       </Modal>
 
       {/* Info Modal */}
