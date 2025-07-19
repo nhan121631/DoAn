@@ -58,7 +58,7 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4 dark:!bg-[#171f2f]">
+    <main className="min-h-screen flex items-center justify-center   bg-white dark:bg-[#001529] text-gray-900 dark:text-white p-8 transition-colors duration-300">
       <div className="w-full max-w-lg">
         <div className="bg-white shadow-xl rounded-lg p-8 dark:!bg-[#171f2f]">
           <div className="flex justify-between items-center mb-6">

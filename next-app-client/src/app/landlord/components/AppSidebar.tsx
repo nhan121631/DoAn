@@ -9,7 +9,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ImProfile } from "react-icons/im";
 import { FaMoneyCheckDollar } from "react-icons/fa6";
-import { GiPiggyBank } from "react-icons/gi";
 
 const { Sider } = Layout;
 
@@ -36,6 +35,7 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
     "/landlord/manage-requests": "6",
     "/landlord/manage-comments": "7",
     "/landlord/add-funds": "8",
+    "/landlord/payment-history": "9",
   };
 
   const selectedKey = pathToKey[pathname] || "1";
@@ -65,14 +65,13 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
       collapsed={collapsed}
       theme={isDark ? "dark" : "light"}
       style={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        bottom: 0,
-        right: undefined,
-        height: "100vh",
-        zIndex: 100,
-        borderRight: isDark ? "1px solid #4A5565" : "1px solid #F8FAFC",
+
+
+        height: "full",
+        borderRight: isDark
+          ? "1px solid #4A5565" // dark: slate-700
+          : "1px solid #F8FAFC", // light: ant design default
+
       }}
     >
       <div className="flex items-center justify-center h-16 ">
@@ -130,7 +129,7 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
           },
           {
             key: "8",
-            icon: <GiPiggyBank />,
+            icon: <FaMoneyCheckDollar />,
             label: <Link href="/landlord/add-funds">Add Funds</Link>,
           },
           {
