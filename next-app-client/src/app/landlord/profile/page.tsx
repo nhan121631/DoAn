@@ -10,6 +10,8 @@ import {
 
 export default function LandlordProfileInfo() {
   return (
-    <div className=""></div>
+    <div className="">
+        
+    </div>
   );
 }
