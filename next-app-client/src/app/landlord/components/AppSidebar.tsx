@@ -64,19 +64,18 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
       collapsed={collapsed}
       theme={isDark ? "dark" : "light"}
       style={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        bottom: 0,
-        right: undefined,
-        height: "100vh",
-        zIndex: 100,
-        borderRight: isDark ? "1px solid #4A5565" : "1px solid #F8FAFC",
+
+
+        height: "full",
+        borderRight: isDark
+          ? "1px solid #4A5565" // dark: slate-700
+          : "1px solid #F8FAFC", // light: ant design default
+
       }}
     >
-      <div className="flex items-center justify-center h-16">
+      <div className="flex items-center justify-center h-16 ">
         <h1 className="text-lg font-bold dark:text-white transition-all duration-300">
-          {collapsed ? "A" : "LandLord Panel"}
+          {collapsed ? "A" : "Admin Panel"}
         </h1>
       </div>
       <Menu

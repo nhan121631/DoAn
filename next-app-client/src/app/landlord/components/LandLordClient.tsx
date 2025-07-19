@@ -18,7 +18,7 @@ export default function LandlordLayoutClient({
     <ThemeProvider>
       <AntLayout>
         <AppSidebar collapsed={collapsed} />
-        <AntLayout>
+        <AntLayout className="!min-h-screen bg-gray-50 dark:!bg-[#001529]">
           <AppHeader collapsed={collapsed} toggleCollapsed={toggleCollapsed} />
           {children}
         </AntLayout>

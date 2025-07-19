@@ -2,7 +2,7 @@ import React from "react";
 
 export default function AddFundsPage() {
   return (
-    <div className="min-h-[100vh] flex flex-col   bg-white text-gray-900 rounded-lg shadow-lg p-8 dark:!bg-[#001529] dark:!text-white transition-colors duration-300">
+    <div className="min-h-[100vh] flex flex-col items-center justify-center bg-white text-gray-900 rounded-lg shadow-lg p-8 dark:!bg-[#001529] dark:!text-white transition-colors duration-300">
       <h1 className="text-3xl font-bold mb-4">Add Funds</h1>
       <p className="mb-8 text-lg text-gray-500 dark:!text-gray-300">
         Quickly recharge your account balance
