@@ -1,63 +1,28 @@
-// src/app/landlord/ManageMaintain/components/MaintenanceFormModal.tsx
-"use client"; // Đây là Client Component
+"use client";
 
-import React, { useEffect, useCallback } from "react";
-import { Modal, Button, Input, Select, Form } from "antd"; // Đã xóa 'message'
+import React, { useEffect, useCallback, useContext } from "react";
+import { Modal, Button, Input, Select, Form } from "antd";
 import { ThemeContext } from "@/app/context/ThemeContext";
-import { useContext } from "react";
+import { Room, MaintainData, FormValues } from "@/types/maintenance";
 
 const { Option } = Select;
 
-// Định nghĩa kiểu dữ liệu cho một phòng
-type Room = {
-  name: string;
-  address: string;
-};
-
-// Định nghĩa kiểu dữ liệu cho các giá trị từ Form
-type FormValues = {
-  roomName: string;
-  address: string;
-  issue: string;
-  cost: number;
-  status?: "Pending" | "Completed" | "In Progress";
-};
-
-type MaintainData = {
-  key: string;
-  roomName: string;
-  address: string;
-  issue: string;
-  cost: number;
-  date: string;
-  status: "Pending" | "Completed" | "In Progress";
-};
-
-// Danh sách các phòng có sẵn (dữ liệu giả định) - Đặt ở ngoài để tránh re-render không cần thiết
-const availableRooms: Room[] = [
-  { name: "Mr. Nam's Room 1", address: "Thanh Xuan, Hanoi" },
-  { name: "Mr. Nam's Room 2", address: "Dong Da, Hanoi" },
-  { name: "Room 506", address: "Cau Giay, Hanoi" },
-  { name: "Ms. Lan's Room 1", address: "Hoan Kiem, Hanoi" },
-  { name: "Ms. Lan's Room 2", address: "Ba Dinh, Hanoi" },
-];
-
-interface MaintenanceFormModalProps {
+interface FormModalProps {
   open: boolean;
   onCancel: () => void;
   onSubmit: (values: FormValues) => void;
   editingMaintain: MaintainData | null;
-  availableRooms: Room[]; // THÊM DÒNG NÀY
+  availableRooms: Room[]; // Vẫn nhận từ props
 }
 
 // Component con chứa Form và useForm()
-const MaintenanceFormContent: React.FC<{
+const FormContent: React.FC<{
   editingMaintain: MaintainData | null;
   onSubmit: (values: FormValues) => void;
   availableRooms: Room[];
 }> = ({ editingMaintain, onSubmit, availableRooms }) => {
-  const [form] = Form.useForm(); // useForm() chỉ được gọi khi component này được render
-  const { isDark } = useContext(ThemeContext); // 'isDark' được sử dụng trong className của Modal, nên giữ lại
+  const [form] = Form.useForm();
+  const { isDark } = useContext(ThemeContext);
 
   useEffect(() => {
     if (editingMaintain) {
@@ -149,35 +114,34 @@ const MaintenanceFormContent: React.FC<{
   );
 };
 
-
-const MaintenanceFormModal: React.FC<MaintenanceFormModalProps> = ({
+const FormModal: React.FC<FormModalProps> = ({
   open,
   onCancel,
   onSubmit,
   editingMaintain,
-  availableRooms, // NHẬN PROP NÀY
+  availableRooms,
 }) => {
   const { isDark } = useContext(ThemeContext);
 
   return (
     <Modal
-      title={editingMaintain ? "Edit Maintenance Voucher" : "Add New Maintenance Voucher"}
+      title={editingMaintain ? "Edit Maintenance" : "Add New Maintenance"}
       open={open}
       onCancel={onCancel}
       footer={null}
       className={isDark ? "dark" : ""}
       destroyOnHidden={true}
     >
-      {/* Chỉ render MaintenanceFormContent khi modal mở */}
+      {/* Chỉ render FormContent khi modal mở */}
       {open && (
-        <MaintenanceFormContent
+        <FormContent
           editingMaintain={editingMaintain}
           onSubmit={onSubmit}
-          availableRooms={availableRooms} // TRUYỀN PROP NÀY XUỐNG
+          availableRooms={availableRooms}
         />
       )}
     </Modal>
   );
 };
 
-export default MaintenanceFormModal;
+export default FormModal;
