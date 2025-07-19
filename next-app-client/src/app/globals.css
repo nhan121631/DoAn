@@ -1,3 +1,37 @@
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* --- Ant Design Select & Option dark mode --- */
+.dark .ant-select,
+.dark .ant-select-selector,
+.dark .ant-select-dropdown,
+.dark .ant-select-dropdown-menu,
+.dark .ant-select-item,
+.dark .ant-select-item-option {
+  background: #22304a !important;
+  color: #fff !important;
+  border-color: #334155 !important;
+}
+.dark .ant-select-dropdown,
+.dark .ant-select-dropdown-menu {
+  box-shadow: 0 4px 16px #0006 !important;
+}
+.dark .ant-select-item-option-active:not(.ant-select-item-option-disabled),
+.dark .ant-select-item-option-selected:not(.ant-select-item-option-disabled) {
+  background: #2563eb !important;
+  color: #fff !important;
+}
+.dark .ant-select-item-option-disabled {
+  color: #94a3b8 !important;
+  background: #1e293b !important;
+}
+.dark .ant-select-arrow {
+  color: #fff !important;
+}
+.dark .ant-select-selection-placeholder {
+  color: #94a3b8 !important;
+  opacity: 1 !important;
+}
 /* --- Ant Design Upload dark mode --- */
 .dark .ant-upload,
 .dark .ant-upload-list,
@@ -78,9 +112,6 @@
   color: #94a3b8 !important;
   opacity: 1 !important;
 }
-@import "tailwindcss";
-@custom-variant dark (&:where(.dark, .dark *));
-/* @import "./table-dark.css"; */
 
 /* Table border và cell */
 .dark .ant-table,

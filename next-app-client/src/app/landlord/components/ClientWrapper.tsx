@@ -241,7 +241,7 @@ const ManageMaintainClientWrapper: React.FC = () => {
     `}>
       <div className="mb-4">
         <div>
-          <h2 className="text-4xl font-semibold">Manage Maintain</h2>
+          <h2 className="text-4xl font-semibold dark:!text-white">Manage Maintain</h2>
           <p className="text-gray-500 text-xl">Room Maintenance Management.</p>
         </div>
         <div className="flex justify-between items-center mt-2 mb-2">
