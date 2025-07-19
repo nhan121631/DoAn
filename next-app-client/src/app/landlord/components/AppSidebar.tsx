@@ -9,6 +9,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ImProfile } from "react-icons/im";
 import { FaMoneyCheckDollar } from "react-icons/fa6";
+import { GiPiggyBank } from "react-icons/gi";
 
 const { Sider } = Layout;
 
@@ -64,19 +65,15 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
       collapsed={collapsed}
       theme={isDark ? "dark" : "light"}
       style={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        bottom: 0,
-        right: undefined,
-        height: "100vh",
-        zIndex: 100,
-        borderRight: isDark ? "1px solid #4A5565" : "1px solid #F8FAFC",
+        height: "full",
+        borderRight: isDark
+          ? "1px solid #4A5565" // dark: slate-700
+          : "1px solid #F8FAFC", // light: ant design default
       }}
     >
-      <div className="flex items-center justify-center h-16">
+      <div className="flex items-center justify-center h-16 ">
         <h1 className="text-lg font-bold dark:text-white transition-all duration-300">
-          {collapsed ? "A" : "LandLord Panel"}
+          {collapsed ? "A" : "Admin Panel"}
         </h1>
       </div>
       <Menu
@@ -97,7 +94,9 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
           {
             key: "3",
             icon: <MdBuild />,
-            label: <Link href="/admin/manage-maintain">Manage Maintain</Link>,
+            label: (
+              <Link href="/landlord/manage-maintain">Manage Maintain</Link>
+            ),
           },
           {
             key: "4",
@@ -107,17 +106,33 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
           {
             key: "5",
             icon: <FaFileContract />,
-            label: <Link href="/admin/manage-contracts">Manage Contracts</Link>,
+            label: (
+              <Link href="/landlord/manage-contracts">Manage Contracts</Link>
+            ),
           },
           {
             key: "6",
             icon: <MdOutlineRequestQuote />,
-            label: <Link href="/admin/manage-requests">Manage Requests</Link>,
+            label: (
+              <Link href="/landlord/manage-requests">Manage Requests</Link>
+            ),
           },
           {
             key: "7",
             icon: <MdComment />,
-            label: <Link href="/admin/manage-comments">Manage Comments</Link>,
+            label: (
+              <Link href="/landlord/manage-comments">Manage Comments</Link>
+            ),
+          },
+          {
+            key: "8",
+            icon: <GiPiggyBank />,
+            label: <Link href="/landlord/add-funds">Add Funds</Link>,
+          },
+          {
+            key: "9",
+            icon: <FaMoneyCheckDollar />,
+            label: <Link href="/landlord/payment-history">Payment History</Link>,
           },
         ]}
       />
