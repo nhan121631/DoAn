@@ -9,7 +9,7 @@ interface AddFundsFormProps {
 export default function AddFundsForm({ onSuccess }: AddFundsFormProps) {
   const [amount, setAmount] = useState(50000);
   const [orderInfo, setOrderInfo] = useState("");
-  const [bankCode, setBankCode] = useState("");
+//   const [bankCode, setBankCode] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handlePay = async () => {
@@ -25,7 +25,7 @@ export default function AddFundsForm({ onSuccess }: AddFundsFormProps) {
         body: JSON.stringify({
           amount,
           orderInfo: orderInfo || `Thanh toán đơn hàng ${new Date().getTime()}`,
-          bankCode: bankCode || undefined,
+        //   bankCode: bankCode || undefined,
         }),
       });
       if (!res.ok) throw new Error("Network response was not ok");

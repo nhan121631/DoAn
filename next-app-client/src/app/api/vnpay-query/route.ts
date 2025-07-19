@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import crypto from "crypto";
 import dayjs from "dayjs";
-import qs from "qs";
 import { VNPAY_CONFIG } from "@/lib/vnpay-config";
 import { verifyReturnHash } from "@/lib/vnpay-utils";
 

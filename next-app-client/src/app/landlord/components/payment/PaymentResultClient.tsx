@@ -46,6 +46,7 @@ export default function PaymentResultClient() {
         }
       } catch (err) {
         setError("Có lỗi xảy ra khi xử lý kết quả thanh toán");
+        console.error("Payment result fetch error:", err);
       } finally {
         setLoading(false);
       }

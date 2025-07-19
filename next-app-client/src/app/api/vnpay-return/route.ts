@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import {
   verifyReturnHash,
   getTransactionStatus,
-  formatCurrency,
+  // formatCurrency,
 } from "@/lib/vnpay-utils";
 
 export async function GET(req: NextRequest) {
@@ -34,7 +34,7 @@ export async function GET(req: NextRequest) {
       vnp_OrderInfo,
       vnp_PayDate,
       vnp_ResponseCode,
-      vnp_TmnCode,
+      // vnp_TmnCode,
       vnp_TransactionNo,
       vnp_TransactionStatus,
       vnp_TxnRef,
