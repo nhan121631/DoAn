@@ -3,7 +3,7 @@ import React from "react";
 import { FaMapMarkerAlt, FaUser } from "react-icons/fa";
 import { IoIosPhonePortrait } from "react-icons/io";
 import { MdOutlineMail } from "react-icons/md";
-import ButtonEditProfile from "../components/ButtonEditProfile";
+import ButtonEditProfile from "../components/profile/ButtonEditProfile";
 
 export default function ProfileInfo() {
   return (
