@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import VnpayResult from "@/app/components/VnpayResult";
+import VnpayResult from "@/app/landlord/components/payment/VnpayResult";
 import { formatCurrency } from "@/lib/vnpay-utils";
 import { savePaymentToLocalStorage } from "@/lib/payment-storage";
 

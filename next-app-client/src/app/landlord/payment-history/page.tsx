@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import PaymentFilter from "../components/payment/PaymentFilter";
 import { Table, Tag, Pagination } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import {
@@ -95,16 +96,6 @@ export default function PaymentHistoryPage() {
   // Antd Table columns
   const columns: ColumnsType<PaymentRecord> = [
     {
-      title: "Trạng thái",
-      key: "status",
-      width: 120,
-      render: (_, record) => (
-        <Tag color={record.transactionStatus.success ? "green" : "red"}>
-          {record.transactionStatus.success ? "Thành công" : "Thất bại"}
-        </Tag>
-      ),
-    },
-    {
       title: "Mã GD",
       dataIndex: "vnp_TxnRef",
       key: "vnp_TxnRef",
@@ -130,6 +121,16 @@ export default function PaymentHistoryPage() {
       key: "vnp_BankCode",
       width: 120,
       render: (bank: string) => bank || "N/A",
+    },
+    {
+      title: "Trạng thái",
+      key: "status",
+      width: 120,
+      render: (_, record) => (
+        <Tag color={record.transactionStatus.success ? "green" : "red"}>
+          {record.transactionStatus.success ? "Thành công" : "Thất bại"}
+        </Tag>
+      ),
     },
     {
       title: "Thời gian",
@@ -168,21 +169,7 @@ export default function PaymentHistoryPage() {
               <h1 className="text-2xl font-bold text-gray-900 dark:!text-white">
                 Lịch sử thanh toán
               </h1>
-              <div className="flex gap-3">
-                <button
-                  onClick={() => setShowConfirmClear(true)}
-                  className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition"
-                  disabled={payments.length === 0}
-                >
-                  Xóa lịch sử
-                </button>
-                <a
-                  href="/landlord/add-funds"
-                  className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
-                >
-                  Nạp tiền mới
-                </a>
-              </div>
+              {/* hskdh */}
             </div>
 
             {/* Thống kê */}
@@ -213,26 +200,10 @@ export default function PaymentHistoryPage() {
             </div>
 
             {/* Filter */}
-            <div className="flex gap-2 mb-6">
-              {(["all", "success", "failed"] as const).map((filterType) => (
-                <button
-                  key={filterType}
-                  onClick={() => setFilter(filterType)}
-                  className={`px-4 py-2 rounded transition ${
-                    filter === filterType
-                      ? "bg-blue-600 text-white"
-                      : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                  }`}
-                >
-                  {filterType === "all" && "Tất cả"}
-                  {filterType === "success" && "Thành công"}
-                  {filterType === "failed" && "Thất bại"}
-                </button>
-              ))}
-            </div>
+            <PaymentFilter />
 
             {/* Payment List */}
-            <div className="overflow-x-auto">
+            <div>
               <Table
                 columns={columns}
                 dataSource={paginatedData}
@@ -252,7 +223,6 @@ export default function PaymentHistoryPage() {
                     </div>
                   ),
                 }}
-                scroll={{ x: 800 }}
               />
               <div className="flex justify-end mt-4">
                 <Pagination
@@ -262,9 +232,6 @@ export default function PaymentHistoryPage() {
                   onChange={setCurrentPage}
                   showSizeChanger={false}
                   showQuickJumper={false}
-                //   showTotal={(total, range) =>
-                //     `${range[0]}-${range[1]} của ${total} giao dịch`
-                //   }
                 />
               </div>
             </div>
