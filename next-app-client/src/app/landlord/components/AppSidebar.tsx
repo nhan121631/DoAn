@@ -8,6 +8,7 @@ import { ThemeContext } from "@/app/context/ThemeContext";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ImProfile } from "react-icons/im";
+import { FaMoneyCheckDollar } from "react-icons/fa6";
 
 const { Sider } = Layout;
 
@@ -26,9 +27,14 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
   }, []);
 
   const pathToKey: Record<string, string> = {
-    "/admin/statistics": "1",
-    "/admin/manage-accounts": "2",
-    "/admin/manage-rooms": "3",
+    "/landlord/profile": "1",
+    "/landlord/statistics": "2",
+    "/landlord/manage-maintain": "3",
+    "/landlord/manage-rooms": "4",
+    "/landlord/manage-contracts": "5",
+    "/landlord/manage-requests": "6",
+    "/landlord/manage-comments": "7",
+    "/landlord/add-funds": "8",
   };
 
   const selectedKey = pathToKey[pathname] || "1";
@@ -58,7 +64,13 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
       collapsed={collapsed}
       theme={isDark ? "dark" : "light"}
       style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        bottom: 0,
+        right: undefined,
         height: "100vh",
+        zIndex: 100,
         borderRight: isDark ? "1px solid #4A5565" : "1px solid #F8FAFC",
       }}
     >
@@ -75,37 +87,50 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
           {
             key: "1",
             icon: <ImProfile />,
-            label: <Link href="/admin/statistics">Profile</Link>,
+            label: <Link href="/landlord/profile">Profile</Link>,
           },
           {
             key: "2",
             icon: <FaChartLine />,
-            label: <Link href="/admin/statistics">Statistic</Link>,
+            label: <Link href="/landlord/statistics">Statistic</Link>,
           },
           {
             key: "3",
             icon: <MdBuild />,
-            label: <Link href="/admin/manage-maintain">Manage Maintain</Link>,
+            label: (
+              <Link href="/landlord/manage-maintain">Manage Maintain</Link>
+            ),
           },
           {
             key: "4",
             icon: <RiHotelLine />,
-            label: <Link href="/admin/manage-rooms">Manage Rooms</Link>,
+            label: <Link href="/landlord/manage-rooms">Manage Rooms</Link>,
           },
           {
             key: "5",
             icon: <FaFileContract />,
-            label: <Link href="/admin/manage-contracts">Manage Contracts</Link>,
+            label: (
+              <Link href="/landlord/manage-contracts">Manage Contracts</Link>
+            ),
           },
           {
             key: "6",
             icon: <MdOutlineRequestQuote />,
-            label: <Link href="/admin/manage-requests">Manage Requests</Link>,
+            label: (
+              <Link href="/landlord/manage-requests">Manage Requests</Link>
+            ),
           },
           {
             key: "7",
             icon: <MdComment />,
-            label: <Link href="/admin/manage-comments">Manage Comments</Link>,
+            label: (
+              <Link href="/landlord/manage-comments">Manage Comments</Link>
+            ),
+          },
+          {
+            key: "8",
+            icon: <FaMoneyCheckDollar />,
+            label: <Link href="/landlord/add-funds">Add Funds</Link>,
           },
         ]}
       />
