@@ -75,37 +75,37 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
           {
             key: "1",
             icon: <ImProfile />,
-            label: <Link href="/admin/statistics">Profile</Link>,
+            label: <Link href="/landlord/profile">Profile</Link>,
           },
           {
             key: "2",
             icon: <FaChartLine />,
-            label: <Link href="/admin/statistics">Statistic</Link>,
+            label: <Link href="/landlord/statistics">Statistic</Link>,
           },
           {
             key: "3",
             icon: <MdBuild />,
-            label: <Link href="/admin/manage-maintain">Manage Maintain</Link>,
+            label: <Link href="/landlord/manage-maintain">Manage Maintain</Link>,
           },
           {
             key: "4",
             icon: <RiHotelLine />,
-            label: <Link href="/admin/manage-rooms">Manage Rooms</Link>,
+            label: <Link href="/landlord/manage-rooms">Manage Rooms</Link>,
           },
           {
             key: "5",
             icon: <FaFileContract />,
-            label: <Link href="/admin/manage-contracts">Manage Contracts</Link>,
+            label: <Link href="/landlord/manage-contracts">Manage Contracts</Link>,
           },
           {
             key: "6",
             icon: <MdOutlineRequestQuote />,
-            label: <Link href="/admin/manage-requests">Manage Requests</Link>,
+            label: <Link href="/landlord/manage-requests">Manage Requests</Link>,
           },
           {
             key: "7",
             icon: <MdComment />,
-            label: <Link href="/admin/manage-comments">Manage Comments</Link>,
+            label: <Link href="/landlord/manage-comments">Manage Comments</Link>,
           },
         ]}
       />
