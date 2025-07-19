@@ -3,12 +3,25 @@
 
 import React, { useContext, useState, useEffect } from "react";
 import { Table, Tag, Button, Modal, Popconfirm, message, Space, Input, Select } from "antd";
-import { Form } from "antd";
+import { Form } from "antd"; // Giữ lại Form để định nghĩa ColumnsType
 import type { ColumnsType } from "antd/es/table";
-import { AiOutlineDelete, AiOutlineEye, AiOutlineEdit } from "react-icons/ai";
+import { AiOutlineDelete, AiOutlineEdit } from "react-icons/ai"; // Đã xóa AiOutlineEye
 import { ThemeContext } from "@/app/context/ThemeContext";
+import MaintenanceFormModal from "./MaintenanceFormModal"; // Import component Modal mới
 
-const { Option } = Select;
+// Định nghĩa kiểu dữ liệu cho một phòng (vẫn cần ở đây nếu dùng cho availableRooms)
+type Room = {
+  name: string;
+  address: string;
+};
+
+const availableRooms: Room[] = [
+  { name: "Mr. Nam's Room 1", address: "Ngu Hanh Son, Da Nang" },
+  { name: "Mr. Nam's Room 2", address: "Son Tra, Da Nang" },
+  { name: "Room 506", address: "Lien Chieu, Da Nang" },
+  { name: "Ms. Lan's Room 1", address: "Hoa Vang , Da Nang" },
+  { name: "Ms. Lan's Room 2", address: "Hoa Xuan , Da Nang" },
+];
 
 type MaintainData = {
   key: string;
@@ -20,34 +33,61 @@ type MaintainData = {
   status: "Pending" | "Completed" | "In Progress";
 };
 
+// Định nghĩa kiểu dữ liệu cho các giá trị từ Form
+type FormValues = {
+  roomName: string;
+  address: string;
+  issue: string;
+  cost: number;
+  status?: "Pending" | "Completed" | "In Progress"; // Status là tùy chọn khi thêm mới
+};
+
 const initialMaintainData: MaintainData[] = [
   {
     key: "1",
     roomName: "Mr. Nam's Room 2",
-    address: "Dong Da, Hanoi",
+    address: "Ngu Hanh Son, Da Nang",
     issue: "Leaky faucet repair",
     cost: 200000,
-    date: "07/08/2023",
+    date: "08/07/2023", 
     status: "Completed",
   },
   {
     key: "2",
     roomName: "Mr. Nam's Room 1",
-    address: "Thanh Xuan, Hanoi",
+    address: "Son Tra, Da Nang",
     issue: "Air conditioner maintenance",
     cost: 9000000,
-    date: "10/08/2023",
+    date: "08/10/2023", 
     status: "Pending",
   },
-  {
+  { 
     key: "3",
     roomName: "Room 506",
-    address: "Cau Giay, Hanoi",
+    address: "Lien Chieu, Da Nang",
     issue: "Broken light bulb replacement",
     cost: 100000,
-    date: "15/08/2023",
+    date: "08/15/2023", 
     status: "In Progress",
   },
+    {
+        key: "4",
+        roomName: "Ms. Lan's Room 1",
+        address: "Hoa Vang , Da Nang",
+        issue: "Heating system check",
+        cost: 500000,
+        date: "08/20/2023",
+        status: "Pending",
+    },
+    {
+        key: "5",
+        roomName: "Ms. Lan's Room 2", 
+        address: "Hoa Xuan , Da Nang",
+        issue: "Window repair",
+        cost: 300000,
+        date: "08/25/2023",
+        status: "Completed",
+    },
 ];
 
 const ManageMaintainClientWrapper: React.FC = () => {
@@ -57,21 +97,26 @@ const ManageMaintainClientWrapper: React.FC = () => {
   const [selectedMaintain, setSelectedMaintain] = useState<MaintainData | null>(null);
   const [editingMaintain, setEditingMaintain] = useState<MaintainData | null>(null);
   const { isDark } = useContext(ThemeContext);
-  const [form] = Form.useForm();
+  // const [form] = Form.useForm(); // useForm() đã được chuyển vào component Modal
 
-  useEffect(() => {
-    if (editingMaintain) {
-      form.setFieldsValue(editingMaintain);
-    } else {
-      form.resetFields();
-    }
-  }, [editingMaintain, form]);
+  // useEffect này không còn cần thiết để set giá trị form vì form đã được reset/set trong Modal
+  // useEffect(() => {
+  //   console.log("useEffect triggered. editingMaintain:", editingMaintain);
+  //   if (editingMaintain) {
+  //     form.setFieldsValue(editingMaintain);
+  //     form.setFieldsValue({ roomName: editingMaintain.roomName });
+  //     console.log("Form fields set for editing:", form.getFieldsValue());
+  //   } else {
+  //     form.resetFields();
+  //     console.log("Form fields reset for new entry.");
+  //   }
+  // }, [editingMaintain, form]);
 
-  const handleFormSubmit = (values: any) => {
+  const handleFormSubmit = (values: FormValues) => { // Đã thay đổi 'any' thành 'FormValues'
     if (editingMaintain) {
       const updatedData = data.map((item) =>
         item.key === editingMaintain.key
-          ? { ...item, ...values }
+          ? { ...item, ...values } as MaintainData // Ép kiểu an toàn hơn
           : item
       );
       setData(updatedData);
@@ -83,16 +128,16 @@ const ManageMaintainClientWrapper: React.FC = () => {
         roomName: values.roomName,
         address: values.address,
         issue: values.issue,
-        cost: values.cost ? parseFloat(values.cost) : 0,
+        cost: Number(values.cost), // Đảm bảo cost là số
         date: new Date().toLocaleDateString('en-US'),
-        status: "Pending",
+        status: "Pending", // Default to Pending when adding new
       };
       setData([...data, newMaintain]);
       message.success("Maintenance request added successfully!");
     }
     setIsFormModalOpen(false);
     setEditingMaintain(null);
-    form.resetFields();
+    // form.resetFields(); // Reset form sẽ được xử lý trong MaintenanceFormModal
   };
 
   const handleViewDetails = (record: MaintainData) => {
@@ -111,22 +156,14 @@ const ManageMaintainClientWrapper: React.FC = () => {
     setIsFormModalOpen(true);
   };
 
-  const handleStatusChange = (value: MaintainData['status'], recordKey: string) => {
-    const updatedData = data.map(item =>
-      item.key === recordKey ? { ...item, status: value } : item
-    );
-    setData(updatedData);
-    message.success(`Status for request ${recordKey} updated to ${value}.`);
-  };
-
   const getStatusColorClass = (status: MaintainData['status']) => {
     switch (status) {
       case "Completed":
-        return "text-green-600";
+        return "green";
       case "In Progress":
-        return "text-blue-600";
+        return "blue";
       case "Pending":
-        return "text-red-600";
+        return "volcano";
       default:
         return "";
     }
@@ -169,17 +206,8 @@ const ManageMaintainClientWrapper: React.FC = () => {
       title: "Status",
       dataIndex: "status",
       key: "status",
-      render: (status, record) => (
-        <Select
-          defaultValue={status}
-          style={{ width: 120 }}
-          onChange={(value: MaintainData['status']) => handleStatusChange(value, record.key)}
-          className={getStatusColorClass(status)}
-        >
-          <Option value="Pending" className={getStatusColorClass("Pending")}>Pending</Option>
-          <Option value="In Progress" className={getStatusColorClass("In Progress")}>In Progress</Option>
-          <Option value="Completed" className={getStatusColorClass("Completed")}>Completed</Option>
-        </Select>
+      render: (status) => (
+        <Tag color={getStatusColorClass(status)}>{status}</Tag>
       ),
       sorter: (a, b) => a.status.localeCompare(b.status),
     },
@@ -242,71 +270,17 @@ const ManageMaintainClientWrapper: React.FC = () => {
         className="mt-8 mb-8"
       />
 
-      {/* Add/Edit Maintenance Voucher Modal */}
-      <Modal
-        title={editingMaintain ? "Edit Maintenance Voucher" : "Add New Maintenance Voucher"}
+      {/* Add/Edit Maintenance Voucher Modal (đã chuyển sang component con) */}
+      <MaintenanceFormModal
         open={isFormModalOpen}
         onCancel={() => {
           setIsFormModalOpen(false);
           setEditingMaintain(null);
-          form.resetFields();
         }}
-        footer={null}
-        className={isDark ? "dark" : ""}
-      >
-        <Form
-          form={form}
-          layout="vertical"
-          onFinish={handleFormSubmit}
-        >
-          <Form.Item
-            label="Room Name"
-            name="roomName"
-            rules={[{ required: true, message: "Please enter room name!" }]}
-          >
-            <Input />
-          </Form.Item>
-          <Form.Item
-            label="Address"
-            name="address"
-            rules={[{ required: true, message: "Please enter address!" }]}
-          >
-            <Input />
-          </Form.Item>
-          <Form.Item
-            label="Description"
-            name="issue"
-            rules={[{ required: true, message: "Please describe the issue!" }]}
-          >
-            <Input.TextArea rows={3} />
-          </Form.Item>
-          <Form.Item
-            label="Estimated costs (₫)"
-            name="cost"
-            rules={[{ pattern: /^\d+(\.\d{1,2})?$/, message: 'Please enter a valid number!' }]}
-          >
-            <Input type="number" />
-          </Form.Item>
-          {editingMaintain && (
-            <Form.Item
-              label="Status"
-              name="status"
-              rules={[{ required: true, message: "Please select a status!" }]}
-            >
-              <Select>
-                <Option value="Pending">Pending</Option>
-                <Option value="In Progress">In Progress</Option>
-                <Option value="Completed">Completed</Option>
-              </Select>
-            </Form.Item>
-          )}
-          <Form.Item>
-            <Button type="primary" htmlType="submit" className="w-full">
-              {editingMaintain ? "Update" : "Add"}
-            </Button>
-          </Form.Item>
-        </Form>
-      </Modal>
+        onSubmit={handleFormSubmit}
+        editingMaintain={editingMaintain}
+        availableRooms={availableRooms}
+      />
 
       {/* View Maintenance Voucher Details Modal */}
       <Modal
