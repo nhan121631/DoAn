@@ -32,7 +32,7 @@ function AppHeader({ collapsed, toggleCollapsed }: AppHeaderProps) {
   ];
 
   return (
-    <header className="w-full flex justify-between items-center px-4 py-0 bg-slate-50 dark:bg-[#001529] border-[1px] border-gray-200 dark:border-gray-600">
+    <header className="w-full flex justify-between items-center px-4 py-0 bg-slate-50 dark:bg-[#001529] border-[1px] border-gray-200 dark:border-gray-600 fixed top-0 left-0 right-0 z-50 h-16">
       <button
         onClick={toggleCollapsed}
         className="text-lg w-16 h-16 flex items-center justify-center text-gray-700 dark:text-white"
