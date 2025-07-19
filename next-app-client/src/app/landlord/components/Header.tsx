@@ -22,7 +22,7 @@ function AppHeader({ collapsed, toggleCollapsed }: AppHeaderProps) {
       key: "logout",
       label: (
         <button
-          className="flex items-center justify-center gap-2 w-full text-left px-4 py-2 text-red-500 hover:bg-gray-100 dark:hover:bg-gray-700"
+          className="flex items-center justify-center gap-2 w-full text-left px-4 py-2 text-red-500 hover:bg-gray-100 dark:hover:bg-gray-700 dark:!bg-gray-100"
           onClick={() => alert("Logged out!")}
         >
           <IoIosLogOut className="text-2xl" /> Logout
@@ -35,7 +35,7 @@ function AppHeader({ collapsed, toggleCollapsed }: AppHeaderProps) {
     <header className="w-full flex justify-between items-center px-4 py-0 bg-slate-50 dark:bg-[#001529] border-[1px] border-gray-200 dark:border-gray-600">
       <button
         onClick={toggleCollapsed}
-        className="text-lg w-16 h-16 flex items-center justify-center text-gray-700 dark:text-white"
+        className="!text-lg w-16 h-16 flex items-center justify-center !text-gray-700 dark:!text-white"
       >
         {collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
       </button>
@@ -43,7 +43,7 @@ function AppHeader({ collapsed, toggleCollapsed }: AppHeaderProps) {
       <div className="flex items-center gap-4">
         <button
           id="theme-toggle"
-          className="text-2xl"
+          className="!text-2xl"
           title="Toggle theme"
           onClick={handleClick}
         >

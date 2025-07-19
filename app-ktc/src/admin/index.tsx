@@ -14,6 +14,9 @@ function Admin() {
     setIsDarkMode(theme === "dark");
   }, [isDarkMode]);
 
+ 
+
+
   const toggleCollapsed = () => {
     setCollapsed(!collapsed);
   };
@@ -31,6 +34,7 @@ function Admin() {
         <AppSidebar collapsed={collapsed} />
         <Layout className="!min-h-screen bg-gray-50 dark:!bg-[#001529]">
           <AppHeader collapsed={collapsed} toggleCollapsed={toggleCollapsed} />
+
           <Outlet />
         </Layout>
       </Layout>

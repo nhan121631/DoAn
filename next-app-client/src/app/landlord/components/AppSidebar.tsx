@@ -65,10 +65,14 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
       collapsed={collapsed}
       theme={isDark ? "dark" : "light"}
       style={{
-        height: "full",
-        borderRight: isDark
-          ? "1px solid #4A5565" // dark: slate-700
-          : "1px solid #F8FAFC", // light: ant design default
+        position: "fixed",
+        top: 0,
+        left: 0,
+        bottom: 0,
+        right: undefined,
+        height: "100vh",
+        zIndex: 100,
+        borderRight: isDark ? "1px solid #4A5565" : "1px solid #F8FAFC",
       }}
     >
       <div className="flex items-center justify-center h-16 ">
