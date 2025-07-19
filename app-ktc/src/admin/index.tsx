@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { Layout, theme } from "antd";
+import { useEffect, useState } from "react";
+import { Layout } from "antd";
 import AppSidebar from "./components/Siderbar";
 import AppHeader from "./components/Header";
 import { ThemeContext } from "./context/ThemeContext";
@@ -16,6 +16,7 @@ function Admin() {
 
  
 
+
   const toggleCollapsed = () => {
     setCollapsed(!collapsed);
   };
@@ -24,11 +25,16 @@ function Admin() {
     <ThemeContext.Provider
       value={{ isDark: isDarkMode, setIsDark: setIsDarkMode }}
     >
-      <Layout className={isDarkMode ? "dark" : ""}>
+      <Layout
+        className={`${isDarkMode ? "dark" : ""}`}
+        style={{
+          background: isDarkMode ? "#001529" : "#f0f2f5",
+        }}
+      >
         <AppSidebar collapsed={collapsed} />
-        <Layout className="bg-gray-50 dark:!bg-[#001529]">
+        <Layout className="!min-h-screen bg-gray-50 dark:!bg-[#001529]">
           <AppHeader collapsed={collapsed} toggleCollapsed={toggleCollapsed} />
-         
+
           <Outlet />
         </Layout>
       </Layout>

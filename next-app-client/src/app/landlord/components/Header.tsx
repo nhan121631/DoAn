@@ -1,8 +1,8 @@
 import { useContext } from "react";
 import { MenuUnfoldOutlined, MenuFoldOutlined } from "@ant-design/icons";
-import { ThemeContext } from "../context/ThemeContext";
 import { Avatar, Dropdown } from "antd";
 import { IoIosLogOut } from "react-icons/io";
+import { ThemeContext } from "@/app/context/ThemeContext";
 
 interface AppHeaderProps {
   collapsed: boolean;

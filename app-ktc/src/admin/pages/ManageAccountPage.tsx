@@ -1,8 +1,10 @@
+
 import { Layout, theme } from "antd";
+import TableManageAccount from "../components/TableManageAccount";
 
 const { Content } = Layout;
 
-function ManageAccountPage() {
+const ManageAccountPage = () => {
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
@@ -15,9 +17,12 @@ function ManageAccountPage() {
         borderRadius: borderRadiusLG,
       }}
     >
-      ManageAccount Page
+      <h2 className="text-xl font-semibold mb-4 dark:text-white">
+        Account Management
+      </h2>
+      <TableManageAccount />
     </Content>
   );
-}
+};
 
 export default ManageAccountPage;
