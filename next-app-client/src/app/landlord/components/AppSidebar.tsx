@@ -1,14 +1,17 @@
 "use client";
 import { useContext, useState, useEffect } from "react";
 import { Menu, Layout } from "antd";
-import { FaChartLine, FaFileContract } from "react-icons/fa";
-import { MdBuild, MdOutlineRequestQuote, MdComment } from "react-icons/md";
-import { RiHotelLine } from "react-icons/ri";
+import { FaChartLine } from "react-icons/fa";
+import { MdHistoryEdu, MdOutlineRequestQuote } from "react-icons/md";
+import { RiContractLine, RiHotelLine } from "react-icons/ri";
 import { ThemeContext } from "@/app/context/ThemeContext";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ImProfile } from "react-icons/im";
-import { FaMoneyCheckDollar } from "react-icons/fa6";
+import { PiHandDepositLight } from "react-icons/pi";
+import { LuBookCheck } from "react-icons/lu";
+import { VscFeedback } from "react-icons/vsc";
+import { GrHostMaintenance } from "react-icons/gr";
 
 const { Sider } = Layout;
 
@@ -27,15 +30,16 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
   }, []);
 
   const pathToKey: Record<string, string> = {
-    "/landlord/profile": "1",
-    "/landlord/statistics": "2",
-    "/landlord/manage-maintain": "3",
-    "/landlord/manage-rooms": "4",
+    "/landlord/statistics": "1",
+    "/landlord/profile": "2",
+    "/landlord/manage-rooms": "3",
+    "/landlord/rentals": "4",
     "/landlord/manage-contracts": "5",
     "/landlord/manage-requests": "6",
-    "/landlord/manage-comments": "7",
-    "/landlord/add-funds": "8",
-    "/landlord/payment-history": "9",
+    "/landlord/manage-maintain": "7",
+    "/landlord/manage-comments": "8",
+    "/landlord/add-funds": "9",
+    "/landlord/payment-history": "10",
   };
 
   const selectedKey = pathToKey[pathname] || "1";
@@ -65,13 +69,10 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
       collapsed={collapsed}
       theme={isDark ? "dark" : "light"}
       style={{
-
-
         height: "full",
         borderRight: isDark
           ? "1px solid #4A5565" // dark: slate-700
           : "1px solid #F8FAFC", // light: ant design default
-
       }}
     >
       <div className="flex items-center justify-center h-16 ">
@@ -86,56 +87,175 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
         items={[
           {
             key: "1",
-            icon: <ImProfile />,
-            label: <Link href="/landlord/profile">Profile</Link>,
+            icon: (
+              <span
+                style={{
+                  fontSize: 16,
+                  marginRight: 4,
+                  display: "inline-flex",
+                  alignItems: "center",
+                }}
+              >
+                <FaChartLine />
+              </span>
+            ),
+            label: <Link href="/landlord/statistics">Dashboard</Link>,
           },
           {
             key: "2",
-            icon: <FaChartLine />,
-            label: <Link href="/landlord/statistics">Statistic</Link>,
+            icon: (
+              <span
+                style={{
+                  fontSize: 16,
+                  marginRight: 4,
+                  display: "inline-flex",
+                  alignItems: "center",
+                }}
+              >
+                <ImProfile />
+              </span>
+            ),
+            label: <Link href="/landlord/profile">Profile</Link>,
           },
           {
             key: "3",
-            icon: <MdBuild />,
-            label: (
-              <Link href="/landlord/manage-maintain">Manage Maintain</Link>
+            icon: (
+              <span
+                style={{
+                  fontSize: 18,
+                  marginRight: 4,
+                  display: "inline-flex",
+                  alignItems: "center",
+                }}
+              >
+                <RiHotelLine />
+              </span>
             ),
+            label: <Link href="/landlord/manage-rooms">Rooms Management</Link>,
           },
           {
             key: "4",
-            icon: <RiHotelLine />,
-            label: <Link href="/landlord/manage-rooms">Manage Rooms</Link>,
+            icon: (
+              <span
+                style={{
+                  fontSize: 18,
+                  marginRight: 4,
+                  display: "inline-flex",
+                  alignItems: "center",
+                }}
+              >
+                <LuBookCheck />
+              </span>
+            ),
+            label: <Link href="/landlord/rentals">Rentals Management</Link>,
           },
           {
             key: "5",
-            icon: <FaFileContract />,
+            icon: (
+              <span
+                style={{
+                  fontSize: 18,
+                  marginRight: 4,
+                  display: "inline-flex",
+                  alignItems: "center",
+                }}
+              >
+                <RiContractLine />
+              </span>
+            ),
             label: (
-              <Link href="/landlord/manage-contracts">Manage Contracts</Link>
+              <Link href="/landlord/manage-contracts">Contract Management</Link>
             ),
           },
           {
             key: "6",
-            icon: <MdOutlineRequestQuote />,
+            icon: (
+              <span
+                style={{
+                  fontSize: 18,
+                  marginRight: 4,
+                  display: "inline-flex",
+                  alignItems: "center",
+                }}
+              >
+                <MdOutlineRequestQuote />
+              </span>
+            ),
             label: (
-              <Link href="/landlord/manage-requests">Manage Requests</Link>
+              <Link href="/landlord/manage-requests">Request Management</Link>
             ),
           },
           {
             key: "7",
-            icon: <MdComment />,
+            icon: (
+              <span
+                style={{
+                  fontSize: 16,
+                  marginRight: 4,
+                  display: "inline-flex",
+                  alignItems: "center",
+                }}
+              >
+                <GrHostMaintenance />
+              </span>
+            ),
             label: (
-              <Link href="/landlord/manage-comments">Manage Comments</Link>
+              <Link href="/landlord/manage-maintain">
+                Maintenance Management
+              </Link>
             ),
           },
           {
             key: "8",
-            icon: <FaMoneyCheckDollar />,
-            label: <Link href="/landlord/add-funds">Add Funds</Link>,
+            icon: (
+              <span
+                style={{
+                  fontSize: 18,
+                  marginRight: 4,
+                  display: "inline-flex",
+                  alignItems: "center",
+                }}
+              >
+                <VscFeedback />
+              </span>
+            ),
+            label: (
+              <Link href="/landlord/manage-comments">Feedback Management</Link>
+            ),
           },
           {
             key: "9",
-            icon: <FaMoneyCheckDollar />,
-            label: <Link href="/landlord/payment-history">Payment History</Link>,
+            icon: (
+              <span
+                style={{
+                  fontSize: 18,
+                  marginRight: 4,
+                  display: "inline-flex",
+                  alignItems: "center",
+                }}
+              >
+                <PiHandDepositLight />
+              </span>
+            ),
+            label: <Link href="/landlord/add-funds">Deposit Management</Link>,
+          },
+          {
+            key: "10",
+            icon: (
+              <span
+                style={{
+                  fontSize: 18,
+                  marginRight: 4,
+                  display: "inline-flex",
+                  alignItems: "center",
+                }}
+              >
+                <MdHistoryEdu />
+              </span>
+            ),
+            label: (
+              <Link href="/landlord/payment-history">Transaction History</Link>
+            ),
           },
         ]}
       />

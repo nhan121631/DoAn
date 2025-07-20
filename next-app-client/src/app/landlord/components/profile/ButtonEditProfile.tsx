@@ -24,16 +24,42 @@ export default function ButtonEditProfile() {
     }
   };
 
-  const handleSave = (values: {
+  const handleSave = async (values: {
     name: string;
     phone: string;
     email: string;
     address: string;
   }) => {
-    console.log("Saved values:", values);
-    setOpen(false);
-  };
+    // Lấy file từ input upload (nếu dùng AntD Upload)
+    const file = form.getFieldValue("avatar")?.[0]?.originFileObj;
+    console.log("File lấy từ form:", file);
 
+    const formData = new FormData();
+    formData.append("name", values.name);
+    formData.append("phone", values.phone);
+    formData.append("email", values.email);
+    formData.append("address", values.address);
+    if (file) {
+      formData.append("avatar", file);
+    }
+
+    try {
+      const res = await fetch("http://localhost:3333/add", {
+        method: "POST",
+        body: formData,
+      });
+      if (res.ok) {
+        // Thành công
+        console.log("Profile updated successfully");
+        // setOpen(false);
+      } else {
+        // Xử lý lỗi
+        alert("Upload failed");
+      }
+    } catch (err) {
+      alert("Error: " + err);
+    }
+  };
   return (
     <>
       <button
