@@ -1,8 +1,8 @@
-import Convenient from "../landlord/components/detal-rooms/convenient";
-import MapSection from "../landlord/components/detal-rooms/map";
-import { Slide } from "../landlord/components/room-detail/Slide";
+import { Slide } from "./Slide";
+import Convenient from "./convenient";
+import MapSection from "./map";
 
-export default function DetailPage() {
+export default function RoomDetail() {
   const images = [
     { id: 1, url: "/images/anh1.jpg" },
     { id: 2, url: "/images/anh2.jpg" },
@@ -12,57 +12,69 @@ export default function DetailPage() {
   ];
 
   return (
-    <div className="max-w-[900px] mx-auto my-8 bg-white rounded-xl shadow-lg p-6">
+    <div className="max-w-[900px] mx-auto my-8 bg-white dark:bg-[#181f2b] rounded-xl shadow-lg p-6 dark:text-white">
       {/* Image slider */}
-      <div className="p-4 bg-white rounded-lg">
+      <div className="p-4 bg-white dark:bg-[#232b3b] rounded-lg">
         <Slide images={images} />
       </div>
 
       {/* Room Info Card */}
-      <div className="mt-6 p-5 rounded-lg bg-[#f9f9f9] shadow-sm flex flex-col gap-4">
+      <div className="mt-6 p-5 rounded-lg bg-[#f9f9f9] dark:bg-[#232b3b] shadow-sm flex flex-col gap-4">
         <div className="flex items-center mb-2">
-          <span className="text-[#e53935] font-bold text-xl mr-2">
+          <span className="text-[#e53935] font-bold text-xl mr-2 dark:text-[#ff6b6b]">
             Newly built, clean, airy room for rent, only 3.6M/month
           </span>
         </div>
         <div className="flex items-center gap-4 mb-2">
-          <span className="text-green-700 font-bold text-lg">
+          <span className="text-green-700 dark:text-green-400 font-bold text-lg">
             3.8 million/month
           </span>
-          <span className="text-gray-500 text-base">· 20 m²</span>
+          <span className="text-gray-500 dark:text-gray-300 text-base">
+            · 20 m²
+          </span>
         </div>
-        <div className="text-gray-700 text-[15px] mb-1 flex justify-start">
+        <div className="text-gray-700 dark:text-gray-200 text-[15px] mb-1 flex justify-start">
           <span className="w-1/5">Ward</span>
-          <a href="#" className="text-blue-600 underline ml-1 w-4/5">
+          <a
+            href="#"
+            className="text-blue-600 dark:text-blue-400 underline ml-1 w-4/5"
+          >
             Go Vap District
           </a>
         </div>
-        <div className="text-gray-700 text-[15px] mb-1 flex justify-start">
+        <div className="text-gray-700 dark:text-gray-200 text-[15px] mb-1 flex justify-start">
           <span className="w-1/5">City/Province:</span>
-          <a href="#" className="text-blue-600 underline ml-1 w-4/5">
+          <a
+            href="#"
+            className="text-blue-600 dark:text-blue-400 underline ml-1 w-4/5"
+          >
             Ho Chi Minh City
           </a>
         </div>
-        <div className="text-gray-700 text-[15px] mb-1 flex justify-start">
+        <div className="text-gray-700 dark:text-gray-200 text-[15px] mb-1 flex justify-start">
           <span className="w-1/5">Address:</span>
           <span className="ml-1 w-4/5">
             171/14/18 Duong Nguyen Tu Gian, Ward 12, Go Vap District
           </span>
         </div>
-        <div className="text-gray-700 text-[15px] mb-1 flex justify-start">
+        <div className="text-gray-700 dark:text-gray-200 text-[15px] mb-1 flex justify-start">
           <span className="w-1/5">Ngày đăng:</span>
           <span className="ml-1">Sunday, 13:42 20/07/2025</span>
         </div>
-        <div className="text-gray-700 text-[15px] mb-1 flex justify-start">
+        <div className="text-gray-700 dark:text-gray-200 text-[15px] mb-1 flex justify-start">
           <span className="w-1/5">Hết hạn:</span>
           <span className="ml-1">Wednesday, 13:42 30/07/2025</span>
         </div>
-        <div className="text-gray-500 text-sm mt-2">Updated: 1 hour ago</div>
+        <div className="text-gray-500 dark:text-gray-400 text-sm mt-2">
+          Updated: 1 hour ago
+        </div>
 
-        <hr className="my-5 text-gray-300" />
+        <hr className="my-5 text-gray-300 dark:text-gray-600" />
 
-        <h2 className="text-lg font-bold mb-2 text-gray-800">Description</h2>
-        <ul className="list-disc pl-5 space-y-1 text-gray-700 text-[15px]">
+        <h2 className="text-lg font-bold mb-2 text-gray-800 dark:text-white">
+          Description
+        </h2>
+        <ul className="list-disc pl-5 space-y-1 text-gray-700 dark:text-gray-200 text-[15px]">
           <li>
             Brand new, clean room with full furniture, balcony, and window.
           </li>
