@@ -1,5 +1,5 @@
-import Convenient from "../landlord/components/detal-rooms/convenient";
-import MapSection from "../landlord/components/detal-rooms/map";
+// import Convenient from "../landlord/components/detal-rooms/convenient";
+// import MapSection from "../landlord/components/detal-rooms/map";
 import { Slide } from "../landlord/components/room-detail/Slide";
 
 export default function DetailPage() {
