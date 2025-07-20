@@ -45,7 +45,7 @@ export default function PaymentResultClient() {
           console.error("Failed to save payment data:", saveError);
         }
       } catch (err) {
-        setError("Có lỗi xảy ra khi xử lý kết quả thanh toán");
+        setError("An error occurred while processing the payment result");
         console.error("Payment result fetch error:", err);
       } finally {
         setLoading(false);
@@ -54,7 +54,7 @@ export default function PaymentResultClient() {
     if (searchParams.toString()) {
       fetchPaymentResult();
     } else {
-      setError("Không có thông tin thanh toán");
+      setError("No payment information found");
       setLoading(false);
     }
   }, [searchParams]);
@@ -64,7 +64,7 @@ export default function PaymentResultClient() {
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Đang xử lý kết quả thanh toán...</p>
+          <p className="mt-4 text-gray-600">Processing payment result...</p>
         </div>
       </div>
     );
@@ -77,14 +77,14 @@ export default function PaymentResultClient() {
           <div className="text-center">
             <div className="text-red-500 text-6xl mb-4">❌</div>
             <h2 className="text-2xl font-bold text-gray-900 mb-2">
-              Có lỗi xảy ra
+              An error occurred
             </h2>
             <p className="text-gray-600 mb-6">{error}</p>
             <a
               href="/landlord/add-funds"
               className="inline-block px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
             >
-              ← Quay lại trang nạp tiền
+              ← Back to Add Funds
             </a>
           </div>
         </div>
@@ -96,7 +96,7 @@ export default function PaymentResultClient() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
-          <p className="text-gray-600">Không có dữ liệu thanh toán</p>
+          <p className="text-gray-600">No payment data found</p>
         </div>
       </div>
     );

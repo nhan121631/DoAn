@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unescaped-entities */
 "use client";
 
 import { useState } from "react";
@@ -9,12 +10,12 @@ interface AddFundsFormProps {
 export default function AddFundsForm({ onSuccess }: AddFundsFormProps) {
   const [amount, setAmount] = useState(50000);
   const [orderInfo, setOrderInfo] = useState("");
-//   const [bankCode, setBankCode] = useState("");
+  //   const [bankCode, setBankCode] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handlePay = async () => {
     if (amount < 5000) {
-      alert("Số tiền tối thiểu là 5,000 VNĐ");
+      alert("Minimum amount is 5,000 VND");
       return;
     }
     setLoading(true);
@@ -24,8 +25,7 @@ export default function AddFundsForm({ onSuccess }: AddFundsFormProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           amount,
-          orderInfo: orderInfo || `Thanh toán đơn hàng ${new Date().getTime()}`,
-        //   bankCode: bankCode || undefined,
+          orderInfo: orderInfo || `Payment order ${new Date().getTime()}`,
         }),
       });
       if (!res.ok) throw new Error("Network response was not ok");
@@ -39,7 +39,7 @@ export default function AddFundsForm({ onSuccess }: AddFundsFormProps) {
       if (onSuccess) onSuccess();
     } catch (error) {
       console.error("Payment error:", error);
-      alert("Có lỗi xảy ra khi tạo thanh toán. Vui lòng thử lại.");
+      alert("An error occurred while creating the payment. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -62,7 +62,7 @@ export default function AddFundsForm({ onSuccess }: AddFundsFormProps) {
     >
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2 dark:!text-white">
-          Số tiền cần nạp <span className="text-red-500">*</span>
+          Amount <span className="text-red-500">*</span>
         </label>
         <input
           type="number"
@@ -71,11 +71,11 @@ export default function AddFundsForm({ onSuccess }: AddFundsFormProps) {
           min="5000"
           step="1000"
           className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg dark:placeholder:!text-gray-400"
-          placeholder="Nhập số tiền"
+          placeholder="Enter amount"
           required
         />
         <p className="text-sm text-gray-500 mt-1  dark:!text-white">
-          Số tiền:{" "}
+          Amount:{" "}
           <span className="font-semibold text-blue-700">
             {formatCurrency(amount)}
           </span>
@@ -83,20 +83,20 @@ export default function AddFundsForm({ onSuccess }: AddFundsFormProps) {
       </div>
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2  dark:!text-white">
-          Nội dung thanh toán
+          Payment description
         </label>
         <input
           type="text"
           value={orderInfo}
           onChange={(e) => setOrderInfo(e.target.value)}
           className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent "
-          placeholder="Nhập nội dung thanh toán (tùy chọn)"
+          placeholder="Enter payment description (optional)"
         />
       </div>
-      {/* Chỉ còn 1 phương thức thanh toán VNPay */}
+      {/* Only 1 payment method: VNPay */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2  dark:!text-white">
-          Phương thức thanh toán
+          Payment method
         </label>
         <div className="flex items-center gap-2">
           <span className="inline-flex items-center px-3 py-2 bg-blue-100 text-blue-700 rounded font-semibold text-base">
@@ -151,7 +151,7 @@ export default function AddFundsForm({ onSuccess }: AddFundsFormProps) {
                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
               ></path>
             </svg>
-            Đang xử lý...
+            Processing...
           </>
         ) : (
           <div className="text-white flex items-center justify-center">
@@ -175,7 +175,7 @@ export default function AddFundsForm({ onSuccess }: AddFundsFormProps) {
                 VNPay
               </text>
             </svg>
-            Nạp tiền qua VNPay
+            Pay with VNPay
           </div>
         )}
       </button>
@@ -184,12 +184,12 @@ export default function AddFundsForm({ onSuccess }: AddFundsFormProps) {
           href="/transactions"
           className="text-blue-600 hover:text-blue-800 text-sm underline"
         >
-          🔍 Tra cứu giao dịch
+          🔍 Transaction lookup
         </a>
       </div>
       <div className="text-center pt-2">
         <p className="text-xs text-gray-500">
-          Được bảo mật bởi VNPay - Cổng thanh toán hàng đầu Việt Nam
+          Secured by VNPay - Vietnam's leading payment gateway
         </p>
       </div>
     </form>

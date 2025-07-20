@@ -16,9 +16,9 @@ export default function PaymentFilter() {
               : "bg-gray-200 !text-white hover:bg-gray-300"
           }`}
         >
-          {filterType === "all" && "Tất cả"}
-          {filterType === "success" && "Thành công"}
-          {filterType === "failed" && "Thất bại"}
+          {filterType === "all" && "All"}
+          {filterType === "success" && "Success"}
+          {filterType === "failed" && "Failed"}
         </button>
       ))}
     </div>
