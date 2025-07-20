@@ -13,41 +13,43 @@ interface CommentFormModalProps {
   onCancel: () => void;
   onSubmit: (updatedComment: CommentData) => void;
   originalComment: CommentData | null;
-  onDelete: (commentKey: string) => void;
+  onDelete: (commentKey: string) => void; 
 }
 
 const CommentFormContent: React.FC<{
   originalComment: CommentData | null;
   onSubmit: (updatedComment: CommentData) => void;
   onCancel: () => void;
-  onDelete: (commentKey: string) => void;
+  onDelete: (commentKey: string) => void; 
 }> = ({ originalComment, onSubmit, onCancel, onDelete }) => {
   const [form] = Form.useForm();
   const { isDark } = useContext(ThemeContext);
-  const [editingReplyIndex, setEditingReplyIndex] = useState<number | null>(null);
+  
 
   useEffect(() => {
     if (originalComment) {
-      form.setFieldsValue({
-        newReplyContent: "",
-      });
-      setEditingReplyIndex(null);
+      const existingAdminReply = (originalComment.replies ?? []).find(
+        (reply) => reply.sender === 'admin'
+      );
+
+      if (existingAdminReply) {
+        form.setFieldsValue({
+          newReplyContent: existingAdminReply.message,
+        });
+      } else {
+        form.resetFields();
+      }
     } else {
       form.resetFields();
     }
   }, [originalComment, form]);
 
-  const handleEditReply = useCallback((replyIndex: number) => {
-    if (originalComment && originalComment.replies?.[replyIndex]) {
-      setEditingReplyIndex(replyIndex);
-      form.setFieldsValue({ newReplyContent: originalComment.replies[replyIndex].message });
-    }
-  }, [originalComment, form]);
 
   const handleDeleteReply = useCallback((replyIndex: number) => {
     if (originalComment && originalComment.replies) {
       const updatedReplies = originalComment.replies.filter((_, index) => index !== replyIndex);
-      const newStatus: CommentData['status'] = updatedReplies.length > 0 ? "Responded" : "New";
+      // If no admin replies left, status reverts to New (0)
+      const newStatus: CommentData['status'] = updatedReplies.some(r => r.sender === 'admin') ? 1 : 0;
 
       const updatedComment: CommentData = {
         ...originalComment,
@@ -55,33 +57,38 @@ const CommentFormContent: React.FC<{
         status: newStatus,
       };
       onSubmit(updatedComment);
-      message.success("Reply deleted!");
-      setEditingReplyIndex(null);
+      message.success("Reply deleted successfully!");
       form.resetFields();
     }
   }, [originalComment, onSubmit, form]);
 
   const handleFinish = (values: CommentFormValues) => {
     if (originalComment) {
+      const currentTimestamp = new Date().toLocaleDateString('en-US') + ' ' + new Date().toLocaleTimeString('en-US');
+      const existingAdminReplyIndex = (originalComment.replies ?? []).findIndex(
+        (reply) => reply.sender === 'admin'
+      );
+
       let updatedReplies: Reply[];
       let newStatus: CommentData['status'] = originalComment.status;
 
-      if (editingReplyIndex !== null) {
+      if (existingAdminReplyIndex !== -1) {
         updatedReplies = (originalComment.replies ?? []).map((reply, index) =>
-            index === editingReplyIndex
-                ? { ...reply, message: values.newReplyContent, timestamp: new Date().toLocaleDateString('vi-VN') + ' ' + new Date().toLocaleTimeString('vi-VN') }
-                : reply
+          index === existingAdminReplyIndex
+            ? { ...reply, message: values.newReplyContent, timestamp: currentTimestamp }
+            : reply
         );
-        message.success("Reply updated!");
+        message.success("Reply updated successfully!");
+        newStatus = 1; // Ensure status is Responded
       } else {
         const newReply: Reply = {
           sender: 'admin',
           message: values.newReplyContent,
-          timestamp: new Date().toLocaleDateString('en-GB') + ' ' + new Date().toLocaleTimeString('en-GB'),
+          timestamp: currentTimestamp,
         };
         updatedReplies = [...(originalComment.replies || []), newReply];
-        newStatus = "Responded";
-        message.success("New reply sent!");
+        newStatus = 1; 
+        message.success("New reply sent successfully!");
       }
 
       const updatedComment: CommentData = {
@@ -91,10 +98,11 @@ const CommentFormContent: React.FC<{
       };
 
       onSubmit(updatedComment);
-      setEditingReplyIndex(null);
-      form.resetFields();
+      
     }
   };
+
+  const hasAdminReply = (originalComment?.replies ?? []).some(reply => reply.sender === 'admin');
 
   return (
     <Form form={form} layout="vertical" onFinish={handleFinish}>
@@ -108,6 +116,7 @@ const CommentFormContent: React.FC<{
         <Input.TextArea value={originalComment?.content} rows={4} disabled />
       </Form.Item>
 
+      {/* Display conversation history (previous replies) */}
       {originalComment?.replies && originalComment.replies.length > 0 && (
         <div className="mb-4 border-t pt-4">
           <h4 className="font-semibold mb-2">Reply History:</h4>
@@ -121,16 +130,8 @@ const CommentFormContent: React.FC<{
                   {reply.sender === 'admin' ? 'You' : originalComment.userName} ({reply.timestamp})
                 </p>
                 <p>{reply.message}</p>
-                {reply.sender === 'admin' && (
+                {reply.sender === 'admin' && ( 
                   <Space size="small">
-                    <Button
-                      type="link"
-                      size="small"
-                      onClick={() => handleEditReply(index)}
-                      className="!p-0 !h-auto"
-                    >
-                      Edit
-                    </Button>
                     <Popconfirm
                       title="Are you sure you want to delete this reply?"
                       onConfirm={() => handleDeleteReply(index)}
@@ -143,7 +144,9 @@ const CommentFormContent: React.FC<{
                         danger
                         icon={<AiOutlineDelete size={14} />}
                         className="!p-0 !h-auto"
-                      />
+                      >
+                        Delete
+                      </Button>
                     </Popconfirm>
                   </Space>
                 )}
@@ -154,7 +157,7 @@ const CommentFormContent: React.FC<{
       )}
 
       <Form.Item
-        label={editingReplyIndex !== null ? "Edit Reply" : "Your Reply"}
+        label={hasAdminReply ? "Edit Your Reply" : "Your Reply"}
         name="newReplyContent"
         rules={[{ required: true, message: "Please enter your reply!" }]}
       >
@@ -165,7 +168,7 @@ const CommentFormContent: React.FC<{
         <div className="flex justify-end gap-2 mt-4">
           <Button onClick={onCancel}>Cancel</Button>
           <Button type="primary" htmlType="submit">
-            {editingReplyIndex !== null ? "Update Reply" : "Send Reply"}
+            {hasAdminReply ? "Update Reply" : "Send Reply"}
           </Button>
         </div>
       </Form.Item>

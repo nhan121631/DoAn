@@ -10,10 +10,8 @@ export default function ManageCommentPage() {
       <div className="mb-4">
         <h2 className="text-4xl font-semibold dark:!text-white">Manage Comments</h2>
         <p className="text-gray-500 text-xl">Room Comments Management.</p>
-      </div>
-      {/* Add your manage comments component here */}
+      </div>      
       <div className="flex-1">
-        {/* Placeholder for manage comments content */}
         <ManageCommentsInteractive />
       </div>
       

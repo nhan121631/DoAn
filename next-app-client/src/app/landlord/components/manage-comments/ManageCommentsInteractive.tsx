@@ -1,13 +1,21 @@
-"use client"; 
+"use client";
 
 import React, { useContext, useState } from "react";
 import { Table, Tag, Button, Modal, Popconfirm, message, Space, Input } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { AiOutlineDelete, AiOutlineEdit, AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import { ThemeContext } from "@/app/context/ThemeContext";
-import CommentFormModal from "./CommentFormModal"; 
-import { CommentData, CommentFormValues, Reply } from "@/types/types"; 
-import { Room } from "@/types/types"; 
+import CommentFormModal from "./CommentFormModal";
+import { CommentData, CommentFormValues, Reply, Room } from "@/types/types";
+
+// Danh sách các phòng có sẵn (dữ liệu giả định) - Dùng chung với Manage Maintain
+// const availableRooms: Room[] = [
+//   { name: "Mr. Nam's Room 1", address: "Ngu Hanh Son, Da Nang"},
+//   { name: "Mr. Tien's Room 2", address: "Son Tra, Da Nang" },
+//   { name: "Mr. Duong's Room 3", address: "Lien Chieu, Da Nang" },
+//   { name: "Ms. Phung's Room 1", address: "Hoa Vang , Da Nang" },
+//   { name: "Ms. Lan's Room 2", address: "Hoa Xuan , Da Nang"},
+// ];
 
 const initialCommentData: CommentData[] = [
   {
@@ -17,8 +25,8 @@ const initialCommentData: CommentData[] = [
     userName: "Nguyen Van A",
     content: "The room is very clean and comfortable, friendly host. Very satisfied!",
     date: "01/07/2024",
-    status: "Responded",
-    isHidden: false,
+    status: 1, // Responded
+    isHidden: 0, // Visible
     replies: [
       { sender: 'admin', message: "Thank you for trusting and using our service. We look forward to serving you again!", timestamp: "01/07/2024 10:30" }
     ]
@@ -30,8 +38,8 @@ const initialCommentData: CommentData[] = [
     userName: "Tran Thi B",
     content: "Air conditioner is a bit weak, needs maintenance. Convenient location.",
     date: "05/07/2024",
-    status: "New", 
-    isHidden: false,
+    status: 0, // New
+    isHidden: 0, // Visible
     replies: []
   },
   {
@@ -41,8 +49,8 @@ const initialCommentData: CommentData[] = [
     userName: "Le Van C",
     content: "Reasonable price, but there is noise from outside in the evening.",
     date: "10/07/2024",
-    status: "New",
-    isHidden: false,
+    status: 0, // New
+    isHidden: 0, // Visible
     replies: []
   },
   {
@@ -52,8 +60,8 @@ const initialCommentData: CommentData[] = [
     userName: "Pham Thi D",
     content: "WiFi is very unstable, can't work properly. Needs improvement.",
     date: "12/07/2024",
-    status: "New",
-    isHidden: false,
+    status: 0, // New
+    isHidden: 0, // Visible
     replies: []
   },
   {
@@ -63,8 +71,8 @@ const initialCommentData: CommentData[] = [
     userName: "Vu Van E",
     content: "Friendly host, new room. Will come back.",
     date: "15/07/2024",
-    status: "Responded",
-    isHidden: false,
+    status: 1, // Responded
+    isHidden: 0, // Visible
     replies: [
       { sender: 'admin', message: "Very happy to serve you! Hope to see you again soon.", timestamp: "15/07/2024 14:00" }
     ]
@@ -76,8 +84,8 @@ const initialCommentData: CommentData[] = [
     userName: "Nguyen Thi F",
     content: "Nice room, but a bit far from the city center.",
     date: "18/07/2024",
-    status: "Responded",
-    isHidden: false,
+    status: 0, // New
+    isHidden: 0, // Visible
     replies: []
   },
 ];
@@ -86,8 +94,8 @@ const ManageCommentsInteractive: React.FC = () => {
   const sortedInitialData = [...initialCommentData].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   const [data, setData] = useState<CommentData[]>(sortedInitialData);
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
-  const [isViewDetailsModalOpen, setViewDetailsModalOpen] = useState(false); 
-  const [selectedComment, setSelectedComment] = useState<CommentData | null>(null); 
+  const [isViewDetailsModalOpen, setViewDetailsModalOpen] = useState(false);
+  const [selectedComment, setSelectedComment] = useState<CommentData | null>(null);
   const [commentToReply, setCommentToReply] = useState<CommentData | null>(null);
   const { isDark } = useContext(ThemeContext);
 
@@ -109,16 +117,17 @@ const ManageCommentsInteractive: React.FC = () => {
     const updatedData = data.filter(item => item.key !== recordKey);
     setData(updatedData);
     message.success("Comment deleted successfully!");
-    setIsFormModalOpen(false); 
+    setIsFormModalOpen(false);
     setCommentToReply(null);
   };
 
+  // Cập nhật handleToggleHidden để làm việc với 0 | 1
   const handleToggleHidden = (recordKey: string) => {
     const updatedData = data.map(item =>
-      item.key === recordKey ? { ...item, isHidden: !item.isHidden } : item
+      item.key === recordKey ? { ...item, isHidden: (item.isHidden === 0 ? 1 : 0) as (0 | 1) } : item
     );
     setData(updatedData);
-    message.success(`Comment has been ${updatedData.find(item => item.key === recordKey)?.isHidden ? 'hidden' : 'shown'}!`);
+    message.success(`Comment has been ${updatedData.find(item => item.key === recordKey)?.isHidden === 1 ? 'hidden' : 'shown'}!`);
   };
 
   const handleReplyComment = (record: CommentData) => {
@@ -126,14 +135,11 @@ const ManageCommentsInteractive: React.FC = () => {
     setIsFormModalOpen(true);
   };
 
-  const getStatusColorClass = (status: CommentData['status']) => {
+  const getStatusDisplay = (status: 0 | 1) => {
     switch (status) {
-      case "New":
-        return "volcano";
-      case "Responded":
-        return "green";
-      default:
-        return "";
+      case 0: return { text: "New", color: "volcano" }; 
+      case 1: return { text: "Responded", color: "green" }; 
+      default: return { text: "Unknown", color: "default" };
     }
   };
 
@@ -157,10 +163,10 @@ const ManageCommentsInteractive: React.FC = () => {
       ellipsis: true,
       render: (text: string, record) => (
         <span
-          className={`cursor-pointer hover:underline ${record.isHidden ? 'text-gray-400 italic line-through' : ''}`}
+          className={`cursor-pointer hover:underline ${record.isHidden === 1 ? 'text-gray-400 italic line-through' : ''}`} // Kiểm tra isHidden === 1
           onClick={() => handleViewDetails(record)}
         >
-          {text} {record.isHidden && "(Hidden)"}
+          {text} {record.isHidden === 1 && "(Hidden)"} 
         </span>
       ),
     },
@@ -175,10 +181,11 @@ const ManageCommentsInteractive: React.FC = () => {
       title: "Status",
       dataIndex: "status",
       key: "status",
-      render: (status) => (
-        <Tag color={getStatusColorClass(status)}>{status}</Tag>
-      ),
-      sorter: (a, b) => a.status.localeCompare(b.status),
+      render: (status: 0 | 1) => { 
+        const { text, color } = getStatusDisplay(status);
+        return <Tag color={color}>{text}</Tag>;
+      },
+      sorter: (a, b) => a.status - b.status, 
     },
     {
       title: "Actions",
@@ -195,10 +202,10 @@ const ManageCommentsInteractive: React.FC = () => {
           <Button
             type="default"
             size="small"
-            icon={record.isHidden ? <AiOutlineEye size={18} /> : <AiOutlineEyeInvisible size={18} />}
+            icon={record.isHidden === 1 ? <AiOutlineEye size={18} /> : <AiOutlineEyeInvisible size={18} />} // Kiểm tra isHidden === 1
             onClick={() => handleToggleHidden(record.key)}
           >
-            {record.isHidden ? "Show" : "Hide"}
+            {record.isHidden === 1 ? "Show" : "Hide"}
           </Button>
           <Popconfirm
             title="Are you sure you want to delete this comment?"
@@ -236,7 +243,7 @@ const ManageCommentsInteractive: React.FC = () => {
           setIsFormModalOpen(false);
           setCommentToReply(null);
         }}
-        onSubmit={handleFormSubmit} 
+        onSubmit={handleFormSubmit}
         originalComment={commentToReply}
         onDelete={handleDeleteComment}
       />
@@ -268,7 +275,7 @@ const ManageCommentsInteractive: React.FC = () => {
               </div>
             )}
             <p><b>Date:</b> {selectedComment.date}</p>
-            <p><b>Status:</b> <Tag color={getStatusColorClass(selectedComment.status)}>{selectedComment.status}</Tag></p>
+            <p><b>Status:</b> <Tag color={getStatusDisplay(selectedComment.status).color}>{getStatusDisplay(selectedComment.status).text}</Tag></p>
           </>
         )}
       </Modal>
