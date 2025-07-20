@@ -13,7 +13,7 @@ type RoomData = {
   price: number;
   available: "Rented" | "Available";
   approval: 0 | 1 | 2; // 0 = pending, 1 = approved, 2 = rejected
-  hidden: 0 | 1; // 0 = visible, 1 = hidden (bị ẩn)
+  isRemove: 0 | 1; // 0 = hiện btn gỡ, 1 = đã gỡ (bị ẩn)
 };
 
 const initialData: RoomData[] = [
@@ -25,7 +25,7 @@ const initialData: RoomData[] = [
     price: 3999999,
     available: "Available",
     approval: 0,
-    hidden: 0,
+    isRemove: 0,
   },
   {
     key: "2",
@@ -35,7 +35,7 @@ const initialData: RoomData[] = [
     price: 3000000,
     available: "Rented",
     approval: 0,
-    hidden: 0,
+    isRemove: 0,
   },
   {
     key: "3",
@@ -45,7 +45,7 @@ const initialData: RoomData[] = [
     price: 2000000,
     available: "Available",
     approval: 2,
-    hidden: 1,
+    isRemove: 1,
   },
   {
     key: "4",
@@ -55,7 +55,7 @@ const initialData: RoomData[] = [
     price: 5000000,
     available: "Available",
     approval: 1,
-    hidden: 0,
+    isRemove: 0,
   },
   {
     key: "5",
@@ -65,7 +65,7 @@ const initialData: RoomData[] = [
     price: 4500000,
     available: "Rented",
     approval: 1,
-    hidden: 0,
+    isRemove: 0,
   },
 ];
 
@@ -89,12 +89,12 @@ const TableManageRoom: React.FC = () => {
   const toggleHidden = (record: RoomData) => {
     const updated = data.map((item) =>
       item.key === record.key
-        ? { ...item, hidden: (item.hidden === 1 ? 0 : 1) as 0 | 1 }
+        ? { ...item, isRemove: (item.isRemove === 1 ? 0 : 1) as 0 | 1 }
         : item
     );
     setData(updated);
     message.success(
-      record.hidden === 1 ? "Post is now visible." : "Post has been hidden."
+      record.isRemove === 1 ? "Post is now visible." : "Post has been hidden."
     );
   };
 
@@ -184,7 +184,7 @@ const TableManageRoom: React.FC = () => {
       render: (_, record) => (
         <Popconfirm
           title={
-            record.hidden === 1
+            record.isRemove === 1
               ? "Do you want to show this post again?"
               : "Are you sure to remove this post?"
           }
@@ -194,10 +194,10 @@ const TableManageRoom: React.FC = () => {
         >
           <Button
             size="small"
-            danger={record.hidden === 0}
-            type={record.hidden === 1 ? "default" : "primary"}
+            danger={record.isRemove === 0}
+            type={record.isRemove === 1 ? "default" : "primary"}
           >
-            {record.hidden === 1 ? "Removed" : "Remove"}
+            {record.isRemove === 1 ? "Removed" : "Remove"}
           </Button>
         </Popconfirm>
       ),
@@ -311,7 +311,7 @@ const TableManageRoom: React.FC = () => {
           <b>Approval:</b> {selectedRoom?.approval}
         </p>
         <p>
-          <b>Hidden:</b> {selectedRoom?.hidden === 1 ? "Yes" : "No"}
+          <b>Removed:</b> {selectedRoom?.isRemove === 1 ? "Yes" : "No"}
         </p>
       </Modal>
     </>
