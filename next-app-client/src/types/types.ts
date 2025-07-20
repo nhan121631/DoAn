@@ -31,26 +31,25 @@ export type FormValues = {
 
 
 export type Reply = {
-  sender: 'admin' | 'user'; // Người gửi: quản trị viên hay người dùng
-  message: string; // Nội dung tin nhắn
-  timestamp: string; // Thời gian gửi tin nhắn
+  sender: 'admin' | 'user'; 
+  message: string; 
+  timestamp: string; 
 };
 
 // Định nghĩa kiểu dữ liệu cho một bình luận
 export type CommentData = {
   key: string;
-  roomId: string; // ID của phòng liên quan
-  roomName: string; // Tên phòng (để hiển thị)
-  userName: string; // Tên người bình luận
-  content: string; // Nội dung bình luận gốc
-  date: string; // Ngày bình luận
-  status: "New" | "Responded"; // Trạng thái bình luận: "New" (mới) hoặc "Đã Reply" (đã phản hồi)
-  isHidden: boolean; // Trạng thái ẩn/hiện của bình luận
-  replies?: Reply[]; // Mảng các phản hồi trong chuỗi hội thoại (tùy chọn)
+  roomId: string; 
+  roomName: string; 
+  userName: string; 
+  content: string; 
+  date: string; 
+  status: "New" | "Responded"; 
+  isHidden: boolean; 
+  replies?: Reply[]; 
 };
 
-// Định nghĩa kiểu dữ liệu cho các giá trị từ Form phản hồi
-// Form này chỉ cần trường newReplyContent để admin nhập phản hồi mới
+
 export type CommentFormValues = {
-  newReplyContent: string; // Nội dung phản hồi mới từ admin
+  newReplyContent: string; 
 };
