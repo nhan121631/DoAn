@@ -1,6 +1,7 @@
 import React from "react";
 import { Modal } from "antd";
 import { RoomData } from "../../types";
+import RoomDetail from "../room-detail/RoomDetail";
 
 interface RoomInfoModalProps {
   open: boolean;
@@ -19,29 +20,9 @@ const RoomInfoModal: React.FC<RoomInfoModalProps> = ({
       open={open}
       onCancel={onClose}
       footer={null}
-      width={700}
+      width={900}
     >
-      <p>
-        <b>Name:</b> {selectedRoom?.name}
-      </p>
-      <p>
-        <b>Address:</b> {selectedRoom?.address}
-      </p>
-      <p>
-        <b>Price:</b> {selectedRoom?.price?.toLocaleString("vi-VN")} ₫
-      </p>
-      <p>
-        <b>Status:</b> {selectedRoom?.available}
-      </p>
-      <p>
-        <b>Approval:</b> {selectedRoom?.approval}
-      </p>
-      <p>
-        <b>Hide/Show:</b> {selectedRoom?.hidden === 1 ? "Yes" : "No"}
-      </p>
-      <p>
-        <b>Removed:</b> {selectedRoom?.isRemove === 1 ? "Yes" : "No"}
-      </p>
+      <RoomDetail />
     </Modal>
   );
 };

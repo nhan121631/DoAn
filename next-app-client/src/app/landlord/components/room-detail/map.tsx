@@ -6,10 +6,10 @@ export default function MapSection() {
 
   return (
     <div className="mt-8">
-      <h2 className="text-lg font-bold text-gray-800 mb-2">Vị trí & bản đồ</h2>
-      <div className="text-sm text-gray-700 mb-2 flex items-center">
+      <h2 className="text-lg font-bold text-gray-800 mb-2 dark:text-white">Vị trí & bản đồ</h2>
+      <div className="text-sm text-gray-700 mb-2 flex items-center dark:!text-gray-300">
         <FaMapMarkerAlt className="text-red-500 mr-2" />
-        <span>{address}</span>
+        <span >{address}</span>
       </div>
       <a
         href={`https://www.google.com/maps/search/?api=1&query=${encodedAddress}`}

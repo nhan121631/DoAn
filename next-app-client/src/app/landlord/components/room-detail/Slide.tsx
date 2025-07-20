@@ -24,7 +24,7 @@ export const Slide = ({ images }: Props) => {
   const handleItem = (item: number) => setIndexImg(item);
 
   return (
-    <div className=" bg-stone-900 flex flex-col shadow  w-full max-w-4xl mx-auto">
+    <div className=" bg-stone-900 flex flex-col shadow  w-full max-w-4xl mx-auto dark:bg-gray-800">
       <div className="flex justify-between items-center flex-wrap px-2 sm:px-4 md:px-8 ">
         <button
           className="flex h-10 w-10 sm:h-12 sm:w-12 bg-white/30 border-none justify-center items-center rounded transition hover:bg-orange-200"
@@ -56,7 +56,7 @@ export const Slide = ({ images }: Props) => {
           <FaAngleLeft className="text-xl sm:text-2xl" />
         </button>
       </div>
-      <div className="flex flex-wrap justify-center items-center bg-white px-2 py-3">
+      <div className="flex flex-wrap justify-center items-center bg-white px-2 py-3 dark:bg-[#232b3b]">
         {images.map((item, index) => (
           <Image
             key={index}

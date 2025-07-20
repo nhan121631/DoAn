@@ -14,7 +14,7 @@ const AddRoomPage: React.FC = () => {
         <Button
           icon={<ArrowLeftOutlined />}
           onClick={() => router.push("/landlord/manage-rooms")}
-          className="mb-4 !bg-[#171f2f] !text-white"
+          className="mb-4 !bg-sky-600 dark:!bg-[#171f2f] !text-white"
         >
           Quay lại
         </Button>
