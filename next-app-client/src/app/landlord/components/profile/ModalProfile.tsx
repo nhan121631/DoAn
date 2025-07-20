@@ -106,6 +106,47 @@ export default function ModalProfile({
         >
           <Input prefix={<FaMapMarkerAlt />} placeholder="Address" />
         </Form.Item>
+
+        <Form.Item
+          name="bank"
+          label="Bank"
+          rules={[{ required: true, message: "Please select your bank" }]}
+        >
+          <select className="ant-input w-full rounded border px-3 py-2">
+            <option value="">Select Bank</option>
+            <option value="Vietcombank">Vietcombank</option>
+            <option value="VietinBank">VietinBank</option>
+            <option value="BIDV">BIDV</option>
+            <option value="MB Bank">MB Bank</option>
+            <option value="Techcombank">Techcombank</option>
+            <option value="ACB">ACB</option>
+            <option value="Sacombank">Sacombank</option>
+            <option value="Agribank">Agribank</option>
+            <option value="TPBank">TPBank</option>
+            <option value="VPBank">VPBank</option>
+          </select>
+        </Form.Item>
+        <Form.Item
+          name="accountNumber"
+          label="Account Number"
+          rules={[
+            { required: true, message: "Please enter your account number" },
+          ]}
+        >
+          <Input placeholder="Account Number" />
+        </Form.Item>
+        <Form.Item
+          name="accountHolder"
+          label="Account Holder Name"
+          rules={[
+            {
+              required: true,
+              message: "Please enter the account holder's name",
+            },
+          ]}
+        >
+          <Input placeholder="Account Holder Name" />
+        </Form.Item>
         <div className="flex justify-end gap-2 mt-4">
           <Button onClick={onCancel}>Cancel</Button>
           <Button type="primary" htmlType="submit">
