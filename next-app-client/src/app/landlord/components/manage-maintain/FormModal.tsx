@@ -3,7 +3,7 @@
 import React, { useEffect, useCallback, useContext } from "react";
 import { Modal, Button, Input, Select, Form } from "antd";
 import { ThemeContext } from "@/app/context/ThemeContext";
-import { Room, MaintainData, FormValues } from "@/types/maintenance";
+import { Room, MaintainData, FormValues } from "@/types/types";
 
 const { Option } = Select;
 

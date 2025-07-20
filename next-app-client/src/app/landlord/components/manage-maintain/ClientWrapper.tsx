@@ -6,7 +6,7 @@ import type { ColumnsType } from "antd/es/table";
 import { AiOutlineDelete, AiOutlineEdit } from "react-icons/ai";
 import { ThemeContext } from "@/app/context/ThemeContext";
 import FormModal from "./FormModal"; // Import component Modal riêng
-import { Room, MaintainData, FormValues } from "@/types/maintenance";
+import { Room, MaintainData, FormValues } from "@/types/types";
 
 
 const availableRooms: Room[] = [
