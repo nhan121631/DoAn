@@ -45,3 +45,40 @@ export type CommentData = {
 export type CommentFormValues = {
   newReplyContent: string;
 };
+
+
+//--------------------------------------//
+
+export type ContractData = {
+  key: string;
+  contractName: string;
+  roomName: string; 
+  tenantName: string; 
+  phoneNumber: string; 
+  numberOfPeople: number;
+  price: number; 
+  durationMonths: number; 
+  startDate: string; 
+  endDate: string; 
+  status: 0 | 1; // 0 = Rented, 1 = Checked Out
+  contractImageUrl?: string;
+};
+
+export type ContractFormValues = {
+  contractName: string;
+  roomName: string;
+  tenantName: string;
+  phoneNumber: string;
+  numberOfPeople: number;
+  price: number;
+  durationMonths: number;
+  startDate: string;
+  status?: 0 | 1; // Trạng thái hợp đồng (khi chỉnh sửa)
+  contractImageFile?: File;
+  contractImageUrl?: string;
+};
+
+export type InvoiceFormValues = {
+  invoiceName: string;
+  installationCost?: number;
+};

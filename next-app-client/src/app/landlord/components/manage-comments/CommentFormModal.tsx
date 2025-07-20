@@ -1,9 +1,8 @@
 "use client";
 
-import React, { useEffect, useCallback, useState, useContext } from "react";
+import React, { useEffect, useCallback } from "react";
 import { Modal, Button, Input, Select, Form, message, Popconfirm, Space } from "antd";
 import { AiOutlineDelete } from "react-icons/ai";
-import { ThemeContext } from "@/app/context/ThemeContext";
 import { CommentData, CommentFormValues, Reply } from "@/types/types";
 
 const { Option } = Select;
@@ -23,7 +22,6 @@ const CommentFormContent: React.FC<{
   onDelete: (commentKey: string) => void; 
 }> = ({ originalComment, onSubmit, onCancel, onDelete }) => {
   const [form] = Form.useForm();
-  const { isDark } = useContext(ThemeContext);
   
 
   useEffect(() => {
@@ -183,7 +181,6 @@ const CommentFormModal: React.FC<CommentFormModalProps> = ({
   originalComment,
   onDelete,
 }) => {
-  const { isDark } = useContext(ThemeContext);
 
   return (
     <Modal
@@ -191,7 +188,6 @@ const CommentFormModal: React.FC<CommentFormModalProps> = ({
       open={open}
       onCancel={onCancel}
       footer={null}
-      className={isDark ? "dark" : ""}
       destroyOnHidden={true}
       width={500}
     >

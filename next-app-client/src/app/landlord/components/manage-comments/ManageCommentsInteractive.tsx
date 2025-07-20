@@ -3,19 +3,10 @@
 import React, { useContext, useState } from "react";
 import { Table, Tag, Button, Modal, Popconfirm, message, Space, Input } from "antd";
 import type { ColumnsType } from "antd/es/table";
-import { AiOutlineDelete, AiOutlineEdit, AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
-import { ThemeContext } from "@/app/context/ThemeContext";
+import { AiOutlineDelete, AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import CommentFormModal from "./CommentFormModal";
-import { CommentData, CommentFormValues, Reply, Room } from "@/types/types";
+import { CommentData } from "@/types/types";
 
-// Danh sách các phòng có sẵn (dữ liệu giả định) - Dùng chung với Manage Maintain
-// const availableRooms: Room[] = [
-//   { name: "Mr. Nam's Room 1", address: "Ngu Hanh Son, Da Nang"},
-//   { name: "Mr. Tien's Room 2", address: "Son Tra, Da Nang" },
-//   { name: "Mr. Duong's Room 3", address: "Lien Chieu, Da Nang" },
-//   { name: "Ms. Phung's Room 1", address: "Hoa Vang , Da Nang" },
-//   { name: "Ms. Lan's Room 2", address: "Hoa Xuan , Da Nang"},
-// ];
 
 const initialCommentData: CommentData[] = [
   {
@@ -97,7 +88,6 @@ const ManageCommentsInteractive: React.FC = () => {
   const [isViewDetailsModalOpen, setViewDetailsModalOpen] = useState(false);
   const [selectedComment, setSelectedComment] = useState<CommentData | null>(null);
   const [commentToReply, setCommentToReply] = useState<CommentData | null>(null);
-  const { isDark } = useContext(ThemeContext);
 
   const handleFormSubmit = (updatedComment: CommentData) => {
     const updatedData = data.map((item) =>
@@ -254,7 +244,6 @@ const ManageCommentsInteractive: React.FC = () => {
         onCancel={() => setViewDetailsModalOpen(false)}
         footer={null}
         width={700}
-        className={isDark ? "dark" : ""}
       >
         {selectedComment && (
           <>

@@ -1,8 +1,7 @@
 "use client";
 
-import React, { useEffect, useCallback, useContext } from "react";
+import React, { useEffect, useCallback } from "react";
 import { Modal, Button, Input, Select, Form } from "antd";
-import { ThemeContext } from "@/app/context/ThemeContext";
 import { Room, MaintainData, FormValues } from "@/types/types"; 
 
 const { Option } = Select;
@@ -21,7 +20,6 @@ const FormContent: React.FC<{
   availableRooms: Room[];
 }> = ({ editingMaintain, onSubmit, availableRooms }) => {
   const [form] = Form.useForm();
-  const { isDark } = useContext(ThemeContext);
 
   useEffect(() => {
     if (editingMaintain) {
@@ -120,7 +118,6 @@ const FormModal: React.FC<FormModalProps> = ({
   editingMaintain,
   availableRooms,
 }) => {
-  const { isDark } = useContext(ThemeContext);
 
   return (
     <Modal
@@ -128,7 +125,6 @@ const FormModal: React.FC<FormModalProps> = ({
       open={open}
       onCancel={onCancel}
       footer={null}
-      className={isDark ? "dark" : ""}
       destroyOnHidden={true}
     >
       {open && (

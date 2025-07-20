@@ -35,6 +35,7 @@ const formatVnpayDate = (vnp_PayDate?: string) => {
 
 export default function PaymentHistoryPage() {
   const [payments, setPayments] = useState<PaymentRecord[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [filter, setFilter] = useState<"all" | "success" | "failed">("all");
   const [showConfirmClear, setShowConfirmClear] = useState(false);
   const [successCount, setSuccessCount] = useState(0);

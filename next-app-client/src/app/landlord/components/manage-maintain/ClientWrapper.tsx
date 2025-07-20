@@ -1,10 +1,9 @@
 "use client";
 
-import React, { useContext, useState } from "react";
-import { Table, Tag, Button, Modal, Popconfirm, message, Space, Input } from "antd";
+import React, {  useState } from "react";
+import { Table, Tag, Button, Popconfirm, message, Space, Input } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { AiOutlineDelete, AiOutlineEdit } from "react-icons/ai";
-import { ThemeContext } from "@/app/context/ThemeContext";
 import FormModal from "./FormModal"; 
 import { Room, MaintainData, FormValues } from "@/types/types"; 
 
@@ -70,7 +69,6 @@ const ClientWrapper: React.FC = () => {
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
  
   const [editingMaintain, setEditingMaintain] = useState<MaintainData | null>(null);
-  const { isDark } = useContext(ThemeContext);
 
   const handleFormSubmit = (values: FormValues) => {
     const submittedStatus = values.status !== undefined ? Number(values.status) : undefined;
