@@ -12,7 +12,7 @@ interface RoomInfoModalProps {
 const RoomInfoModal: React.FC<RoomInfoModalProps> = ({
   open,
   onClose,
-  selectedRoom,
+  // selectedRoom,
 }) => {
   return (
     <Modal
