@@ -1,6 +1,6 @@
-import { Slide } from "./Slide";
 import Convenient from "./convenient";
 import MapSection from "./map";
+import { Slide } from "./Slide";
 
 export default function RoomDetail() {
   const images = [
