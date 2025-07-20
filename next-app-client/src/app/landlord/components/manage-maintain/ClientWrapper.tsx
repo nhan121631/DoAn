@@ -1,20 +1,18 @@
-"use client"; 
+"use client";
 
-import React, { useContext, useState } from "react";
-import { Table, Tag, Button, Modal, Popconfirm, message, Space, Input } from "antd";
+import React, {  useState } from "react";
+import { Table, Tag, Button, Popconfirm, message, Space, Input } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { AiOutlineDelete, AiOutlineEdit } from "react-icons/ai";
-import { ThemeContext } from "@/app/context/ThemeContext";
 import FormModal from "./FormModal"; // Import component Modal riêng
 import { Room, MaintainData, FormValues } from "@/types/maintenance";
 
-
 const availableRooms: Room[] = [
-  { name: "Mr. Nam's Room 1", address: "Ngu Hanh Son, Da Nang"},
+  { name: "Mr. Nam's Room 1", address: "Ngu Hanh Son, Da Nang" },
   { name: "Mr. Tien's Room 2", address: "Son Tra, Da Nang" },
   { name: "Mr. Duong's Room 3", address: "Lien Chieu, Da Nang" },
   { name: "Ms. Phung's Room 1", address: "Hoa Vang , Da Nang" },
-  { name: "Ms. Lan's Room 2", address: "Hoa Xuan , Da Nang"},
+  { name: "Ms. Lan's Room 2", address: "Hoa Xuan , Da Nang" },
 ];
 
 const initialMaintainData: MaintainData[] = [
@@ -69,15 +67,18 @@ const ClientWrapper: React.FC = () => {
   const [data, setData] = useState<MaintainData[]>(initialMaintainData);
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [isViewDetailsModalOpen, setViewDetailsModalOpen] = useState(false);
-  const [selectedMaintain, setSelectedMaintain] = useState<MaintainData | null>(null);
-  const [editingMaintain, setEditingMaintain] = useState<MaintainData | null>(null);
-  const { isDark } = useContext(ThemeContext);
+  const [selectedMaintain, setSelectedMaintain] = useState<MaintainData | null>(
+    null
+  );
+  const [editingMaintain, setEditingMaintain] = useState<MaintainData | null>(
+    null
+  );
 
   const handleFormSubmit = (values: FormValues) => {
     if (editingMaintain) {
       const updatedData = data.map((item) =>
         item.key === editingMaintain.key
-          ? { ...item, ...values } as MaintainData
+          ? ({ ...item, ...values } as MaintainData)
           : item
       );
       setData(updatedData);
@@ -90,7 +91,7 @@ const ClientWrapper: React.FC = () => {
         address: values.address,
         issue: values.issue,
         cost: Number(values.cost),
-        date: new Date().toLocaleDateString('en-US'),
+        date: new Date().toLocaleDateString("en-US"),
         status: "Pending",
       };
       setData([...data, newMaintain]);
@@ -106,7 +107,7 @@ const ClientWrapper: React.FC = () => {
   };
 
   const handleDeleteMaintain = (recordKey: string) => {
-    const updatedData = data.filter(item => item.key !== recordKey);
+    const updatedData = data.filter((item) => item.key !== recordKey);
     setData(updatedData);
     message.success("Maintenance request deleted successfully!");
   };
@@ -116,7 +117,7 @@ const ClientWrapper: React.FC = () => {
     setIsFormModalOpen(true);
   };
 
-  const getStatusColorClass = (status: MaintainData['status']) => {
+  const getStatusColorClass = (status: MaintainData["status"]) => {
     switch (status) {
       case "Completed":
         return "green";
@@ -142,8 +143,8 @@ const ClientWrapper: React.FC = () => {
       key: "address",
     },
     {
-      title: "Problem", 
-      dataIndex: "issue", 
+      title: "Problem",
+      dataIndex: "issue",
       key: "issue",
     },
     {
@@ -204,10 +205,7 @@ const ClientWrapper: React.FC = () => {
         >
           Add Maintenance
         </Button>
-        <Input.Search
-          placeholder="Search:"
-          style={{ width: 200 }}
-        />
+        <Input.Search placeholder="Search:" style={{ width: 200 }} />
       </div>
 
       <Table
