@@ -53,16 +53,23 @@ export default function ModalProfile({
           height={100}
           className="rounded-full border-2 border-blue-500 mb-2"
         />
-        <Upload
-          showUploadList={false}
-          beforeUpload={() => false}
-          onChange={onAvatarChange}
-          accept="image/*"
-        >
-          <Button icon={<UploadOutlined />}>Upload Image</Button>
-        </Upload>
       </div>
       <Form form={form} layout="vertical" onFinish={onSave}>
+        <Form.Item
+          name="avatar"
+          label="Avatar"
+          valuePropName="fileList"
+          getValueFromEvent={(e) => (Array.isArray(e) ? e : e && e.fileList)}
+        >
+          <Upload
+            showUploadList={false}
+            beforeUpload={() => false}
+            maxCount={1}
+            accept="image/*"
+          >
+            <Button icon={<UploadOutlined />}>Upload Image</Button>
+          </Upload>
+        </Form.Item>
         <Form.Item
           name="name"
           label="Full Name"
