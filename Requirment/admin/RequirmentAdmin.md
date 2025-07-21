@@ -47,7 +47,7 @@ so that I can control how much users need to pay for each type of listing packag
   - Thời gian hiệu lực mặc định
 - [ ] Giá mới được áp dụng ngay khi lưu thay đổi.
 - [ ] Hiển thị cảnh báo xác nhận trước khi thay đổi (nếu đang có tin đang áp dụng giá cũ).
-- [ ] Chỉ role `admin` (hoặc `staff-pricing`) được phép chỉnh sửa.
+- [ ] Chỉ role `admin` được phép chỉnh sửa.
 
 ### 🔥 Priority `Medium`
 
@@ -57,3 +57,85 @@ so that I can control how much users need to pay for each type of listing packag
 
 ---
 
+## **User Story #3: Quản lý tài khoản người dùng**  
+
+As an **Admin**,  
+I want to **manage user accounts** including setting permissions and disabling/enabling accounts, so that I can control user access and maintain platform security.
+
+---
+
+### ✅ Acceptance Criteria (User Story #3)
+
+- [ ] Chỉ **admin** có thể truy cập trang quản lý tài khoản.
+- [ ] Hiển thị danh sách tất cả tài khoản người dùng với thông tin:
+  - 👤 **Tên người dùng**
+  - 📧 **Email**
+  - 🏷️ **Vai trò (Role)**: User, Landlord
+  - 🟢/🔴 **Trạng thái**: Active/Disabled
+  - 📅 **Ngày tạo tài khoản**
+- [ ] Có thể **tìm kiếm** và **lọc** tài khoản theo:
+  - Tên, email
+  - Vai trò
+  - Trạng thái
+- [ ] Chức năng **phân quyền**:
+  - Thay đổi role: User ↔ Landlord
+  - Hiển thị cảnh báo xác nhận khi thay đổi quyền
+- [ ] Chức năng **quản lý trạng thái**:
+  - **Disable account**: Vô hiệu hóa tài khoản (không thể đăng nhập)
+  - **Enable account**: Kích hoạt lại tài khoản
+  - Hiển thị lý do khi disable
+- [ ] Giao diện responsive, có pagination cho danh sách lớn
+
+### 🔥 Priority `High`
+
+### 🎯 Story Points `6`
+
+### 🖼 UI Design (User Story #3)
+
+---
+
+## **User Story #4: Quản lý tin đăng phòng trọ**  
+
+As an **Admin**,  
+I want to **manage room listings** including approval/rejection, preview posts, and send notifications to landlords,  
+so that I can ensure content quality and keep landlords informed about their listing status.
+
+---
+
+### ✅ Acceptance Criteria (User Story #4)
+
+- [ ] Chỉ **admin** hoặc **moderator** có thể truy cập trang quản lý phòng trọ.
+- [ ] Hiển thị danh sách tất cả tin đăng phòng trọ với thông tin:
+  - 🏠 **Tiêu đề tin đăng**
+  - 👤 **Tên chủ phòng**
+  - 📧 **Email chủ phòng**
+  - 💰 **Giá thuê**
+  - 📍 **Địa chỉ**
+  - 🟡 **Trạng thái**: Pending, Approved, Rejected
+  - 📅 **Ngày đăng**
+  - 🏷️ **Loại tin**: Thường, Nổi bật
+- [ ] Có thể **tìm kiếm** và **lọc** tin đăng theo:
+  - Tiêu đề, địa chỉ
+  - Tên chủ phòng
+  - Trạng thái duyệt
+  - Khoảng giá
+  - Ngày đăng
+- [ ] Chức năng **xem trước tin đăng**:
+  - Hiển thị đầy đủ thông tin như người dùng cuối sẽ thấy
+  - Xem hình ảnh, mô tả, tiện ích
+  - Kiểm tra thông tin liên hệ
+- [ ] Chức năng **duyệt tin đăng**:
+  - **Approve**: Duyệt tin đăng (hiển thị công khai)
+  - **Reject**: Từ chối tin đăng với lý do cụ thể
+- [ ] **Hệ thống email thông báo**:
+  - Tự động gửi email khi tin được duyệt
+  - Gửi email khi tin bị từ chối (kèm lý do)
+  - Gửi email yêu cầu chỉnh sửa
+- [ ] Giao diện responsive, có pagination và bulk actions
+- [ ] Có thể **tạm dừng** tin đăng đã duyệt nếu vi phạm
+
+### 🔥 Priority (User Story #4): `High`
+
+### 🎯 Story Points (User Story #4): `8`
+
+### 🖼 UI Design (User Story #4)
