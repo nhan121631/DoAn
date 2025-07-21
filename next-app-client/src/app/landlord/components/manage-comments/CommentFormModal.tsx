@@ -1,11 +1,11 @@
 "use client";
 
 import React, { useEffect, useCallback } from "react";
-import { Modal, Button, Input, Select, Form, message, Popconfirm, Space } from "antd";
+import { Modal, Button, Input,  Form, message, Popconfirm, Space } from "antd";
 import { AiOutlineDelete } from "react-icons/ai";
 import { CommentData, CommentFormValues, Reply } from "@/types/types";
 
-const { Option } = Select;
+// const { Option } = Select;
 
 interface CommentFormModalProps {
   open: boolean;
@@ -20,7 +20,7 @@ const CommentFormContent: React.FC<{
   onSubmit: (updatedComment: CommentData) => void;
   onCancel: () => void;
   onDelete: (commentKey: string) => void; 
-}> = ({ originalComment, onSubmit, onCancel, onDelete }) => {
+}> = ({ originalComment, onSubmit, onCancel }) => {
   const [form] = Form.useForm();
   
 
