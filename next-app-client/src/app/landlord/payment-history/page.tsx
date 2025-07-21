@@ -6,7 +6,6 @@ import { Table, Tag, Pagination } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import {
   getPaymentsFromLocalStorage,
-  clearPaymentHistory,
   PaymentRecord,
 } from "@/lib/payment-storage";
 import { formatCurrency } from "@/lib/vnpay-utils";
@@ -37,7 +36,6 @@ export default function PaymentHistoryPage() {
   const [payments, setPayments] = useState<PaymentRecord[]>([]);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [filter, setFilter] = useState<"all" | "success" | "failed">("all");
-  const [showConfirmClear, setShowConfirmClear] = useState(false);
   const [successCount, setSuccessCount] = useState(0);
   const [failedCount, setFailedCount] = useState(0);
   const [totalSuccess, setTotalSuccess] = useState(0);
@@ -78,21 +76,6 @@ export default function PaymentHistoryPage() {
       console.error("Error loading payments:", error);
     }
   }, [filter]);
-
-  const handleClearHistory = () => {
-    try {
-      clearPaymentHistory();
-      setPayments([]);
-      setSuccessCount(0);
-      setFailedCount(0);
-      setTotalSuccess(0);
-      setShowConfirmClear(false);
-      alert("Đã xóa lịch sử thanh toán");
-    } catch (error) {
-      console.error("Error clearing history:", error);
-      alert("Có lỗi khi xóa lịch sử");
-    }
-  };
 
   // Antd Table columns
   const columns: ColumnsType<PaymentRecord> = [
@@ -238,35 +221,6 @@ export default function PaymentHistoryPage() {
             </div>
           </div>
         </div>
-
-        {/* Confirm Clear Modal */}
-        {showConfirmClear && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-6 max-w-md mx-4">
-              <h3 className="text-lg font-semibold mb-4">
-                Xác nhận xóa lịch sử
-              </h3>
-              <p className="text-gray-600 mb-6">
-                Bạn có chắc chắn muốn xóa tất cả lịch sử thanh toán? Hành động
-                này không thể hoàn tác.
-              </p>
-              <div className="flex gap-3 justify-end">
-                <button
-                  onClick={() => setShowConfirmClear(false)}
-                  className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400 transition"
-                >
-                  Hủy
-                </button>
-                <button
-                  onClick={handleClearHistory}
-                  className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition"
-                >
-                  Xóa
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );

@@ -1,12 +1,12 @@
-# 🧩 User Story Admin
+## 🧩 User Story: Admin xem thống kê hệ thống
 
-## **User Story #1: Admin xem thống kê hệ thống**  
-
-As an **admin**, I want to **view system statistics** such as user count, room approvals, revenue, and top-paying users, so that I can monitor platform activity and make informed decisions.
+**User Story #1:**  
+As an **admin**, I want to **view system statistics** such as user count, room approvals, revenue, and top-paying users,  
+so that I can monitor platform activity and make informed decisions.
 
 ---
 
-### ✅ Acceptance Criteria (User Story #1)
+### ✅ Acceptance Criteria
 
 - [ ] Chỉ **admin** có thể truy cập trang thống kê.
 - [ ] Hiển thị các chỉ số sau:
@@ -24,35 +24,7 @@ As an **admin**, I want to **view system statistics** such as user count, room a
 
 ### 🎯 Story Points `8`
 
-### 🖼 UI Design (User Story #1)
+### 🖼 UI Design (Mô tả)
 
 ---
 
-## **User Story #2: Chỉnh sửa bảng giá khi đăng tin**  
-
-As a **Admin** ,  
-I want to **edit the pricing options** when posting a room listing,  
-so that I can control how much users need to pay for each type of listing package.
-
----
-
-### ✅ Acceptance Criteria (User Story #2)
-
-- [ ] Người dùng có thể chỉnh sửa **giá đăng tin** từ trang quản trị.
-- [ ] Bảng giá hiển thị các loại tin:  
-  - 🟢 Tin thường  
-  - 🔵 Tin nổi bật (ưu tiên hiển thị)  
-- [ ] Mỗi loại tin có thể cấu hình:
-  - Giá theo **ngày / tuần / tháng**
-  - Thời gian hiệu lực mặc định
-- [ ] Giá mới được áp dụng ngay khi lưu thay đổi.
-- [ ] Hiển thị cảnh báo xác nhận trước khi thay đổi (nếu đang có tin đang áp dụng giá cũ).
-- [ ] Chỉ role `admin` (hoặc `staff-pricing`) được phép chỉnh sửa.
-
-### 🔥 Priority `Medium`
-
-### 🎯 Story Points `5`
-
-### 🖼 UI Design (User Story #2)
-
----

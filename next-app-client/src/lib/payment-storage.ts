@@ -82,14 +82,14 @@ export const getPaymentByTxnRef = (
 };
 
 // Xóa tất cả lịch sử thanh toán
-export const clearPaymentHistory = (): void => {
-  try {
-    localStorage.removeItem("payment_history");
-    console.log("Payment history cleared");
-  } catch (error) {
-    console.error("Error clearing payment history:", error);
-  }
-};
+// export const clearPaymentHistory = (): void => {
+//   try {
+//     localStorage.removeItem("payment_history");
+//     console.log("Payment history cleared");
+//   } catch (error) {
+//     console.error("Error clearing payment history:", error);
+//   }
+// };
 
 // Generate unique payment ID
 const generatePaymentId = (): string => {
