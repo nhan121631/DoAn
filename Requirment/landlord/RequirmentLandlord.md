@@ -26,6 +26,8 @@ As a **landlord**, I want to **manage my room listings** effectively so that I c
 
 ---
 
+
+
 ## **User Story #2: Landlord thêm bài đăng phòng mới**
 
 As a **landlord**, I want to **add a new room listing** so that I can attract potential tenants and fill my vacancies.
@@ -51,6 +53,8 @@ As a **landlord**, I want to **add a new room listing** so that I can attract po
 
 ---
 
+
+
 ## **User Story #3: Landlord chỉnh sửa thông tin phòng**
 
 As a **landlord**, I want to **edit room information** so that I can update details and keep my listings accurate and attractive.
@@ -73,6 +77,8 @@ As a **landlord**, I want to **edit room information** so that I can update deta
 
 ---
 
+
+
 ## **User Story #4: Landlord nạp tiền vào hệ thống website**
 
 ### ✅ Acceptance Criteria (User Story #4)
@@ -92,6 +98,8 @@ As a **landlord**, I want to **edit room information** so that I can update deta
 ### 🖼 UI Design (User Story #4)
 
 ---
+
+
 
 ## **User Story #5: Landlord xem thống kê lịch sử nạp tiền vào hệ thống**
 
@@ -117,6 +125,8 @@ As a **landlord**, I want to **view my payment history and statistics** so that 
 
 ---
 
+
+
 ## **User Story #6: Landlord xem thông tin yêu cầu của khách hàng**
 
 As a **landlord**, I want to **view details of customer requests** so that I can understand and respond to each request accurately and efficiently.
@@ -138,6 +148,8 @@ As a **landlord**, I want to **view details of customer requests** so that I can
 ### 🖼 UI Design (User Story #6)
 
 ---
+
+
 
 ## **User Story #7: Landlord quản lý bảo trì phòng**
 
@@ -170,6 +182,8 @@ As a **landlord**, I want to **create new maintenance requests for each room** s
 
 ---
 
+
+
 ### ✅ Acceptance Criteria (User Story #8)
 
 - [ ] ➕ Landlord có thể truy cập trang thêm mới yêu cầu bảo trì cho từng phòng.
@@ -193,6 +207,8 @@ As a **landlord**, I want to **create new maintenance requests for each room** s
 As a **landlord**, I want to **manage rental contracts and tenant information** so that I can track all rental activities, contract status, and tenant details efficiently.
 
 ---
+
+
 
 ### ✅ Acceptance Criteria (User Story #9)
 
@@ -218,6 +234,8 @@ As a **landlord**, I want to **xem, trả lời, ẩn/hiện, xóa, tìm kiếm,
 
 ---
 
+
+
 ### ✅ Acceptance Criteria (User Story #10)
 
 - [ ] 🗂️ Hiển thị danh sách bình luận của khách thuê theo từng phòng, sắp xếp mới nhất lên đầu.
@@ -241,6 +259,8 @@ As a **landlord**, I want to **xem, trả lời, ẩn/hiện, xóa, tìm kiếm,
 As a **landlord**, I want to **xem, chỉnh sửa và cập nhật thông tin hồ sơ cá nhân** so that tôi có thể quản lý thông tin liên hệ, tài khoản, avatar và đảm bảo dữ liệu cá nhân luôn chính xác, bảo mật.
 
 ---
+
+
 
 ### ✅ Acceptance Criteria (User Story #11)
 
