@@ -1,6 +1,7 @@
 # 🧩 User Story Auth
 
-## User:
+## User
+
 ## **User Story 1: Đăng nhập tài khoản User**
 
 As a **User**,  
