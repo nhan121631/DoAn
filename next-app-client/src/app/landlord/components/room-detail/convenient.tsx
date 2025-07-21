@@ -18,7 +18,9 @@ const features = [
 export default function Convenient() {
   return (
     <div className="mt-6">
-      <h2 className="text-lg font-bold text-gray-800 mb-3 dark:text-white">Nổi bật</h2>
+      <h2 className="text-lg font-bold text-gray-800 mb-3 dark:text-white">
+        Nổi bật
+      </h2>
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-y-2 gap-x-6 text-[15px]">
         {features.map((feature) => (
           <div key={feature.label} className="flex items-center space-x-2">
@@ -27,7 +29,13 @@ export default function Convenient() {
             >
               <BsCheckCircleFill />
             </span>
-            <span className={feature.enabled ? "text-black dark:!text-white" : "text-gray-400 "}>
+            <span
+              className={
+                feature.enabled
+                  ? "text-black dark:!text-white"
+                  : "text-gray-400 "
+              }
+            >
               {feature.label}
             </span>
           </div>

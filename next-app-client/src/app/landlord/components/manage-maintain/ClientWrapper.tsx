@@ -4,8 +4,13 @@ import React, {  useState } from "react";
 import { Table, Tag, Button, Popconfirm, message, Space, Input } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { AiOutlineDelete, AiOutlineEdit } from "react-icons/ai";
+<<<<<<< HEAD
 import FormModal from "./FormModal"; // Import component Modal riêng
 import { Room, MaintainData, FormValues } from "@/types/maintenance";
+=======
+import FormModal from "./FormModal"; 
+import { Room, MaintainData, FormValues } from "@/types/types"; 
+>>>>>>> 9beb899836875ba583b49c78ca6edd739f3b3a20
 
 const availableRooms: Room[] = [
   { name: "Mr. Nam's Room 1", address: "Ngu Hanh Son, Da Nang" },
@@ -23,7 +28,7 @@ const initialMaintainData: MaintainData[] = [
     issue: "Sửa vòi nước bị rò rỉ",
     cost: 200000,
     date: "08/07/2023",
-    status: "Completed",
+    status: 2, // Completed
   },
   {
     key: "2",
@@ -32,7 +37,7 @@ const initialMaintainData: MaintainData[] = [
     issue: "Bảo trì điều hòa",
     cost: 9000000,
     date: "08/10/2023",
-    status: "Pending",
+    status: 0, // Pending
   },
   {
     key: "3",
@@ -41,7 +46,7 @@ const initialMaintainData: MaintainData[] = [
     issue: "Thay bóng đèn hỏng",
     cost: 100000,
     date: "08/15/2023",
-    status: "In Progress",
+    status: 1, // In Progress
   },
   {
     key: "4",
@@ -50,7 +55,7 @@ const initialMaintainData: MaintainData[] = [
     issue: "Kiểm tra hệ thống sưởi ấm",
     cost: 500000,
     date: "08/20/2023",
-    status: "Pending",
+    status: 0, // Pending
   },
   {
     key: "5",
@@ -59,13 +64,14 @@ const initialMaintainData: MaintainData[] = [
     issue: "Sửa chữa cửa sổ",
     cost: 300000,
     date: "08/25/2023",
-    status: "Completed",
+    status: 2, // Completed
   },
 ];
 
 const ClientWrapper: React.FC = () => {
   const [data, setData] = useState<MaintainData[]>(initialMaintainData);
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
+<<<<<<< HEAD
   const [isViewDetailsModalOpen, setViewDetailsModalOpen] = useState(false);
   const [selectedMaintain, setSelectedMaintain] = useState<MaintainData | null>(
     null
@@ -73,12 +79,22 @@ const ClientWrapper: React.FC = () => {
   const [editingMaintain, setEditingMaintain] = useState<MaintainData | null>(
     null
   );
+=======
+ 
+  const [editingMaintain, setEditingMaintain] = useState<MaintainData | null>(null);
+>>>>>>> 9beb899836875ba583b49c78ca6edd739f3b3a20
 
   const handleFormSubmit = (values: FormValues) => {
+    const submittedStatus = values.status !== undefined ? Number(values.status) : undefined;
+
     if (editingMaintain) {
       const updatedData = data.map((item) =>
         item.key === editingMaintain.key
+<<<<<<< HEAD
           ? ({ ...item, ...values } as MaintainData)
+=======
+          ? { ...item, ...values, status: submittedStatus as (0 | 1 | 2) } as MaintainData
+>>>>>>> 9beb899836875ba583b49c78ca6edd739f3b3a20
           : item
       );
       setData(updatedData);
@@ -91,19 +107,19 @@ const ClientWrapper: React.FC = () => {
         address: values.address,
         issue: values.issue,
         cost: Number(values.cost),
+<<<<<<< HEAD
         date: new Date().toLocaleDateString("en-US"),
         status: "Pending",
+=======
+        date: new Date().toLocaleDateString('en-US'),
+        status: 0, // Mặc định là 0 (Pending) khi thêm mới
+>>>>>>> 9beb899836875ba583b49c78ca6edd739f3b3a20
       };
       setData([...data, newMaintain]);
       message.success("Maintenance request added successfully!");
     }
     setIsFormModalOpen(false);
     setEditingMaintain(null);
-  };
-
-  const handleViewDetails = (record: MaintainData) => {
-    setSelectedMaintain(record);
-    setViewDetailsModalOpen(true);
   };
 
   const handleDeleteMaintain = (recordKey: string) => {
@@ -117,16 +133,16 @@ const ClientWrapper: React.FC = () => {
     setIsFormModalOpen(true);
   };
 
+<<<<<<< HEAD
   const getStatusColorClass = (status: MaintainData["status"]) => {
+=======
+  const getStatusDisplay = (status: 0 | 1 | 2) => {
+>>>>>>> 9beb899836875ba583b49c78ca6edd739f3b3a20
     switch (status) {
-      case "Completed":
-        return "green";
-      case "In Progress":
-        return "blue";
-      case "Pending":
-        return "volcano";
-      default:
-        return "";
+      case 0: return { text: "Pending", color: "volcano" };
+      case 1: return { text: "In Progress", color: "blue" };
+      case 2: return { text: "Completed", color: "green" };
+      default: return { text: "Unknown", color: "default" };
     }
   };
 
@@ -164,10 +180,11 @@ const ClientWrapper: React.FC = () => {
       title: "Status",
       dataIndex: "status",
       key: "status",
-      render: (status) => (
-        <Tag color={getStatusColorClass(status)}>{status}</Tag>
-      ),
-      sorter: (a, b) => a.status.localeCompare(b.status),
+      render: (status: 0 | 1 | 2) => {
+        const { text, color } = getStatusDisplay(status);
+        return <Tag color={color}>{text}</Tag>;
+      },
+      sorter: (a, b) => a.status - b.status,
     },
     {
       title: "Actions",
@@ -216,7 +233,6 @@ const ClientWrapper: React.FC = () => {
         className="mt-8 mb-8"
       />
 
-      {/* Add/Edit Maintenance Modal */}
       <FormModal
         open={isFormModalOpen}
         onCancel={() => {

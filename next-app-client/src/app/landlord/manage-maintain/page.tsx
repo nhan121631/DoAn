@@ -1,4 +1,4 @@
-import ManageMaintainClientWrapper from "../components/manage-maintain/ClientWrapper";
+import ClientWrapper from "../components/manage-maintain/ClientWrapper";
 import React from "react";
 
 export default function ManageMaintainPage() {
@@ -9,7 +9,7 @@ export default function ManageMaintainPage() {
         <h2 className="text-4xl font-semibold dark:!text-white">Manage Maintain</h2>
         <p className="text-gray-500 text-xl">Room Maintenance Management.</p>
       </div>
-      <ManageMaintainClientWrapper />
+      <ClientWrapper />
     </div>
   );
 }
