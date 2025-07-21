@@ -1,12 +1,12 @@
-## 🧩 User Story: Admin xem thống kê hệ thống
+# 🧩 User Story Admin
 
-**User Story #1:**  
-As an **admin**, I want to **view system statistics** such as user count, room approvals, revenue, and top-paying users,  
-so that I can monitor platform activity and make informed decisions.
+## **User Story #1: Admin xem thống kê hệ thống**
+
+As an **admin**, I want to **view system statistics** such as user count, room approvals, revenue, and top-paying users, so that I can monitor platform activity and make informed decisions.
 
 ---
 
-### ✅ Acceptance Criteria
+### ✅ Acceptance Criteria (User Story #1)
 
 - [ ] Chỉ **admin** có thể truy cập trang thống kê.
 - [ ] Hiển thị các chỉ số sau:
@@ -24,11 +24,11 @@ so that I can monitor platform activity and make informed decisions.
 
 ### 🎯 Story Points `8`
 
-### 🖼 UI Design (Mô tả)
+### 🖼 UI Design (User Story #1)
 
 ---
 
-## **User Story #2: Chỉnh sửa bảng giá khi đăng tin**  
+## **User Story #2: Chỉnh sửa bảng giá khi đăng tin**
 
 As a **Admin** ,  
 I want to **edit the pricing options** when posting a room listing,  
@@ -39,9 +39,9 @@ so that I can control how much users need to pay for each type of listing packag
 ### ✅ Acceptance Criteria (User Story #2)
 
 - [ ] Người dùng có thể chỉnh sửa **giá đăng tin** từ trang quản trị.
-- [ ] Bảng giá hiển thị các loại tin:  
-  - 🟢 Tin thường  
-  - 🔵 Tin nổi bật (ưu tiên hiển thị)  
+- [ ] Bảng giá hiển thị các loại tin:
+  - 🟢 Tin thường
+  - 🔵 Tin nổi bật (ưu tiên hiển thị)
 - [ ] Mỗi loại tin có thể cấu hình:
   - Giá theo **ngày / tuần / tháng**
   - Thời gian hiệu lực mặc định
@@ -57,7 +57,7 @@ so that I can control how much users need to pay for each type of listing packag
 
 ---
 
-## **User Story #3: Quản lý tài khoản người dùng**  
+## **User Story #3: Quản lý tài khoản người dùng**
 
 As an **Admin**,  
 I want to **manage user accounts** including setting permissions and disabling/enabling accounts, so that I can control user access and maintain platform security.
@@ -94,7 +94,7 @@ I want to **manage user accounts** including setting permissions and disabling/e
 
 ---
 
-## **User Story #4: Quản lý tin đăng phòng trọ**  
+## **User Story #4: Quản lý tin đăng phòng trọ**
 
 As an **Admin**,  
 I want to **manage room listings** including approval/rejection, preview posts, and send notifications to landlords,  
