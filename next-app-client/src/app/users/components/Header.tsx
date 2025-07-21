@@ -1,4 +1,4 @@
-"use client" // This directive is necessary for using useState in Next.js App Router
+"use client" 
 
 import React, { useState } from 'react';
 import Image from "next/image";
@@ -6,12 +6,11 @@ import Link from "next/link";
 import { AiOutlineUserAdd } from "react-icons/ai";
 import { FaRegEdit } from "react-icons/fa";
 import { IoLogInOutline } from "react-icons/io5";
-import { RxHamburgerMenu } from "react-icons/rx"; // For the mobile menu icon
+import { RxHamburgerMenu } from "react-icons/rx"; 
 
 export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  // Function to toggle the mobile menu visibility
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
@@ -29,7 +28,6 @@ export default function Header() {
         />
       </div>
 
-      {/* Navigation (hidden on small screens, visible on medium and up) */}
       <nav className="hidden md:block">
         <ul className="flex gap-4 lg:gap-8 text-lg">
           <li>
@@ -67,22 +65,20 @@ export default function Header() {
         </ul>
       </nav>
 
-      {/* Hotline & Add Property Buttons and Hamburger Menu for Mobile */}
-      <div className="flex items-center gap-2 md:gap-6"> {/* Adjusted gap for mobile */}
+      <div className="flex items-center gap-2 md:gap-6"> 
         <button className="text-white p-2 md:px-4 md:py-2 rounded-full font-semibold shadow flex items-center gap-1 md:gap-2 hover:bg-white/30 transition duration-300 cursor-pointer">
           <AiOutlineUserAdd className="h-5 w-5" />
-          <span className="hidden md:inline">Register</span> {/* Text hidden on mobile */}
+          <span className="hidden md:inline">Register</span> 
         </button>
         <button className="text-white p-2 md:px-4 md:py-2 rounded-full font-semibold shadow flex items-center gap-1 md:gap-2 hover:bg-white/30 transition duration-300 cursor-pointer">
           <IoLogInOutline className="h-5 w-5" />
-          <span className="hidden md:inline">Login</span> {/* Text hidden on mobile */}
+          <span className="hidden md:inline">Login</span> 
         </button>
         <button className="bg-amber-600 hover:bg-amber-700 text-white p-2 md:px-4 md:py-2 rounded-full font-semibold shadow flex items-center gap-1 md:gap-2 transition duration-300 cursor-pointer">
           <FaRegEdit className="h-5 w-5" />
-          <span className="hidden md:inline">Create Post</span> {/* Text hidden on mobile */}
+          <span className="hidden md:inline">Create Post</span>
         </button>
 
-        {/* Hamburger Menu Icon (visible only on small screens, now part of the button group) */}
         <div className="md:hidden">
             <button
             onClick={toggleMobileMenu}
@@ -95,13 +91,12 @@ export default function Header() {
       </div>
       {isMobileMenuOpen && (
         <div
-          className="fixed inset-0 bg-opacity-0 z-30 md:hidden" // bg-opacity-0 makes it fully transparent
-          onClick={toggleMobileMenu} // Close menu when clicking outside
+          className="fixed inset-0 bg-opacity-0 z-30 md:hidden" 
+          onClick={toggleMobileMenu} 
         ></div>
       )}
 
-      {/* Mobile Navigation Menu (conditionally rendered and positioned to the right) */}
-      {/* The overlay div has been removed */}
+      
       <div className={`fixed top-0 right-0 h-full w-1/2 md:hidden shadow-lg py-4 z-40 bg-white bg-opacity-70 transform transition-transform duration-300 ease-in-out ${isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}>
         <div className="flex justify-end px-4 py-2">
             <button
