@@ -30,7 +30,7 @@ export default function ModalProfile({
   onCancel,
   onSave,
   avatarUrl,
-  onAvatarChange,
+  // onAvatarChange,
   form,
 }: ModalProfileProps) {
   return (
