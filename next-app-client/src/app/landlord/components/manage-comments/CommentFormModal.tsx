@@ -5,9 +5,9 @@ import { Modal, Button, Input, Select, Form, message, Popconfirm, Space } from "
 import { AiOutlineDelete } from "react-icons/ai";
 import { CommentData, CommentFormValues, Reply } from "@/types/types";
 
-const { Option } = Select;
+// const { Option } = Select;
 
-interface CommentFormModalProps {
+interface CommentFormModalProps {x
   open: boolean;
   onCancel: () => void;
   onSubmit: (updatedComment: CommentData) => void;
