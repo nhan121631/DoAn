@@ -1,9 +1,8 @@
 "use client";
 
-import React, { useEffect, useCallback, useContext } from "react";
+import React, { useEffect, useCallback } from "react";
 import { Modal, Button, Input, Select, Form } from "antd";
-import { ThemeContext } from "@/app/context/ThemeContext";
-import { Room, MaintainData, FormValues } from "@/types/maintenance";
+import { Room, MaintainData, FormValues } from "@/types/types"; 
 
 const { Option } = Select;
 
@@ -12,17 +11,15 @@ interface FormModalProps {
   onCancel: () => void;
   onSubmit: (values: FormValues) => void;
   editingMaintain: MaintainData | null;
-  availableRooms: Room[]; // Vẫn nhận từ props
+  availableRooms: Room[]; 
 }
 
-// Component con chứa Form và useForm()
 const FormContent: React.FC<{
   editingMaintain: MaintainData | null;
   onSubmit: (values: FormValues) => void;
   availableRooms: Room[];
 }> = ({ editingMaintain, onSubmit, availableRooms }) => {
   const [form] = Form.useForm();
-  const { isDark } = useContext(ThemeContext);
 
   useEffect(() => {
     if (editingMaintain) {
@@ -99,9 +96,9 @@ const FormContent: React.FC<{
           rules={[{ required: true, message: "Please select a status!" }]}
         >
           <Select>
-            <Option value="Pending">Pending</Option>
-            <Option value="In Progress">In Progress</Option>
-            <Option value="Completed">Completed</Option>
+            <Option value={0}>Pending</Option>
+            <Option value={1}>In Progress</Option>
+            <Option value={2}>Completed</Option>
           </Select>
         </Form.Item>
       )}
@@ -121,7 +118,6 @@ const FormModal: React.FC<FormModalProps> = ({
   editingMaintain,
   availableRooms,
 }) => {
-  const { isDark } = useContext(ThemeContext);
 
   return (
     <Modal
@@ -129,10 +125,8 @@ const FormModal: React.FC<FormModalProps> = ({
       open={open}
       onCancel={onCancel}
       footer={null}
-      className={isDark ? "dark" : ""}
       destroyOnHidden={true}
     >
-      {/* Chỉ render FormContent khi modal mở */}
       {open && (
         <FormContent
           editingMaintain={editingMaintain}

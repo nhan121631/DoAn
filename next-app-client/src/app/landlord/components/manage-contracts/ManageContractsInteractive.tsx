@@ -1,0 +1,404 @@
+"use client"; 
+import React, {  useState } from "react";
+import { Table, Tag, Button, Modal, Popconfirm, message, Space, Input } from "antd";
+import type { ColumnsType } from "antd/es/table";
+import { AiOutlineDelete, AiOutlineEdit } from "react-icons/ai";
+import { MdOutlinePictureAsPdf } from "react-icons/md"; 
+import ContractFormModal from "./ContractFormModal"; 
+import InvoiceExportModal from "./InvoiceExportModal"; 
+import { ContractData, ContractFormValues, Room, InvoiceFormValues } from "@/types/types"; 
+import * as XLSX from 'xlsx';
+import Image from 'next/image';
+
+
+const availableRooms: Room[] = [
+  { name: "Mr. Nam's Room 1", address: "Ngu Hanh Son, Da Nang"},
+  { name: "Mr. Tien's Room 2", address: "Son Tra, Da Nang" },
+  { name: "Mr. Duong's Room 3", address: "Lien Chieu, Da Nang" },
+  { name: "Ms. Phung's Room 1", address: "Hoa Vang , Da Nang" },
+  { name: "Ms. Lan's Room 2", address: "Hoa Xuan , Da Nang"},
+];
+
+const initialContractData: ContractData[] = [
+  {
+    key: "c_001",
+    contractName: "Contract No. 001",
+    roomName: "Mr. Nam's Room 1",
+    tenantName: "John Doe",
+    phoneNumber: "0912345678",
+    numberOfPeople: 2,
+    price: 3000000,
+    durationMonths: 6,
+    startDate: "01/01/2024",
+    endDate: "01/07/2024",
+    status: 0, // Rented
+    contractImageUrl: "https://placehold.co/400x300/E0BBE4/FFFFFF?text=Contract+001", // Placeholder image
+  },
+  {
+    key: "c_002",
+    contractName: "Contract No. 002",
+    roomName: "Mr. Tien's Room 2",
+    tenantName: "Jane Smith",
+    phoneNumber: "0987654321",
+    numberOfPeople: 1,
+    price: 1000000,
+    durationMonths: 2,
+    startDate: "15/05/2024",
+    endDate: "15/07/2024",
+    status: 1, // Checked Out
+    contractImageUrl: "https://placehold.co/400x300/957DAD/FFFFFF?text=Contract+002", // Placeholder image
+  },
+  {
+    key: "c_003",
+    contractName: "Contract No. 003",
+    roomName: "Mr. Duong's Room 3",
+    tenantName: "Peter Jones",
+    phoneNumber: "0901122334",
+    numberOfPeople: 3, 
+    price: 90000000,
+    durationMonths: 0, 
+    startDate: "01/06/2024",
+    endDate: "01/06/2024",
+    status: 0, // Rented
+    contractImageUrl: "https://placehold.co/400x300/D291BC/FFFFFF?text=Contract+003", // Placeholder image
+  },
+  {
+    key: "c_004",
+    contractName: "Contract Truong Duong",
+    roomName: "Ms. Phung's Room 1",
+    tenantName: "Alice Brown",
+    phoneNumber: "0977889900",
+    numberOfPeople: 1, // New field
+    price: 100000,
+    durationMonths: 5,
+    startDate: "20/03/2024",
+    endDate: "20/08/2024",
+    status: 0, // Rented
+    contractImageUrl: "https://placehold.co/400x300/FFC72C/FFFFFF?text=Contract+004", // Placeholder image
+  },
+];
+
+const ManageContractsInteractive: React.FC = () => {
+  const [data, setData] = useState<ContractData[]>(initialContractData);
+  const [isFormModalOpen, setIsFormModalOpen] = useState(false);
+  const [isViewContractModalOpen, setIsViewContractModalOpen] = useState(false);
+  const [selectedContract, setSelectedContract] = useState<ContractData | null>(null);
+  const [editingContract, setEditingContract] = useState<ContractData | null>(null);
+  const [isInvoiceModalOpen, setIsInvoiceModalOpen] = useState(false); // New state for Invoice Modal
+  const [contractToExport, setContractToExport] = useState<ContractData | null>(null); // New state for contract to export
+
+  const calculateEndDate = (startDate: string, durationMonths: number): string => {
+    const start = new Date(startDate.split('/').reverse().join('-')); // Convert DD/MM/YYYY to YYYY-MM-DD
+    if (isNaN(start.getTime())) return "Invalid Date"; // Handle invalid date input
+
+    start.setMonth(start.getMonth() + durationMonths);
+    return start.toLocaleDateString('en-US'); // Format back to MM/DD/YYYY
+  };
+
+  const handleFormSubmit = (values: ContractFormValues) => {
+    const endDate = calculateEndDate(values.startDate, values.durationMonths);
+
+    // Simulate file upload and get a placeholder URL
+    let imageUrl = values.contractImageUrl; // Keep existing image if not uploading new
+    if (values.contractImageFile) {
+      // In a real app, you'd upload this file to cloud storage (e.g., Firebase Storage, AWS S3)
+      // and get a public URL. For this demo, we'll use a generic placeholder.
+      imageUrl = "https://placehold.co/400x300/8ECDA9/FFFFFF?text=Uploaded+Contract";
+      // Or, if you want to display the actual temporary image in the modal,
+      // you could convert values.contractImageFile to a Data URL here.
+      // const reader = new FileReader();
+      // reader.onload = (e) => { imageUrl = e.target?.result as string; };
+      // reader.readAsDataURL(values.contractImageFile);
+    } else if (editingContract && !values.contractImageUrl) {
+        // If editing and user explicitly removed the image or didn't provide new one
+        imageUrl = undefined;
+    }
+
+
+    if (editingContract) {
+      const updatedData = data.map((item) =>
+        item.key === editingContract.key
+          ? {
+              ...item,
+              ...values,
+              endDate,
+              status: values.status !== undefined ? values.status : item.status,
+              numberOfPeople: values.numberOfPeople, // Update new field
+              contractImageUrl: imageUrl, // Update image URL
+            } as ContractData
+          : item
+      );
+      setData(updatedData);
+      message.success("Contract updated successfully!");
+    } else {
+      const newKey = `c_${data.length + 1}`;
+      const newContract: ContractData = {
+        key: newKey,
+        contractName: values.contractName,
+        roomName: values.roomName,
+        tenantName: values.tenantName,
+        phoneNumber: values.phoneNumber,
+        numberOfPeople: values.numberOfPeople, // New field
+        price: values.price,
+        durationMonths: values.durationMonths,
+        startDate: values.startDate,
+        endDate: endDate,
+        status: 0, // Default to Rented (0) for new contracts
+        contractImageUrl: imageUrl, // New field
+      };
+      setData([...data, newContract]);
+      message.success("Contract added successfully!");
+    }
+    setIsFormModalOpen(false);
+    setEditingContract(null);
+  };
+
+  const handleViewContract = (record: ContractData) => {
+    setSelectedContract(record);
+    setIsViewContractModalOpen(true);
+  };
+
+  const handleDeleteContract = (recordKey: string) => {
+    const updatedData = data.filter(item => item.key !== recordKey);
+    setData(updatedData);
+    message.success("Contract deleted successfully!");
+  };
+
+  const handleEditContract = (record: ContractData) => {
+    setEditingContract(record);
+    setIsFormModalOpen(true);
+  };
+
+  // Modified handleExportInvoice to open the new InvoiceExportModal
+  const handleExportInvoice = (record: ContractData) => {
+    setContractToExport(record); // Set the contract to be exported
+    setIsInvoiceModalOpen(true); // Open the invoice export modal
+  };
+
+  // New function to handle invoice form submission and Excel export
+  const handleInvoiceFormSubmit = (values: InvoiceFormValues) => {
+    if (!contractToExport) {
+      message.error("No contract selected for invoice export.");
+      return;
+    }
+
+    // 1. Update contract status to Checked Out (1)
+    const updatedData = data.map(item =>
+      item.key === contractToExport.key
+        ? { ...item, status: 1 as (0 | 1) } // Explicitly cast 1 to (0 | 1)
+        : item
+    );
+    setData(updatedData);
+
+    // 2. Prepare data for Excel
+    const invoiceData = [
+      ["Invoice Name:", values.invoiceName],
+      ["Contract Name:", contractToExport.contractName],
+      ["Room Name:", contractToExport.roomName],
+      ["Tenant Name:", contractToExport.tenantName],
+      ["Phone Number:", contractToExport.phoneNumber],
+      ["Number of People:", contractToExport.numberOfPeople],
+      ["Price (VND):", contractToExport.price],
+      ["Duration (Months):", contractToExport.durationMonths],
+      ["Start Date:", contractToExport.startDate],
+      ["End Date:", contractToExport.endDate],
+      ["Installation Cost (VND):", values.installationCost || 0],
+      ["Total Amount (VND):", contractToExport.price + (values.installationCost || 0)],
+      ["Status:", getStatusDisplay(1).text], // Always show Checked Out
+      ["Export Date:", new Date().toLocaleDateString('en-US') + ' ' + new Date().toLocaleTimeString('en-US')],
+    ];
+
+    const ws = XLSX.utils.aoa_to_sheet(invoiceData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Invoice");
+
+    // 3. Export to Excel file
+    const excelFileName = `${values.invoiceName || 'Invoice'}_${contractToExport.contractName}.xlsx`;
+    XLSX.writeFile(wb, excelFileName);
+
+    // 4. Show success message
+    message.success("Checked out and invoice exported successfully!");
+
+    // Close the modal
+    setIsInvoiceModalOpen(false);
+    setContractToExport(null);
+  };
+
+
+  // Function to map numerical status to display text and color
+  const getStatusDisplay = (status: 0 | 1) => {
+    switch (status) {
+      case 0: return { text: "Rented", color: "green" }; // Đã thuê
+      case 1: return { text: "Checked Out", color: "volcano" }; // Đã trả phòng
+      default: return { text: "Unknown", color: "default" };
+    }
+  };
+
+  const columns: ColumnsType<ContractData> = [
+    {
+      title: "Contract Name",
+      dataIndex: "contractName",
+      key: "contractName",
+      sorter: (a, b) => a.contractName.localeCompare(b.contractName),
+    },
+    {
+      title: "Room Name",
+      dataIndex: "roomName",
+      key: "roomName",
+      sorter: (a, b) => a.roomName.localeCompare(b.roomName),
+    },
+    {
+      title: "Tenant",
+      dataIndex: "tenantName",
+      key: "tenantName",
+      sorter: (a, b) => a.tenantName.localeCompare(b.tenantName),
+    },
+    {
+      title: "Phone Number",
+      dataIndex: "phoneNumber",
+      key: "phoneNumber",
+    },
+    {
+      title: "Number of People", // New column
+      dataIndex: "numberOfPeople",
+      key: "numberOfPeople",
+      sorter: (a, b) => a.numberOfPeople - b.numberOfPeople,
+    },
+    {
+      title: "Contract File", // Changed title from "Contract" to "Contract File"
+      key: "viewContract",
+      render: (_, record) => (
+        <Button onClick={() => handleViewContract(record)}>View File</Button> // Changed button text
+      ),
+    },
+    {
+      title: "Price",
+      dataIndex: "price",
+      key: "price",
+      sorter: (a, b) => a.price - b.price,
+      render: (price) => price.toLocaleString("en-US") + " ₫",
+    },
+    {
+      title: "Duration (Months)",
+      dataIndex: "durationMonths",
+      key: "durationMonths",
+      sorter: (a, b) => a.durationMonths - b.durationMonths,
+    },
+    {
+      title: "Status",
+      dataIndex: "status",
+      key: "status",
+      render: (status: 0 | 1) => {
+        const { text, color } = getStatusDisplay(status);
+        return <Tag color={color}>{text}</Tag>;
+      },
+      sorter: (a, b) => a.status - b.status,
+    },
+    {
+      title: "Actions",
+      key: "actions",
+      render: (_, record) => (
+        <Space size="middle">
+          <Button
+            type="text"
+            icon={<AiOutlineEdit size={18} />}
+            onClick={() => handleEditContract(record)}
+            title="Edit Contract"
+          />
+          <Button
+            type="text"
+            icon={<MdOutlinePictureAsPdf size={18} />}
+            onClick={() => handleExportInvoice(record)}
+            title="Export Invoice"
+            disabled={record.status === 1} // Disable if already Checked Out
+          />
+          <Popconfirm
+            title="Are you sure you want to delete this contract?"
+            onConfirm={() => handleDeleteContract(record.key)}
+            okText="Yes"
+            cancelText="No"
+          >
+            <Button type="text" danger icon={<AiOutlineDelete size={18} />} title="Delete Contract" />
+          </Popconfirm>
+        </Space>
+      ),
+    },
+  ];
+
+  return (
+    <div className="flex flex-col flex-1">
+      <div className="flex justify-between items-center mt-2 mb-2">
+        <Button
+          type="primary"
+          className="mr-4"
+          onClick={() => {
+            setEditingContract(null);
+            setIsFormModalOpen(true);
+          }}
+        >
+          Add Contract
+        </Button>
+        <Input.Search
+          placeholder="Search contracts..."
+          style={{ width: 250 }}
+        />
+      </div>
+
+      <Table
+        columns={columns}
+        dataSource={data}
+        rowKey="key"
+        pagination={{ pageSize: 7 }}
+        className="mt-8 mb-8"
+      />
+
+      {/* Add/Edit Contract Modal */}
+      <ContractFormModal
+        open={isFormModalOpen}
+        onCancel={() => {
+          setIsFormModalOpen(false);
+          setEditingContract(null);
+        }}
+        onSubmit={handleFormSubmit}
+        editingContract={editingContract}
+        availableRooms={availableRooms}
+      />
+
+      {/* View Contract Details Modal */}
+      <Modal
+        title="Contract File"
+        open={isViewContractModalOpen}
+        onCancel={() => setIsViewContractModalOpen(false)}
+        footer={null}
+        width={700}
+      >
+        {/* Always show a generic placeholder image */}
+        <div className="mt-4 text-center">
+          <h4 className="font-semibold mb-2">Contract File:</h4>
+          <a href="https://cdn.luatminhkhue.vn/lmk/articles/18/91724/quy-dinh-ve-ngon-ngu-hop-dong---91724.jpg" target="_blank" rel="noopener noreferrer">
+            <Image
+              src="https://cdn.luatminhkhue.vn/lmk/articles/18/91724/quy-dinh-ve-ngon-ngu-hop-dong---91724.jpg"
+              alt="Quy định về ngôn ngữ hợp đồng"
+              width={600} 
+              height={400} 
+              className="rounded-md shadow-md mx-auto"
+            />
+          </a>
+        </div>
+      </Modal>
+
+      {/* Invoice Export Modal */}
+      <InvoiceExportModal
+        open={isInvoiceModalOpen}
+        onCancel={() => {
+          setIsInvoiceModalOpen(false);
+          setContractToExport(null);
+        }}
+        onSubmit={handleInvoiceFormSubmit}
+        contractToExport={contractToExport}
+      />
+    </div>
+  );
+};
+
+export default ManageContractsInteractive;
