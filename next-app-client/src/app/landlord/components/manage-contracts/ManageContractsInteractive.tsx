@@ -1,3 +1,4 @@
+
 "use client"; 
 import React, {  useState } from "react";
 import { Table, Tag, Button, Modal, Popconfirm, message, Space, Input } from "antd";
@@ -32,7 +33,7 @@ const initialContractData: ContractData[] = [
     startDate: "01/01/2024",
     endDate: "01/07/2024",
     status: 0, // Rented
-    contractImageUrl: "https://placehold.co/400x300/E0BBE4/FFFFFF?text=Contract+001", // Placeholder image
+    contractImageUrl: "https://placehold.co/400x300/E0BBE4/FFFFFF?text=Contract+001", 
   },
   {
     key: "c_002",
@@ -46,7 +47,7 @@ const initialContractData: ContractData[] = [
     startDate: "15/05/2024",
     endDate: "15/07/2024",
     status: 1, // Checked Out
-    contractImageUrl: "https://placehold.co/400x300/957DAD/FFFFFF?text=Contract+002", // Placeholder image
+    contractImageUrl: "https://placehold.co/400x300/957DAD/FFFFFF?text=Contract+002", 
   },
   {
     key: "c_003",
@@ -60,7 +61,7 @@ const initialContractData: ContractData[] = [
     startDate: "01/06/2024",
     endDate: "01/06/2024",
     status: 0, // Rented
-    contractImageUrl: "https://placehold.co/400x300/D291BC/FFFFFF?text=Contract+003", // Placeholder image
+    contractImageUrl: "https://placehold.co/400x300/D291BC/FFFFFF?text=Contract+003", 
   },
   {
     key: "c_004",
@@ -68,13 +69,13 @@ const initialContractData: ContractData[] = [
     roomName: "Ms. Phung's Room 1",
     tenantName: "Alice Brown",
     phoneNumber: "0977889900",
-    numberOfPeople: 1, // New field
+    numberOfPeople: 1, 
     price: 100000,
     durationMonths: 5,
     startDate: "20/03/2024",
     endDate: "20/08/2024",
     status: 0, // Rented
-    contractImageUrl: "https://placehold.co/400x300/FFC72C/FFFFFF?text=Contract+004", // Placeholder image
+    contractImageUrl: "https://placehold.co/400x300/FFC72C/FFFFFF?text=Contract+004", 
   },
 ];
 
@@ -82,35 +83,28 @@ const ManageContractsInteractive: React.FC = () => {
   const [data, setData] = useState<ContractData[]>(initialContractData);
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [isViewContractModalOpen, setIsViewContractModalOpen] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [selectedContract, setSelectedContract] = useState<ContractData | null>(null);
   const [editingContract, setEditingContract] = useState<ContractData | null>(null);
-  const [isInvoiceModalOpen, setIsInvoiceModalOpen] = useState(false); // New state for Invoice Modal
-  const [contractToExport, setContractToExport] = useState<ContractData | null>(null); // New state for contract to export
+  const [isInvoiceModalOpen, setIsInvoiceModalOpen] = useState(false); 
+  const [contractToExport, setContractToExport] = useState<ContractData | null>(null); 
 
   const calculateEndDate = (startDate: string, durationMonths: number): string => {
-    const start = new Date(startDate.split('/').reverse().join('-')); // Convert DD/MM/YYYY to YYYY-MM-DD
-    if (isNaN(start.getTime())) return "Invalid Date"; // Handle invalid date input
-
+    const start = new Date(startDate.split('/').reverse().join('-'));
+    if (isNaN(start.getTime())) return "Invalid Date"; 
     start.setMonth(start.getMonth() + durationMonths);
-    return start.toLocaleDateString('en-US'); // Format back to MM/DD/YYYY
+    return start.toLocaleDateString('en-US'); 
   };
 
   const handleFormSubmit = (values: ContractFormValues) => {
     const endDate = calculateEndDate(values.startDate, values.durationMonths);
 
-    // Simulate file upload and get a placeholder URL
-    let imageUrl = values.contractImageUrl; // Keep existing image if not uploading new
+    let imageUrl = values.contractImageUrl; 
     if (values.contractImageFile) {
-      // In a real app, you'd upload this file to cloud storage (e.g., Firebase Storage, AWS S3)
-      // and get a public URL. For this demo, we'll use a generic placeholder.
+     
       imageUrl = "https://placehold.co/400x300/8ECDA9/FFFFFF?text=Uploaded+Contract";
-      // Or, if you want to display the actual temporary image in the modal,
-      // you could convert values.contractImageFile to a Data URL here.
-      // const reader = new FileReader();
-      // reader.onload = (e) => { imageUrl = e.target?.result as string; };
-      // reader.readAsDataURL(values.contractImageFile);
+     
     } else if (editingContract && !values.contractImageUrl) {
-        // If editing and user explicitly removed the image or didn't provide new one
         imageUrl = undefined;
     }
 
@@ -123,8 +117,8 @@ const ManageContractsInteractive: React.FC = () => {
               ...values,
               endDate,
               status: values.status !== undefined ? values.status : item.status,
-              numberOfPeople: values.numberOfPeople, // Update new field
-              contractImageUrl: imageUrl, // Update image URL
+              numberOfPeople: values.numberOfPeople, 
+              contractImageUrl: imageUrl, 
             } as ContractData
           : item
       );
@@ -138,13 +132,13 @@ const ManageContractsInteractive: React.FC = () => {
         roomName: values.roomName,
         tenantName: values.tenantName,
         phoneNumber: values.phoneNumber,
-        numberOfPeople: values.numberOfPeople, // New field
+        numberOfPeople: values.numberOfPeople,
         price: values.price,
         durationMonths: values.durationMonths,
         startDate: values.startDate,
         endDate: endDate,
         status: 0, // Default to Rented (0) for new contracts
-        contractImageUrl: imageUrl, // New field
+        contractImageUrl: imageUrl,
       };
       setData([...data, newContract]);
       message.success("Contract added successfully!");
@@ -169,20 +163,17 @@ const ManageContractsInteractive: React.FC = () => {
     setIsFormModalOpen(true);
   };
 
-  // Modified handleExportInvoice to open the new InvoiceExportModal
   const handleExportInvoice = (record: ContractData) => {
-    setContractToExport(record); // Set the contract to be exported
-    setIsInvoiceModalOpen(true); // Open the invoice export modal
+    setContractToExport(record); 
+    setIsInvoiceModalOpen(true); 
   };
 
-  // New function to handle invoice form submission and Excel export
   const handleInvoiceFormSubmit = (values: InvoiceFormValues) => {
     if (!contractToExport) {
       message.error("No contract selected for invoice export.");
       return;
     }
 
-    // 1. Update contract status to Checked Out (1)
     const updatedData = data.map(item =>
       item.key === contractToExport.key
         ? { ...item, status: 1 as (0 | 1) } // Explicitly cast 1 to (0 | 1)
@@ -190,7 +181,6 @@ const ManageContractsInteractive: React.FC = () => {
     );
     setData(updatedData);
 
-    // 2. Prepare data for Excel
     const invoiceData = [
       ["Invoice Name:", values.invoiceName],
       ["Contract Name:", contractToExport.contractName],
@@ -204,7 +194,7 @@ const ManageContractsInteractive: React.FC = () => {
       ["End Date:", contractToExport.endDate],
       ["Installation Cost (VND):", values.installationCost || 0],
       ["Total Amount (VND):", contractToExport.price + (values.installationCost || 0)],
-      ["Status:", getStatusDisplay(1).text], // Always show Checked Out
+      ["Status:", getStatusDisplay(1).text],
       ["Export Date:", new Date().toLocaleDateString('en-US') + ' ' + new Date().toLocaleTimeString('en-US')],
     ];
 
@@ -212,24 +202,20 @@ const ManageContractsInteractive: React.FC = () => {
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Invoice");
 
-    // 3. Export to Excel file
     const excelFileName = `${values.invoiceName || 'Invoice'}_${contractToExport.contractName}.xlsx`;
     XLSX.writeFile(wb, excelFileName);
 
-    // 4. Show success message
     message.success("Checked out and invoice exported successfully!");
 
-    // Close the modal
     setIsInvoiceModalOpen(false);
     setContractToExport(null);
   };
 
 
-  // Function to map numerical status to display text and color
   const getStatusDisplay = (status: 0 | 1) => {
     switch (status) {
-      case 0: return { text: "Rented", color: "green" }; // Đã thuê
-      case 1: return { text: "Checked Out", color: "volcano" }; // Đã trả phòng
+      case 0: return { text: "Rented", color: "green" }; 
+      case 1: return { text: "Checked Out", color: "volcano" }; 
       default: return { text: "Unknown", color: "default" };
     }
   };
@@ -259,16 +245,16 @@ const ManageContractsInteractive: React.FC = () => {
       key: "phoneNumber",
     },
     {
-      title: "Number of People", // New column
+      title: "Number of People", 
       dataIndex: "numberOfPeople",
       key: "numberOfPeople",
       sorter: (a, b) => a.numberOfPeople - b.numberOfPeople,
     },
     {
-      title: "Contract File", // Changed title from "Contract" to "Contract File"
+      title: "Contract File",
       key: "viewContract",
       render: (_, record) => (
-        <Button onClick={() => handleViewContract(record)}>View File</Button> // Changed button text
+        <Button onClick={() => handleViewContract(record)}>View File</Button> 
       ),
     },
     {
@@ -310,7 +296,7 @@ const ManageContractsInteractive: React.FC = () => {
             icon={<MdOutlinePictureAsPdf size={18} />}
             onClick={() => handleExportInvoice(record)}
             title="Export Invoice"
-            disabled={record.status === 1} // Disable if already Checked Out
+            disabled={record.status === 1} 
           />
           <Popconfirm
             title="Are you sure you want to delete this contract?"
