@@ -69,15 +69,15 @@ export default function Header() {
 
       {/* Hotline & Add Property Buttons and Hamburger Menu for Mobile */}
       <div className="flex items-center gap-2 md:gap-6"> {/* Adjusted gap for mobile */}
-        <button className="text-white p-2 md:px-4 md:py-2 rounded-full font-semibold shadow flex items-center gap-1 md:gap-2 hover:bg-gray-700 transition duration-300">
+        <button className="text-white p-2 md:px-4 md:py-2 rounded-full font-semibold shadow flex items-center gap-1 md:gap-2 hover:bg-white/30 transition duration-300 cursor-pointer">
           <AiOutlineUserAdd className="h-5 w-5" />
           <span className="hidden md:inline">Register</span> {/* Text hidden on mobile */}
         </button>
-        <button className="text-white p-2 md:px-4 md:py-2 rounded-full font-semibold shadow flex items-center gap-1 md:gap-2 hover:bg-gray-700 transition duration-300">
+        <button className="text-white p-2 md:px-4 md:py-2 rounded-full font-semibold shadow flex items-center gap-1 md:gap-2 hover:bg-white/30 transition duration-300 cursor-pointer">
           <IoLogInOutline className="h-5 w-5" />
           <span className="hidden md:inline">Login</span> {/* Text hidden on mobile */}
         </button>
-        <button className="bg-amber-600 hover:bg-amber-700 text-white p-2 md:px-4 md:py-2 rounded-full font-semibold shadow flex items-center gap-1 md:gap-2 transition duration-300">
+        <button className="bg-amber-600 hover:bg-amber-700 text-white p-2 md:px-4 md:py-2 rounded-full font-semibold shadow flex items-center gap-1 md:gap-2 transition duration-300 cursor-pointer">
           <FaRegEdit className="h-5 w-5" />
           <span className="hidden md:inline">Create Post</span> {/* Text hidden on mobile */}
         </button>
@@ -93,37 +93,43 @@ export default function Header() {
             </button>
         </div>
       </div>
+      {isMobileMenuOpen && (
+        <div
+          className="fixed inset-0 bg-opacity-0 z-30 md:hidden" // bg-opacity-0 makes it fully transparent
+          onClick={toggleMobileMenu} // Close menu when clicking outside
+        ></div>
+      )}
 
       {/* Mobile Navigation Menu (conditionally rendered and positioned to the right) */}
       {/* The overlay div has been removed */}
-      <div className={`fixed top-0 right-0 h-full w-1/2 md:hidden shadow-lg py-4 z-40 bg-gray-800 bg-opacity-70 transform transition-transform duration-300 ease-in-out ${isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+      <div className={`fixed top-0 right-0 h-full w-1/2 md:hidden shadow-lg py-4 z-40 bg-white bg-opacity-70 transform transition-transform duration-300 ease-in-out ${isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}>
         <div className="flex justify-end px-4 py-2">
             <button
                 onClick={toggleMobileMenu}
-                className="text-white text-2xl hover:text-yellow-400"
+                className="text-gray-700 text-2xl hover:text-yellow-400"
                 aria-label="Close navigation menu"
             >
                 &times; {/* Close icon */}
             </button>
         </div>
         <ul className="flex flex-col items-start gap-4 text-lg px-4">
-          <li>
-            <Link href="/home" className="block px-4 py-2 hover:bg-gray-700 rounded-md w-full text-left" onClick={toggleMobileMenu}>
+          <li className="w-full">
+            <Link href="/home" className="block px-4 py-2 hover:bg-amber-100 rounded-md w-full text-left" onClick={toggleMobileMenu}>
               Home
             </Link>
           </li>
-          <li>
-            <Link href="/users/settings" className="block px-4 py-2 hover:bg-gray-700 rounded-md w-full text-left" onClick={toggleMobileMenu}>
+          <li className="w-full">
+            <Link href="/users/settings" className="block px-4 py-2 hover:bg-amber-100 rounded-md w-full text-left" onClick={toggleMobileMenu}>
               Rental rooms
             </Link>
           </li>
-          <li>
-            <Link href="/users/profile" className="block px-4 py-2 hover:bg-gray-700 rounded-md w-full text-left" onClick={toggleMobileMenu}>
+          <li className="w-full">
+            <Link href="/users/profile" className="block px-4 py-2 hover:bg-amber-100 rounded-md w-full text-left" onClick={toggleMobileMenu}>
               Landlords
             </Link>
           </li>
-          <li>
-            <Link href="/users/notifications" className="block px-4 py-2 hover:bg-gray-700 rounded-md w-full text-left" onClick={toggleMobileMenu}>
+          <li className="w-full">
+            <Link href="/users/notifications" className="block px-4 py-2 hover:bg-amber-100 rounded-md w-full text-left" onClick={toggleMobileMenu}>
               Contact
             </Link>
           </li>
