@@ -14,6 +14,8 @@ export type RoomData = {
   phoneNumber?: number;
   img?: Image[];
   description?: string;
+  electricityRate?: number;
+  waterRate?: number;
   address: string;
   area: number;
   price: number;

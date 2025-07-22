@@ -1,19 +1,18 @@
 "use client";
 
-import React, {  useState } from "react";
+import React, { useState } from "react";
 import { Table, Tag, Button, Popconfirm, message, Space, Input } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { AiOutlineDelete, AiOutlineEdit } from "react-icons/ai";
-import FormModal from "./FormModal"; 
-import { Room, MaintainData, FormValues } from "@/types/types"; 
-
+import FormModal from "./FormModal";
+import { Room, MaintainData, FormValues } from "@/types/types";
 
 const availableRooms: Room[] = [
-  { name: "Mr. Nam's Room 1", address: "Ngu Hanh Son, Da Nang"},
+  { name: "Mr. Nam's Room 1", address: "Ngu Hanh Son, Da Nang" },
   { name: "Mr. Tien's Room 2", address: "Son Tra, Da Nang" },
   { name: "Mr. Duong's Room 3", address: "Lien Chieu, Da Nang" },
   { name: "Ms. Phung's Room 1", address: "Hoa Vang , Da Nang" },
-  { name: "Ms. Lan's Room 2", address: "Hoa Xuan , Da Nang"},
+  { name: "Ms. Lan's Room 2", address: "Hoa Xuan , Da Nang" },
 ];
 
 const initialMaintainData: MaintainData[] = [
@@ -67,16 +66,23 @@ const initialMaintainData: MaintainData[] = [
 const ClientWrapper: React.FC = () => {
   const [data, setData] = useState<MaintainData[]>(initialMaintainData);
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
- 
-  const [editingMaintain, setEditingMaintain] = useState<MaintainData | null>(null);
+
+  const [editingMaintain, setEditingMaintain] = useState<MaintainData | null>(
+    null
+  );
 
   const handleFormSubmit = (values: FormValues) => {
-    const submittedStatus = values.status !== undefined ? Number(values.status) : undefined;
+    const submittedStatus =
+      values.status !== undefined ? Number(values.status) : undefined;
 
     if (editingMaintain) {
       const updatedData = data.map((item) =>
         item.key === editingMaintain.key
-          ? { ...item, ...values, status: submittedStatus as (0 | 1 | 2) } as MaintainData
+          ? ({
+              ...item,
+              ...values,
+              status: submittedStatus as 0 | 1 | 2,
+            } as MaintainData)
           : item
       );
       setData(updatedData);
@@ -89,7 +95,7 @@ const ClientWrapper: React.FC = () => {
         address: values.address,
         issue: values.issue,
         cost: Number(values.cost),
-        date: new Date().toLocaleDateString('en-US'),
+        date: new Date().toLocaleDateString("en-US"),
         status: 0, // Mặc định là 0 (Pending) khi thêm mới
       };
       setData([...data, newMaintain]);
@@ -100,7 +106,7 @@ const ClientWrapper: React.FC = () => {
   };
 
   const handleDeleteMaintain = (recordKey: string) => {
-    const updatedData = data.filter(item => item.key !== recordKey);
+    const updatedData = data.filter((item) => item.key !== recordKey);
     setData(updatedData);
     message.success("Maintenance request deleted successfully!");
   };
@@ -112,10 +118,14 @@ const ClientWrapper: React.FC = () => {
 
   const getStatusDisplay = (status: 0 | 1 | 2) => {
     switch (status) {
-      case 0: return { text: "Pending", color: "volcano" };
-      case 1: return { text: "In Progress", color: "blue" };
-      case 2: return { text: "Completed", color: "green" };
-      default: return { text: "Unknown", color: "default" };
+      case 0:
+        return { text: "Pending", color: "volcano" };
+      case 1:
+        return { text: "In Progress", color: "blue" };
+      case 2:
+        return { text: "Completed", color: "green" };
+      default:
+        return { text: "Unknown", color: "default" };
     }
   };
 
@@ -195,10 +205,7 @@ const ClientWrapper: React.FC = () => {
         >
           Add Maintenance
         </Button>
-        <Input.Search
-          placeholder="Search:"
-          style={{ width: 200 }}
-        />
+        <Input.Search placeholder="Search:" style={{ width: 200 }} />
       </div>
 
       <Table
