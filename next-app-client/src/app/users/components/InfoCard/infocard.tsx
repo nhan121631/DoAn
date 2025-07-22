@@ -15,19 +15,19 @@ export default function InfoCard() {
   const members: Member[] = [
     {
       name: "Vo Huynh Trung",
-      title: "Designer",
+      title: "Developer",
       quote: "Creativity meets functionality. Our design approach ensures that every screen not only looks stunning but also feels effortless to use.",
       avatarSrc: "/images/trungg.png",
     },
     {
       name: "Nguyen Viet Khoi",
-      title: "Designer",
+      title: "Developer",
       quote: "Designing a seamless user experience is at the heart of what we do. We focus on clean layouts, intuitive flows, and every pixel with purpose.",
       avatarSrc: "/images/khoi.png",
     },
     {
       name: "Pham Phu Nhan",
-      title: "Designer",
+      title: "Developer",
       quote: "We believe great design tells a story. From typography to color choices, we craft every detail to deliver both beauty and clarity to our users.",
       avatarSrc: "/images/nhann.png",
     },
@@ -66,17 +66,19 @@ export default function InfoCard() {
         </div>
       </div>
       <p className="text-gray-300 leading-relaxed">
-        "{currentMember.quote}"
+        {currentMember.quote}
       </p>
       <div className="flex space-x-4 mt-4">
         <button
           onClick={prevMember}
+          aria-label="Previous Member"
           className="p-3 rounded-full border border-gray-600 hover:bg-gray-700 transition"
         >
           <FaChevronLeft className="h-6 w-6 text-white" />
         </button>
         <button
           onClick={nextMember}
+          aria-label="Next Member"
           className="p-3 rounded-full border border-gray-600 hover:bg-gray-700 transition"
         >
           <FaChevronRight className="h-6 w-6 text-white" />
