@@ -66,7 +66,7 @@ export default function InfoCard() {
         </div>
       </div>
       <p className="text-gray-300 leading-relaxed">
-        "{currentMember.quote}"
+        {currentMember.quote}
       </p>
       <div className="flex space-x-4 mt-4">
         <button
