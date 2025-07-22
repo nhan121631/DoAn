@@ -86,21 +86,15 @@ export default function SearchBar() {
   }, []);
 
   return (
-    <div className="absolute bottom-[-40px] left-1/2 -translate-x-1/2 w-[90%] max-w-4xl bg-stone-900 rounded-3xl shadow-lg flex items-center px-4 py-3 gap-2">
+    <div className="absolute bottom-[-40px] left-1/2 -translate-x-1/2 w-[90%] max-w-3xl bg-stone-900 rounded-3xl shadow-lg flex items-center px-4 py-3 gap-2">
       <div className="relative w-full flex items-center gap-4 justify-center">
-        <div className="flex flex-col gap-1 ">
-          <label
-            htmlFor="search-input"
-            className="text-white/50 text-xs font-medium ps-4"
-          >
-            Search
-          </label>
+        <div className="flex gap-2 justify-center items-center">
           <div className="flex items-center gap-2">
             <div className="flex flex-col">
               <input
                 ref={inputRef}
                 id="search-input"
-                className="flex-1 w-full md:w-[400px] border rounded px-4 py-2 text-white border-none focus:outline-none focus:ring-2 focus:ring-yellow-500 transition-all"
+                className="flex-1 w-full md:w-[400px] border rounded-2xl px-4 py-3 text-white border-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 transition-all"
                 value={inputValue}
                 onChange={handleSearchChange}
                 onFocus={() => setShowSuggest(true)}
