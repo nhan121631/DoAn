@@ -1,5 +1,8 @@
 import Banner from "./components/Banner";
+import Footer from "./components/Footer";
 import Header from "./components/Header";
+
+
 
 export default function LandlordLayout({
   children,
@@ -12,9 +15,7 @@ export default function LandlordLayout({
       {/* Banner/Slider */}
       <Banner />
       <main className="flex-1 mt-36">{children}</main>{" "}
-      <footer className="bg-gray-900 text-white text-center py-6 mt-8">
-        Footer
-      </footer>
+      <Footer />
     </div>
   );
 }

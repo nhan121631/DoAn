@@ -73,6 +73,7 @@ export default function Header() {
         <button className="text-white p-2 md:px-4 md:py-2 rounded-full font-semibold shadow flex items-center gap-1 md:gap-2 hover:bg-white/30 transition duration-300 cursor-pointer">
           <IoLogInOutline className="h-5 w-5" />
           <span className="hidden md:inline">Login</span> 
+
         </button>
         <button className="bg-amber-600 hover:bg-amber-700 text-white p-2 md:px-4 md:py-2 rounded-full font-semibold shadow flex items-center gap-1 md:gap-2 transition duration-300 cursor-pointer">
           <FaRegEdit className="h-5 w-5" />
@@ -87,6 +88,7 @@ export default function Header() {
             >
             <RxHamburgerMenu className="h-6 w-6 text-white" />
             </button>
+
         </div>
       </div>
       {isMobileMenuOpen && (
@@ -119,11 +121,13 @@ export default function Header() {
             </Link>
           </li>
           <li className="w-full">
+
             <Link href="/users/profile" className="block px-4 py-2 hover:bg-amber-100 rounded-md w-full text-left" onClick={toggleMobileMenu}>
               Landlords
             </Link>
           </li>
           <li className="w-full">
+
             <Link href="/users/notifications" className="block px-4 py-2 hover:bg-amber-100 rounded-md w-full text-left" onClick={toggleMobileMenu}>
               Contact
             </Link>
