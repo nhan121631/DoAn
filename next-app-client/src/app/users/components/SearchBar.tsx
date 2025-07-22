@@ -140,7 +140,7 @@ export default function SearchBar() {
               <span>Filter</span>
             </button>
             <button
-              className="bg-amber-600 hover:bg-amber-700 text-white px-5 py-3 rounded-xl font-semibold shadow flex items-center gap-2"
+              className="bg-white hover:bg-gray-300 text-stone-900 px-5 py-3 rounded-xl font-semibold shadow flex items-center gap-2"
               onClick={() => {
                 if (inputValue.trim()) {
                   console.log("Search for:", inputValue);
