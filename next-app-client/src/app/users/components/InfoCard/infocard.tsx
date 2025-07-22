@@ -15,20 +15,20 @@ export default function InfoCard() {
   const members: Member[] = [
     {
       name: "Vo Huynh Trung",
-      title: "Customer",
-      quote: "Searches for multiplexes, property comparisons, and the loan estimator. Works great. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dores.",
+      title: "Designer",
+      quote: "Creativity meets functionality. Our design approach ensures that every screen not only looks stunning but also feels effortless to use.",
       avatarSrc: "/images/trungg.png",
     },
     {
       name: "Nguyen Viet Khoi",
-      title: "Customer",
-      quote: "This platform is truly revolutionary! Finding the perfect rental room has never been easier. The features are intuitive and the support is top-notch. Highly recommend for anyone in the market!",
+      title: "Designer",
+      quote: "Designing a seamless user experience is at the heart of what we do. We focus on clean layouts, intuitive flows, and every pixel with purpose.",
       avatarSrc: "/images/khoi.png",
     },
     {
       name: "Pham Phu Nhan",
-      title: "Customer",
-      quote: "As someone always on the move, a reliable rental service is crucial. JustHome delivered beyond expectations. Quick, efficient, and secure. A must-have for modern living.",
+      title: "Designer",
+      quote: "We believe great design tells a story. From typography to color choices, we craft every detail to deliver both beauty and clarity to our users.",
       avatarSrc: "/images/nhann.png",
     },
   ];
@@ -51,10 +51,11 @@ export default function InfoCard() {
 
   return (
     <div className="relative bg-gray-800 p-8 rounded-lg shadow-lg flex flex-col space-y-6">
+        <h1 className="text-2xl font-bold mb-6">Meet the awesome people behind this project!</h1>
       <div className="flex items-center space-x-4">
         <Image
           src={currentMember.avatarSrc}
-          alt={currentMember.name}
+          alt={currentMember.name}  
           width={60}
           height={60}
           className="rounded-full object-cover"

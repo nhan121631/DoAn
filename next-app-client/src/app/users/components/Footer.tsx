@@ -19,7 +19,7 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24 items-center">
         <div className="flex flex-col space-y-8">
           <h2 className="text-3xl md:text-4xl font-bold leading-tight">
-            What our customers are saying us?
+            Customer Reviews
           </h2>
           <div className="flex items-center space-x-8">
             <div>
@@ -39,7 +39,7 @@ export default function Footer() {
             </div>
           </div>
         </div>
-        <InfoCard />
+          <InfoCard />
       </div>
 
       <div className="mt-20 pt-12 border-t border-gray-700 grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-16 items-start">
