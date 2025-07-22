@@ -1,5 +1,7 @@
 "use client";
 import { useEffect, useState, useRef } from "react";
+import { HiOutlineSearch } from "react-icons/hi";
+import { VscSettings } from "react-icons/vsc";
 
 const API_URL = "http://localhost:5000/ai_search";
 
@@ -54,15 +56,13 @@ export default function SearchBar() {
       timeout = setTimeout(() => func(...args), wait);
     };
   }
-  const debouncedSearch = debounce(handleSearch, 1500);
+  const debouncedSearch = debounce(handleSearch, 500);
 
-  // Lưu số từ lần trước để kiểm tra khi nào gọi API
   const prevWordCountRef = useRef(0);
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
     setInputValue(value);
     const wordCount = value.trim().split(/\s+/).filter(Boolean).length;
-    // Chỉ gọi API khi số từ tăng lên (cứ nhập thêm 1 từ lại gọi 1 lần)
     if (wordCount >= 1 && wordCount !== prevWordCountRef.current) {
       debouncedSearch(value.trim());
       prevWordCountRef.current = wordCount;
@@ -73,7 +73,6 @@ export default function SearchBar() {
     setShowSuggest(true);
   };
 
-  // Hide suggest when click outside
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (inputRef.current && !inputRef.current.contains(e.target as Node)) {
@@ -87,47 +86,79 @@ export default function SearchBar() {
   }, []);
 
   return (
-    <div className="absolute bottom-[-40px] left-1/2 -translate-x-1/2 w-[90%] max-w-4xl bg-white rounded-xl shadow-lg flex items-center px-6 py-4 gap-4">
-      <div className="relative w-full">
-        <input
-          ref={inputRef}
-          className="flex-1 border rounded px-4 py-2 w-full"
-          value={inputValue}
-          onChange={handleSearchChange}
-          onFocus={() => setShowSuggest(true)}
-          placeholder="Enter Keyword"
-        />
-        {showSuggest && (loading || textSearchs.length > 0) && (
-          <ul className="absolute left-0 right-0 top-full mt-2 bg-white border rounded shadow-lg z-50 max-h-60 overflow-auto">
-            {loading && (
-              <li className="px-4 py-2 text-gray-500">Đang lấy gợi ý AI...</li>
-            )}
-            {!loading && textSearchs.length === 0 && (
-              <li className="px-4 py-2 text-gray-500">
-                Không có gợi ý phù hợp
-              </li>
-            )}
-            {textSearchs.map((item, idx) => (
-              <li
-                key={idx}
-                className="px-4 py-2 hover:bg-yellow-100 cursor-pointer text-gray-800"
-                onMouseDown={(e) => {
-                  e.preventDefault(); // Ngăn mất focus trước khi xử lý
-                  setInputValue(item);
-                  console.log("Selected item:", item);
-                  setTextSearchs([]); // Xóa gợi ý, chỉ hiện kết quả vừa chọn
+    <div className="absolute bottom-[-40px] left-1/2 -translate-x-1/2 w-[90%] max-w-4xl bg-stone-900 rounded-3xl shadow-lg flex items-center px-4 py-3 gap-2">
+      <div className="relative w-full flex items-center gap-4 justify-center">
+        <div className="flex flex-col gap-1 ">
+          <label
+            htmlFor="search-input"
+            className="text-white/50 text-xs font-medium ps-4"
+          >
+            Search
+          </label>
+          <div className="flex items-center gap-2">
+            <div className="flex flex-col">
+              <input
+                ref={inputRef}
+                id="search-input"
+                className="flex-1 w-full md:w-[400px] border rounded px-4 py-2 text-white border-none focus:outline-none focus:ring-2 focus:ring-yellow-500 transition-all"
+                value={inputValue}
+                onChange={handleSearchChange}
+                onFocus={() => setShowSuggest(true)}
+                placeholder="Enter Keyword"
+              />
+              {showSuggest && (loading || textSearchs.length > 0) && (
+                <ul
+                  className="absolute left-0 md:left-0 bg-white border rounded shadow-lg z-50 max-h-60 overflow-auto w-full md:w-[400px] scrollbar-hide"
+                  style={{ top: "100%", marginTop: 0 }}
+                >
+                  {textSearchs.map((item, idx) => (
+                    <li
+                      key={idx}
+                      className="px-4 py-2 hover:bg-yellow-100 cursor-pointer text-gray-800"
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        setInputValue(item);
+                        console.log("Selected item:", item);
+                        setTextSearchs([]);
+                        setShowSuggest(false);
+                        prevWordCountRef.current = 0;
+                        if (inputRef.current) {
+                          inputRef.current.focus();
+                        }
+                      }}
+                    >
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+            <button
+              className="border-1 border-gray-500 text-white px-5 py-3 rounded-xl font-semibold shadow flex items-center gap-2"
+              onClick={() => {
+                if (inputValue.trim()) {
+                  console.log("Search for:", inputValue);
                   setShowSuggest(false);
-                  prevWordCountRef.current = 0; // Reset để không bị logic ghi đè
-                  if (inputRef.current) {
-                    inputRef.current.focus();
-                  }
-                }}
-              >
-                {item}
-              </li>
-            ))}
-          </ul>
-        )}
+                }
+              }}
+            >
+              <VscSettings />
+              <span>Filter</span>
+            </button>
+            <button
+              className="bg-amber-600 hover:bg-amber-700 text-white px-5 py-3 rounded-xl font-semibold shadow flex items-center gap-2"
+              onClick={() => {
+                if (inputValue.trim()) {
+                  console.log("Search for:", inputValue);
+                  setShowSuggest(false);
+                }
+              }}
+            >
+              <HiOutlineSearch />
+              <span>Search </span>
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
