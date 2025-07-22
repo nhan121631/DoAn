@@ -167,30 +167,35 @@ export default function Footer() {
                   href="https://www.facebook.com/huynhtrung.173"
                   target="_blank"
                   rel="noopener noreferrer"
+                  aria-label="Facebook"
                   className="text-white hover:text-blue-600 transition-colors duration-300"
                 >
                   <BiLogoFacebookSquare className="h-10 w-10 p-2 bg-blue-700 rounded-full" />
                 </a>
                 <a
                   href="#"
+                  aria-label="YouTube"
                   className="text-white hover:text-red-600 transition-colors duration-300"
                 >
                   <FaYoutube className="h-10 w-10 p-2 bg-red-700 rounded-full" />
                 </a>
                 <a
                   href="#"
+                  aria-label="Instagram"
                   className="text-white hover:text-blue-400 transition-colors duration-300"
                 >
                   <FaInstagram className="h-10 w-10 p-2 bg-pink-500 rounded-full" />
                 </a>
                 <a
                   href="#"
+                  aria-label="Twitter"
                   className="text-white hover:text-blue-300 transition-colors duration-300"
                 >
                   <FaTwitter className="h-10 w-10 p-2 bg-blue-400 rounded-full" />
                 </a>
                 <a
                   href="#"
+                  aria-label="TikTok"
                   className="text-white hover:text-gray-300 transition-colors duration-300"
                 >
                   <FaTiktok className="h-10 w-10 p-2 bg-black rounded-full" />

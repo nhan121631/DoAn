@@ -71,12 +71,14 @@ export default function InfoCard() {
       <div className="flex space-x-4 mt-4">
         <button
           onClick={prevMember}
+          aria-label="Previous Member"
           className="p-3 rounded-full border border-gray-600 hover:bg-gray-700 transition"
         >
           <FaChevronLeft className="h-6 w-6 text-white" />
         </button>
         <button
           onClick={nextMember}
+          aria-label="Next Member"
           className="p-3 rounded-full border border-gray-600 hover:bg-gray-700 transition"
         >
           <FaChevronRight className="h-6 w-6 text-white" />
