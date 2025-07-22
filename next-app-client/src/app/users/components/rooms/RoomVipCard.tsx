@@ -107,7 +107,7 @@ export default function RoomVipCard({ room }: RoomVipCardProps) {
             {room.phoneNumber}
           </span>
           <button
-            name="favorite"
+            aria-label="Favorite"
             className="ml-2 text-gray-400 hover:text-red-500"
           >
             <FaHeart size={22} />
