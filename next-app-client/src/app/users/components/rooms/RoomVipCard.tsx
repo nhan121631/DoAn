@@ -26,7 +26,7 @@ export default function RoomVipCard({ room }: RoomVipCardProps) {
   }
 
   return (
-    <div className="rounded-xl overflow-hidden shadow bg-white border border-gray-200 mx-auto w-full max-w-[750px] min-w-[320px]">
+    <div className="rounded-xl overflow-hidden shadow bg-white border border-gray-300 mx-auto w-full max-w-[750px] min-w-[320px]">
       {/* Image section */}
       <div className="flex gap-1 p-3 w-full h-[320px] min-h-[200px] max-h-[320px]">
         <div
@@ -73,7 +73,7 @@ export default function RoomVipCard({ room }: RoomVipCardProps) {
             <span className="text-yellow-400 text-lg">{'★'.repeat(room.rating)}</span>
           )} */}
           <span className="text-yellow-400 text-lg">★★★★★</span>
-          <span className="font-bold text-lg text-red-500 uppercase flex-1 truncate max-w-[420px]">
+          <span className="font-bold text-lg text-red-700 uppercase flex-1 truncate max-w-[420px]">
             {room.name}
           </span>
         </div>
@@ -81,14 +81,14 @@ export default function RoomVipCard({ room }: RoomVipCardProps) {
           <span className="truncate max-w-[120px]">
             {room.price.toLocaleString("en-US") + "đ"}
           </span>
-          <span className="text-gray-500 font-normal truncate max-w-[80px]">
+          <span className="text-gray-700 font-normal truncate max-w-[80px]">
             • {room.area}m²
           </span>
-          <span className="text-gray-500 font-normal truncate max-w-[180px]">
+          <span className="text-gray-700 font-normal truncate max-w-[180px]">
             • {room.address}
           </span>
         </div>
-        <div className="text-gray-700 text-sm mb-2 max-w-full">
+        <div className="text-gray-800 text-sm mb-2 max-w-full">
           {room.description}
         </div>
         <div className="flex items-center gap-2 mt-auto">
@@ -100,7 +100,7 @@ export default function RoomVipCard({ room }: RoomVipCardProps) {
             className="rounded-full border"
           />
           <span className="font-medium text-gray-800">{room.landlordName}</span>
-          <span className="text-gray-400 text-xs">
+          <span className="text-gray-600 text-xs">
             {getPostDateLabel(room.postStartDate)}
           </span>
           <span className="ml-auto bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full font-semibold text-sm">
