@@ -9,9 +9,9 @@ const data = {
   address: "123 Main St, City",
   price: 250000,
   area: 35,
-  postStartDate: "2024-06-01",
-  postEndDate: "2024-06-30",
-  description: "A nice room in the city center.",
+  postStartDate: "2025-07-20",
+  postEndDate: "2025-12-30",
+  description: "A nice room in the city center.guggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg",
   electricityRate: 3000,
   waterRate: 1000,
   img: [
@@ -48,5 +48,5 @@ export default function UsersPage() {
       isForSale={true}
       isFeatured={false}
     />
-  </div>;
+  </div>
 }
