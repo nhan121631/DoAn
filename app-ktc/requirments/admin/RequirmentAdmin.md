@@ -104,7 +104,7 @@ so that I can ensure content quality and keep landlords informed about their lis
 
 ### ✅ Acceptance Criteria (User Story #4)
 
-- [ ] Chỉ **admin** hoặc **moderator** có thể truy cập trang quản lý phòng trọ.
+- [ ] Chỉ **admin** có thể truy cập trang quản lý phòng trọ.
 - [ ] Hiển thị danh sách tất cả tin đăng phòng trọ với thông tin:
   - 🏠 **Tiêu đề tin đăng**
   - 👤 **Tên chủ phòng**
@@ -139,3 +139,57 @@ so that I can ensure content quality and keep landlords informed about their lis
 ### 🎯 Story Points (User Story #4): `8`
 
 ### 🖼 UI Design (User Story #4)
+
+---
+
+## **User Story #5: Đăng nhập và đăng xuất cho Admin**
+
+As an **Admin**,  
+I want to **log in and log out** of the admin dashboard,  
+so that I can securely access and manage the platform.
+
+---
+
+## **User Story #5: Đăng nhập cho Admin**
+
+As an **Admin**,  
+I want to **log in** to the admin dashboard,  
+so that I can securely access and manage the platform.
+
+---
+
+### ✅ Acceptance Criteria (User Story #5)
+
+- [ ] Trang đăng nhập dành riêng cho admin.
+- [ ] Chỉ admin có thể đăng nhập vào dashboard quản trị.
+- [ ] Sau khi đăng nhập thành công, chuyển hướng đến trang dashboard.
+- [ ] Hiển thị thông báo lỗi khi đăng nhập sai thông tin.
+- [ ] Hỗ trợ bảo vệ route (không cho truy cập dashboard nếu chưa đăng nhập).
+
+### 🔥 Priority: `Highest`
+
+### 🎯 Story Points: `2`
+
+### 🖼 UI Design (User Story #5)
+
+---
+
+## **User Story #6: Đăng xuất cho Admin**
+
+As an **Admin**,  
+I want to **log out** of the admin dashboard,  
+so that I can securely end my session and prevent unauthorized access.
+
+---
+
+### ✅ Acceptance Criteria (User Story #6)
+
+- [ ] Có nút **Đăng xuất** ở mọi trang trong dashboard.
+- [ ] Đăng xuất sẽ xóa session/token và chuyển về trang đăng nhập.
+- [ ] Không thể truy cập dashboard sau khi đăng xuất (bảo vệ route).
+
+### 🔥 Priority (User Story #6): `High`
+
+### 🎯 Story Points (User Story #6): `1`
+
+### 🖼 UI Design (User Story #6)
