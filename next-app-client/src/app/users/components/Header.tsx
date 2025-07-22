@@ -74,7 +74,7 @@ export default function Header() {
           <IoLogInOutline className="h-5 w-5" />
           <span className="hidden md:inline">Login</span>
         </button>
-        <button className="bg-amber-600 hover:bg-amber-700 text-white p-2 md:px-4 md:py-2 rounded-full shadow flex items-center gap-1 md:gap-2 transition duration-300 cursor-pointer">
+        <button className="bg-white hover:bg-gray-300 text-stone-900 p-2 md:px-4 md:py-2 rounded-full shadow flex items-center gap-1 md:gap-2 transition duration-300 cursor-pointer">
           <FaRegEdit className="h-5 w-5" />
           <span className="hidden md:inline">Create Post</span>
         </button>
