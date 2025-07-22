@@ -134,16 +134,26 @@ export default function Footer() {
             <div className="text-center md:text-left flex-1">
               <p className="text-gray-400 text-lg mb-4">PAYMENT METHODS</p>
               <div className="flex justify-center md:justify-start gap-4">
-                <div className="p-2 bg-white rounded-md shadow-md flex items-center justify-center">
-                  <FaCcVisa className="h-10 w-16 text-blue-800 m-0" />
+                <div className="p-0 bg-blue-800 rounded-md shadow-md flex items-center justify-center w-20 h-14">
+                  <FaCcVisa className="w-full h-full text-white m-0" />
                 </div>
-                <div className="p-2 bg-white rounded-md shadow-md flex items-center justify-center">
+                <div className="p-0 bg-white rounded-md shadow-md flex items-center justify-center">
                   <Image
                     src="https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/c1/8e/51/c18e5125-eef2-931e-8617-ee96a1fa0448/AppIcon-0-0-1x_U007emarketing-0-10-0-85-220.png/1200x600wa.png"
                     alt="VNPAY Logo"
                     width={80}
                     height={40}
                     className="h-10 w-auto object-contain"
+                    unoptimized
+                  />
+                </div>
+                <div className="p-0 bg-white rounded-md shadow-md flex items-center justify-center">
+                  <Image
+                    src="https://cdn.haitrieu.com/wp-content/uploads/2022/10/Logo-Napas.png"
+                    alt="NAPAS Logo"
+                    width={80}
+                    height={40}
+                    className="h-10 w-18 object-contain"
                     unoptimized
                   />
                 </div>
