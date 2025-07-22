@@ -77,7 +77,7 @@ export default function RoomVipCard({ room }: RoomVipCardProps) {
             {room.name}
           </span>
         </div>
-        <div className="flex items-center gap-3 text-green-600 font-semibold text-base max-w-full overflow-hidden">
+        <div className="flex items-center gap-3 text-green-600 font-semibold text-base max-w-full">
           <span className="truncate max-w-[120px]">
             {room.price.toLocaleString("en-US") + "đ"}
           </span>
@@ -88,7 +88,7 @@ export default function RoomVipCard({ room }: RoomVipCardProps) {
             • {room.address}
           </span>
         </div>
-        <div className="text-gray-700 text-sm mb-2 line-clamp-2 max-w-full overflow-hidden">
+        <div className="text-gray-700 text-sm mb-2 max-w-full">
           {room.description}
         </div>
         <div className="flex items-center gap-2 mt-auto">
@@ -106,7 +106,10 @@ export default function RoomVipCard({ room }: RoomVipCardProps) {
           <span className="ml-auto bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full font-semibold text-sm">
             {room.phoneNumber}
           </span>
-          <button className="ml-2 text-gray-400 hover:text-red-500">
+          <button
+            name="favorite"
+            className="ml-2 text-gray-400 hover:text-red-500"
+          >
             <FaHeart size={22} />
           </button>
         </div>
