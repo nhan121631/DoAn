@@ -26,7 +26,7 @@ export default function RoomVipCard({ room }: RoomVipCardProps) {
   }
 
   return (
-    <div className="rounded-xl overflow-hidden shadow bg-white border border-gray-300 mx-auto w-full max-w-[750px] min-w-[320px]">
+    <div className="rounded-xl overflow-hidden shadow bg-gray-100 border border-gray-300 mx-auto w-full max-w-[750px] min-w-[320px]">
       {/* Image section */}
       <div className="flex gap-1 p-3 w-full h-[320px] min-h-[200px] max-h-[320px]">
         <div
@@ -77,7 +77,7 @@ export default function RoomVipCard({ room }: RoomVipCardProps) {
             {room.name}
           </span>
         </div>
-        <div className="flex items-center gap-3 text-green-600 font-semibold text-base max-w-full">
+        <div className="flex items-center gap-3 text-green-800 font-semibold text-base max-w-full">
           <span className="truncate max-w-[120px]">
             {room.price.toLocaleString("en-US") + "đ"}
           </span>
