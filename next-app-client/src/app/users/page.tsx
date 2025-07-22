@@ -1,9 +1,11 @@
 import RoomCard from "./components/rooms/RoomCard";
+import RoomVipCard from "./components/rooms/RoomVipCard";
 
 const data = {
   key: "room-1",
   name: "Room Title",
-  title: "Room Title",
+  landlordName: "nGUYEEN VAN A",
+  phoneNumber: 123456789,
   address: "123 Main St, City",
   price: 250000,
   area: 35,
@@ -19,7 +21,15 @@ const data = {
     },
     {
       id: 2,
-      url: "https://example.com/image2.jpg",
+      url: "/images/anh2.jpg",
+    },
+    {
+      id: 2,
+      url: "/images/anh5.jpg",
+    },
+    {
+      id: 2,
+      url: "/images/anh3.jpg",
     },
   ],
   owner: "John Doe",
@@ -31,9 +41,12 @@ const data = {
 };
 
 export default function UsersPage() {
-  return (
-    <div className="flex items-center justify-center bg-gray-100 p-4">
-      <RoomCard room={data} isForSale={true} isFeatured={false} />
-    </div>
-  );
+  return <div className="flex flex-col items-center justify-center bg-gray-100 p-4 gap-4">
+    <RoomVipCard room={data} />
+    <RoomCard
+      room={data}
+      isForSale={true}
+      isFeatured={false}
+    />
+  </div>;
 }

@@ -1,13 +1,12 @@
-"use client";
 import React from "react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+
 import { FaMapMarkerAlt } from "react-icons/fa";
 import { PiRuler } from "react-icons/pi";
 import { RoomData } from "@/app/landlord/types";
 import { MdElectricBolt } from "react-icons/md";
 import { IoWater } from "react-icons/io5";
-import { FaHeart } from "react-icons/fa";
+import RoomCartActions from "./RoomCartActions";
 
 export interface RoomCardProps {
   room: RoomData;
@@ -20,30 +19,13 @@ const RoomCard: React.FC<RoomCardProps> = ({
   isForSale = false,
   isFeatured = false,
 }) => {
-  const router = useRouter();
-  const handleClick = () => {
-    router.push(`/detail/${room.key}`);
-  };
   return (
     <div className="rounded-2xl overflow-hidden shadow-lg bg-white relative group w-[400px] h-[400px]">
       {/* Overlay hover effect */}
       <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20 pointer-events-none" />
       {/* Button hover center */}
-      <div className="absolute left-1/2 top-1/2 z-40 -translate-x-1/2 -translate-y-1/2 flex gap-3 opacity-0 group-hover:opacity-100 transition-all duration-300">
-        <button
-          className="bg-white/90 text-amber-600 px-4 py-2 rounded-full font-semibold shadow-lg hover:bg-amber-100 focus:outline-none flex items-center gap-2"
-          tabIndex={0}
-          title="Add to favorites"
-        >
-          <FaHeart className="text-lg" />
-        </button>
-        <button
-          className="bg-amber-600 text-white px-6 py-2 rounded-full font-semibold shadow-lg hover:bg-amber-700 focus:outline-none"
-          onClick={handleClick}
-          tabIndex={0}
-        >
-          Xem chi tiết
-        </button>
+      <div className="absolute left-1/2 top-1/2 z-40 -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-all duration-300">
+        <RoomCartActions room={room} />
       </div>
       {/* Ảnh nền */}
       <div className="relative w-full h-full select-none pointer-events-none">
@@ -53,6 +35,7 @@ const RoomCard: React.FC<RoomCardProps> = ({
           fill
           className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-105"
           sizes="447px"
+          priority
         />
         {/* Nhãn top */}
         <div className="absolute top-3 left-3 flex gap-2 z-30">
