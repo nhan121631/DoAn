@@ -15,7 +15,7 @@ const data = {
   img: [
     {
       id: 1,
-      url: "https://kenh14cdn.com/203336854389633024/2024/11/26/46826586011156477472353227663679545028498852n-1732610890064-17326108907701129253609.jpg",
+      url: "/images/anh1.jpg",
     },
     {
       id: 2,
@@ -31,11 +31,9 @@ const data = {
 };
 
 export default function UsersPage() {
-  return <div className="flex items-center justify-center bg-gray-100 p-4">
-    <RoomCard
-      room={data}
-      isForSale={true}
-      isFeatured={false}
-    />
-  </div>;
+  return (
+    <div className="flex items-center justify-center bg-gray-100 p-4">
+      <RoomCard room={data} isForSale={true} isFeatured={false} />
+    </div>
+  );
 }
