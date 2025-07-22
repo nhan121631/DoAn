@@ -1,26 +1,17 @@
-<<<<<<< HEAD
-import React from 'react';
-import Image from 'next/image';
-import Link from 'next/link';
-import { FaChevronLeft, FaChevronRight, FaYoutube, FaTwitter, FaTiktok, FaInstagram, FaCcVisa } from 'react-icons/fa';
-import { BiLogoFacebookSquare } from 'react-icons/bi';
-import { MdLocationOn, MdEmail, MdPhone } from 'react-icons/md'; // Import icons cho địa chỉ, email, điện thoại
-=======
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
-  FaChevronLeft,
-  FaChevronRight,
   FaYoutube,
   FaTwitter,
   FaTiktok,
   FaInstagram,
   FaCcVisa,
+  FaStar,
 } from "react-icons/fa";
 import { BiLogoFacebookSquare } from "react-icons/bi";
-import { MdLocationOn, MdEmail, MdPhone } from "react-icons/md"; // Import icons cho địa chỉ, email, điện thoại
->>>>>>> 2ef094ce71f53209ccd033fd9165fb0e0e16f414
+import { MdLocationOn, MdEmail, MdPhone } from "react-icons/md"; 
+import InfoCard from "./InfoCard/infocard";
 
 export default function Footer() {
   return (
@@ -39,55 +30,21 @@ export default function Footer() {
               <p className="text-4xl font-bold text-yellow-400">4.88</p>
               <p className="text-gray-400">Overall rating</p>
               <div className="flex text-yellow-400">
-                {/* Đánh giá sao */}
-                <span>&#9733;</span>
-                <span>&#9733;</span>
-                <span>&#9733;</span>
-                <span>&#9733;</span>
-                <span>&#9733;</span>
+                <FaStar className="h-5 w-5" />
+                <FaStar className="h-5 w-5" />
+                <FaStar className="h-5 w-5" />
+                <FaStar className="h-5 w-5" />
+                <FaStar className="h-5 w-5" />
               </div>
             </div>
           </div>
         </div>
-
-        {/* Phần lời chứng thực */}
-        <div className="relative bg-gray-800 p-8 rounded-lg shadow-lg flex flex-col space-y-6">
-          <div className="flex items-center space-x-4">
-            <Image
-              src="/images/useravt.png"
-              alt="Cameron Williamson"
-              width={60}
-              height={60}
-              className="rounded-full object-cover"
-            />
-            <div>
-              <p className="font-semibold text-lg">Cameron Williamson</p>
-              <p className="text-gray-400 text-sm">Designer</p>
-            </div>
-          </div>
-          <p className="text-gray-300 leading-relaxed">
-            Searches for multiplexes, property comparisons, and the loan
-            estimator. Works great. Lorem ipsum dolor sit amet, consectetur
-            adipiscing elit, sed do eiusmod tempor incididunt ut labore et
-            dores.
-          </p>
-          <div className="flex space-x-4 mt-4">
-            <button className="p-3 rounded-full border border-gray-600 hover:bg-gray-700 transition">
-              <FaChevronLeft className="h-6 w-6 text-white" />
-            </button>
-            <button className="p-3 rounded-full border border-gray-600 hover:bg-gray-700 transition">
-              <FaChevronRight className="h-6 w-6 text-white" />
-            </button>
-          </div>
-        </div>
+        <InfoCard />
       </div>
 
-      {/* Phần thông tin công ty, khách hàng, liên hệ, phương thức thanh toán và mạng xã hội */}
       <div className="mt-20 pt-12 border-t border-gray-700 grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-16 items-start">
-        {/* Phần Chi tiết - About and For Customers */}
         <div className="col-span-1 text-center md:text-left">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
-            {/* Nested grid cho 2 cột trên màn hình nhỏ */}
             <div>
               <p className="text-gray-400 text-lg mb-4 font-bold">
                 ABOUT ANTS.COM
@@ -120,7 +77,6 @@ export default function Footer() {
                 </li>
               </ul>
             </div>
-            {/* DÀNH CHO KHÁCH HÀNG */}
             <div>
               <p className="text-gray-400 text-lg mb-4 font-bold">
                 FOR CUSTOMERS
@@ -155,7 +111,6 @@ export default function Footer() {
             </div>
           </div>
         </div>
-
         <div className="col-span-2 flex flex-col md:flex-row justify-between items-start md:items-start gap-8 md:gap-37">
           <div className="flex flex-col items-center md:items-start text-center md:text-left w-full md:w-auto">
             <p className="text-gray-400 text-lg mb-4 font-bold">CONTACT US</p>
@@ -169,7 +124,7 @@ export default function Footer() {
                 <span>contact@ants123.com</span>
               </li>
               <li className="flex items-center justify-center md:justify-start gap-2">
-                <MdLocationOn className="h-5 w-5 text-yellow-400" />
+                <MdLocationOn className="h-10 w-10 text-yellow-400" />
                 <span>90 Nguyen Thuc Tu Street, Da Nang, Vietnam</span>
               </li>
             </ul>
@@ -194,11 +149,8 @@ export default function Footer() {
                 </div>
               </div>
             </div>
-
-            {/* Phần theo dõi mạng xã hội */}
             <div className="text-center md:text-right flex flex-col items-center md:items-start flex-1">
               {" "}
-              {/* flex-1 để chiếm không gian còn lại */}
               <p className="text-gray-400 text-lg mb-4 md:mb-8">FOLLOW US</p>
               <div className="flex justify-center md:justify-end items-center gap-4">
                 <a
