@@ -30,7 +30,7 @@ export default function OpenImages({
   const [isActive, setIsActive] = React.useState(true);
   return (
     <div className="fixed inset-0 z-50 flex justify-center items-center bg-stone-900 h-full">
-      <div className="relative w-full max-w-5xl h-full rounded-xl shadow-lg flex flex-col">
+      <div className="relative w-full h-full rounded-xl shadow-lg flex flex-col">
         <div className="sticky top-0 z-10 flex justify-center items-center gap-2 flex-wrap sm:px-4 h-20 py-5 bg-stone-900">
           <div
             onClick={() => setIsActive(true)}
@@ -49,16 +49,16 @@ export default function OpenImages({
             Map
           </div>
           <button
-            className="absolute top-2 right-2 text-white bg-black/40 rounded-xl p-2 hover:bg-red-500 transition"
+            className="absolute top-2 right-2 text-white rounded-xl p-2 hover:text-gray-400"
             onClick={onClose}
             aria-label="Đóng"
           >
-            <span className="text-2xl">×</span>
+            <span className="text-3xl">×</span>
           </button>
         </div>
         {/* Nội dung ảnh/map full vùng còn lại */}
         <div
-          className="flex-1 h-full overflow-y-auto scrollbar-hide"
+          className="flex-1 w-full h-full overflow-y-auto scrollbar-hide"
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         >
           {isActive ? <Images images={images} indexImg={indexImg} /> : <Map />}
