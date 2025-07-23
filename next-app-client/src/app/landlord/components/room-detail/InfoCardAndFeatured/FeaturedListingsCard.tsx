@@ -8,7 +8,7 @@ export default function FeaturedListingsCard() {
   const featuredListings = [
     {
       id: 1,
-      title: "CHO THUÊ PHÒNG TRỌ CÓ BAN CÔNG, MÁY LẠNH, THANG MÁY GIÁ 2 PHÒNG TRỌ CAO CẤP KHU HOÀNG HOA THÁM - TÂN BÌNH, THANG MÁY, ...", // Đã làm dài hơn để test
+      title: "CHO THUÊ PHÒNG TRỌ CÓ BAN CÔNG, MÁY LẠNH, THANG MÁY GIÁ 2 PHÒNG TRỌ CAO CẤP KHU HOÀNG HOA THÁM - TÂN BÌNH, THANG MÁY, ...", 
       price: "2.5 triệu/tháng",
       time: "1 tuần trước",
       imageUrl: "/images/anh1.jpg",
@@ -16,7 +16,7 @@ export default function FeaturedListingsCard() {
     },
     {
       id: 2,
-      title: "CHO THUÊ PHÒNG CAO CẤP, ĐẦY ĐỦ TIỆN NGHI, PHÒNG TRỐNG GIAO NHANH CHÓNG VÀ TIỆN LỢI", // Đã làm dài hơn để test
+      title: "CHO THUÊ PHÒNG CAO CẤP, ĐẦY ĐỦ TIỆN NGHI, PHÒNG TRỐNG GIAO NHANH CHÓNG VÀ TIỆN LỢI", 
       price: "4 triệu/tháng",
       time: "3 ngày trước",
       imageUrl: "/images/anh2.jpg", 
@@ -24,7 +24,7 @@ export default function FeaturedListingsCard() {
     },
     {
       id: 3,
-      title: "PHÒNG TRỌ CAO CẤP KHU HOÀNG HOA THÁM - TÂN BÌNH, THANG MÁY, GIÁ RẺ BẤT NGỜ", // Đã làm dài hơn để test
+      title: "PHÒNG TRỌ CAO CẤP KHU HOÀNG HOA THÁM - TÂN BÌNH, THANG MÁY, GIÁ RẺ BẤT NGỜ", 
       price: "3.5 triệu/tháng",
       time: "2 ngày trước",
       imageUrl: "/images/anh3.jpg", 
