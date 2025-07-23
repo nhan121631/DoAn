@@ -7,14 +7,14 @@ from dotenv import load_dotenv
 
 load_dotenv()
 API_KEY = os.getenv("API_KEY")
-MODEL = "gemini-2.0-flash"
+MODEL = "gemini-1.5-flash"
 URL = f"https://generativelanguage.googleapis.com/v1beta/models/{MODEL}:generateContent?key={API_KEY}"
 
 app = Flask(__name__)
 CORS(app)
 
 knowledge = '''
-Bạn là một trợ lý thông minh chuyên gợi ý tìm kiếm video như YouTube.\n\nNgười dùng nhập: "{user_query}"\n\nHãy trả về đúng 10 gợi ý tìm kiếm phù hợp nhất dưới dạng mảng JSON, mỗi phần tử là một object:\n[\n  {{ "title": "..." }},\n  ...\n]\n\nChỉ trả về đúng mảng JSON như trên, không thêm giải thích, không markdown, không văn bản thừa.
+Bạn là một trợ lý thông minh chuyên gợi ý tìm kiếm phòng trọ như YouTube.\n\nNgười dùng nhập: "{user_query}"\n\nHãy trả về đúng 10 gợi ý tìm kiếm phù hợp nhất dưới dạng mảng JSON, mỗi phần tử là một object:\n[\n  {{ "title": "..." }},\n  ...\n]\n\nChỉ trả về đúng mảng JSON như trên, không thêm giải thích, không markdown, không văn bản thừa.
 '''
 
 @app.route('/ai_search', methods=['POST'])
