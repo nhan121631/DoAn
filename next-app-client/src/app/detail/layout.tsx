@@ -1,5 +1,5 @@
 
-import RightSidebar from '../landlord/components/room-detail/RightSidebar'; 
+import RightSidebar from '../users/components/RightSidebar'; 
 
 interface DetailLayoutProps {
   children: React.ReactNode; 
