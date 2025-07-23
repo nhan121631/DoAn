@@ -100,7 +100,7 @@ export default function FeaturedListingsCard() {
               </div>
             </Link>
             {index < featuredListings.length - 1 && (
-              <hr className="border-1 border-gray-300" />
+              <hr className="border-t border-gray-300" />
             )}
           </React.Fragment>
         ))}

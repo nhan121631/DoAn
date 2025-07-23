@@ -176,7 +176,7 @@ export default function UserInfoCard() {
 
       {showReportModal && (
         <div className="fixed inset-0 bg-gray-800/50 flex items-center justify-end z-50" onMouseDown={handleOverlayClick}>
-          <div className="bg-white rounded-lg p-6 shadow-xl h-full w-full max-w-md relative transform transition-transform duration-300 ease-in-out" onMouseDown={(e) => e.stopPropagation()}> {/* Ngăn chặn sự kiện click lan truyền ra lớp phủ */}
+          <div className="bg-white rounded-lg p-5 shadow-xl h-full w-full max-w-sm relative transform transition-transform duration-300 ease-in-out overflow-y-auto" onMouseDown={(e) => e.stopPropagation()}>
             <button
               onClick={() => setShowReportModal(false)}
               className="absolute top-3 right-3 text-gray-500 hover:text-gray-800"
@@ -207,8 +207,8 @@ export default function UserInfoCard() {
                 placeholder="Nhập số điện thoại của bạn"
               />
             </div>
-            <p className="mb-4 text-gray-700 text-lg">Lý do phản ánh:</p> 
-            <div className="flex flex-col space-y-3 mb-10"> 
+            <p className="mb-2 text-gray-700 text-lg">Lý do phản ánh:</p> 
+            <div className="flex flex-col space-y-3 mb-6"> 
               <label className="inline-flex items-center text-gray-700 text-base"> 
                 <input
                   type="radio"
@@ -266,14 +266,12 @@ export default function UserInfoCard() {
               </label>
             </div>
 
-            
-
             <p className="mb-3 text-gray-700 text-base">Mô tả thêm</p>
             <textarea
               value={reportDescription}
               onChange={(e) => setReportDescription(e.target.value)}
               className="w-full p-3 border border-gray-300 rounded-md mb-6 text-gray-800 text-base"
-              rows={5}
+              rows={3}
               placeholder="Nhập mô tả chi tiết..."
             ></textarea>
 
