@@ -72,11 +72,14 @@ export default function RentalRooms() {
           </div>
         </div>
       </div>
-      <div className="flex flex-col gap-4 my-8 px-4 w-full max-w-7xl items-center justify-center">
-        <h3 className="text-xl font-semibold text-left w-full">
+      <div className="flex flex-col gap-4 my-6 px-4 w-full max-w-7xl items-center justify-center">
+        <h3 className="text-xl font-semibold text-center w-full">
           Featured Listings
         </h3>
-        <div className="w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 justify-center">
+        <h5 className="text-md mb-3 font-normal text-center w-full">
+          Some description about the featured listings
+        </h5>
+        <div className="w-full flex flex-wrap justify-center items-start gap-8">
           <RoomCard room={data} isForSale={true} isFeatured={false} />
           <RoomCard room={data} isForSale={true} isFeatured={false} />
           <RoomCard room={data} isForSale={true} isFeatured={false} />
