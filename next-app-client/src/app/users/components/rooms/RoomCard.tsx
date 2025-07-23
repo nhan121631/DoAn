@@ -6,7 +6,7 @@ import { PiRuler } from "react-icons/pi";
 import { RoomData } from "@/app/landlord/types";
 import { MdElectricBolt } from "react-icons/md";
 import { IoWater } from "react-icons/io5";
-import RoomCartActions from "./RoomCartActions";
+import RoomCartActions from "./RoomCardActions";
 
 export interface RoomCardProps {
   room: RoomData;
@@ -20,7 +20,7 @@ const RoomCard: React.FC<RoomCardProps> = ({
   isFeatured = false,
 }) => {
   return (
-    <div className="rounded-2xl overflow-hidden shadow-lg bg-white relative group w-[400px] h-[400px]">
+    <div className="rounded-2xl overflow-hidden shadow-lg bg-white relative group w-[300px] h-[300px]">
       {/* Overlay hover effect */}
       <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20 pointer-events-none" />
       {/* Button hover center */}

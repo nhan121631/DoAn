@@ -3,7 +3,7 @@ import Image from "next/image";
 import { RoomData } from "@/app/landlord/types";
 import { IoCameraOutline } from "react-icons/io5";
 import { FaHeart } from "react-icons/fa6";
-import RoomCartActionsWrapper from "./RoomCartActionsWrapper";
+import RoomCartActionsWrapper from "./RoomCardActionsWrapper";
 
 interface RoomVipCardProps {
   room: RoomData;
