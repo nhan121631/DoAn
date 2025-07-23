@@ -59,6 +59,7 @@ export default function UsersPage() {
         </h3>
         <RoomVipCard room={data} />
         <RoomCard room={data} isForSale={true} isFeatured={false} />
+        <RoomCard room={data} isForSale={true} isFeatured={false} />
       </div>
       <div className="w-full lg:w-[350px] flex flex-col items-center">
         <div className="hidden lg:block">
