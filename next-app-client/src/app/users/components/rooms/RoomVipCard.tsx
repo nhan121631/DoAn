@@ -28,68 +28,59 @@ export default function RoomVipCard({ room }: RoomVipCardProps) {
 
   return (
     <div className="rounded-xl overflow-hidden shadow bg-gray-100 border border-gray-300 mx-auto w-full max-w-[750px] min-w-[320px]">
-      {/* Image section */}
+      {/* IMAGE SECTION */}
       <RoomCartActionsWrapper room={room}>
-        <div className="flex gap-1 p-3 w-full h-[320px] min-h-[200px] max-h-[320px]">
-          <div
-            className="relative rounded-sm overflow-hidden h-full group/image-main"
-            style={{ width: "65%" }}
-          >
+        <div className="flex sm:flex-row flex-col gap-1 p-3 w-full sm:h-[320px] min-h-[200px]">
+          {/* Ảnh lớn bên trái (hoặc trên ở mobile) */}
+          <div className="relative rounded-sm overflow-hidden group/image-main sm:w-[65%] w-full aspect-[4/3] sm:aspect-auto">
             <Image
               src={room.img?.[0]?.url || "/placeholder.jpg"}
               alt={room.name}
               fill
               className="object-cover w-full h-full transition-all duration-500 ease-in-out group-hover/image-main:scale-105 group-hover/image-main:shadow-2xl group-hover/image-main:brightness-95"
-              sizes="(max-width: 650px) 55vw, 300px"
+              sizes="(max-width: 640px) 100vw, 300px"
               priority
             />
             <div className="absolute left-2 bottom-2 bg-black/60 text-white text-xs px-2 py-1 rounded flex items-center gap-1">
-              <span className="material-icons text-base">
-                <IoCameraOutline />
-              </span>
+              <IoCameraOutline className="text-base" />
               {room.img?.length ?? 0}
             </div>
           </div>
 
-          <div className="flex flex-col gap-1 h-full" style={{ width: "35%" }}> 
-            <Image
-              src={room.img?.[1]?.url || "/placeholder.jpg"}
-              alt={room.name + " 2"}
-              fill
-              className="object-cover w-full h-full transition-all duration-500 ease-in-out group-hover/image-thumb:scale-105 group-hover/image-thumb:shadow-xl group-hover/image-thumb:brightness-95"
-              sizes="(max-width: 650px) 40vw, 120px"
-            />
+          {/* Nhóm ảnh nhỏ bên phải hoặc dưới */}
+          <div className="flex sm:flex-col flex-row gap-1 sm:w-[35%] w-full sm:aspect-auto">
             {room.img?.slice(1, 4).map((img, idx) => (
               <div
                 key={idx}
-                className="relative flex-1 min-h-0 rounded-sm overflow-hidden group/image-thumb"
+                className="relative flex-1 aspect-[1/1] rounded-sm overflow-hidden group/image-thumb"
               >
                 <Image
-                  src={room.img?.[idx + 1]?.url || "/placeholder.jpg"}
-                  alt={room.name + " " + (idx + 2)}
+                  src={img?.url || "/placeholder.jpg"}
+                  alt={`${room.name} ${idx + 2}`}
                   fill
                   className="object-cover w-full h-full transition-all duration-500 ease-in-out group-hover/image-thumb:scale-105 group-hover/image-thumb:shadow-xl group-hover/image-thumb:brightness-95"
-                  sizes="(max-width: 650px) 40vw, 120px"
+                  sizes="(max-width: 640px) 50vw, 120px"
                 />
               </div>
             ))}
           </div>
         </div>
       </RoomCartActionsWrapper>
-      {/* Content section */}
-      <div className="p-4 flex flex-col gap-2 min-h-[120px] max-h-[380px] max-w-[700px] overflow-hidden">
-        <div className="flex items-center gap-2 mb-1">
-          {/* {room.rating && (
-            <span className="text-yellow-400 text-lg">{'★'.repeat(room.rating)}</span>
-          )} */}
+
+      {/* CONTENT SECTION */}
+      <div className="p-4 flex flex-col gap-2 min-h-[120px] max-h-[380px] sm:max-w-[700px] overflow-hidden">
+        {/* Tên phòng + sao */}
+        <div className="flex items-center gap-2 mb-1 flex-wrap">
           <span className="text-yellow-400 text-lg">★★★★★</span>
           <RoomCartActionsWrapper room={room}>
-            <span className="font-bold text-lg text-red-700 uppercase flex-wrap">
+            <span className="font-bold text-lg text-red-700 uppercase break-words">
               {room.name}
             </span>
           </RoomCartActionsWrapper>
         </div>
-        <div className="flex items-center gap-3 text-green-800 font-semibold text-base max-w-full">
+
+        {/* Giá - Diện tích - Địa chỉ */}
+        <div className="flex flex-wrap items-center gap-3 text-green-800 font-semibold text-base max-w-full">
           <span className="truncate max-w-[120px]">
             {room.price.toLocaleString("en-US") + "đ"}
           </span>
@@ -100,13 +91,17 @@ export default function RoomVipCard({ room }: RoomVipCardProps) {
             • {room.address}
           </span>
         </div>
-        <div className="text-gray-800 text-sm mb-2 max-w-full line-clamp-3 text-ellipsis">
+
+        {/* Mô tả */}
+        <div className="text-gray-800 text-sm mb-2 max-w-full line-clamp-3">
           {room.description}
         </div>
-        <div className="flex items-center gap-2 mt-auto">
+
+        {/* Thông tin người đăng */}
+        <div className="flex items-center gap-2 mt-auto flex-wrap">
           <Image
             src="/images/useravt.png"
-            alt="hhhihi"
+            alt="Avatar"
             width={32}
             height={32}
             className="rounded-full border"
@@ -120,7 +115,7 @@ export default function RoomVipCard({ room }: RoomVipCardProps) {
           </span>
           <button
             aria-label="Favorite"
-            className="ml-2 text-gray-400 hover:text-red-500"
+            className="text-gray-400 hover:text-red-500"
           >
             <FaHeart size={22} />
           </button>
