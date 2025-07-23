@@ -79,7 +79,7 @@ export default function FeaturedListingsCard() {
         {featuredListings.map((listing, index) => ( 
           <React.Fragment key={listing.id}> 
             <Link href={`/tin-dang/${listing.id}`} className=" flex gap-2 p-2 rounded-lg hover:bg-sky-100 transition duration-200 w-full">
-              <div className="relative w-32 h-32 flex-shrink-0 rounded-md overflow-hidden">
+              <div className="relative w-24 h-24 flex-shrink-0 rounded-md overflow-hidden">
                 <Image
                   src={listing.imageUrl}
                   alt={listing.title}
