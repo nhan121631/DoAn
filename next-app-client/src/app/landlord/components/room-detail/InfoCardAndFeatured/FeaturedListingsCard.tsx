@@ -1,5 +1,6 @@
 "use client"; 
 
+import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -74,29 +75,34 @@ export default function FeaturedListingsCard() {
   return (
     <div className="bg-sky-50 rounded-xl shadow-lg p-6 mt-6 border border-sky-400">
       <h3 className="text-xl font-bold mb-4 text-gray-800">Tin đăng nổi bật</h3>
-      <div className="flex flex-col gap-4">
-        {featuredListings.map((listing) => (
-          <Link href={`/tin-dang/${listing.id}`} key={listing.id} className="flex gap-4 p-3 rounded-lg hover:bg-sky-100 transition duration-200">
-            <div className="relative w-24 h-24 flex-shrink-0 rounded-md overflow-hidden">
-              <Image
-                src={listing.imageUrl}
-                alt={listing.title}
-                layout="fill"
-                objectFit="cover"
-                className="rounded-md"
-              />
-              {listing.isHot && (
-                <span className="absolute top-2 left-0 bg-red-600 text-white text-xs px-2 py-0 shadow-md z-10 w-20 text-center">
+      <div className="flex flex-col gap-3"> 
+        {featuredListings.map((listing, index) => ( 
+          <React.Fragment key={listing.id}> 
+            <Link href={`/tin-dang/${listing.id}`} className=" flex gap-2 p-2 rounded-lg hover:bg-sky-100 transition duration-200 w-full">
+              <div className="relative w-32 h-32 flex-shrink-0 rounded-md overflow-hidden">
+                <Image
+                  src={listing.imageUrl}
+                  alt={listing.title}
+                  layout="fill"
+                  objectFit="cover"
+                  className="rounded-md"
+                />
+                {listing.isHot && (
+                  <span className="absolute top-2 left-0 bg-red-600 text-white text-xs px-2 py-0 shadow-md z-10 w-20 text-center">
                   CHO THUÊ NHANH
                 </span>
-              )}
-            </div>
-            <div className="flex flex-col justify-center flex-grow">
-              <p className="text-gray-800 font-semibold text-base md:text-lg line-clamp-2">{listing.title}</p>
-              <p className="text-green-700 font-bold text-base md:text-lg mt-1">{listing.price}</p>
-              <p className="text-gray-500 text-sm mt-1">{listing.time}</p>
-            </div>
-          </Link>
+                )}
+              </div>
+              <div className="flex flex-col justify-center flex-grow">
+                <p className="text-gray-800 font-semibold text-sm md:text-base line-clamp-2">{listing.title}</p>
+                <p className="text-green-700 font-bold text-sm md:text-base mt-1">{listing.price}</p>
+                <p className="text-gray-500 text-xs">{listing.time}</p>
+              </div>
+            </Link>
+            {index < featuredListings.length - 1 && (
+              <hr className="border-1 border-gray-300" />
+            )}
+          </React.Fragment>
         ))}
       </div>
     </div>
