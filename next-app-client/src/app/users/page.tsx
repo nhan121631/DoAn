@@ -2,8 +2,8 @@ import RoomCard from "./components/rooms/RoomCard";
 import RoomVipCard from "./components/rooms/RoomVipCard";
 
 const data = {
-  key: "room-1",
-  name: "Room Title",
+  key: "1",
+  name: "Room Title Example",
   landlordName: "nGUYEEN VAN A",
   phoneNumber: 123456789,
   address: "123 Main St, City",
@@ -11,7 +11,7 @@ const data = {
   area: 35,
   postStartDate: "2025-07-20",
   postEndDate: "2025-12-30",
-  description: "A nice room in the city center.guggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg",
+  description: "A nice room in the city center.guggggggggg ggggggggggggggggggg ggggggggggggggggggggggg gggggggggggggg jflndầfngfngfn nfwjf nj jndưin  ndj bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
   electricityRate: 3000,
   waterRate: 1000,
   img: [
