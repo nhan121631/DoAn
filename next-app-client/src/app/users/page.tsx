@@ -1,3 +1,5 @@
+import FeaturedListingsCard from "../landlord/components/room-detail/InfoCardAndFeatured/FeaturedListingsCard";
+import RightSidebar from "../landlord/components/room-detail/RightSidebar";
 import CardFilter from "./components/Filter/CardFilter";
 import RoomCard from "./components/rooms/RoomCard";
 import RoomVipCard from "./components/rooms/RoomVipCard";
@@ -12,7 +14,8 @@ const data = {
   area: 35,
   postStartDate: "2025-07-20",
   postEndDate: "2025-12-30",
-  description: "A nice room in the city center.guggggggggg ggggggggggggggggggg ggggggggggggggggggggggg gggggggggggggg jflndầfngfngfn nfwjf nj jndưin  ndj bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  description:
+    "A nice room in the city center.guggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg",
   electricityRate: 3000,
   waterRate: 1000,
   img: [
@@ -43,9 +46,9 @@ const data = {
 
 export default function UsersPage() {
   return (
-    <div className="flex justify-center min-h-screen bg-gray-100">
-      <div className="flex flex-col items-center justify-center bg-gray-100 p-4 gap-4">
-        <h1 className="text-2xl font-bold text-left w-full">
+    <div className="flex flex-col lg:flex-row justify-center min-h-screen bg-gray-100 gap-0 lg:gap-x-4">
+      <div className="flex flex-col bg-gray-100 gap-4 max-w-7xl my-8 px-4 lg:px-0 w-full lg:w-auto items-center">
+        <h1 className="text-2xl font-bold text-left w-full ">
           Vietnam’s No.1 Rental Room Platform
         </h1>
         <span className="w-full text-left italic">
@@ -58,8 +61,16 @@ export default function UsersPage() {
         <RoomVipCard room={data} />
         <RoomCard room={data} isForSale={true} isFeatured={false} />
       </div>
-      <div className="flex flex-col  p-4 gap-4">
-        <CardFilter />
+      <div className="w-full lg:w-[350px] flex flex-col gap-6">
+        <div className="hidden lg:block">
+          <CardFilter />
+        </div>
+        <div className="hidden lg:block">
+          <FeaturedListingsCard />
+        </div>
+        <div className="w-[300px]">
+          <FeaturedListingsCard />
+        </div>
       </div>
     </div>
   );
