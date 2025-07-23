@@ -9,5 +9,5 @@ export const VNPAY_CONFIG = {
   vnp_Api: "https://sandbox.vnpayment.vn/merchant_webapi/api/transaction",
 
   // URL mà VNPay sẽ redirect sau khi thanh toán (phải khớp với đăng ký)
-  vnp_ReturnUrl: "http://localhost:3000/payment-result",
+  vnp_ReturnUrl: "http://localhost:3000/landlord/payment-result",
 };
