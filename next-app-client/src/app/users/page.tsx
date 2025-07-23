@@ -1,3 +1,4 @@
+import CardFilter from "./components/Filter/CardFilter";
 import RoomCard from "./components/rooms/RoomCard";
 import RoomVipCard from "./components/rooms/RoomVipCard";
 
@@ -11,7 +12,8 @@ const data = {
   area: 35,
   postStartDate: "2025-07-20",
   postEndDate: "2025-12-30",
-  description: "A nice room in the city center.guggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg",
+  description:
+    "A nice room in the city center.guggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg",
   electricityRate: 3000,
   waterRate: 1000,
   img: [
@@ -41,12 +43,25 @@ const data = {
 };
 
 export default function UsersPage() {
-  return <div className="flex flex-col items-center justify-center bg-gray-100 p-4 gap-4">
-    <RoomVipCard room={data} />
-    <RoomCard
-      room={data}
-      isForSale={true}
-      isFeatured={false}
-    />
-  </div>
+  return (
+    <div className="flex justify-center min-h-screen bg-gray-100">
+      <div className="flex flex-col items-center justify-center bg-gray-100 p-4 gap-4">
+        <h1 className="text-2xl font-bold text-left w-full">
+          Vietnam’s No.1 Rental Room Platform
+        </h1>
+        <span className="w-full text-left italic">
+          Find thousands of verified rooms, apartments, and affordable rentals
+          across Vietnam – quickly and easily
+        </span>
+        <h3 className="text-xl font-semibold text-left w-full">
+          Suggested Room
+        </h3>
+        <RoomVipCard room={data} />
+        <RoomCard room={data} isForSale={true} isFeatured={false} />
+      </div>
+      <div className="flex flex-col  p-4 gap-4">
+        <CardFilter />
+      </div>
+    </div>
+  );
 }
