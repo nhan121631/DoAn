@@ -88,7 +88,7 @@ export default function FeaturedListingsCard() {
                   className="rounded-md"
                 />
                 {listing.isHot && (
-                  <span className="absolute top-2 left-0 bg-red-600 text-white text-xs px-2 py-0 shadow-md z-10 w-20 text-center">
+                  <span className="absolute rounded-xs top-2 left-0 bg-red-600 text-white text-xs px-2 py-0 shadow-md z-10 w-20 text-center">
                   CHO THUÊ NHANH
                 </span>
                 )}
