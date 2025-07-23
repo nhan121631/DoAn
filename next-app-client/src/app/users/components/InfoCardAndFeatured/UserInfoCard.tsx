@@ -147,7 +147,7 @@ export default function UserInfoCard() {
  
       {showShareModal && (
         <div className="fixed inset-0 bg-gray-800/50 flex items-center justify-end z-50" onMouseDown={handleOverlayClick}>
-          <div className="bg-white rounded-lg p-6 shadow-xl h-full w-full max-w-sm relative transform transition-transform duration-300 ease-in-out" onMouseDown={(e) => e.stopPropagation()}> {/* Ngăn chặn sự kiện click lan truyền ra lớp phủ */}
+          <div className="bg-white rounded-lg p-6 shadow-xl h-full w-full max-w-sm relative transform transition-transform duration-300 ease-in-out" onMouseDown={(e) => e.stopPropagation()}> 
             <button
               onClick={() => setShowShareModal(false)}
               className="absolute top-3 right-3 text-gray-500 hover:text-gray-800"
@@ -176,7 +176,8 @@ export default function UserInfoCard() {
 
       {showReportModal && (
         <div className="fixed inset-0 bg-gray-800/50 flex items-center justify-end z-50" onMouseDown={handleOverlayClick}>
-          <div className="bg-white rounded-lg p-5 shadow-xl h-full w-full max-w-sm relative transform transition-transform duration-300 ease-in-out overflow-y-auto" onMouseDown={(e) => e.stopPropagation()}>
+          <div className="bg-white rounded-lg p-5 shadow-xl h-full w-full max-w-sm relative transform transition-transform duration-300 ease-in-out overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] "
+           onMouseDown={(e) => e.stopPropagation()}>
             <button
               onClick={() => setShowReportModal(false)}
               className="absolute top-3 right-3 text-gray-500 hover:text-gray-800"
