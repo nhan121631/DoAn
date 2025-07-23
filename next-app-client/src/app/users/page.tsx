@@ -1,6 +1,5 @@
-import FeaturedListingsCard from "../landlord/components/room-detail/InfoCardAndFeatured/FeaturedListingsCard";
-import RightSidebar from "../landlord/components/room-detail/RightSidebar";
 import CardFilter from "./components/Filter/CardFilter";
+import FeaturedListingsCard from "./components/InfoCardAndFeatured/FeaturedListingsCard";
 import RoomCard from "./components/rooms/RoomCard";
 import RoomVipCard from "./components/rooms/RoomVipCard";
 
