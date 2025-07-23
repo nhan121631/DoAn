@@ -46,7 +46,7 @@ const data = {
 
 export default function UsersPage() {
   return (
-    <div className="flex flex-col lg:flex-row justify-center min-h-screen bg-gray-100 gap-0 lg:gap-x-4">
+    <div className="flex flex-col lg:flex-row justify-center min-h-screen bg-gray-100 gap-0 lg:gap-x-2">
       <div className="flex flex-col bg-gray-100 gap-4 max-w-7xl my-8 px-4 lg:px-0 w-full lg:w-auto items-center">
         <h1 className="text-2xl font-bold text-left w-full ">
           Vietnam’s No.1 Rental Room Platform
@@ -61,14 +61,11 @@ export default function UsersPage() {
         <RoomVipCard room={data} />
         <RoomCard room={data} isForSale={true} isFeatured={false} />
       </div>
-      <div className="w-full lg:w-[350px] flex flex-col gap-6">
+      <div className="w-full lg:w-[350px] flex flex-col items-center">
         <div className="hidden lg:block">
           <CardFilter />
         </div>
-        <div className="hidden lg:block">
-          <FeaturedListingsCard />
-        </div>
-        <div className="w-[300px]">
+        <div className="w-[80%] lg:w-[300px]">
           <FeaturedListingsCard />
         </div>
       </div>
