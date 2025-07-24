@@ -1,0 +1,13 @@
+services:
+  db:
+    image: redis:latest
+    container_name: redis
+    environment:
+      REDIS_PASSWORD: redis_password
+    ports:
+      - '6379:6379'
+    volumes:
+      - db_data:/var/lib/redis
+    command: ['redis-server', '--requirepass', 'redis_password']
+volumes:
+  db_data:
