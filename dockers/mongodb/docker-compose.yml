@@ -1,0 +1,14 @@
+services:
+  db:
+    image: mongo:latest
+    container_name: mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root_password
+      MONGO_INITDB_DATABASE: spring
+    ports:
+      - '27017:27017'
+    volumes:
+      - db_data:/data/db
+volumes:
+  db_data:
