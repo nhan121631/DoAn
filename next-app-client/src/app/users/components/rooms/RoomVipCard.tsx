@@ -3,7 +3,7 @@ import Image from "next/image";
 import { RoomData } from "@/app/landlord/types";
 import { IoCameraOutline } from "react-icons/io5";
 import { FaHeart } from "react-icons/fa6";
-import RoomCartActionsWrapper from "./RoomCartActionsWrapper";
+import RoomCartActionsWrapper from "./RoomCardActionsWrapper";
 
 interface RoomVipCardProps {
   room: RoomData;
@@ -93,7 +93,7 @@ export default function RoomVipCard({ room }: RoomVipCardProps) {
         </div>
 
         {/* Mô tả */}
-        <div className="text-gray-800 text-sm mb-2 max-w-full line-clamp-3">
+        <div className="text-gray-800 text-sm mb-2 max-w-full line-clamp-3 text-ellipsis">
           {room.description}
         </div>
 

@@ -1,0 +1,16 @@
+version: '3.9'
+services:
+  db:
+    image: mysql:latest
+    container_name: mysql
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+      MYSQL_USER: developer
+      MYSQL_PASSWORD: developer_password
+      MYSQL_DATABASE: spring
+    ports:
+      - '3306:3306'
+    volumes:
+      - db_data:/var/lib/mysql
+volumes:
+  db_data:
