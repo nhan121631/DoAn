@@ -1,4 +1,5 @@
 import MapSection from "@/app/landlord/components/room-detail/map";
+import ContactForm from "./ContactForm";
 
 export default function ContactPage() {
   return (
@@ -19,40 +20,7 @@ export default function ContactPage() {
 
         {/* Right side - Contact Form */}
         <div className="flex-1">
-          <div className="p-10 bg-white rounded-lg shadow-lg">
-            <form className="space-y-6">
-              <div>
-                <input
-                  type="text"
-                  placeholder="Name"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                />
-              </div>
-
-              <div>
-                <input
-                  type="email"
-                  placeholder="Email address"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                />
-              </div>
-
-              <div>
-                <textarea
-                  rows={6}
-                  placeholder="Message"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                ></textarea>
-              </div>
-
-              <button
-                type="submit"
-                className="w-full px-6 py-3 font-medium text-white transition duration-200 bg-red-500 rounded-lg hover:bg-red-600"
-              >
-                Send now
-              </button>
-            </form>
-          </div>
+          <ContactForm />
         </div>
       </div>
 
