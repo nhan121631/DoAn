@@ -1,3 +1,4 @@
+import BackToTop from "./components/BackToTop";
 import ContactPage from "./components/contact";
 import LandlordListCard from "./components/landlord";
 import RentalRooms from "./components/rental_rooms";
@@ -10,6 +11,7 @@ export default function UsersPage() {
       <WhyChooseUsSection />
       <LandlordListCard />
       <ContactPage />
+      <BackToTop />
     </div>
   );
 }
