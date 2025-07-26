@@ -2,10 +2,11 @@ import CardFilter from "../Filter/CardFilter";
 import FeaturedListingsCard from "../InfoCardAndFeatured/FeaturedListingsCard";
 import RoomCard from "../rooms/RoomCard";
 import RoomVipCard from "../rooms/RoomVipCard";
+
 const data = {
   key: "1",
   name: "Room Title Example",
-  landlordName: "nGUYEEN VAN A",
+  landlordName: "NGUYEN VAN A",
   phoneNumber: 123456789,
   address: "123 Main St, City",
   price: 250000,
@@ -13,26 +14,14 @@ const data = {
   postStartDate: "2025-07-20",
   postEndDate: "2025-12-30",
   description:
-    "A nice room in the city center.guggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg",
+    "A nice room in the city center with all amenities included. Perfect for students or young professionals.",
   electricityRate: 3000,
   waterRate: 1000,
   img: [
-    {
-      id: 1,
-      url: "/images/anh1.jpg",
-    },
-    {
-      id: 2,
-      url: "/images/anh2.jpg",
-    },
-    {
-      id: 2,
-      url: "/images/anh5.jpg",
-    },
-    {
-      id: 2,
-      url: "/images/anh3.jpg",
-    },
+    { id: 1, url: "/images/anh1.jpg" },
+    { id: 2, url: "/images/anh2.jpg" },
+    { id: 3, url: "/images/anh5.jpg" },
+    { id: 4, url: "/images/anh3.jpg" },
   ],
   owner: "John Doe",
   phone: "123-456-7890",
@@ -50,25 +39,24 @@ export default function RentalRooms() {
         className="flex flex-col justify-center w-full gap-0 mx-auto bg-gray-100 lg:flex-row max-w-7xl lg:gap-x-2"
       >
         <div className="flex flex-col items-center w-full gap-4 px-4 my-8 bg-gray-100 max-w-7xl lg:px-0 lg:w-auto">
-          <h1 className="w-full text-2xl font-bold text-left ">
+          <h1 className="w-full text-2xl font-bold text-left">
             Vietnam’s No.1 Rental Room Platform
           </h1>
-          <span className="w-full italic text-left">
           <span className="w-full italic text-left">
             Find thousands of verified rooms, apartments, and affordable rentals
             across Vietnam – quickly and easily
           </span>
-          <div className="flex flex-col items-center w-full gap-4">
-            <h3 className="w-full text-xl font-semibold text-left">
+
           <div className="flex flex-col items-center w-full gap-4">
             <h3 className="w-full text-xl font-semibold text-left">
               Highlighted Post
             </h3>
-            <RoomVipCard room={data} />
-            <RoomVipCard room={data} />
-            <RoomVipCard room={data} />
+            {[...Array(3)].map((_, i) => (
+              <RoomVipCard key={i} room={data} />
+            ))}
           </div>
         </div>
+
         <div className="w-full lg:w-[350px] flex flex-col items-center">
           <div className="hidden lg:block">
             <CardFilter />
@@ -78,21 +66,18 @@ export default function RentalRooms() {
           </div>
         </div>
       </div>
-      <div className="flex flex-col items-center justify-center w-full gap-4 px-4 my-6 max-w-7xl">
-        <h3 className="w-full text-2xl font-semibold text-center">
+
       <div className="flex flex-col items-center justify-center w-full gap-4 px-4 my-6 max-w-7xl">
         <h3 className="w-full text-2xl font-semibold text-center">
           Featured Listings
         </h3>
         <h5 className="w-full mb-3 font-normal text-center text-md">
-        <h5 className="w-full mb-3 font-normal text-center text-md">
           Some description about the featured listings
         </h5>
         <div className="flex flex-wrap items-start justify-center w-full gap-8">
-        <div className="flex flex-wrap items-start justify-center w-full gap-8">
-          <RoomCard room={data} isForSale={true} isFeatured={false} />
-          <RoomCard room={data} isForSale={true} isFeatured={false} />
-          <RoomCard room={data} isForSale={true} isFeatured={false} />
+          {[...Array(3)].map((_, i) => (
+            <RoomCard key={i} room={data} isForSale={true} isFeatured={false} />
+          ))}
         </div>
       </div>
     </>

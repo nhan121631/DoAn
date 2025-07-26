@@ -63,7 +63,8 @@ export default function Header() {
           </li>
           <li>
             <Link
-              href="/users/profile"
+              href="#landlords"
+              onClick={(e) => handleSmoothScroll(e, "landlords")}
               className="flex items-center gap-1 p-2 text-white transition duration-300 rounded-full cursor-pointer md:px-4 md:py-2 md:gap-2 hover:bg-white/30"
             >
               Landlords
