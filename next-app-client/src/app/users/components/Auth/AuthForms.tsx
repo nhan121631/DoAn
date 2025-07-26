@@ -16,11 +16,11 @@ interface ILoginInputs {
 }
 const schema = yup
   .object({
-    username: yup.string().required("Vui lòng nhập tên đăng nhập."),
+    username: yup.string().required("Please enter phone number or email"),
     password: yup
       .string()
-      .min(6, "Mật khẩu phải có ít nhất 6 ký tự.")
-      .required("Vui lòng nhập mật khẩu."),
+      .min(6, "Password must be at least 6 characters.")
+      .required("Please enter your password."),
   })
   .required();
 
@@ -43,14 +43,14 @@ export default function AuthForms() {
   const onLoginSubmit: SubmitHandler<ILoginInputs> = async (data) => {
     console.log("Login data:", data);
     if (data.username === "user" && data.password === "123456") {
-      setLoginSuccessMessage("Đăng nhập thành công!");
+      setLoginSuccessMessage("Login successful!");
       reset(); // Reset form after successful submission
       setLoginGeneralErrorMessage("");
       // Redirect to home or dashboard
       console.log("Redirecting to home...");
     } else {
       setLoginGeneralErrorMessage(
-        "Tên đăng nhập hoặc mật khẩu không chính xác."
+        "Username or password is incorrect."
       );
       setLoginSuccessMessage("");
     }
@@ -71,7 +71,7 @@ export default function AuthForms() {
               : "text-black hover:text-pink-50"
           }`}
         >
-          Đăng nhập
+          Log in
         </button>
         <button
           type="button"
@@ -82,7 +82,7 @@ export default function AuthForms() {
               : "text-black hover:text-pink-50"
           }`}
         >
-          Tạo tài khoản mới
+          Create a new account
         </button>
       </div>
 
@@ -92,7 +92,7 @@ export default function AuthForms() {
           {/* Identifier Input (Phone Number or Email) */}
           <div className="mb-4">
             <label htmlFor="loginIdentifier" className="sr-only">
-              Số điện thoại hoặc Email
+              Phone number or Email
             </label>
             <input
               type="text"
@@ -100,7 +100,7 @@ export default function AuthForms() {
               className={`w-full p-3 border ${
                 errors.username ? "border-red-500" : "border-gray-300"
               } rounded-md focus:outline-none focus:ring-2 focus:ring-white text-white`}
-              placeholder="Số điện thoại hoặc Email"
+              placeholder="Phone number or Email"
               {...register("username")}
             />
             {errors.username && (
@@ -114,7 +114,7 @@ export default function AuthForms() {
           {/* Password Input */}
           <div className="mb-6">
             <label htmlFor="loginPassword" className="sr-only">
-              Mật khẩu
+              Password
             </label>
             <div className="relative">
               <input
@@ -123,7 +123,7 @@ export default function AuthForms() {
                 className={`w-full p-3 border ${
                   errors.password ? "border-red-500" : "border-gray-300"
                 } rounded-md focus:outline-none focus:ring-2 focus:ring-white text-white pr-10`}
-                placeholder="Mật khẩu"
+                placeholder="Password"
                 {...register("password")}
               />
               <span
@@ -167,7 +167,7 @@ export default function AuthForms() {
             type="submit"
             className="w-full py-3 text-lg font-semibold text-black transition duration-300 bg-gray-200 rounded-md hover:bg-gray-400"
           >
-            Đăng nhập
+            Log in
           </button>
         </form>
       )}
@@ -182,22 +182,21 @@ export default function AuthForms() {
             href="/auth/forgot-password"
             className="text-sm text-gray-200 hover:underline"
           >
-            Bạn quên mật khẩu?
+            Forgot your password?
           </Link>
         </div>
       )}
-
       <div className="mt-8 text-xs text-center text-gray-400">
         <p>
-          Qua việc đăng nhập hoặc tạo tài khoản, bạn đồng ý với các{" "}
+          By logging in or creating an account, you agree to our{" "}
           <Link href="/terms" className="text-white hover:underline">
-            quy định sử dụng
+            terms of service
           </Link>{" "}
-          cũng như{" "}
+          as well as{" "}
           <Link href="/privacy" className="text-white hover:underline">
-            chính sách bảo mật
+            privacy policy
           </Link>{" "}
-          của chúng tôi
+          of ours
         </p>
       </div>
     </div>
