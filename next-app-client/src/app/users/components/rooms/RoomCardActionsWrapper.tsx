@@ -8,12 +8,15 @@ interface RoomCartActionsWrapperProps {
   children: React.ReactNode;
 }
 
-
-export default function RoomCartActionsWrapper({ room, children }: RoomCartActionsWrapperProps) {
+export default function RoomCartActionsWrapper({
+  room,
+  children,
+}: RoomCartActionsWrapperProps) {
   const router = useRouter();
 
   const handleClick = () => {
-    router.push(`/detail/${room.key}`);
+    // router.push(`/detail/${room.key}`);
+    router.push("/detail");
   };
 
   return (
