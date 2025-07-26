@@ -9,18 +9,10 @@ interface DetailLayoutProps {
   // };
 }
 
+// export default function DetailLayout({ children, params }: DetailLayoutProps) {
+//   const { userId } = params; // Lấy userId từ params
 export default function DetailLayout({ children }: DetailLayoutProps) {
-  // const { userId } = params; // Lấy userId từ params
-export default function DetailLayout({ children }: DetailLayoutProps) {
-  // const { userId } = params; // Lấy userId từ params
-
   return (
-    <div className="px-4 mx-auto my-8 max-w-7xl lg:px-0">
-      <div className="flex flex-col lg:flex-row lg:gap-4">
-      
-        <div className="w-full p-6 mb-6 bg-white lg:w-2/3 rounded-xl lg:mb-0">
-          {children}
-        </div>
     <>
       <HeaderDetail />
 
@@ -39,6 +31,3 @@ export default function DetailLayout({ children }: DetailLayoutProps) {
     </>
   );
 }
-
-
-
