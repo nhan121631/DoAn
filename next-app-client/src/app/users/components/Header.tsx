@@ -46,7 +46,8 @@ export default function Header() {
         <ul className="flex gap-4 text-lg lg:gap-8">
           <li>
             <Link
-              href="#"
+              href="#home"
+              onClick={(e) => handleSmoothScroll(e, "home")}
               className="flex items-center gap-1 p-2 text-white transition duration-300 rounded-full cursor-pointer md:px-4 md:py-2 md:gap-2 hover:bg-white/30"
             >
               Home

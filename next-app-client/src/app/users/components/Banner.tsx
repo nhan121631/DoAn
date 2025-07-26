@@ -35,7 +35,10 @@ export default function Banner() {
 
   return (
     <>
-      <section className="relative w-full text-white flex-shrink-0 h-[600px] flex items-center justify-center bg-gradient-to-r from-gray-100 to-gray-300 overflow-visible">
+      <section
+        id="home"
+        className="relative w-full text-white flex-shrink-0 h-[600px] flex items-center justify-center bg-gradient-to-r from-gray-100 to-gray-300 overflow-visible"
+      >
         {/* Banner Images */}
         <div className="absolute inset-0 w-full h-full">
           {urlImages.map((img, idx) => (
@@ -56,18 +59,18 @@ export default function Banner() {
         {/* Left Arrow */}
         <div
           onClick={handleLeft}
-          className="absolute left-8 top-1/2 -translate-y-1/2 cursor-pointer text-2xl hidden sm:block"
+          className="absolute hidden text-2xl -translate-y-1/2 cursor-pointer left-8 top-1/2 sm:block"
         >
           <FaChevronLeft />
         </div>
 
         {/* Banner Content */}
-        <div className="max-w-3xl mx-auto text-center z-10">
-          <h1 className="text-4xl font-bold mb-4">Ants</h1>
-          <div className="text-2xl font-semibold mb-2">
+        <div className="z-10 max-w-3xl mx-auto text-center">
+          <h1 className="mb-4 text-4xl font-bold">Ants</h1>
+          <div className="mb-2 text-2xl font-semibold">
             Find Your Perfect Room, Anytime, Anywhere
           </div>
-          <div className="text-gray-200 mb-2">
+          <div className="mb-2 text-gray-200">
             All-in-one rental solution for students and workers. Search,
             compare, and move in – effortlessly
           </div>
@@ -76,13 +79,13 @@ export default function Banner() {
         {/* Right Arrow */}
         <div
           onClick={handleRight}
-          className="absolute right-8 top-1/2 -translate-y-1/2 cursor-pointer text-2xl hidden sm:block"
+          className="absolute hidden text-2xl -translate-y-1/2 cursor-pointer right-8 top-1/2 sm:block"
         >
           <FaChevronRight />
         </div>
       </section>
       {/* SearchBar nửa trên banner, nửa ngoài */}
-      <div className="relative flex justify-center -mt-0 z-20">
+      <div className="relative z-20 flex justify-center -mt-0">
         <SearchBar />
       </div>
     </>
