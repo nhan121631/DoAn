@@ -34,14 +34,14 @@ export default function RoomVipCard({ room }: RoomVipCardProps) {
           {/* Ảnh lớn bên trái (hoặc trên ở mobile) */}
           <div className="relative rounded-sm overflow-hidden group/image-main sm:w-[65%] w-full aspect-[4/3] sm:aspect-auto">
             <Image
-              src={room.img?.[0]?.url || "/placeholder.jpg"}
+              src={room.img?.[0]?.url || "/images/default/room.png"}
               alt={room.name}
               fill
               className="object-cover w-full h-full transition-all duration-500 ease-in-out group-hover/image-main:scale-105 group-hover/image-main:shadow-2xl group-hover/image-main:brightness-95"
               sizes="(max-width: 640px) 100vw, 300px"
               priority
             />
-            <div className="absolute left-2 bottom-2 bg-black/60 text-white text-xs px-2 py-1 rounded flex items-center gap-1">
+            <div className="absolute flex items-center gap-1 px-2 py-1 text-xs text-white rounded left-2 bottom-2 bg-black/60">
               <IoCameraOutline className="text-base" />
               {room.img?.length ?? 0}
             </div>
@@ -55,7 +55,7 @@ export default function RoomVipCard({ room }: RoomVipCardProps) {
                 className="relative flex-1 aspect-[1/1] rounded-sm overflow-hidden group/image-thumb"
               >
                 <Image
-                  src={img?.url || "/placeholder.jpg"}
+                  src={img?.url || "/images/default/room.png"}
                   alt={`${room.name} ${idx + 2}`}
                   fill
                   className="object-cover w-full h-full transition-all duration-500 ease-in-out group-hover/image-thumb:scale-105 group-hover/image-thumb:shadow-xl group-hover/image-thumb:brightness-95"
@@ -70,17 +70,17 @@ export default function RoomVipCard({ room }: RoomVipCardProps) {
       {/* CONTENT SECTION */}
       <div className="p-4 flex flex-col gap-2 min-h-[120px] max-h-[380px] sm:max-w-[700px] overflow-hidden">
         {/* Tên phòng + sao */}
-        <div className="flex items-center gap-2 mb-1 flex-wrap">
-          <span className="text-yellow-400 text-lg">★★★★★</span>
+        <div className="flex flex-wrap items-center gap-2 mb-1">
+          <span className="text-lg text-yellow-400">★★★★★</span>
           <RoomCartActionsWrapper room={room}>
-            <span className="font-bold text-lg text-red-700 uppercase break-words">
+            <span className="text-lg font-bold text-red-700 uppercase break-words">
               {room.name}
             </span>
           </RoomCartActionsWrapper>
         </div>
 
         {/* Giá - Diện tích - Địa chỉ */}
-        <div className="flex flex-wrap items-center gap-3 text-green-800 font-semibold text-base max-w-full">
+        <div className="flex flex-wrap items-center max-w-full gap-3 text-base font-semibold text-green-800">
           <span className="truncate max-w-[120px]">
             {room.price.toLocaleString("en-US") + "đ"}
           </span>
@@ -93,24 +93,24 @@ export default function RoomVipCard({ room }: RoomVipCardProps) {
         </div>
 
         {/* Mô tả */}
-        <div className="text-gray-800 text-sm mb-2 max-w-full line-clamp-3 text-ellipsis">
+        <div className="max-w-full mb-2 text-sm text-gray-800 line-clamp-3 text-ellipsis">
           {room.description}
         </div>
 
         {/* Thông tin người đăng */}
-        <div className="flex items-center gap-2 mt-auto flex-wrap">
+        <div className="flex flex-wrap items-center gap-2 mt-auto">
           <Image
             src="/images/useravt.png"
             alt="Avatar"
             width={32}
             height={32}
-            className="rounded-full border"
+            className="border rounded-full"
           />
           <span className="font-medium text-gray-800">{room.landlordName}</span>
-          <span className="text-gray-600 text-xs">
+          <span className="text-xs text-gray-600">
             {getPostDateLabel(room.postStartDate)}
           </span>
-          <span className="ml-auto bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full font-semibold text-sm">
+          <span className="px-3 py-1 ml-auto text-sm font-semibold rounded-full bg-emerald-100 text-emerald-700">
             {room.phoneNumber}
           </span>
           <button

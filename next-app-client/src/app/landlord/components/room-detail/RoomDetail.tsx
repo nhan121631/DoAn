@@ -26,10 +26,10 @@ export default function RoomDetail() {
           </span>
         </div>
         <div className="flex items-center gap-4 mb-2">
-          <span className="text-green-700 dark:text-green-400 font-bold text-lg">
+          <span className="text-lg font-bold text-green-700 dark:text-green-400">
             3.8 million/month
           </span>
-          <span className="text-gray-500 dark:text-gray-300 text-base">
+          <span className="text-base text-gray-500 dark:text-gray-300">
             · 20 m²
           </span>
         </div>
@@ -37,7 +37,7 @@ export default function RoomDetail() {
           <span className="w-1/5">Ward</span>
           <a
             href="#"
-            className="text-blue-600 dark:text-blue-400 underline ml-1 w-4/5"
+            className="w-4/5 ml-1 text-blue-600 underline dark:text-blue-400"
           >
             Go Vap District
           </a>
@@ -46,14 +46,14 @@ export default function RoomDetail() {
           <span className="w-1/5">City/Province:</span>
           <a
             href="#"
-            className="text-blue-600 dark:text-blue-400 underline ml-1 w-4/5"
+            className="w-4/5 ml-1 text-blue-600 underline dark:text-blue-400"
           >
             Ho Chi Minh City
           </a>
         </div>
         <div className="text-gray-700 dark:text-gray-200 text-[15px] mb-1 flex justify-start">
           <span className="w-1/5">Address:</span>
-          <span className="ml-1 w-4/5">
+          <span className="w-4/5 ml-1">
             171/14/18 Duong Nguyen Tu Gian, Ward 12, Go Vap District
           </span>
         </div>
@@ -65,13 +65,13 @@ export default function RoomDetail() {
           <span className="w-1/5">Hết hạn:</span>
           <span className="ml-1">Wednesday, 13:42 30/07/2025</span>
         </div>
-        <div className="text-gray-500 dark:text-gray-400 text-sm mt-2">
+        <div className="mt-2 text-sm text-gray-500 dark:text-gray-400">
           Updated: 1 hour ago
         </div>
 
         <hr className="my-5 text-gray-300 dark:text-gray-600" />
 
-        <h2 className="text-lg font-bold mb-2 text-gray-800 dark:text-white">
+        <h2 className="mb-2 text-lg font-bold text-gray-800 dark:text-white">
           Description
         </h2>
         <ul className="list-disc pl-5 space-y-1 text-gray-700 dark:text-gray-200 text-[15px]">
@@ -103,7 +103,7 @@ export default function RoomDetail() {
 
         <Convenient />
         <hr className="my-5 text-gray-300" />
-        <MapSection />
+        <MapSection address="171/14/18 Nguyen Tu Gian, Ward 12, Go Vap" />
       </div>
     </div>
   );
