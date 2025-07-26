@@ -4,13 +4,13 @@ import HeaderDetail from "./Header-detail";
 
 interface DetailLayoutProps {
   children: React.ReactNode;
-  params: {
-    userId: string;
-  };
+  // params: {
+  //   userId: string;
+  // };
 }
 
-export default function DetailLayout({ children, params }: DetailLayoutProps) {
-  const { userId } = params; // Lấy userId từ params
+export default function DetailLayout({ children }: DetailLayoutProps) {
+  // const { userId } = params; // Lấy userId từ params
 
   return (
     <>
