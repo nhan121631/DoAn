@@ -74,7 +74,7 @@ export default function FeaturedListingsCard() {
 
   return (
     <div className="bg-sky-50 rounded-xl shadow-lg p-6 mt-6 border border-sky-400">
-      <h3 className="text-xl font-bold mb-4 text-gray-800">Tin đăng nổi bật</h3>
+      <h3 className="text-xl font-bold mb-4 text-gray-800">Tin mới nhất</h3>
       <div className="flex flex-col gap-3"> 
         {featuredListings.map((listing, index) => ( 
           <React.Fragment key={listing.id}> 
@@ -88,7 +88,7 @@ export default function FeaturedListingsCard() {
                   className="rounded-md"
                 />
                 {listing.isHot && (
-                  <span className="absolute top-2 left-0 bg-red-600 text-white text-xs px-2 py-0 shadow-md z-10 w-20 text-center">
+                  <span className="absolute rounded-xs top-2 left-0 bg-red-600 text-white text-xs px-2 py-0 shadow-md z-10 w-20 text-center">
                   CHO THUÊ NHANH
                 </span>
                 )}
