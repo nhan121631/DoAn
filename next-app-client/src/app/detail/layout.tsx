@@ -9,9 +9,9 @@ interface DetailLayoutProps {
   };
 }
 
-export default function DetailLayout({ children, params }: DetailLayoutProps) {
-  const { userId } = params; // Lấy userId từ params
-
+// export default function DetailLayout({ children, params }: DetailLayoutProps) {
+//   const { userId } = params; // Lấy userId từ params
+export default function DetailLayout({ children }: DetailLayoutProps) {
   return (
     <>
       <HeaderDetail />
