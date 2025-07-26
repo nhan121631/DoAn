@@ -13,7 +13,7 @@ interface RentalData {
   expires: string;
   tenants: number;
   total: string;
-  status: 0 | 1 | 2 | 3 | 4; // 0: pending, 1: accepted, 2: rejected, 3: waiting for deposit, 4: waiting for deposit confirmation, 5: deposited
+  status: 0 | 1 | 2 | 3 | 4; // 0: pending, 1: accepted, 2: rejected, 3: waiting for deposit, 4: deposited
   isRemoved: 0 | 1; // 0: not removed, 1: removed
 }
 

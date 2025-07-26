@@ -54,9 +54,12 @@ export default function RentalRooms() {
             Vietnam’s No.1 Rental Room Platform
           </h1>
           <span className="w-full italic text-left">
+          <span className="w-full italic text-left">
             Find thousands of verified rooms, apartments, and affordable rentals
             across Vietnam – quickly and easily
           </span>
+          <div className="flex flex-col items-center w-full gap-4">
+            <h3 className="w-full text-xl font-semibold text-left">
           <div className="flex flex-col items-center w-full gap-4">
             <h3 className="w-full text-xl font-semibold text-left">
               Highlighted Post
@@ -77,11 +80,15 @@ export default function RentalRooms() {
       </div>
       <div className="flex flex-col items-center justify-center w-full gap-4 px-4 my-6 max-w-7xl">
         <h3 className="w-full text-2xl font-semibold text-center">
+      <div className="flex flex-col items-center justify-center w-full gap-4 px-4 my-6 max-w-7xl">
+        <h3 className="w-full text-2xl font-semibold text-center">
           Featured Listings
         </h3>
         <h5 className="w-full mb-3 font-normal text-center text-md">
+        <h5 className="w-full mb-3 font-normal text-center text-md">
           Some description about the featured listings
         </h5>
+        <div className="flex flex-wrap items-start justify-center w-full gap-8">
         <div className="flex flex-wrap items-start justify-center w-full gap-8">
           <RoomCard room={data} isForSale={true} isFeatured={false} />
           <RoomCard room={data} isForSale={true} isFeatured={false} />
