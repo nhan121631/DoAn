@@ -3,34 +3,55 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { AiOutlineUserAdd } from "react-icons/ai";
 import { FaRegEdit } from "react-icons/fa";
 import { IoLogInOutline } from "react-icons/io5";
 import { RxHamburgerMenu } from "react-icons/rx";
 
-export default function Header() {
+export default function HeaderDetail() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const router = useRouter();
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
-  const handleSmoothScroll = (
+  const handleNavigateToSection = (
     e: React.MouseEvent<HTMLAnchorElement>,
-    targetId: string
+    targetId: string,
+    targetPage?: string
   ) => {
     e.preventDefault();
-    const targetElement = document.getElementById(targetId);
-    if (targetElement) {
-      targetElement.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
-      });
+
+    if (targetPage) {
+      // Navigate to different page with hash using Next.js router
+      router.push(`${targetPage}#${targetId}`);
+
+      // Wait for navigation then scroll to element
+      setTimeout(() => {
+        const targetElement = document.getElementById(targetId);
+        if (targetElement) {
+          targetElement.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+          });
+        }
+      }, 100);
+    } else {
+      // Scroll to element on current page
+      const targetElement = document.getElementById(targetId);
+      if (targetElement) {
+        targetElement.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      }
     }
   };
 
   return (
-    <header className="h-[80px] absolute top-0 left-0 w-full flex items-center justify-between px-4 md:px-8 shadow-md z-50">
+    <header className="h-[80px] bg-gray-700 fixed top-0 left-0 w-full flex items-center justify-between px-4 md:px-8 shadow-md z-50">
       {/* Logo */}
       <div className="flex items-center gap-2 md:gap-4">
         <Image
@@ -46,8 +67,8 @@ export default function Header() {
         <ul className="flex gap-4 text-lg lg:gap-8">
           <li>
             <Link
-              href="#home"
-              onClick={(e) => handleSmoothScroll(e, "home")}
+              href="/users#home"
+              onClick={(e) => handleNavigateToSection(e, "home", "/users")}
               className="flex items-center gap-1 p-2 text-white transition duration-300 rounded-full cursor-pointer md:px-4 md:py-2 md:gap-2 hover:bg-white/30"
             >
               Home
@@ -55,8 +76,10 @@ export default function Header() {
           </li>
           <li>
             <Link
-              href="#rental-rooms"
-              onClick={(e) => handleSmoothScroll(e, "rental-rooms")}
+              href="/users#rental-rooms"
+              onClick={(e) =>
+                handleNavigateToSection(e, "rental-rooms", "/users")
+              }
               className="flex items-center gap-1 p-2 text-white transition duration-300 rounded-full cursor-pointer md:px-4 md:py-2 md:gap-2 hover:bg-white/30"
             >
               Rental rooms
@@ -64,8 +87,8 @@ export default function Header() {
           </li>
           <li>
             <Link
-              href="#landlords"
-              onClick={(e) => handleSmoothScroll(e, "landlords")}
+              href="/users#landlords"
+              onClick={(e) => handleNavigateToSection(e, "landlords", "/users")}
               className="flex items-center gap-1 p-2 text-white transition duration-300 rounded-full cursor-pointer md:px-4 md:py-2 md:gap-2 hover:bg-white/30"
             >
               Landlords
@@ -73,8 +96,8 @@ export default function Header() {
           </li>
           <li>
             <Link
-              href="#contact"
-              onClick={(e) => handleSmoothScroll(e, "contact")}
+              href="/users#contact"
+              onClick={(e) => handleNavigateToSection(e, "contact", "/users")}
               className="flex items-center gap-1 p-2 text-white transition duration-300 rounded-full cursor-pointer md:px-4 md:py-2 md:gap-2 hover:bg-white/30"
             >
               Contact
@@ -131,36 +154,48 @@ export default function Header() {
         <ul className="flex flex-col items-start gap-4 px-4 text-lg">
           <li className="w-full">
             <Link
-              href="#home"
-              onClick={(e) => handleSmoothScroll(e, "home")}
+              href="/users#home"
               className="block w-full px-4 py-2 text-left rounded-md hover:bg-amber-100"
+              onClick={(e) => {
+                handleNavigateToSection(e, "home", "/users");
+                toggleMobileMenu();
+              }}
             >
               Home
             </Link>
           </li>
           <li className="w-full">
             <Link
-              href="#rental-rooms"
-              onClick={(e) => handleSmoothScroll(e, "rental-rooms")}
+              href="/users#rental-rooms"
               className="block w-full px-4 py-2 text-left rounded-md hover:bg-amber-100"
+              onClick={(e) => {
+                handleNavigateToSection(e, "rental-rooms", "/users");
+                toggleMobileMenu();
+              }}
             >
               Rental rooms
             </Link>
           </li>
           <li className="w-full">
             <Link
-              href="#landlords"
-              onClick={(e) => handleSmoothScroll(e, "landlords")}
+              href="/users#landlords"
               className="block w-full px-4 py-2 text-left rounded-md hover:bg-amber-100"
+              onClick={(e) => {
+                handleNavigateToSection(e, "landlords", "/users");
+                toggleMobileMenu();
+              }}
             >
               Landlords
             </Link>
           </li>
           <li className="w-full">
             <Link
-              href="#contact"
-              onClick={(e) => handleSmoothScroll(e, "contact")}
+              href="/users#contact"
               className="block w-full px-4 py-2 text-left rounded-md hover:bg-amber-100"
+              onClick={(e) => {
+                handleNavigateToSection(e, "contact", "/users");
+                toggleMobileMenu();
+              }}
             >
               Contact
             </Link>
