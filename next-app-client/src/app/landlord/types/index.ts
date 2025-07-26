@@ -26,3 +26,13 @@ export type RoomData = {
   isRemove: 0 | 1; // 0 = hiện btn gỡ, 1 = đã gỡ (bị ẩn)
   hidden: 0 | 1; //0 = visible, 1 = hidden
 };
+
+export type LandLordInfo = {
+  id: number;
+  name: string;
+  phone?: string;
+  email?: string;
+  address?: string;
+  avatar?: string; // URL to the avatar image
+  rooms?: RoomData[]; // Optional, if you want to include rooms managed by the landlord
+};

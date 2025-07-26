@@ -1,5 +1,6 @@
 import CardFilter from "../Filter/CardFilter";
 import FeaturedListingsCard from "../InfoCardAndFeatured/FeaturedListingsCard";
+import LandlordCard from "../landlord/LandlordCard";
 import RoomCard from "../rooms/RoomCard";
 import RoomVipCard from "../rooms/RoomVipCard";
 const data = {
@@ -42,20 +43,28 @@ const data = {
   hidden: 0 as 0 | 1,
 };
 
+const landlordData = {
+  id: 1,
+  name: "Landlord Name",
+  phone: "123-456-7890",
+  email: "landlord@example.com",
+
+};
+
 export default function RentalRooms() {
   return (
     <>
-      <div className="flex flex-col lg:flex-row justify-center w-full max-w-7xl mx-auto bg-gray-100 gap-0 lg:gap-x-2">
-        <div className="flex flex-col bg-gray-100 gap-4 max-w-7xl my-8 px-4 lg:px-0 w-full lg:w-auto items-center">
-          <h1 className="text-2xl font-bold text-left w-full ">
+      <div className="flex flex-col justify-center w-full gap-0 mx-auto bg-gray-100 lg:flex-row max-w-7xl lg:gap-x-2">
+        <div className="flex flex-col items-center w-full gap-4 px-4 my-8 bg-gray-100 max-w-7xl lg:px-0 lg:w-auto">
+          <h1 className="w-full text-2xl font-bold text-left ">
             Vietnam’s No.1 Rental Room Platform
           </h1>
-          <span className="w-full text-left italic">
+          <span className="w-full italic text-left">
             Find thousands of verified rooms, apartments, and affordable rentals
             across Vietnam – quickly and easily
           </span>
-          <div className="w-full flex flex-col items-center gap-4">
-            <h3 className="text-xl font-semibold text-left w-full">
+          <div className="flex flex-col items-center w-full gap-4">
+            <h3 className="w-full text-xl font-semibold text-left">
               Highlighted Post
             </h3>
             <RoomVipCard room={data} />
@@ -72,17 +81,34 @@ export default function RentalRooms() {
           </div>
         </div>
       </div>
-      <div className="flex flex-col gap-4 my-6 px-4 w-full max-w-7xl items-center justify-center">
-        <h3 className="text-xl font-semibold text-center w-full">
+      <div className="flex flex-col items-center justify-center w-full gap-4 px-4 my-6 max-w-7xl">
+        <h3 className="w-full text-xl font-semibold text-center">
           Featured Listings
         </h3>
-        <h5 className="text-md mb-3 font-normal text-center w-full">
+        <h5 className="w-full mb-3 font-normal text-center text-md">
           Some description about the featured listings
         </h5>
-        <div className="w-full flex flex-wrap justify-center items-start gap-8">
+        <div className="flex flex-wrap items-start justify-center w-full gap-8">
           <RoomCard room={data} isForSale={true} isFeatured={false} />
           <RoomCard room={data} isForSale={true} isFeatured={false} />
           <RoomCard room={data} isForSale={true} isFeatured={false} />
+        </div>
+      </div>
+
+      <div className="flex flex-col items-center justify-center w-full gap-4 px-4 my-6 max-w-7xl">
+        <h3 className="w-full text-xl font-semibold text-center">
+          Landlord Information
+        </h3>
+        <h5 className="w-full mb-3 font-normal text-center text-md">
+          Some description about the landlord information
+        </h5>
+        <div className="flex flex-wrap items-start justify-center w-full gap-3">
+          <LandlordCard landlord={landlordData} />
+          <LandlordCard landlord={landlordData} />
+          <LandlordCard landlord={landlordData} />
+          <LandlordCard landlord={landlordData} />
+          <LandlordCard landlord={landlordData} />
+          <LandlordCard landlord={landlordData} />
         </div>
       </div>
     </>
