@@ -1,6 +1,5 @@
 import CardFilter from "../Filter/CardFilter";
 import FeaturedListingsCard from "../InfoCardAndFeatured/FeaturedListingsCard";
-import LandlordCard from "../landlord/LandlordCard";
 import RoomCard from "../rooms/RoomCard";
 import RoomVipCard from "../rooms/RoomVipCard";
 const data = {
@@ -43,14 +42,6 @@ const data = {
   hidden: 0 as 0 | 1,
 };
 
-const landlordData = {
-  id: 1,
-  name: "Landlord Name",
-  phone: "123-456-7890",
-  email: "landlord@example.com",
-
-};
-
 export default function RentalRooms() {
   return (
     <>
@@ -82,9 +73,7 @@ export default function RentalRooms() {
         </div>
       </div>
       <div className="flex flex-col items-center justify-center w-full gap-4 px-4 my-6 max-w-7xl">
-        <h3 className="w-full text-xl font-semibold text-center">
-      <div className="flex flex-col gap-4 my-6 px-4 w-full max-w-7xl items-center justify-center">
-        <h3 className="text-2xl font-semibold text-center w-full">
+        <h3 className="w-full text-2xl font-semibold text-center">
           Featured Listings
         </h3>
         <h5 className="w-full mb-3 font-normal text-center text-md">
@@ -94,23 +83,6 @@ export default function RentalRooms() {
           <RoomCard room={data} isForSale={true} isFeatured={false} />
           <RoomCard room={data} isForSale={true} isFeatured={false} />
           <RoomCard room={data} isForSale={true} isFeatured={false} />
-        </div>
-      </div>
-
-      <div className="flex flex-col items-center justify-center w-full gap-4 px-4 my-6 max-w-7xl">
-        <h3 className="w-full text-xl font-semibold text-center">
-          Landlord Information
-        </h3>
-        <h5 className="w-full mb-3 font-normal text-center text-md">
-          Some description about the landlord information
-        </h5>
-        <div className="flex flex-wrap items-start justify-center w-full gap-3">
-          <LandlordCard landlord={landlordData} />
-          <LandlordCard landlord={landlordData} />
-          <LandlordCard landlord={landlordData} />
-          <LandlordCard landlord={landlordData} />
-          <LandlordCard landlord={landlordData} />
-          <LandlordCard landlord={landlordData} />
         </div>
       </div>
     </>
