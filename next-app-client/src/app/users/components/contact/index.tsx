@@ -3,7 +3,10 @@ import ContactForm from "./ContactForm";
 
 export default function ContactPage() {
   return (
-    <div className="flex flex-col items-center w-full py-16 mt-10 bg-white">
+    <div
+      id="contact"
+      className="flex flex-col items-center w-full py-16 mt-10 bg-white"
+    >
       <h1 className="text-2xl font-bold text-gray-800 md:text-3xl">
         Contact Us
       </h1>

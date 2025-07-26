@@ -15,6 +15,20 @@ export default function Header() {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
+  const handleSmoothScroll = (
+    e: React.MouseEvent<HTMLAnchorElement>,
+    targetId: string
+  ) => {
+    e.preventDefault();
+    const targetElement = document.getElementById(targetId);
+    if (targetElement) {
+      targetElement.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }
+  };
+
   return (
     <header className="h-[80px] absolute top-0 left-0 w-full flex items-center justify-between px-4 md:px-8 shadow-md z-50">
       {/* Logo */}
@@ -29,19 +43,20 @@ export default function Header() {
       </div>
 
       <nav className="hidden md:block">
-        <ul className="flex gap-4 lg:gap-8 text-lg">
+        <ul className="flex gap-4 text-lg lg:gap-8">
           <li>
             <Link
-              href="/home"
-              className="text-white p-2 md:px-4 md:py-2 rounded-full flex items-center gap-1 md:gap-2 hover:bg-white/30 transition duration-300 cursor-pointer"
+              href="#"
+              className="flex items-center gap-1 p-2 text-white transition duration-300 rounded-full cursor-pointer md:px-4 md:py-2 md:gap-2 hover:bg-white/30"
             >
               Home
             </Link>
           </li>
           <li>
             <Link
-              href="/users/settings"
-              className="text-white p-2 md:px-4 md:py-2 rounded-full flex items-center gap-1 md:gap-2 hover:bg-white/30 transition duration-300 cursor-pointer"
+              href="#rental-rooms"
+              onClick={(e) => handleSmoothScroll(e, "rental-rooms")}
+              className="flex items-center gap-1 p-2 text-white transition duration-300 rounded-full cursor-pointer md:px-4 md:py-2 md:gap-2 hover:bg-white/30"
             >
               Rental rooms
             </Link>
@@ -49,15 +64,16 @@ export default function Header() {
           <li>
             <Link
               href="/users/profile"
-              className="text-white p-2 md:px-4 md:py-2 rounded-full flex items-center gap-1 md:gap-2 hover:bg-white/30 transition duration-300 cursor-pointer"
+              className="flex items-center gap-1 p-2 text-white transition duration-300 rounded-full cursor-pointer md:px-4 md:py-2 md:gap-2 hover:bg-white/30"
             >
               Landlords
             </Link>
           </li>
           <li>
             <Link
-              href="/users/notifications"
-              className="text-white p-2 md:px-4 md:py-2 rounded-full flex items-center gap-1 md:gap-2 hover:bg-white/30 transition duration-300 cursor-pointer"
+              href="#contact"
+              onClick={(e) => handleSmoothScroll(e, "contact")}
+              className="flex items-center gap-1 p-2 text-white transition duration-300 rounded-full cursor-pointer md:px-4 md:py-2 md:gap-2 hover:bg-white/30"
             >
               Contact
             </Link>
@@ -66,16 +82,16 @@ export default function Header() {
       </nav>
 
       <div className="flex items-center gap-2 md:gap-6">
-        <button className="text-white p-2 md:px-4 md:py-2 rounded-full shadow flex items-center gap-1 md:gap-2 hover:bg-white/30 transition duration-300 cursor-pointer">
-          <AiOutlineUserAdd className="h-5 w-5" />
+        <button className="flex items-center gap-1 p-2 text-white transition duration-300 rounded-full shadow cursor-pointer md:px-4 md:py-2 md:gap-2 hover:bg-white/30">
+          <AiOutlineUserAdd className="w-5 h-5" />
           <span className="hidden md:inline">Register</span>
         </button>
-        <button className="text-white p-2 md:px-4 md:py-2 rounded-full shadow flex items-center gap-1 md:gap-2 hover:bg-white/30 transition duration-300 cursor-pointer">
-          <IoLogInOutline className="h-5 w-5" />
+        <button className="flex items-center gap-1 p-2 text-white transition duration-300 rounded-full shadow cursor-pointer md:px-4 md:py-2 md:gap-2 hover:bg-white/30">
+          <IoLogInOutline className="w-5 h-5" />
           <span className="hidden md:inline">Login</span>
         </button>
-        <button className="bg-white hover:bg-gray-300 text-stone-900 p-2 md:px-4 md:py-2 rounded-full shadow flex items-center gap-1 md:gap-2 transition duration-300 cursor-pointer">
-          <FaRegEdit className="h-5 w-5" />
+        <button className="flex items-center gap-1 p-2 transition duration-300 bg-white rounded-full shadow cursor-pointer hover:bg-gray-300 text-stone-900 md:px-4 md:py-2 md:gap-2">
+          <FaRegEdit className="w-5 h-5" />
           <span className="hidden md:inline">Create Post</span>
         </button>
 
@@ -85,13 +101,13 @@ export default function Header() {
             className="p-2 rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-yellow-400"
             aria-label="Toggle navigation menu"
           >
-            <RxHamburgerMenu className="h-6 w-6 text-white" />
+            <RxHamburgerMenu className="w-6 h-6 text-white" />
           </button>
         </div>
       </div>
       {isMobileMenuOpen && (
         <div
-          className="fixed inset-0 bg-opacity-0 z-30 md:hidden"
+          className="fixed inset-0 z-30 bg-opacity-0 md:hidden"
           onClick={toggleMobileMenu}
         ></div>
       )}
@@ -104,17 +120,17 @@ export default function Header() {
         <div className="flex justify-end px-4 py-2">
           <button
             onClick={toggleMobileMenu}
-            className="text-gray-700 text-2xl hover:text-yellow-400"
+            className="text-2xl text-gray-700 hover:text-yellow-400"
             aria-label="Close navigation menu"
           >
             &times; {/* Close icon */}
           </button>
         </div>
-        <ul className="flex flex-col items-start gap-4 text-lg px-4">
+        <ul className="flex flex-col items-start gap-4 px-4 text-lg">
           <li className="w-full">
             <Link
               href="/home"
-              className="block px-4 py-2 hover:bg-amber-100 rounded-md w-full text-left"
+              className="block w-full px-4 py-2 text-left rounded-md hover:bg-amber-100"
               onClick={toggleMobileMenu}
             >
               Home
@@ -123,7 +139,7 @@ export default function Header() {
           <li className="w-full">
             <Link
               href="/users/settings"
-              className="block px-4 py-2 hover:bg-amber-100 rounded-md w-full text-left"
+              className="block w-full px-4 py-2 text-left rounded-md hover:bg-amber-100"
               onClick={toggleMobileMenu}
             >
               Rental rooms
@@ -132,7 +148,7 @@ export default function Header() {
           <li className="w-full">
             <Link
               href="/users/profile"
-              className="block px-4 py-2 hover:bg-amber-100 rounded-md w-full text-left"
+              className="block w-full px-4 py-2 text-left rounded-md hover:bg-amber-100"
               onClick={toggleMobileMenu}
             >
               Landlords
@@ -141,7 +157,7 @@ export default function Header() {
           <li className="w-full">
             <Link
               href="/users/notifications"
-              className="block px-4 py-2 hover:bg-amber-100 rounded-md w-full text-left"
+              className="block w-full px-4 py-2 text-left rounded-md hover:bg-amber-100"
               onClick={toggleMobileMenu}
             >
               Contact
