@@ -2,6 +2,7 @@ import Convenient from "../landlord/components/room-detail/convenient";
 import MapSection from "../landlord/components/room-detail/map";
 import { Slide } from "../landlord/components/room-detail/Slide";
 
+
 export default function DetailPage() {
   const images = [
     { id: 1, url: "/images/anh1.jpg" },
@@ -26,26 +27,26 @@ export default function DetailPage() {
           </span>
         </div>
         <div className="flex items-center gap-4 mb-2">
-          <span className="text-green-700 font-bold text-lg">
+          <span className="text-lg font-bold text-green-700">
             3.8 million/month
           </span>
-          <span className="text-gray-500 text-base">· 20 m²</span>
+          <span className="text-base text-gray-500">· 20 m²</span>
         </div>
         <div className="text-gray-700 text-[15px] mb-1 flex justify-start">
           <span className="w-1/5">Ward</span>
-          <a href="#" className="text-blue-600 underline ml-1 w-4/5">
+          <a href="#" className="w-4/5 ml-1 text-blue-600 underline">
             Go Vap District
           </a>
         </div>
         <div className="text-gray-700 text-[15px] mb-1 flex justify-start">
           <span className="w-1/5">City/Province:</span>
-          <a href="#" className="text-blue-600 underline ml-1 w-4/5">
+          <a href="#" className="w-4/5 ml-1 text-blue-600 underline">
             Ho Chi Minh City
           </a>
         </div>
         <div className="text-gray-700 text-[15px] mb-1 flex justify-start">
           <span className="w-1/5">Address:</span>
-          <span className="ml-1 w-4/5">
+          <span className="w-4/5 ml-1">
             171/14/18 Duong Nguyen Tu Gian, Ward 12, Go Vap District
           </span>
         </div>
@@ -57,11 +58,11 @@ export default function DetailPage() {
           <span className="w-1/5">Hết hạn:</span>
           <span className="ml-1">Wednesday, 13:42 30/07/2025</span>
         </div>
-        <div className="text-gray-500 text-sm mt-2">Updated: 1 hour ago</div>
+        <div className="mt-2 text-sm text-gray-500">Updated: 1 hour ago</div>
 
         <hr className="my-5 text-gray-300" />
 
-        <h2 className="text-lg font-bold mb-2 text-gray-800">Description</h2>
+        <h2 className="mb-2 text-lg font-bold text-gray-800">Description</h2>
         <ul className="list-disc pl-5 space-y-1 text-gray-700 text-[15px]">
           <li>
             Brand new, clean room with full furniture, balcony, and window.
@@ -91,7 +92,7 @@ export default function DetailPage() {
 
         <Convenient />
         <hr className="my-5 text-gray-300" />
-        <MapSection />
+        <MapSection address = "90 Nguyen Thuc Tu, Hoa Hai, Ngu Hanh Son, Da Nang"/>
       </div>
     </div>
   );
