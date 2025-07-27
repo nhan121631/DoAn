@@ -9,6 +9,7 @@ import { RequestData } from "@/app/user-dashboard/request-status/page";
 
 const { Option } = Select;
 
+//trường trong bảng
 export type RequestFormValues = {
   roomName: string;
   customerName: string;
@@ -20,6 +21,7 @@ interface RequestStatusInteractiveProps {
   initialRequests: RequestData[];
 }
 
+//data mẫu sau có thể fetch
 const availableRooms: Room[] = [
   { name: "Phòng trọ Mr. Nam", address: "Ngu Hanh Son, Da Nang"},
   { name: "Phòng trọ Ms. Lan", address: "Son Tra, Da Nang" },
@@ -60,7 +62,9 @@ const RequestEditModalContent: React.FC<{
 
   return (
     <Modal
-      title={editingRequest ? "Edit Request" : "Add New Request"}
+      title={"Edit Request"}
+      // title={editingRequest ? "Edit Request" : "Add New Request"}
+
       open={open}
       onCancel={onCancel}
       footer={null}
