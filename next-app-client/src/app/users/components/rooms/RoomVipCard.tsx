@@ -33,14 +33,14 @@ export default function RoomVipCard({ room }: RoomVipCardProps) {
         <div className="flex sm:flex-row flex-col gap-1 p-3 w-full sm:h-[320px] min-h-[200px]">
           {/* Ảnh lớn bên trái (hoặc trên ở mobile) */}
           <div className="relative rounded-sm overflow-hidden group/image-main sm:w-[65%] w-full aspect-[4/3] sm:aspect-auto">
-            <Image
-              src={room.img?.[0]?.url || "/images/default/room.png"}
-              alt={room.name}
-              fill
-              className="object-cover w-full h-full transition-all duration-500 ease-in-out group-hover/image-main:scale-105 group-hover/image-main:shadow-2xl group-hover/image-main:brightness-95"
-              sizes="(max-width: 640px) 100vw, 300px"
-              priority
-            />
+          <Image
+            src={room.img?.[0]?.url || "/images/default/room.png"}
+            alt={room.name}
+            fill
+            className="object-cover w-full h-full transition-all duration-500 ease-in-out group-hover/image-main:scale-105 group-hover/image-main:shadow-2xl group-hover/image-main:brightness-95"
+            sizes="(max-width: 640px) 100vw, (max-width: 1200px) 50vw, 300px"
+            priority
+          />
             <div className="absolute flex items-center gap-1 px-2 py-1 text-xs text-white rounded left-2 bottom-2 bg-black/60">
               <IoCameraOutline className="text-base" />
               {room.img?.length ?? 0}
@@ -59,7 +59,7 @@ export default function RoomVipCard({ room }: RoomVipCardProps) {
                   alt={`${room.name} ${idx + 2}`}
                   fill
                   className="object-cover w-full h-full transition-all duration-500 ease-in-out group-hover/image-thumb:scale-105 group-hover/image-thumb:shadow-xl group-hover/image-thumb:brightness-95"
-                  sizes="(max-width: 640px) 50vw, 120px"
+                  sizes="(max-width: 640px) 50vw, (max-width: 1200px) 25vw, 120px"
                 />
               </div>
             ))}
@@ -104,6 +104,7 @@ export default function RoomVipCard({ room }: RoomVipCardProps) {
             alt="Avatar"
             width={32}
             height={32}
+            style={{ width: 32, height: 32 }}
             className="border rounded-full"
           />
           <span className="font-medium text-gray-800">{room.landlordName}</span>

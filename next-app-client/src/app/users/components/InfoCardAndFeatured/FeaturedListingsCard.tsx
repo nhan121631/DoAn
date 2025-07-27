@@ -73,30 +73,32 @@ export default function FeaturedListingsCard() {
   ];
 
   return (
-    <div className="bg-sky-50 rounded-xl shadow-lg p-6 mt-6 border border-sky-400">
-      <h3 className="text-xl font-bold mb-4 text-gray-800">Tin mới nhất</h3>
+    <div className="p-6 mt-6 border shadow-lg bg-sky-50 rounded-xl border-sky-400">
+      <h3 className="mb-4 text-xl font-bold text-gray-800">Tin mới nhất</h3>
       <div className="flex flex-col gap-3"> 
         {featuredListings.map((listing, index) => ( 
           <React.Fragment key={listing.id}> 
-            <Link href={`/tin-dang/${listing.id}`} className=" flex gap-2 p-2 rounded-lg hover:bg-sky-100 transition duration-200 w-full">
-              <div className="relative w-24 h-24 flex-shrink-0 rounded-md overflow-hidden">
+            <Link href={`/tin-dang/${listing.id}`} className="flex w-full gap-2 p-2 transition duration-200 rounded-lg hover:bg-sky-100">
+              <div className="relative flex-shrink-0 w-24 h-24 overflow-hidden rounded-md">
                 <Image
                   src={listing.imageUrl}
                   alt={listing.title}
-                  layout="fill"
-                  objectFit="cover"
+                  fill
+                  style={{ objectFit: "cover" }}
+                  sizes='(max-width: 640px) 100vw, 300px'
                   className="rounded-md"
+                  priority
                 />
                 {listing.isHot && (
-                  <span className="absolute rounded-xs top-2 left-0 bg-red-600 text-white text-xs px-2 py-0 shadow-md z-10 w-20 text-center">
+                  <span className="absolute left-0 z-10 w-20 px-2 py-0 text-xs text-center text-white bg-red-600 shadow-md rounded-xs top-2">
                   CHO THUÊ NHANH
                 </span>
                 )}
               </div>
               <div className="flex flex-col justify-center flex-grow">
-                <p className="text-gray-800 font-semibold text-sm md:text-base line-clamp-2">{listing.title}</p>
-                <p className="text-green-700 font-bold text-sm md:text-base mt-1">{listing.price}</p>
-                <p className="text-gray-500 text-xs">{listing.time}</p>
+                <p className="text-sm font-semibold text-gray-800 md:text-base line-clamp-2">{listing.title}</p>
+                <p className="mt-1 text-sm font-bold text-green-700 md:text-base">{listing.price}</p>
+                <p className="text-xs text-gray-500">{listing.time}</p>
               </div>
             </Link>
             {index < featuredListings.length - 1 && (
