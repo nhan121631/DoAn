@@ -1,7 +1,7 @@
 
 
 import React from 'react';
-import RequestFormModal from '../components/request-status/RequestFormModal';
+import RequestStatusInteractive from '../components/request-status/RequestStatusInteractive';
 
 export type RequestData = {
   key: string;
@@ -44,7 +44,7 @@ const RequestStatusPage: React.FC = () => {
   const requests = initialRequestData;
 
   return (
-    <RequestFormModal initialRequests={requests} />
+    <RequestStatusInteractive initialRequests={requests} />
   );
 };
 
