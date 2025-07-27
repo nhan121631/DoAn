@@ -62,7 +62,6 @@ export default function ChangePasswordForm() {
       <h2 className="mb-6 text-2xl font-bold text-gray-800">Change Password</h2>
 
       <form onSubmit={handleSubmit(onSubmit)}>
-        {/* Old Password Input */}
         <div className="mb-4">
           <label htmlFor="oldPassword" className="block mb-2 text-sm font-bold text-gray-700">Old Password</label>
           <div className="relative">
@@ -86,7 +85,6 @@ export default function ChangePasswordForm() {
               {errors.oldPassword.message}
             </p>
           )}
-          {/* Link to Forgot Password for convenience */}
           <div className="mt-1 text-right">
             <Link href="/auth/forgot-password" className="text-sm text-blue-600 hover:underline">
               Forgot Password?
@@ -94,7 +92,6 @@ export default function ChangePasswordForm() {
           </div>
         </div>
 
-        {/* New Password Input */}
         <div className="mb-4">
           <label htmlFor="newPassword" className="block mb-2 text-sm font-bold text-gray-700">New Password</label>
           <div className="relative">
