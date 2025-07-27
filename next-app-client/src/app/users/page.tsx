@@ -1,4 +1,5 @@
 import BackToTop from "./components/BackToTop";
+import CompareRoom from "./components/CompareRoom";
 import ContactPage from "./components/contact";
 import LandlordListCard from "./components/landlord";
 import RentalRooms from "./components/rental_rooms";
@@ -12,6 +13,7 @@ export default function UsersPage() {
       <LandlordListCard />
       <ContactPage />
       <BackToTop />
+      <CompareRoom />
     </div>
   );
 }

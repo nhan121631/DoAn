@@ -113,7 +113,7 @@ export default function RoomVipCard({ room }: RoomVipCardProps) {
           <span className="px-3 py-1 ml-auto text-sm font-semibold rounded-full bg-emerald-100 text-emerald-700">
             {room.phoneNumber}
           </span>
-          <ButtonForVipCard />
+          <ButtonForVipCard room={room}/>
         </div>
       </div>
     </div>
