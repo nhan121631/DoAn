@@ -33,11 +33,9 @@ export default function UserLayoutClient({
   return (
     <Layout className="min-h-screen">
       <HeaderUserDashboard />
-      <Layout>
+      <Layout className="!min-h-screen">
         <AppSidebar collapsed={collapsed} />
-        <Content className="p-6 bg-white">
-          {children}
-        </Content>
+        <Content className="p-6 bg-white">{children}</Content>
       </Layout>
     </Layout>
   );
