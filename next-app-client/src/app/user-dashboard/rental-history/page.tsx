@@ -91,6 +91,7 @@ function useRentalStatusModal() {
   const [visible, setVisible] = useState(false);
   const [selectedKey, setSelectedKey] = useState<number | null>(null);
   const [confirmLoading, setConfirmLoading] = useState(false);
+  
   return {
     visible,
     setVisible,
@@ -189,7 +190,7 @@ function RentalHistory() {
                 size="small"
                 onClick={() => handleAccept(record.key)}
               >
-                Accept
+                Confirm Deposit
               </Button>
             );
           case 2:
@@ -240,6 +241,7 @@ function RentalHistory() {
       render: (_: any, record: RentalData) => (
         <Button
           type="default"
+          size="small"
           onClick={() => handleAccept(record.key)}
           disabled={record.status !== 4}
         >

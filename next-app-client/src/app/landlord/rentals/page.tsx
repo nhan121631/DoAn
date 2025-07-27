@@ -267,9 +267,10 @@ const columns = [
 export default function RentalsPage() {
   return (
     <div style={{ padding: 24 }}>
-      <h2 className="text-xl font-bold mb-4 dark:!text-white">
-        Rental Management
-      </h2>
+      <div className="mb-4">
+        <h2 className="text-4xl font-semibold dark:!text-white">Rental Management</h2>
+        <p className="text-xl text-gray-500">Room Rental Management.</p>
+      </div>
       <Table columns={columns} dataSource={data} pagination={{ pageSize: 5 }} />
     </div>
   );
