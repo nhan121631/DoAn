@@ -246,7 +246,7 @@ function RentalHistory() {
           Sent Request
         </Button>
       ),
-    }
+    },
   ];
 
   return (
