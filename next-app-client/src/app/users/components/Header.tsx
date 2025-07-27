@@ -39,7 +39,8 @@ export default function Header() {
           width={100}
           height={40}
           priority
-          className="object-contain"
+          className="object-contain w-auto max-h-full"
+          style={{ width: "auto" }} // Đảm bảo giữ đúng tỷ lệ khi height thay đổi
         />
       </div>
 
