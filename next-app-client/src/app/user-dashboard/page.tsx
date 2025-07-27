@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 export default function UserDashboardPage() {
-  return <h1>User Dashboard</h1>;
+  return redirect("/user-dashboard/profile");
 }

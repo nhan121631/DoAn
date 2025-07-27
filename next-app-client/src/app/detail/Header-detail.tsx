@@ -53,13 +53,14 @@ export default function HeaderDetail() {
   return (
     <header className="h-[80px] bg-gray-900 fixed top-0 left-0 w-full flex items-center justify-between px-4 md:px-8 shadow-md z-50">
       {/* Logo */}
-      <div className="flex items-center gap-2 md:gap-4">
+      <div className="flex items-center gap-2 overflow-hidden md:gap-4">
         <Image
           src="/images/logo-ant.png"
           alt="JustHome"
           width={100}
           height={40}
           priority
+          className="object-contain h-auto max-w-full"
         />
       </div>
 
