@@ -2,8 +2,8 @@ import React from "react";
 import Image from "next/image";
 import { RoomData } from "@/app/landlord/types";
 import { IoCameraOutline } from "react-icons/io5";
-import { FaHeart } from "react-icons/fa6";
 import RoomCartActionsWrapper from "./RoomCardActionsWrapper";
+import { ButtonForVipCard } from "./ButtonForVipCard";
 
 interface RoomVipCardProps {
   room: RoomData;
@@ -113,12 +113,7 @@ export default function RoomVipCard({ room }: RoomVipCardProps) {
           <span className="px-3 py-1 ml-auto text-sm font-semibold rounded-full bg-emerald-100 text-emerald-700">
             {room.phoneNumber}
           </span>
-          <button
-            aria-label="Favorite"
-            className="text-gray-400 hover:text-red-500"
-          >
-            <FaHeart size={22} />
-          </button>
+          <ButtonForVipCard />
         </div>
       </div>
     </div>
