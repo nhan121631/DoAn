@@ -39,7 +39,7 @@ export default function Header() {
           width={100}
           height={40}
           priority
-          className="object-contain h-auto max-w-full"
+          className="object-contain"
         />
       </div>
 
