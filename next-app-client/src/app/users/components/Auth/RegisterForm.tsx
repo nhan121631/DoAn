@@ -3,13 +3,14 @@
 import React, { useState } from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { MdErrorOutline } from "react-icons/md";
-import { set, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 
 interface IRegisterInputs {
   fullName: string;
+  email?: string;
   phoneNumber: string;
   password: string;
   accountType: string; // Change to required string
@@ -17,19 +18,23 @@ interface IRegisterInputs {
 
 const schema = yup
   .object({
-    fullName: yup.string().required("Vui lòng nhập Họ tên."),
+    fullName: yup.string().required("Please enter your Full Name."),
+    email: yup
+      .string()
+      .email("Invalid email.")
+      .required("Please enter your email."),
     phoneNumber: yup
       .string()
-      .required("Vui lòng nhập Số điện thoại.")
-      .matches(/^[0-9]{10}$/, "Số điện thoại không hợp lệ."),
+      .required("Please enter your phone number.")
+      .matches(/^[0-9]{10}$/, "Invalid phone number."),
     password: yup
       .string()
-      .min(6, "Mật khẩu phải có ít nhất 6 ký tự.")
-      .required("Vui lòng nhập Mật khẩu."),
+      .min(6, "Password must be at least 6 characters.")
+      .required("Please enter your password."),
     accountType: yup
       .string()
-      .oneOf(["0", "1"], "Vui lòng chọn loại tài khoản.")
-      .required("Vui lòng chọn loại tài khoản."),
+      .oneOf(["0", "1"], "Please select an account type.")
+      .required("Please select an account type."),
   })
   .required();
 export default function RegisterForm() {
@@ -48,6 +53,7 @@ export default function RegisterForm() {
     resolver: yupResolver(schema),
     defaultValues: {
       fullName: "",
+      email: "",
       phoneNumber: "",
       password: "",
       // Removed accountType default value
@@ -55,7 +61,7 @@ export default function RegisterForm() {
   });
 
   const onRegisterSubmit = async (values: IRegisterInputs) => {
-    setRegisterSuccessMessage("Đăng ký thành công!");
+    setRegisterSuccessMessage("Registration successful!");
     reset(); // Reset form after successful submission
     console.log("Register data:", values);
   };
@@ -64,7 +70,7 @@ export default function RegisterForm() {
     <form onSubmit={handleSubmit(onRegisterSubmit)}>
       <div className="mb-4">
         <label htmlFor="registerFullName" className="sr-only">
-          Họ tên
+          Full Name
         </label>
         <input
           type="text"
@@ -72,7 +78,7 @@ export default function RegisterForm() {
           className={`w-full p-3 border ${
             errors.fullName ? "border-red-500" : "border-gray-300"
           } rounded-md focus:outline-none focus:ring-2 focus:ring-white text-white`}
-          placeholder="Họ tên"
+          placeholder="Full Name"
           {...register("fullName")}
         />
         {errors.fullName && (
@@ -82,10 +88,32 @@ export default function RegisterForm() {
           </p>
         )}
       </div>
+      
+      <div className="mb-4">
+        <label htmlFor="registerEmail" className="sr-only">
+          Email
+        </label>
+        <input
+          type="email"
+          id="registerEmail"
+          className={`w-full p-3 border ${
+            errors.email ? "border-red-500" : "border-gray-300"
+          } rounded-md focus:outline-none focus:ring-2 focus:ring-white text-white`}
+          placeholder="Email"
+          {...register("email")}
+        />
+        {errors.email && (
+          <p className="flex items-center mt-1 text-xs text-red-500">
+            <MdErrorOutline className="w-4 h-4 mr-1" />
+            {errors.email.message}
+          </p>
+        )}
+      </div>
+
 
       <div className="mb-4">
         <label htmlFor="registerPhoneNumber" className="sr-only">
-          Số điện thoại
+          Phone Number
         </label>
         <input
           type="tel"
@@ -93,7 +121,7 @@ export default function RegisterForm() {
           className={`w-full p-3 border ${
             errors.phoneNumber ? "border-red-500" : "border-gray-300"
           } rounded-md focus:outline-none focus:ring-2 focus:ring-white text-white`}
-          placeholder="Số điện thoại"
+          placeholder="Phone Number"
           {...register("phoneNumber")}
         />
         {errors.phoneNumber && (
@@ -104,11 +132,12 @@ export default function RegisterForm() {
         )}
       </div>
 
+      
       {/* Password Input (for Register) */}
 
       <div className="mb-4">
         <label htmlFor="registerPassword" className="sr-only">
-          Mật khẩu
+          Password
         </label>
         <div className="relative">
           <input
@@ -117,7 +146,7 @@ export default function RegisterForm() {
             className={`w-full p-3 border ${
               errors.password ? "border-red-500" : "border-gray-300"
             } rounded-md focus:outline-none focus:ring-2 focus:ring-white text-white pr-10`}
-            placeholder="Mật khẩu"
+            placeholder="Password"
             {...register("password")}
           />
           <span
@@ -137,7 +166,7 @@ export default function RegisterForm() {
 
       {/* Account Type Radio Buttons */}
       <div className="mb-6">
-        <p className="mb-2 text-sm text-gray-200">Loại tài khoản</p>
+        <p className="mb-2 text-sm text-gray-200">Account Type</p>
         <div className="flex flex-wrap gap-x-4 gap-y-2">
           <label className="inline-flex items-center text-gray-200">
             <input
@@ -166,16 +195,6 @@ export default function RegisterForm() {
         )}
       </div>
 
-      {/* General Error Message (for API failures) */}
-      {/* {registerGeneralErrorMessage && (
-        <div
-          className="relative px-4 py-3 mb-4 text-sm text-red-700 bg-red-100 border border-red-400 rounded"
-          role="alert"
-        >
-          <span className="block sm:inline">{registerGeneralErrorMessage}</span>
-        </div>
-      )} */}
-
       {/* Success Message */}
       {registerSuccessMessage && (
         <div
@@ -191,7 +210,7 @@ export default function RegisterForm() {
         type="submit"
         className="w-full py-3 text-lg font-semibold text-black transition duration-300 bg-gray-200 rounded-md hover:bg-gray-400"
       >
-        Tạo tài khoản
+        Create Account
       </button>
     </form>
   );

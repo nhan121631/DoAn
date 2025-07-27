@@ -1,3 +1,4 @@
+import AuthHeader from '@/app/users/components/Auth/AuthHeader';
 import ForgotPasswordForm from '@/app/users/components/Auth/ForgotPasswordForm';
 import Image from 'next/image'; 
 
@@ -13,8 +14,10 @@ export default function ForgotPasswordPage() {
         priority
       />
       {/* Lớp phủ mờ */}
-      <div className="absolute inset-0 z-10 bg-black opacity-30"></div>
-
+      {/* <div className="absolute inset-0 z-10 bg-black opacity-30"></div> */}
+      <div >
+        <AuthHeader />
+      </div>
       {/* Container cho ForgotPasswordForm, căn giữa màn hình */}
       <div className="relative z-20">
         <ForgotPasswordForm />
