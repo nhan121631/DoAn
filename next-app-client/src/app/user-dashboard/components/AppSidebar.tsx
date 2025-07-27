@@ -83,19 +83,11 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
                   display: "inline-flex",
                   alignItems: "center",
                 }}
-                className="transition-colors duration-200 hover:text-blue-400"
               >
                 <ImProfile />
               </span>
             ),
-            label: (
-              <Link
-                href="/user-dashboard/profile"
-                className="block w-full h-full transition-colors duration-200 hover:text-blue-400"
-              >
-                Profile
-              </Link>
-            ),
+            label: <Link href="/user-dashboard/profile">Profile</Link>,
           },
           {
             key: "2",
@@ -107,18 +99,12 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
                   display: "inline-flex",
                   alignItems: "center",
                 }}
-                className="transition-colors duration-200 hover:text-blue-400"
               >
                 <MdHistory />
               </span>
             ),
             label: (
-              <Link
-                href="/user-dashboard/rental-history"
-                className="block w-full h-full transition-colors duration-200 hover:text-blue-400"
-              >
-                Rental History
-              </Link>
+              <Link href="/user-dashboard/rental-history">Rental History</Link>
             ),
           },
           {
@@ -131,18 +117,12 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
                   display: "inline-flex",
                   alignItems: "center",
                 }}
-                className="transition-colors duration-200 hover:text-blue-400"
               >
                 <LuBookCheck />
               </span>
             ),
             label: (
-              <Link
-                href="/user-dashboard/request-status"
-                className="block w-full h-full transition-colors duration-200 hover:text-blue-400"
-              >
-                Request Status
-              </Link>
+              <Link href="/user-dashboard/request-status">Request Status</Link>
             ),
           },
           {
@@ -155,16 +135,12 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
                   display: "inline-flex",
                   alignItems: "center",
                 }}
-                className="transition-colors duration-200 hover:text-blue-400"
               >
                 <MdFavoriteBorder />
               </span>
             ),
             label: (
-              <Link
-                href="/user-dashboard/favorited-rooms"
-                className="block w-full h-full transition-colors duration-200 hover:text-blue-400"
-              >
+              <Link href="/user-dashboard/favorited-rooms">
                 Favorited Rooms
               </Link>
             ),
@@ -179,16 +155,12 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
                   display: "inline-flex",
                   alignItems: "center",
                 }}
-                className="transition-colors duration-200 hover:text-blue-400"
               >
                 <MdOutlineLockReset />
               </span>
             ),
             label: (
-              <Link
-                href="/user-dashboard/change-password"
-                className="block w-full h-full transition-colors duration-200 hover:text-blue-400"
-              >
+              <Link href="/user-dashboard/change-password">
                 Change Password
               </Link>
             ),
