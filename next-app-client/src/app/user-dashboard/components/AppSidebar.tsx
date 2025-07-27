@@ -94,7 +94,7 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
             icon: (
               <span
                 style={{
-                  fontSize: 16,
+                  fontSize: 18,
                   marginRight: 4,
                   display: "inline-flex",
                   alignItems: "center",
