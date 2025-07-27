@@ -341,10 +341,11 @@ const TableManageRoom: React.FC = () => {
 
   return (
     <div className="mx-4 my-6 p-6 min-h-[280px] dark:!bg-[#171f2f] dark:!text-white">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-bold mb-4 dark:!text-white">
-          Rental Management
-        </h2>
+      <div className="flex items-center justify-between mb-4">
+        <div className="mb-4">
+        <h2 className="text-4xl font-semibold dark:!text-white">Manage Rooms</h2>
+        <p className="text-xl text-gray-500">Room Post Management.</p>
+      </div>
         {/* Button to add new post room */}
         <div>
           <Button

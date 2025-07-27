@@ -106,9 +106,10 @@ export default function ManageRequests() {
 
   return (
     <div className="p-4">
-      <h2 className="text-xl font-bold mb-4 dark:!text-white">
-        Request Management
-      </h2>
+      <div className="mb-4">
+        <h2 className="text-4xl font-semibold dark:!text-white">Manage Requests</h2>
+        <p className="text-xl text-gray-500">Room Request Management</p>
+      </div>
       <Table
         columns={columns}
         dataSource={requests}
