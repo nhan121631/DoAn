@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
 export default function Home() {
-  redirect("/landlord");
+  redirect("/user-dashboard");
   return null;
 }
