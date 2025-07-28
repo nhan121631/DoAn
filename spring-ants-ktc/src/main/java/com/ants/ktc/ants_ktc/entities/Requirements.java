@@ -22,6 +22,4 @@ public class Requirements extends BaseEntity {
     @ManyToOne
     @JoinColumn(name = "user_id")
     private Users user;
-
-    
 }
