@@ -33,7 +33,7 @@ public class Rooms extends BaseEntity {
     private List<Images> images = new ArrayList<>(); 
 
     @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<PostType> postTypes = new ArrayList<>();
+    private List<Maintenances> maintenances = new ArrayList<>();
     
     @ManyToOne
     @JoinColumn(name = "post_type_id")
