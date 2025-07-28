@@ -13,7 +13,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 @Entity
-@Table(name = "role")
+@Table(name = "roles")
 @Data
 @EqualsAndHashCode(callSuper = true)
 
