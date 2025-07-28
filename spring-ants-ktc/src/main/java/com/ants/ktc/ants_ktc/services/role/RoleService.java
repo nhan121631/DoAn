@@ -15,6 +15,11 @@ public class RoleService {
     private RoleRepository roleRepository;
 
     // public List<RoleResponseDto> getAllRoles() {
+    //     return roleRepository.findAll().stream()
+    //             .map(role -> new RoleResponseDto(role.getRoleId(), role.getCode(), role.getName()))
+    //             .collect(Collectors.toList());
+    // }
+    // public List<RoleResponseDto> getAllRoles() {
         // return roleRepository.findAll().stream()
                 // .map(role -> new RoleResponseDto(role.getRoleId(), role.getCode(), role.getName()))
                 // .collect(Collectors.toList());

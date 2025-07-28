@@ -19,6 +19,10 @@ public class RoleController {
 
     // @GetMapping
     // public ResponseEntity<List<RoleResponseDto>> getAllRoles() {
+    // return ResponseEntity.ok(roleService.getAllRoles());
+    // }
+    // @GetMapping
+    // public ResponseEntity<List<RoleResponseDto>> getAllRoles() {
     //     // return ResponseEntity.ok(roleService.getAllRoles());
     // }
 }
