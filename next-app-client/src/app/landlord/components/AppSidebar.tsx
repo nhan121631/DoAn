@@ -42,7 +42,12 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
     "/landlord/payment-history": "10",
   };
 
-  const selectedKey = pathToKey[pathname] || "1";
+  // const selectedKey = pathToKey[pathname] || "1";
+  const getSelectedKey = () => {
+    if (pathname.startsWith("/landlord/manage-rooms")) return "3";
+    return pathToKey[pathname] || "1";
+  };
+  const selectedKey = getSelectedKey();
 
   if (!mounted) {
     return (
