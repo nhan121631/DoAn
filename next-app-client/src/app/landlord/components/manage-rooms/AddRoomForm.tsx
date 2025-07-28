@@ -1,14 +1,16 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Form, Input, InputNumber, Button, Upload, Select } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
 import type { UploadFile } from "antd/es/upload/interface";
 import { RoomData } from "../../types";
+import { Province } from "@/types/types";
+import { getProvinces } from "@/services/AddressService";
 
-const provinces = [
-  { label: "Hà Nội", value: "hanoi" },
-  { label: "Hồ Chí Minh", value: "hcm" },
-  { label: "Đà Nẵng", value: "danang" },
-];
+// const provinces = [
+//   { label: "Hà Nội", value: "hanoi" },
+//   { label: "Hồ Chí Minh", value: "hcm" },
+//   { label: "Đà Nẵng", value: "danang" },
+// ];
 const districts = [
   { label: "Quận 1", value: "quan1" },
   { label: "Quận 2", value: "quan2" },
@@ -27,6 +29,19 @@ const AddRoomForm: React.FC<{ onFinish?: (values: RoomData) => void }> = (
 ) => {
   const [form] = Form.useForm();
   const [fileList, setFileList] = React.useState<UploadFile[]>([]);
+
+  const [provinces, setProvinces] = React.useState<Province[]>([]);
+  useEffect(() => {
+    const fetchProvinces = async () => {
+      try {
+        const data = await getProvinces();
+        setProvinces(data);
+      } catch (error) {
+        console.error("Failed to fetch provinces:", error);
+      }
+    };
+    fetchProvinces();
+  }, []);
 
   //   const handleOnSubmit = (values: RoomData) => {
   //
@@ -73,26 +88,26 @@ const AddRoomForm: React.FC<{ onFinish?: (values: RoomData) => void }> = (
             </Form.Item>
             <div className="flex gap-2 justify-between">
               <Form.Item
-              label="Tỉnh/Thành phố"
-              name="province"
-              rules={[{ required: true, message: "Chọn tỉnh/thành phố" }]}
-            >
-              <Select placeholder="Chọn tỉnh/thành phố" options={provinces} />
-            </Form.Item>
-            <Form.Item
-              label="Quận/Huyện"
-              name="district"
-              rules={[{ required: true, message: "Chọn quận/huyện" }]}
-            >
-              <Select placeholder="Chọn quận/huyện" options={districts} />
-            </Form.Item>
-            <Form.Item
-              label="Phường/Xã"
-              name="ward"
-              rules={[{ required: true, message: "Chọn phường/xã" }]}
-            >
-              <Select placeholder="Chọn phường/xã" options={wards} />
-            </Form.Item>
+                label="Tỉnh/Thành phố"
+                name="province"
+                rules={[{ required: true, message: "Chọn tỉnh/thành phố" }]}
+              >
+                <Select placeholder="Chọn tỉnh/thành phố" options={provinces} />
+              </Form.Item>
+              <Form.Item
+                label="Quận/Huyện"
+                name="district"
+                rules={[{ required: true, message: "Chọn quận/huyện" }]}
+              >
+                <Select placeholder="Chọn quận/huyện" options={districts} />
+              </Form.Item>
+              <Form.Item
+                label="Phường/Xã"
+                name="ward"
+                rules={[{ required: true, message: "Chọn phường/xã" }]}
+              >
+                <Select placeholder="Chọn phường/xã" options={wards} />
+              </Form.Item>
             </div>
             <Form.Item
               label="Địa chỉ"
@@ -101,7 +116,6 @@ const AddRoomForm: React.FC<{ onFinish?: (values: RoomData) => void }> = (
             >
               <Input placeholder="Nhập địa chỉ" />
             </Form.Item>
-            
 
             <div className="flex gap-2">
               <Form.Item
