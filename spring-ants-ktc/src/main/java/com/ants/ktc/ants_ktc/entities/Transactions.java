@@ -18,6 +18,6 @@ public class Transactions extends BaseEntity {
     private String description;
 
     @ManyToOne
-    @JoinColumn(name = "wallet_id")
+    @JoinColumn(name = "wallet_id", nullable = false)
     private Wallets wallet;
 }

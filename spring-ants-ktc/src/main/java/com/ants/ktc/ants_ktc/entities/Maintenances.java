@@ -17,6 +17,6 @@ public class Maintenances extends BaseEntity {
     private int status;
 
     @ManyToOne
-    @JoinColumn(name = "room_id")
+    @JoinColumn(name = "room_id", nullable = false)
     private Rooms room;
 }
