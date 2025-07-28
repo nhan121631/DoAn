@@ -1,7 +1,5 @@
-
-
-import React from 'react';
-import RequestStatusInteractive from '../components/request-status/RequestStatusInteractive';
+import React from "react";
+import RequestStatusInteractive from "../components/request-status/RequestStatusInteractive";
 
 export type RequestData = {
   key: string;
@@ -19,7 +17,7 @@ const initialRequestData: RequestData[] = [
     customerName: "Nguyễn Văn A",
     phoneNumber: "123456789",
     requestDescription: "Yêu cầu sửa chữa điện nước",
-    status: 0, 
+    status: 0,
   },
   {
     key: "2",
@@ -27,7 +25,7 @@ const initialRequestData: RequestData[] = [
     customerName: "Trần Thị B",
     phoneNumber: "987654321",
     requestDescription: "Yêu cầu dọn dẹp phòng",
-    status: 1, 
+    status: 1,
   },
   {
     key: "3",
@@ -40,12 +38,9 @@ const initialRequestData: RequestData[] = [
 ];
 
 const RequestStatusPage: React.FC = () => {
- 
   const requests = initialRequestData;
 
-  return (
-    <RequestStatusInteractive initialRequests={requests} />
-  );
+  return <RequestStatusInteractive initialRequests={requests} />;
 };
 
 export default RequestStatusPage;

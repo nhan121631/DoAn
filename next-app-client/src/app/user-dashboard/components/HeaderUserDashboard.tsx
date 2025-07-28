@@ -70,7 +70,7 @@ export default function HeaderUserDashboard() {
             <Link
               href="/users#home"
               onClick={(e) => handleNavigateToSection(e, "home", "/users")}
-              className="flex items-center gap-1 p-2 text-white transition duration-300 rounded-full cursor-pointer md:px-4 md:py-2 md:gap-2 hover:bg-white/30"
+              className="flex items-center gap-1 p-2 !text-white transition duration-300 rounded-full cursor-pointer md:px-4 md:py-2 md:gap-2 hover:!bg-white/30"
             >
               Home
             </Link>
@@ -81,7 +81,7 @@ export default function HeaderUserDashboard() {
               onClick={(e) =>
                 handleNavigateToSection(e, "rental-rooms", "/users")
               }
-              className="flex items-center gap-1 p-2 text-white transition duration-300 rounded-full cursor-pointer md:px-4 md:py-2 md:gap-2 hover:bg-white/30"
+              className="flex items-center gap-1 p-2 !text-white transition duration-300 rounded-full cursor-pointer md:px-4 md:py-2 md:gap-2 hover:!bg-white/30"
             >
               Rental rooms
             </Link>
@@ -90,7 +90,7 @@ export default function HeaderUserDashboard() {
             <Link
               href="/users#landlords"
               onClick={(e) => handleNavigateToSection(e, "landlords", "/users")}
-              className="flex items-center gap-1 p-2 text-white transition duration-300 rounded-full cursor-pointer md:px-4 md:py-2 md:gap-2 hover:bg-white/30"
+              className="flex items-center gap-1 p-2 !text-white transition duration-300 rounded-full cursor-pointer md:px-4 md:py-2 md:gap-2 hover:!bg-white/30"
             >
               Landlords
             </Link>
@@ -99,7 +99,7 @@ export default function HeaderUserDashboard() {
             <Link
               href="/users#contact"
               onClick={(e) => handleNavigateToSection(e, "contact", "/users")}
-              className="flex items-center gap-1 p-2 text-white transition duration-300 rounded-full cursor-pointer md:px-4 md:py-2 md:gap-2 hover:bg-white/30"
+              className="flex items-center gap-1 p-2 !text-white transition duration-300 rounded-full cursor-pointer md:px-4 md:py-2 md:gap-2 hover:!bg-white/30"
             >
               Contact
             </Link>

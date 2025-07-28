@@ -1,9 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import { Button, Table, Tag } from "antd";
+import { Button, Table, Tag, Form, Space } from "antd";
 import ModalPayment from "../components/rental-history/ModalPayment";
+import RequestModal from "../components/rental-history/RequestModal";
 import { useState } from "react";
 import React from "react";
+import { IoMdAddCircleOutline } from "react-icons/io";
 
 interface RentalData {
   key: number;
@@ -91,6 +93,7 @@ function useRentalStatusModal() {
   const [visible, setVisible] = useState(false);
   const [selectedKey, setSelectedKey] = useState<number | null>(null);
   const [confirmLoading, setConfirmLoading] = useState(false);
+
   return {
     visible,
     setVisible,
@@ -104,6 +107,24 @@ function useRentalStatusModal() {
 function RentalHistory() {
   const [tableData, setTableData] = React.useState(data);
   const modal = useRentalStatusModal();
+
+  // State for RequestModal
+  const [open, setOpen] = useState(false);
+  const [form] = Form.useForm();
+  const [fieldValue, setFieldValue] = useState<RentalData | null>(null);
+  const [modalType, setModalType] = useState<"add" | "edit">("add");
+
+  const onCancel = () => {
+    setOpen(false);
+    setFieldValue(null);
+    form.resetFields();
+  };
+
+  const handleFinish = () => {
+    setOpen(false);
+    setFieldValue(null);
+    form.resetFields();
+  };
 
   const handleAccept = (key: number) => {
     modal.setSelectedKey(key);
@@ -189,7 +210,7 @@ function RentalHistory() {
                 size="small"
                 onClick={() => handleAccept(record.key)}
               >
-                Accept
+                Confirm Deposit
               </Button>
             );
           case 2:
@@ -238,15 +259,36 @@ function RentalHistory() {
       title: "Request Action",
       key: "requestAction",
       render: (_: any, record: RentalData) => (
-        <Button
-          type="default"
-          onClick={() => handleAccept(record.key)}
-          disabled={record.status !== 4}
-        >
-          Sent Request
-        </Button>
+        <Space size="middle">
+          <Button
+            type="primary"
+            size="small"
+            onClick={() => {
+              if (record.status === 4) {
+                setFieldValue(record);
+                setModalType("add");
+                setOpen(true);
+              }
+            }}
+            title="Add Request"
+            disabled={record.status !== 4}
+          ><IoMdAddCircleOutline size={18} /> Sent new request</Button>
+          {/* <Button
+            type="text"
+            icon={<AiOutlineEdit size={18} />}
+            onClick={() => {
+              if (record.status === 4) {
+                setFieldValue(record);
+                setModalType("edit");
+                setOpen(true);
+              }
+            }}
+            title="Edit Request"
+            disabled={record.status !== 4}
+          /> */}
+        </Space>
       ),
-    }
+    },
   ];
 
   return (
@@ -264,6 +306,15 @@ function RentalHistory() {
         onCancel={() => modal.setVisible(false)}
         onConfirm={handleConfirm}
         confirmLoading={modal.confirmLoading}
+      />
+      {/* Request Modal moved to component */}
+      <RequestModal
+        open={open}
+        onCancel={onCancel}
+        onFinish={handleFinish}
+        form={form}
+        fieldValue={fieldValue}
+        modalType={modalType}
       />
     </div>
   );
