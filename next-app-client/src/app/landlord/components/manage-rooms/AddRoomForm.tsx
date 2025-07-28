@@ -1,8 +1,24 @@
 import React from "react";
-import { Form, Input, InputNumber, Button, Upload } from "antd";
+import { Form, Input, InputNumber, Button, Upload, Select } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
 import type { UploadFile } from "antd/es/upload/interface";
 import { RoomData } from "../../types";
+
+const provinces = [
+  { label: "Hà Nội", value: "hanoi" },
+  { label: "Hồ Chí Minh", value: "hcm" },
+  { label: "Đà Nẵng", value: "danang" },
+];
+const districts = [
+  { label: "Quận 1", value: "quan1" },
+  { label: "Quận 2", value: "quan2" },
+  { label: "Quận 3", value: "quan3" },
+];
+const wards = [
+  { label: "Phường A", value: "phuonga" },
+  { label: "Phường B", value: "phuongb" },
+  { label: "Phường C", value: "phuongc" },
+];
 
 const AddRoomForm: React.FC<{ onFinish?: (values: RoomData) => void }> = (
   {
@@ -55,6 +71,29 @@ const AddRoomForm: React.FC<{ onFinish?: (values: RoomData) => void }> = (
             >
               <Input placeholder="Nhập tên phòng" />
             </Form.Item>
+            <div className="flex gap-2 justify-between">
+              <Form.Item
+              label="Tỉnh/Thành phố"
+              name="province"
+              rules={[{ required: true, message: "Chọn tỉnh/thành phố" }]}
+            >
+              <Select placeholder="Chọn tỉnh/thành phố" options={provinces} />
+            </Form.Item>
+            <Form.Item
+              label="Quận/Huyện"
+              name="district"
+              rules={[{ required: true, message: "Chọn quận/huyện" }]}
+            >
+              <Select placeholder="Chọn quận/huyện" options={districts} />
+            </Form.Item>
+            <Form.Item
+              label="Phường/Xã"
+              name="ward"
+              rules={[{ required: true, message: "Chọn phường/xã" }]}
+            >
+              <Select placeholder="Chọn phường/xã" options={wards} />
+            </Form.Item>
+            </div>
             <Form.Item
               label="Địa chỉ"
               name="address"
@@ -62,6 +101,8 @@ const AddRoomForm: React.FC<{ onFinish?: (values: RoomData) => void }> = (
             >
               <Input placeholder="Nhập địa chỉ" />
             </Form.Item>
+            
+
             <div className="flex gap-2">
               <Form.Item
                 label="Diện tích (m²)"
