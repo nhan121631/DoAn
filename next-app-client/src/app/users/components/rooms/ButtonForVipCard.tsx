@@ -53,7 +53,7 @@ export function ButtonForVipCard({
         <FaHeart size={22} />
       </button>
       <button
-        className={`flex items-center justify-center gap-1 px-5 py-2 rounded transition 
+        className={`flex items-center justify-center gap-1 px-5 py-2 rounded-full transition 
       ${
         isCompared
           ? "bg-gray-200 text-gray-400 opacity-60 cursor-not-allowed"

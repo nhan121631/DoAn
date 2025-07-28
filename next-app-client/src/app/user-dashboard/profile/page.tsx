@@ -20,6 +20,7 @@ export default function ProfileInfo() {
             alt="Avatar"
             width={128}
             height={128}
+            priority
             className="mb-4 border-4 border-blue-500 rounded-full"
           />
           <span className="mt-2 text-lg font-semibold">Luan Tran</span>
