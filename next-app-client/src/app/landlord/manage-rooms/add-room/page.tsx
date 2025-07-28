@@ -3,7 +3,7 @@ import React from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "antd";
 import { ArrowLeftOutlined } from "@ant-design/icons";
-import AddRoomForm from "../components/manage-rooms/AddRoomForm";
+import AddRoomForm from "../../components/manage-rooms/AddRoomForm";
 
 const AddRoomPage: React.FC = () => {
   const router = useRouter();

@@ -351,7 +351,7 @@ const TableManageRoom: React.FC = () => {
           <Button
             type="primary"
             icon={<AiOutlinePlus size={18} />}
-            onClick={() => router.push("/landlord/add-room")}
+            onClick={() => router.push("/landlord/manage-rooms/add-room")}
           >
             Thêm phòng
           </Button>

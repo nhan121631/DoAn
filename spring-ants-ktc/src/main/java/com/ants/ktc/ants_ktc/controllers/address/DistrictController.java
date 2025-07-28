@@ -12,6 +12,7 @@ import com.ants.ktc.ants_ktc.services.address.DistrictService;
 
 @RestController
 @RequestMapping("/api/districts")
+
 public class DistrictController {
     private final DistrictService districtService;
 
