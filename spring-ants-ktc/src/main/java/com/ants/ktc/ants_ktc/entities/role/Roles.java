@@ -13,11 +13,11 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 @Entity
-@Table(name = "role")
+@Table(name = "roles")
 @Data
 @EqualsAndHashCode(callSuper = true)
 
-public class Role extends BaseEntity {
+public class Roles extends BaseEntity {
 
     private String code;
     private String name;
