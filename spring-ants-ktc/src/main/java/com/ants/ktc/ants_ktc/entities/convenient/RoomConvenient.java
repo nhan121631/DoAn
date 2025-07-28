@@ -1,5 +1,7 @@
 package com.ants.ktc.ants_ktc.entities.convenient;
 
+import com.ants.ktc.ants_ktc.entities.Rooms;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -19,8 +21,9 @@ public class RoomConvenient {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "room_id")
-    private Long roomId;
+    @ManyToOne
+    @JoinColumn(name = "room_id")
+    private Rooms room;
 
     @ManyToOne
     @JoinColumn(name = "convenient_id")
