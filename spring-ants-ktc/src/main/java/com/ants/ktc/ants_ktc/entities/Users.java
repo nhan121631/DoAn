@@ -19,7 +19,7 @@ import lombok.EqualsAndHashCode;
 @Table(name = "users")
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class User extends BaseEntity {
+public class Users extends BaseEntity {
     @Column(name = "username", unique = true, nullable = false)
     private String username;
     @Column(name = "password")
@@ -56,5 +56,8 @@ public class User extends BaseEntity {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Requirements> requirements;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Booking> bookings;
 
 }

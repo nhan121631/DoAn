@@ -1,6 +1,6 @@
 package com.ants.ktc.ants_ktc.entities.role;
 
-import com.ants.ktc.ants_ktc.entities.User;
+import com.ants.ktc.ants_ktc.entities.Users;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -25,6 +25,6 @@ public class UserRole {
 
     @ManyToOne
     @JoinColumn(name = "user_id")
-    private User user;
+    private Users user;
 
 }
