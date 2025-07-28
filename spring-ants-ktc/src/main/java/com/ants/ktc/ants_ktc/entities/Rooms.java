@@ -7,6 +7,8 @@ import java.util.List;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Data;
@@ -28,5 +30,12 @@ public class Rooms extends BaseEntity {
     private Date post_end_date;
 
     @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Images> images = new ArrayList<>();    
+    private List<Images> images = new ArrayList<>(); 
+
+    @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PostType> postTypes = new ArrayList<>();
+    
+    @ManyToOne
+    @JoinColumn(name = "post_type_id")
+    private PostType postType;
 }
