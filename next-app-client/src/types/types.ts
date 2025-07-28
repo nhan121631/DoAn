@@ -1,3 +1,24 @@
+// Adress
+//Province
+export type Province = {
+  id: number;
+  name: string;
+};
+//District
+export type District = {
+  id: number;
+  name: string;
+  provinceId: number;
+};
+//Ward
+export type Ward = {
+  id: number;
+  name: string;
+  districtId: number;
+};
+//--------------------------------------//
+
+
 export type Room = {
   name: string;
   address: string;
