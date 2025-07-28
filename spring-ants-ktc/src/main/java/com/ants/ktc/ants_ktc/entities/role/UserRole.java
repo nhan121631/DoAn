@@ -1,5 +1,7 @@
 package com.ants.ktc.ants_ktc.entities.role;
 
+import com.ants.ktc.ants_ktc.entities.User;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -17,10 +19,12 @@ public class UserRole {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long userId;
-
     @ManyToOne
     @JoinColumn(name = "role_id")
     private Role role;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
 
 }
