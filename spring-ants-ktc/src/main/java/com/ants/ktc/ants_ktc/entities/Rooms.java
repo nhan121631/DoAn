@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import com.ants.ktc.ants_ktc.entities.address.Address;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
@@ -38,4 +40,8 @@ public class Rooms extends BaseEntity {
     @ManyToOne
     @JoinColumn(name = "post_type_id")
     private PostType postType;
+
+    @ManyToOne
+    @JoinColumn(name = "address_id")
+    private Address address;
 }
