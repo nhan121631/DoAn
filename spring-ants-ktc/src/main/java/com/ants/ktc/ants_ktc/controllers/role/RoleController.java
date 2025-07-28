@@ -14,8 +14,8 @@ import com.ants.ktc.ants_ktc.services.role.RoleService;
 @RestController
 @RequestMapping("/api/roles")
 public class RoleController {
-    @Autowired
-    private RoleService roleService;
+    // @Autowired
+    // private RoleService roleService;
 
     // @GetMapping
     // public ResponseEntity<List<RoleResponseDto>> getAllRoles() {
