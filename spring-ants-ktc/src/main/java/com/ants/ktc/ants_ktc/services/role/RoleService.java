@@ -16,7 +16,7 @@ public class RoleService {
 
     public List<RoleResponseDto> getAllRoles() {
         return roleRepository.findAll().stream()
-                .map(role -> new RoleResponseDto(role.getRoleId(), role.getCode(), role.getName()))
+                .map(role -> new RoleResponseDto(role.getId(), role.getCode(), role.getName()))
                 .collect(Collectors.toList());
     }
 }
