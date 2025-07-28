@@ -36,6 +36,9 @@ public class Rooms extends BaseEntity {
 
     @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Maintenances> maintenances = new ArrayList<>();
+
+    @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Requirements> requirements = new ArrayList<>();
     
     @ManyToOne
     @JoinColumn(name = "post_type_id")
