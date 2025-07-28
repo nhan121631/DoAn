@@ -20,7 +20,6 @@ public class WardController {
         this.wardService = wardService;
     }
 
-    // Endpoint to get wards by district ID
     @GetMapping("/{districtId}")
     public List<WardResponseDto> getWardsByDistrictId(@PathVariable("districtId") Long districtId) {
         return wardService.getWardsByDistrictId(districtId);
