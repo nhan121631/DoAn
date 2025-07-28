@@ -3,24 +3,21 @@ import { Form, Input, InputNumber, Button, Upload, Select } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
 import type { UploadFile } from "antd/es/upload/interface";
 import { RoomData } from "../../types";
-import { Province } from "@/types/types";
-import { getProvinces } from "@/services/AddressService";
+import { District, Province, Ward } from "@/types/types";
+import {
+  getDistricts,
+  getProvinces,
+  getWards,
+} from "@/services/AddressService";
 
-// const provinces = [
-//   { label: "Hà Nội", value: "hanoi" },
-//   { label: "Hồ Chí Minh", value: "hcm" },
-//   { label: "Đà Nẵng", value: "danang" },
-// ];
-const districts = [
-  { label: "Quận 1", value: "quan1" },
-  { label: "Quận 2", value: "quan2" },
-  { label: "Quận 3", value: "quan3" },
-];
-const wards = [
-  { label: "Phường A", value: "phuonga" },
-  { label: "Phường B", value: "phuongb" },
-  { label: "Phường C", value: "phuongc" },
-];
+type ProvinceOption = {
+  label: string;
+  value: string;
+};
+// districts sẽ được load động theo tỉnh
+const initialDistricts: ProvinceOption[] = [];
+// wards sẽ được load động theo quận/huyện
+const initialWards: ProvinceOption[] = [];
 
 const AddRoomForm: React.FC<{ onFinish?: (values: RoomData) => void }> = (
   {
@@ -30,18 +27,80 @@ const AddRoomForm: React.FC<{ onFinish?: (values: RoomData) => void }> = (
   const [form] = Form.useForm();
   const [fileList, setFileList] = React.useState<UploadFile[]>([]);
 
-  const [provinces, setProvinces] = React.useState<Province[]>([]);
+  const [provinces, setProvinces] = React.useState<ProvinceOption[]>([]);
+  const [districts, setDistricts] =
+    React.useState<ProvinceOption[]>(initialDistricts);
+  const [wards, setWards] = React.useState<ProvinceOption[]>(initialWards);
+  const [selectedProvince, setSelectedProvince] = React.useState<
+    string | undefined
+  >(undefined);
+  const [selectedDistrict, setSelectedDistrict] = React.useState<
+    string | undefined
+  >(undefined);
+  const [loadingDistricts, setLoadingDistricts] = React.useState(false);
+  const [loadingWards, setLoadingWards] = React.useState(false);
+
   useEffect(() => {
     const fetchProvinces = async () => {
       try {
         const data = await getProvinces();
-        setProvinces(data);
+        const options = data.map((province: Province) => ({
+          label: province.name,
+          value: province.id,
+        }));
+        setProvinces(options);
       } catch (error) {
         console.error("Failed to fetch provinces:", error);
       }
     };
     fetchProvinces();
   }, []);
+
+  // Khi chọn tỉnh, load lại danh sách quận/huyện
+  const handleProvinceChange = async (provinceId: string) => {
+    setSelectedProvince(provinceId);
+    setSelectedDistrict(undefined);
+    form.setFieldsValue({ district: undefined, ward: undefined }); // reset district, ward khi đổi tỉnh
+    setDistricts([]); // clear districts khi loading
+    setWards([]); // clear wards khi loading
+    setLoadingDistricts(true);
+    try {
+      if (typeof window !== "undefined" && provinceId) {
+        const data = await getDistricts(provinceId);
+        const options = data.map((district: District) => ({
+          label: district.name,
+          value: district.id,
+        }));
+        setDistricts(options);
+      }
+    } catch (error) {
+      setDistricts([]);
+    } finally {
+      setLoadingDistricts(false);
+    }
+  };
+
+  // Khi chọn quận/huyện, load lại danh sách xã/phường
+  const handleDistrictChange = async (districtId: string) => {
+    setSelectedDistrict(districtId);
+    form.setFieldsValue({ ward: undefined }); // reset ward khi đổi quận/huyện
+    setWards([]); // clear wards khi loading
+    setLoadingWards(true);
+    try {
+      if (typeof window !== "undefined" && districtId) {
+        const data = await getWards(districtId);
+        const options = data.map((ward: Ward) => ({
+          label: ward.name,
+          value: ward.id,
+        }));
+        setWards(options);
+      }
+    } catch (error) {
+      setWards([]);
+    } finally {
+      setLoadingWards(false);
+    }
+  };
 
   //   const handleOnSubmit = (values: RoomData) => {
   //
@@ -92,21 +151,57 @@ const AddRoomForm: React.FC<{ onFinish?: (values: RoomData) => void }> = (
                 name="province"
                 rules={[{ required: true, message: "Chọn tỉnh/thành phố" }]}
               >
-                <Select placeholder="Chọn tỉnh/thành phố" options={provinces} />
+                <Select
+                  showSearch
+                  placeholder="Chọn tỉnh/thành phố"
+                  options={provinces}
+                  optionFilterProp="label"
+                  filterOption={(input, option) =>
+                    (option?.label ?? "")
+                      .toLowerCase()
+                      .includes(input.toLowerCase())
+                  }
+                  onChange={handleProvinceChange}
+                />
               </Form.Item>
               <Form.Item
                 label="Quận/Huyện"
                 name="district"
                 rules={[{ required: true, message: "Chọn quận/huyện" }]}
               >
-                <Select placeholder="Chọn quận/huyện" options={districts} />
+                <Select
+                  placeholder="Chọn quận/huyện"
+                  options={districts}
+                  disabled={!selectedProvince}
+                  loading={loadingDistricts}
+                  showSearch
+                  optionFilterProp="label"
+                  filterOption={(input, option) =>
+                    (option?.label ?? "")
+                      .toLowerCase()
+                      .includes(input.toLowerCase())
+                  }
+                  onChange={handleDistrictChange}
+                />
               </Form.Item>
               <Form.Item
                 label="Phường/Xã"
                 name="ward"
                 rules={[{ required: true, message: "Chọn phường/xã" }]}
               >
-                <Select placeholder="Chọn phường/xã" options={wards} />
+                <Select
+                  placeholder="Chọn phường/xã"
+                  options={wards}
+                  disabled={!selectedDistrict}
+                  loading={loadingWards}
+                  showSearch
+                  optionFilterProp="label"
+                  filterOption={(input, option) =>
+                    (option?.label ?? "")
+                      .toLowerCase()
+                      .includes(input.toLowerCase())
+                  }
+                />
               </Form.Item>
             </div>
             <Form.Item
