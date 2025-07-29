@@ -62,8 +62,8 @@ export default function ListingComparisonDisplay({ listing1, listing2 }: Listing
     <div className="p-6 mx-auto bg-white shadow-md w-250 rounded-xl">
       {/* Listing Titles */}
       <div className="grid grid-cols-1 gap-4 mb-6 md:grid-cols-2">
-        <h2 className="text-xl font-semibold text-center text-gray-800 md:text-left">{listing1.title}</h2>
-        <h2 className="text-xl font-semibold text-center text-gray-800 md:text-left">
+        <h2 className="text-xl font-semibold text-center text-red-500 md:text-left">{listing1.title}</h2>
+        <h2 className="text-xl font-semibold text-center text-red-500 md:text-left">
           {listing2.title || "Select another listing to compare"}
         </h2>
       </div>
