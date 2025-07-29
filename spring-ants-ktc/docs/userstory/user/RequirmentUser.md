@@ -264,3 +264,27 @@ so that I can easily find rooms that match my preferences.
 ### 🎯 Story Points (User Story #9): `5`
 
 ### 🖼 UI Design (User Story #9)
+
+## **User Story #10: So sánh phòng trọ**
+
+As a **User**,  
+I want to **compare multiple rental rooms side by side**,  
+so that I can easily evaluate and choose the most suitable room for my needs.
+
+---
+
+### ✅ Acceptance Criteria (User Story #10)
+
+- [ ] Cho phép người dùng **thêm tối đa 2 phòng trọ vào danh sách so sánh** từ trang danh sách hoặc chi tiết phòng.
+- [ ] Có nút hoặc biểu tượng "So sánh" trên mỗi phòng trọ để thêm vào danh sách so sánh.
+- [ ] Hiển thị **bảng so sánh** với các thông tin: hình ảnh, tiêu đề, giá, diện tích, địa chỉ, tiện nghi, trạng thái, chủ nhà, loại tin, ngày đăng.
+- [ ] Cho phép **xóa phòng khỏi danh sách so sánh**.
+- [ ] Nếu đã chọn 2 phòng, không cho phép thêm phòng mới vào so sánh cho đến khi xóa bớt.
+- [ ] Giao diện **responsive**, dễ sử dụng trên mobile và desktop.
+- [ ] Khi chưa chọn phòng nào để so sánh, hiển thị trạng thái trống và hướng dẫn sử dụng tính năng này.
+
+### 🔥 Priority (User Story #10): `Medium`
+
+### 🎯 Story Points (User Story #10): `5`
+
+### 🖼 UI Design (User Story #10)
