@@ -6,7 +6,7 @@ import Footer from "../users/components/Footer";
 
 const sampleListing1 = {
   id: 'listing123',
-  title: 'Newly built, clean, airy room for rent',
+  title: 'Cozy Studio',
   price: 3800000,
   area: 20,
   address: '171/14/18 Duong Nguyen Tu Gian, Ward 12, Go Vap District, Ho Chi Minh City',
@@ -17,6 +17,7 @@ const sampleListing1 = {
     { id: 1, url: "/images/anh1.jpg" },
     { id: 2, url: "/images/anh2.jpg" },
     { id: 3, url: "/images/anh3.jpg" },
+    
   ],
   amenities: [ // Added amenities for listing 1
     { label: "Fully furnished", enabled: true },
@@ -35,7 +36,7 @@ const sampleListing1 = {
 
 const sampleListing2 = {
   id: 'listing456',
-  title: 'Spacious apartment for rent in District 7',
+  title: 'Luxury Apartment',
   price: 5500000,
   area: 35,
   address: '100 Nguyen Thi Thap, Tan Phu Ward, District 7, Ho Chi Minh City',
@@ -74,11 +75,11 @@ export default function ComparePage() {
       <main className="flex-grow pt-[80px] p-4 bg-gray-50"> {/* Adjust pt-[80px] to match header height */}
         <h1 className="mb-6 text-3xl font-bold text-center text-gray-800">Listing Comparison</h1>
         
-        {/* The actual comparison display component */}
         <ListingComparisonDisplay 
           listing1={sampleListing1} 
-          listing2={sampleListing2} // Pass your sample data here
+          listing2={sampleListing2} 
         />
+        
         
       </main>
 

@@ -1,9 +1,8 @@
 "use client";
 
 import React from 'react';
-// import Image from 'next/image';
-import { BsCheckCircleFill } from "react-icons/bs"; // For enabled features
-import { FaTimesCircle } from "react-icons/fa"; // For disabled features (using a cross icon)
+import { BsCheckCircleFill } from "react-icons/bs"; 
+import { FaTimesCircle } from "react-icons/fa"; 
 import { Slide } from '@/app/landlord/components/room-detail/Slide';
 
 // Define types for Image and ListingData based on your RoomData structure
@@ -60,7 +59,7 @@ export default function ListingComparisonDisplay({ listing1, listing2 }: Listing
   };
 
   return (
-    <div className="w-full p-6 bg-white shadow-md rounded-xl">
+    <div className="p-6 mx-auto bg-white shadow-md w-250 rounded-xl">
       {/* Listing Titles */}
       <div className="grid grid-cols-1 gap-4 mb-6 md:grid-cols-2">
         <h2 className="text-xl font-semibold text-center text-gray-800 md:text-left">{listing1.title}</h2>
@@ -86,7 +85,7 @@ export default function ListingComparisonDisplay({ listing1, listing2 }: Listing
       </div>
 
       {/* Comparison Details Table */}
-      <div className="grid grid-cols-1 text-gray-700 md:grid-cols-3 gap-y-4 gap-x-6">
+      <div className="grid  text-gray-700 [grid-template-columns:150px_1fr_1fr] gap-y-4 gap-x-6">
         {/* Header Row for Comparison Table */}
         <div className="pb-2 text-lg font-bold text-gray-900 border-b md:col-span-1">Feature</div>
         <div className="pb-2 text-lg font-bold text-center text-gray-900 border-b md:col-span-1 md:text-left">Listing 1</div>
@@ -178,3 +177,6 @@ export default function ListingComparisonDisplay({ listing1, listing2 }: Listing
     </div>
   );
 }
+
+
+
