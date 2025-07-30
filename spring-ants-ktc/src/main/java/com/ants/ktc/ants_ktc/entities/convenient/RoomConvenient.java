@@ -21,11 +21,11 @@ public class RoomConvenient {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "room_id")
+    @JoinColumn(name = "room_id", nullable = false)
     private Rooms room;
 
     @ManyToOne
-    @JoinColumn(name = "convenient_id")
-    private Convenient convenient;
+    @JoinColumn(name = "convenient_id", nullable = false)
+    private Convenients convenient;
 
 }

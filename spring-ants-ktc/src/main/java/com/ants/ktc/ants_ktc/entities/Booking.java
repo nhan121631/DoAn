@@ -21,11 +21,11 @@ public class Booking extends BaseEntity {
     private int status; // 0: pending, 1: chờ cọc, 2: reject, 3: chờ xác nhận cọc, 4: đã cọc, 5:đã hủy
 
     @ManyToOne
-    @JoinColumn(name = "room_id")
+    @JoinColumn(name = "room_id", nullable = false)
     private Rooms room;
 
     @ManyToOne
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id", nullable = false)
     private Users user;
 
 }
