@@ -74,6 +74,7 @@ const AddRoomForm: React.FC<{ onFinish?: (values: RoomData) => void }> = (
         setDistricts(options);
       }
     } catch (error) {
+      console.error("Failed to fetch districts:", error);
       setDistricts([]);
     } finally {
       setLoadingDistricts(false);
@@ -96,6 +97,7 @@ const AddRoomForm: React.FC<{ onFinish?: (values: RoomData) => void }> = (
         setWards(options);
       }
     } catch (error) {
+      console.error("Failed to fetch wards:", error);
       setWards([]);
     } finally {
       setLoadingWards(false);
