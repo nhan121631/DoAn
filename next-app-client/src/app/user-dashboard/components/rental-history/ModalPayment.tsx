@@ -1,4 +1,5 @@
-import React from "react";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import React, { useEffect, useState } from "react";
 import { Modal, Popconfirm, Button } from "antd";
 import Image from "next/image";
 
@@ -15,8 +16,26 @@ const ModalPayment: React.FC<ModalPaymentProps> = ({
   onConfirm,
   confirmLoading,
 }) => {
+    const [banks, setBanks] = useState<any[]>([]);
 
-const stk = "970422-0967522025";
+
+   useEffect(() => {
+    const fetchBanks = async () => {
+      try {
+        const res = await fetch("https://api.vietqr.io/v2/banks");
+        const data = await res.json();
+        setBanks(data.data || []);
+      } catch (err) {
+        console.error("Error fetching banks:", err);
+      } finally {
+        // setLoading(false);
+      }
+    };
+
+    fetchBanks();
+  }, []);
+
+  const stk = "0967522025";
 const amount = 5000;
 const addInfo = "Dat phong";
   return (
@@ -24,7 +43,7 @@ const addInfo = "Dat phong";
       <div className="flex flex-col items-center justify-center gap-5 p-6 bg-gradient-to-b from-white to-blue-50 rounded-xl">
         <div className="flex flex-col items-center gap-2">
           <Image
-            src={`https://img.vietqr.io/image/${stk}-qr_only.png?amount=${amount}&addInfo=${addInfo}`}
+            src={`https://img.vietqr.io/image/${banks[0]?.bin}-${stk}-qr_only.png?amount=${amount}&addInfo=${addInfo}`}
             alt="Deposit"
             width={160}
             height={160}
