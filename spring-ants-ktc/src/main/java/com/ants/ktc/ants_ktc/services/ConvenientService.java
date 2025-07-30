@@ -39,6 +39,9 @@ public class ConvenientService {
     }
 
     public void deleteConvenient(Long id) {
+        if (!convenientsRepository.existsById(id)) {
+            throw new IllegalArgumentException("Convenient with id " + id + " does not exist");
+        }
         convenientsRepository.deleteById(id);
     }
 }
