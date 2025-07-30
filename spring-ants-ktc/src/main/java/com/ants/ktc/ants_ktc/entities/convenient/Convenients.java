@@ -14,16 +14,16 @@ import lombok.Data;
 @Entity
 @Data
 @Table(name = "convenients")
-public class Convenient {
+public class Convenients {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "convenient_id")
     private Long convenientId;
 
+    @Column(name = "name", nullable = false, length = 100)
     private String name;
 
     @OneToMany(mappedBy = "convenient")
     private List<RoomConvenient> roomConvenients;
-
 }

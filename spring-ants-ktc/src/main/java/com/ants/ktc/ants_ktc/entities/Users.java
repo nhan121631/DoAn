@@ -37,9 +37,11 @@ public class Users extends BaseEntity {
     @Column(name = "is_active")
     private int isActive;
 
-    @ManyToOne
-    @JoinColumn(name = "bank_id")
-    private Bank bank;
+    @Column(name = "bank_name")
+    private String bankName;
+
+    @Column(name = "bin_code")
+    private String binCode;
 
     @Column(name = "bank_number")
     private String bankNumber;
@@ -62,5 +64,8 @@ public class Users extends BaseEntity {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Wallets> wallets;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Rooms> rooms;
 
 }

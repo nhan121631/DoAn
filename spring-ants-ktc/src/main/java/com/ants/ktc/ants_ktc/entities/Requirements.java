@@ -1,5 +1,6 @@
 package com.ants.ktc.ants_ktc.entities;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -12,7 +13,10 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class Requirements extends BaseEntity {
+    @Column(name = "description", length = 500)
     private String description;
+
+    @Column(name = "status", nullable = false)
     private int status;
 
     @ManyToOne

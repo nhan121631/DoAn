@@ -17,9 +17,13 @@ public class Ratings extends BaseEntity {
     @JoinColumn(name = "room_id", nullable = false)
     private Rooms room;
 
-    @Column(name = "score")
+    @Column(name = "score", nullable = false)
     private Integer score;
 
-    @Column(name = "comment")
+    @Column(name = "comment", length = 500)
     private String comment;
+
+    @Column(name = "date_rated", nullable = false, length = 20)
+    private String dateRated;
+
 }
