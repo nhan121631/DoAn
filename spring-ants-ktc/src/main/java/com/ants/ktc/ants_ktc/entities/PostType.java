@@ -17,13 +17,13 @@ import lombok.EqualsAndHashCode;
 public class PostType extends BaseEntity {
 
    @Column(name = "code", nullable = false, unique = true)
-   private int code;
+   private String code;
 
    @Column(name = "name", nullable = false, length = 100)
    private String name;
 
    @Column(name = "price_per_day", nullable = false)
-   private Double price_per_day;
+   private Double pricePerDay;
 
    @OneToMany(mappedBy = "postType", cascade = CascadeType.ALL, orphanRemoval = true)
    private List<Rooms> rooms;
