@@ -15,15 +15,13 @@ import lombok.EqualsAndHashCode;
 @Entity
 @Table(name = "post_type")
 @Data
-@EqualsAndHashCode
-public class PostType {
-   @Id
-   @GeneratedValue(strategy = GenerationType.IDENTITY)
-   private Long id;
+@EqualsAndHashCode(callSuper = true)
+public class PostType extends BaseEntity {
+
    private int code;
    private String name;
    private Double price_per_day;
-    
+
    @OneToMany(mappedBy = "postType", cascade = CascadeType.ALL, orphanRemoval = true)
    private List<Rooms> rooms;
 }

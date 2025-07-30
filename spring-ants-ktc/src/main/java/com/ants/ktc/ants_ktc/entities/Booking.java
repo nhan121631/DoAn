@@ -2,8 +2,6 @@ package com.ants.ktc.ants_ktc.entities;
 
 import java.util.Date;
 
-import org.hibernate.annotations.ManyToAny;
-
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
