@@ -22,4 +22,8 @@ public class Ratings extends BaseEntity {
 
     @Column(name = "comment")
     private String comment;
+
+    @Column(name = "date_rated")
+    private String dateRated;
+
 }

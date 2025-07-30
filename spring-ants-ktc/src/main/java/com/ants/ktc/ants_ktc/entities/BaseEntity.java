@@ -1,6 +1,7 @@
 package com.ants.ktc.ants_ktc.entities;
 
 import java.util.Date;
+import java.util.UUID;
 
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
@@ -25,8 +26,8 @@ import lombok.NoArgsConstructor;
 @Data
 public abstract class BaseEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @Column(name = "createddate")
     @CreatedDate
