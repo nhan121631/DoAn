@@ -7,7 +7,6 @@ import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -34,7 +33,7 @@ public class GlobalExceptionHandler {
                 .map(error -> error.getDefaultMessage())
                 .toList();
 
-        CustomErrorResponse response = new CustomErrorResponse(messages, "Bad Request", 400);
+        CustomErrorResponse response = new CustomErrorResponse(messages, "BadRequest", 400);
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 

@@ -25,6 +25,12 @@ public class PostType extends BaseEntity {
    @Column(name = "price_per_day", nullable = false)
    private Double pricePerDay;
 
+   @Column(name = "description", length = 255)
+   private String description;
+
+   @Column(name = "is_remove", nullable = false, columnDefinition = "int default 0")
+   private int isRemove;
+
    @OneToMany(mappedBy = "postType", cascade = CascadeType.ALL, orphanRemoval = true)
    private List<Rooms> rooms;
 }
