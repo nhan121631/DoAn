@@ -25,6 +25,10 @@ public class User extends BaseEntity {
     @Column(name = "password")
     private String password;
 
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "profile_id", referencedColumnName = "id")
+    private UserProfile profile;
+
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     private List<Requirement> requirements;
 
