@@ -5,9 +5,9 @@ import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import com.ants.ktc.ants_ktc.entities.role.UserRole;
+import com.ants.ktc.ants_ktc.entities.Role;
 
-public interface UserRoleRepository extends JpaRepository<UserRole, Long> {
-    List<UserRole> findByUserId(UUID userId);
+public interface UserRoleRepository extends JpaRepository<Role, UUID> {
+    List<Role> findByUserId(UUID userId);
 
 }

@@ -3,9 +3,10 @@ package com.ants.ktc.ants_ktc.repositories;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import com.ants.ktc.ants_ktc.entities.convenient.Convenients;
+import com.ants.ktc.ants_ktc.entities.Convenient;
+
 
 @Repository
-public interface ConvenientsRepository extends JpaRepository<Convenients, Long> {
+public interface ConvenientsRepository extends JpaRepository<Convenient, Long> {
     
 }

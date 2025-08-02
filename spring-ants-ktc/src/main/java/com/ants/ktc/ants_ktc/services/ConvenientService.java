@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 
 import com.ants.ktc.ants_ktc.dtos.convenient.ConvenientResponseDto;
 import com.ants.ktc.ants_ktc.dtos.convenient.CreateConvenientRequestDto;
-import com.ants.ktc.ants_ktc.entities.convenient.Convenients;
+import com.ants.ktc.ants_ktc.entities.Convenient;
 import com.ants.ktc.ants_ktc.repositories.ConvenientsRepository;
 
 @Service
@@ -16,15 +16,15 @@ public class ConvenientService {
     @Autowired
     private ConvenientsRepository convenientsRepository;
 
-    private ConvenientResponseDto convertToDto(Convenients convenient) {
+    private ConvenientResponseDto convertToDto(Convenient convenient) {
         ConvenientResponseDto dto = new ConvenientResponseDto();
-        dto.setId(convenient.getConvenientId());
+        dto.setId(convenient.getId());
         dto.setName(convenient.getName());
         return dto;
     }
 
     public List<ConvenientResponseDto> getAllConvenient() {
-        List<Convenients> allConvenients = convenientsRepository.findAll();
+        List<Convenient> allConvenients = convenientsRepository.findAll();
         return allConvenients.stream()
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
@@ -32,9 +32,9 @@ public class ConvenientService {
 
     // Method to create a new convenient
     public ConvenientResponseDto createConvenient(CreateConvenientRequestDto requestDto) {
-        Convenients convenient = new Convenients();
+        Convenient convenient = new Convenient();
         convenient.setName(requestDto.getName());
-        Convenients savedConvenient = convenientsRepository.save(convenient);
+        Convenient savedConvenient = convenientsRepository.save(convenient);
         return convertToDto(savedConvenient);
     }
 
