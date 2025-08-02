@@ -3,6 +3,8 @@ package com.ants.ktc.ants_ktc.repositories;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -25,4 +27,12 @@ public interface UserJpaRepository extends JpaRepository<User, UUID> {
             """)
     Optional<User> findByUsername(@Param("username") String username);
 
+    @EntityGraph(attributePaths = {
+            "profile",
+            "profile.address",
+            "profile.address.ward",
+            "profile.address.ward.district",
+            "profile.address.ward.district.province",
+    })
+    Page<User> findAll(Pageable pageable);
 }
