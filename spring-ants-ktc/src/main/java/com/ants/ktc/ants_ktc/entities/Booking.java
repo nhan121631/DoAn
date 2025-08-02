@@ -3,6 +3,7 @@ package com.ants.ktc.ants_ktc.entities;
 import java.util.Date;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
@@ -20,12 +21,12 @@ public class Booking extends BaseEntity {
     private int tenantCount;
     private int status; // 0: pending, 1: chờ cọc, 2: reject, 3: chờ xác nhận cọc, 4: đã cọc, 5:đã hủy
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "room_id", nullable = false)
-    private Rooms room;
+    private Room room;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id", nullable = false)
-    private Users user;
+    private User user;
 
 }

@@ -6,9 +6,9 @@ import java.util.List;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -17,15 +17,14 @@ import lombok.EqualsAndHashCode;
 @Table(name = "wallets")
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class Wallets extends BaseEntity {
+public class Wallet extends BaseEntity {
 
     @Column(name = "balance", nullable = false)
     private Double balance;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    private Users user;
+    @OneToOne(mappedBy = "wallet", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private User user;
 
-    @OneToMany(mappedBy = "wallet", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "wallet", fetch = FetchType.LAZY)
     private List<Transactions> transactions = new ArrayList<>();
 }

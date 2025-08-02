@@ -5,6 +5,7 @@ import java.util.List;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Data;
@@ -31,6 +32,6 @@ public class PostType extends BaseEntity {
    @Column(name = "is_remove", nullable = false, columnDefinition = "int default 0")
    private int isRemove;
 
-   @OneToMany(mappedBy = "postType", cascade = CascadeType.ALL, orphanRemoval = true)
-   private List<Rooms> rooms;
+   @OneToMany(mappedBy = "postType", fetch = FetchType.LAZY)
+   private List<Room> rooms;
 }

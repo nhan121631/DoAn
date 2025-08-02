@@ -6,9 +6,9 @@ import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import com.ants.ktc.ants_ktc.entities.role.Roles;
+import com.ants.ktc.ants_ktc.entities.Role;
 
 @Repository
-public interface RoleRepository extends JpaRepository<Roles, UUID> {
-    Optional<Roles> findByCode(String code);
+public interface RoleRepository extends JpaRepository<Role, UUID> {
+    Optional<Role> findByCode(String code);
 }
