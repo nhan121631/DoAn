@@ -64,6 +64,7 @@ public class UserService {
                                                 .build();
 
                                 addressDto = AddressResponseDto.builder()
+                                                .id(user.getProfile().getAddress().getId())
                                                 .street(user.getProfile().getAddress().getStreet()) // Thêm dòng này!
                                                 .ward(wardDto)
                                                 .build();
