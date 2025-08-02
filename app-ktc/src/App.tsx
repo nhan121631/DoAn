@@ -3,18 +3,35 @@ import Admin from "./admin";
 import StatisticPage from "./admin/pages/StatisticPage";
 import ManageAccountPage from "./admin/pages/ManageAccountPage";
 import ManageRoom from "./admin/pages/ManageRoomPage";
+import ManagePostTypePage from "./admin/pages/ManagePostTypePage";
+import LoginPage from "./admin/pages/LoginPage";
+import { useAuthStore } from "./admin/stores/useAuthorStore";
+import NotFound from "./admin/pages/NotFound";
 
 function App() {
+  const { loggedInUser } = useAuthStore((state) => state);
+
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/admin" element={<Admin />}>
-          <Route index element={<StatisticPage />} />
-          <Route path="statistics" element={<StatisticPage />} />
-          <Route path="statistics" element={<StatisticPage />} />
-          <Route path="manage-accounts" element={<ManageAccountPage />} />
-          <Route path="manage-rooms" element={<ManageRoom />} />
-        </Route>
+        <Route path="/" element={<LoginPage />} />
+        <Route path="/login" element={<LoginPage />} />
+        {loggedInUser &&
+          Array.isArray(loggedInUser.roles) &&
+          loggedInUser.roles.some(
+            (role) =>
+              typeof role === "string" &&
+              role.toLowerCase() === "administrators"
+          ) && (
+            <Route path="/admin" element={<Admin />}>
+              <Route index element={<StatisticPage />} />
+              <Route path="statistics" element={<StatisticPage />} />
+              <Route path="manage-accounts" element={<ManageAccountPage />} />
+              <Route path="manage-rooms" element={<ManageRoom />} />
+              <Route path="manage-post-type" element={<ManagePostTypePage />} />
+            </Route>
+          )}
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
   );

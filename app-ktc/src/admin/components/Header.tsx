@@ -3,6 +3,8 @@ import { MenuUnfoldOutlined, MenuFoldOutlined } from "@ant-design/icons";
 import { ThemeContext } from "../context/ThemeContext";
 import { Avatar, Dropdown } from "antd";
 import { IoIosLogOut } from "react-icons/io";
+import { useAuthStore } from "../stores/useAuthorStore";
+import { useNavigate } from "react-router";
 
 interface AppHeaderProps {
   collapsed: boolean;
@@ -10,12 +12,14 @@ interface AppHeaderProps {
 }
 
 function AppHeader({ collapsed, toggleCollapsed }: AppHeaderProps) {
+  const { loggedInUser, logOut } = useAuthStore((state) => state);
   const { isDark, setIsDark } = useContext(ThemeContext);
+  const navigate = useNavigate();
   const handleClick = () => {
     setIsDark(!isDark);
     localStorage.setItem("theme", isDark ? "light" : "dark");
   };
-  const userName = "John Doe";
+  const userName = loggedInUser?.username || "Guest";
 
   const items = [
     {
@@ -23,7 +27,10 @@ function AppHeader({ collapsed, toggleCollapsed }: AppHeaderProps) {
       label: (
         <button
           className="flex items-center justify-center gap-2 w-full text-left px-4 py-2 text-red-500 hover:bg-gray-100 dark:hover:bg-gray-700"
-          onClick={() => alert("Logged out!")}
+          onClick={() => {
+            logOut();
+            navigate("/login");
+          }}
         >
           <IoIosLogOut className="text-2xl" /> Logout
         </button>
