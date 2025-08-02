@@ -1,6 +1,7 @@
 package com.ants.ktc.ants_ktc.entities.address;
 
 import com.ants.ktc.ants_ktc.entities.BaseEntity;
+import com.ants.ktc.ants_ktc.entities.Room;
 import com.ants.ktc.ants_ktc.entities.UserProfile;
 
 import jakarta.persistence.Column;
@@ -27,5 +28,8 @@ public class Address extends BaseEntity {
 
     @OneToOne(mappedBy = "address")
     private UserProfile userProfile;
+
+    @OneToOne(mappedBy = "address")
+    private Room room;
 
 }
