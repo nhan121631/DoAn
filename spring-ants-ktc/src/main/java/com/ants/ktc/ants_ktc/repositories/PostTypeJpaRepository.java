@@ -11,7 +11,7 @@ import org.springframework.stereotype.Repository;
 import com.ants.ktc.ants_ktc.entities.PostType;
 
 @Repository
-public interface PostTypeRepository extends JpaRepository<PostType, UUID> {
+public interface PostTypeJpaRepository extends JpaRepository<PostType, UUID> {
 
     Optional<PostType> findByCode(String code);
 

@@ -6,14 +6,13 @@ import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 @Entity
-@Table(name = "usser_profiles")
+@Table(name = "user_profiles")
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class UserProfile extends BaseEntity {
@@ -45,5 +44,8 @@ public class UserProfile extends BaseEntity {
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "address_id", referencedColumnName = "id")
     private Address address;
+
+    @OneToOne(mappedBy = "profile")
+    private User user;
 
 }

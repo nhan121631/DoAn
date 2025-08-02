@@ -7,13 +7,13 @@ import org.springframework.stereotype.Service;
 
 import com.ants.ktc.ants_ktc.dtos.address.DistrictResponseDto;
 import com.ants.ktc.ants_ktc.entities.address.District;
-import com.ants.ktc.ants_ktc.repositories.address.DistrictRepository;
+import com.ants.ktc.ants_ktc.repositories.address.DistrictJpaRepository;
 
 @Service
 public class DistrictService {
-    private final DistrictRepository districtRepository;
+    private final DistrictJpaRepository districtRepository;
 
-    public DistrictService(DistrictRepository districtRepository) {
+    public DistrictService(DistrictJpaRepository districtRepository) {
         this.districtRepository = districtRepository;
     }
 

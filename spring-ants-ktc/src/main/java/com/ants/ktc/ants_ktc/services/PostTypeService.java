@@ -1,6 +1,5 @@
 package com.ants.ktc.ants_ktc.services;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -11,13 +10,13 @@ import com.ants.ktc.ants_ktc.dtos.post_types.PostTypeJpaCreateDto;
 import com.ants.ktc.ants_ktc.dtos.post_types.PostTypeJpaUpdateDto;
 import com.ants.ktc.ants_ktc.dtos.post_types.PostTypeResponseDto;
 import com.ants.ktc.ants_ktc.entities.PostType;
-import com.ants.ktc.ants_ktc.repositories.PostTypeRepository;
+import com.ants.ktc.ants_ktc.repositories.PostTypeJpaRepository;
 
 @Service
 public class PostTypeService {
 
     @Autowired
-    private PostTypeRepository postTypeRepository;
+    private PostTypeJpaRepository postTypeRepository;
 
     public PostTypeResponseDto convertDto(PostType postType) {
         return PostTypeResponseDto.builder()

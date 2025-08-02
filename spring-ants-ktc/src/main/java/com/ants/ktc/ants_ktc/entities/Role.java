@@ -2,8 +2,6 @@ package com.ants.ktc.ants_ktc.entities;
 
 import java.util.List;
 
-import org.apache.catalina.User;
-
 import jakarta.persistence.Entity;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
@@ -22,5 +20,4 @@ public class Role extends BaseEntity {
 
     @ManyToMany(mappedBy = "roles")
     private List<User> users;
-
 }
