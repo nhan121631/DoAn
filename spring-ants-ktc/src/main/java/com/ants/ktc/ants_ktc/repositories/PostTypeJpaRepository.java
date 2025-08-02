@@ -16,7 +16,7 @@ public interface PostTypeJpaRepository extends JpaRepository<PostType, UUID> {
     Optional<PostType> findByCode(String code);
 
     @Query("SELECT p FROM PostType p WHERE p.isRemove = 0")
-    List<PostType> findAllActive();
+    List<TypePostProjection> findAllActive();
 
     // Optional<PostType> findById(UUID id);
 }

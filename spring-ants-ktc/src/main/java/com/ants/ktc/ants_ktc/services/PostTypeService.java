@@ -1,5 +1,6 @@
 package com.ants.ktc.ants_ktc.services;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -11,6 +12,7 @@ import com.ants.ktc.ants_ktc.dtos.post_types.PostTypeJpaUpdateDto;
 import com.ants.ktc.ants_ktc.dtos.post_types.PostTypeResponseDto;
 import com.ants.ktc.ants_ktc.entities.PostType;
 import com.ants.ktc.ants_ktc.repositories.PostTypeJpaRepository;
+import com.ants.ktc.ants_ktc.repositories.TypePostProjection;
 
 @Service
 public class PostTypeService {
@@ -43,15 +45,13 @@ public class PostTypeService {
         return convertDto(postType);
     }
 
-    // public List<PostTypeResponseDto> getPostTypes() {
-    // List<PostType> postTypes = postTypeRepository.findAllActive();
-    // if (postTypes.isEmpty()) {
-    // throw new IllegalArgumentException("No post types found");
-    // }
-    // return postTypes.stream()
-    // .map(this::convertDto)
-    // .toList();
-    // }
+    public List<TypePostProjection> getPostTypes() {
+        List<TypePostProjection> postTypes = postTypeRepository.findAllActive();
+        if (postTypes.isEmpty()) {
+            throw new IllegalArgumentException("No post types found");
+        }
+        return postTypes;
+    }
 
     public PostTypeResponseDto updatePostType(PostTypeJpaUpdateDto postTypeJpaUpdateDto) {
         PostType postType = postTypeRepository.findById(postTypeJpaUpdateDto.getId())

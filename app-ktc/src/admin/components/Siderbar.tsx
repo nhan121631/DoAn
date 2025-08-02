@@ -19,6 +19,7 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
     "/admin/statistics": "1",
     "/admin/manage-accounts": "2",
     "/admin/manage-rooms": "3",
+    "/admin/manage-post-type": "4",
   };
   const location = useLocation();
   const selectedKey = pathToKey[location.pathname] || "1";
@@ -60,6 +61,11 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
             key: "3",
             icon: <RiHotelLine />,
             label: <Link to="/admin/manage-rooms">Managememt Rooms</Link>,
+          },
+          {
+            key: "4",
+            icon: <RiHotelLine />,
+            label: <Link to="/admin/manage-post-type">Manage Post Type</Link>,
           },
         ]}
       />

@@ -1,9 +1,12 @@
 package com.ants.ktc.ants_ktc.controllers;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -14,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.ants.ktc.ants_ktc.dtos.post_types.PostTypeJpaCreateDto;
 import com.ants.ktc.ants_ktc.dtos.post_types.PostTypeJpaUpdateDto;
 import com.ants.ktc.ants_ktc.dtos.post_types.PostTypeResponseDto;
+import com.ants.ktc.ants_ktc.repositories.TypePostProjection;
 import com.ants.ktc.ants_ktc.services.PostTypeService;
 
 import jakarta.validation.Valid;
@@ -31,14 +35,14 @@ public class PostTypeController {
         return ResponseEntity.status(201).body(dto);
     }
 
-    // @GetMapping
-    // public ResponseEntity<List<PostTypeResponseDto>> getPostTypes() {
-    // List<PostTypeResponseDto> postTypes = postTypeService.getPostTypes();
-    // if (postTypes.isEmpty()) {
-    // return ResponseEntity.noContent().build();
-    // }
-    // return ResponseEntity.ok(postTypes);
-    // }
+    @GetMapping
+    public ResponseEntity<List<TypePostProjection>> getPostTypes() {
+        List<TypePostProjection> postTypes = postTypeService.getPostTypes();
+        if (postTypes.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(postTypes);
+    }
 
     @PatchMapping
     public ResponseEntity<PostTypeResponseDto> updatePostType(
