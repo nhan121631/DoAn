@@ -12,7 +12,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 @Entity
-@Table(name = "usser_profiles")
+@Table(name = "user_profiles")
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class UserProfile extends BaseEntity {
