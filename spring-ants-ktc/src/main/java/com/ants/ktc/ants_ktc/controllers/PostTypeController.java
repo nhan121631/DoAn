@@ -17,13 +17,13 @@ import org.springframework.web.bind.annotation.RestController;
 import com.ants.ktc.ants_ktc.dtos.post_types.PostTypeJpaCreateDto;
 import com.ants.ktc.ants_ktc.dtos.post_types.PostTypeJpaUpdateDto;
 import com.ants.ktc.ants_ktc.dtos.post_types.PostTypeResponseDto;
+import com.ants.ktc.ants_ktc.repositories.TypePostProjection;
 import com.ants.ktc.ants_ktc.services.PostTypeService;
 
 import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/post-types")
-@CrossOrigin(origins = { "http://localhost:3000", "http://localhost:5173" })
 public class PostTypeController {
     @Autowired
     private PostTypeService postTypeService;
@@ -36,8 +36,8 @@ public class PostTypeController {
     }
 
     @GetMapping
-    public ResponseEntity<List<PostTypeResponseDto>> getPostTypes() {
-        List<PostTypeResponseDto> postTypes = postTypeService.getPostTypes();
+    public ResponseEntity<List<TypePostProjection>> getPostTypes() {
+        List<TypePostProjection> postTypes = postTypeService.getPostTypes();
         if (postTypes.isEmpty()) {
             return ResponseEntity.noContent().build();
         }
