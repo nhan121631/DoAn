@@ -25,8 +25,6 @@ public class AccountManagementController {
         this.accountManagementService = accountManagementService;
     }
 
-    // API 1: Lấy danh sách tài khoản có phân trang
-    // GET /api/admin/accounts?page=0&size=10
     @GetMapping
     public ResponseEntity<UserPageResponseDto> getPaginatedUsers(
             @RequestParam(defaultValue = "0") int page,
@@ -36,8 +34,6 @@ public class AccountManagementController {
         return ResponseEntity.ok(response);
     }
 
-    // API 2: Lấy thông tin tài khoản theo ID
-    // GET /api/admin/accounts/{id}
     @GetMapping("/{id}")
     public ResponseEntity<UserResponseDto> getUserById(@PathVariable UUID id) {
         try {

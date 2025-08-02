@@ -33,6 +33,7 @@ public interface UserJpaRepository extends JpaRepository<User, UUID> {
             "profile.address.ward",
             "profile.address.ward.district",
             "profile.address.ward.district.province",
+            "roles"
     })
     Page<User> findAll(Pageable pageable);
 }
