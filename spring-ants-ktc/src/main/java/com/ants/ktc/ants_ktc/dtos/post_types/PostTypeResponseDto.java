@@ -12,5 +12,6 @@ public class PostTypeResponseDto {
     private String code;
     private String name;
     private Double pricePerDay;
+    private String description;
 
 }

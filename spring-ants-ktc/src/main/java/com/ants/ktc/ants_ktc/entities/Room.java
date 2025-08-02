@@ -9,7 +9,10 @@ import com.ants.ktc.ants_ktc.entities.address.Address;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
@@ -20,7 +23,7 @@ import lombok.EqualsAndHashCode;
 @Table(name = "rooms")
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class Rooms extends BaseEntity {
+public class Room extends BaseEntity {
     @Column(name = "title", nullable = false, length = 255)
     private String title;
 
@@ -48,27 +51,31 @@ public class Rooms extends BaseEntity {
     @Column(name = "post_end_date")
     private Date post_end_date;
 
-    @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Images> images = new ArrayList<>();
+    @OneToMany(mappedBy = "room", fetch = FetchType.LAZY)
+    private List<Image> images = new ArrayList<>();
 
-    @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "room", fetch = FetchType.LAZY)
     private List<Maintenances> maintenances = new ArrayList<>();
 
-    @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Requirements> requirements = new ArrayList<>();
+    @OneToMany(mappedBy = "room", fetch = FetchType.LAZY)
+    private List<Requirement> requirements = new ArrayList<>();
 
-    @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "room", fetch = FetchType.LAZY)
     private List<Booking> bookings = new ArrayList<>();
 
-    @ManyToOne
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(name = "room_convenients", joinColumns = @JoinColumn(name = "room_id"), inverseJoinColumns = @JoinColumn(name = "convenient_id"))
+    private List<Convenient> convenients = new ArrayList<>();
+
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "post_type_id", nullable = false)
     private PostType postType;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "address_id", nullable = false)
     private Address address;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id", nullable = false)
-    private Users user;
+    private User user;
 }

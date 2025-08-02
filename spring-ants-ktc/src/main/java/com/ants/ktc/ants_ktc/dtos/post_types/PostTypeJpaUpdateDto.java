@@ -1,14 +1,18 @@
 package com.ants.ktc.ants_ktc.dtos.post_types;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Min;
+import java.util.UUID;
 
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 @Data
-public class PostTypeJpaCreateDto {
+public class PostTypeJpaUpdateDto {
+
+    private UUID id;
+
     @NotBlank(message = "Code must not be blank")
     private String code;
 

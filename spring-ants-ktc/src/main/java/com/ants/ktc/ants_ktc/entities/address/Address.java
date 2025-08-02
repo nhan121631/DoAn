@@ -1,11 +1,13 @@
 package com.ants.ktc.ants_ktc.entities.address;
 
 import com.ants.ktc.ants_ktc.entities.BaseEntity;
+import com.ants.ktc.ants_ktc.entities.UserProfile;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -22,4 +24,8 @@ public class Address extends BaseEntity {
     @ManyToOne
     @JoinColumn(name = "ward_id")
     private Ward ward;
+
+    @OneToOne(mappedBy = "address")
+    private UserProfile userProfile;
+
 }

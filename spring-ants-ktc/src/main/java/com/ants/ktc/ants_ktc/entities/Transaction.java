@@ -2,6 +2,7 @@ package com.ants.ktc.ants_ktc.entities;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
@@ -12,7 +13,7 @@ import lombok.EqualsAndHashCode;
 @Table(name = "transactions")
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class Transactions extends BaseEntity {
+public class Transaction extends BaseEntity {
     @Column(name = "amount", nullable = false)
     private Double amount;
 
@@ -25,7 +26,7 @@ public class Transactions extends BaseEntity {
     @Column(name = "description", length = 500)
     private String description;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "wallet_id", nullable = false)
-    private Wallets wallet;
+    private Wallet wallet;
 }

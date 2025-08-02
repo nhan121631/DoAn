@@ -1,6 +1,7 @@
 package com.ants.ktc.ants_ktc.entities;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -14,13 +15,13 @@ import lombok.EqualsAndHashCode;
 @Table(name = "images")
 @Data
 @EqualsAndHashCode
-public class Images {
+public class Image {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String url;
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "room_id", nullable = false)
-    private Rooms room;
+    private Room room;
 }

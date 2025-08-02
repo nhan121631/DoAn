@@ -1,6 +1,7 @@
 package com.ants.ktc.ants_ktc.entities;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
@@ -11,12 +12,12 @@ import lombok.EqualsAndHashCode;
 @Table(name = "favorites")
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class Favorites extends BaseEntity {
-    @ManyToOne
+public class Favorite extends BaseEntity {
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id", nullable = false)
-    private Users user;
+    private User user;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "room_id", nullable = false)
-    private Rooms room;
+    private Room room;
 }
