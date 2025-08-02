@@ -1,10 +1,14 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useState } from "react";
-import { Table } from "antd";
+import { Popconfirm, Table } from "antd";
 import type { TableColumnsType } from "antd";
 import type { IPostType } from "../types/type";
-import { fetchTypePosts } from "../service/TypePostService";
+import { deleteTypePost, fetchTypePosts } from "../service/TypePostService";
 
-const TableManagePostType: React.FC = () => {
+const TableManagePostType: React.FC<{
+  refreshKey: number;
+  messageApi: any;
+}> = ({ refreshKey, messageApi }) => {
   // const [data] = useState<IPostType[]>([
   //   {
   //     id: "1",
@@ -35,7 +39,20 @@ const TableManagePostType: React.FC = () => {
     };
 
     getTypePosts();
-  }, []);
+  }, [refreshKey]);
+
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteTypePost(id);
+      setTypePost((prev) => prev.filter((post) => post.id !== id));
+      messageApi.success({
+        content: "You deleted a post type successfully!",
+        duration: 1.5,
+      });
+    } catch (error) {
+      console.error("Error deleting type post:", error);
+    }
+  };
 
   const columns: TableColumnsType<IPostType> = [
     {
@@ -67,22 +84,43 @@ const TableManagePostType: React.FC = () => {
       key: "action",
       width: "10%",
       render: (_, record) => (
-        <button
-          style={{
-            padding: "4px 12px",
-            background: "#1677ff",
-            color: "#fff",
-            border: "none",
-            borderRadius: 4,
-            cursor: "pointer",
-          }}
-          onClick={() => {
-            // TODO: Implement edit logic here
-            alert(`Edit post type: ${record.name}`);
-          }}
-        >
-          Edit
-        </button>
+        <div style={{ display: "flex", gap: 8 }}>
+          <button
+            style={{
+              padding: "4px 12px",
+              background: "#1677ff",
+              color: "#fff",
+              border: "none",
+              borderRadius: 4,
+              cursor: "pointer",
+            }}
+            onClick={() => {
+              // TODO: Implement edit logic here
+              alert(`Edit post type: ${record.name}`);
+            }}
+          >
+            Edit
+          </button>
+          <Popconfirm
+            title="Are you sure you want to delete this post type?"
+            onConfirm={() => handleDelete(record.id)}
+            okText="Yes"
+            cancelText="No"
+          >
+            <button
+              style={{
+                padding: "4px 12px",
+                background: "#ff4d4f",
+                color: "#fff",
+                border: "none",
+                borderRadius: 4,
+                cursor: "pointer",
+              }}
+            >
+              Delete
+            </button>
+          </Popconfirm>
+        </div>
       ),
     },
   ];

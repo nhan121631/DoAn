@@ -12,6 +12,7 @@ import com.ants.ktc.ants_ktc.dtos.post_types.PostTypeJpaUpdateDto;
 import com.ants.ktc.ants_ktc.dtos.post_types.PostTypeResponseDto;
 import com.ants.ktc.ants_ktc.entities.PostType;
 import com.ants.ktc.ants_ktc.repositories.PostTypeJpaRepository;
+import com.ants.ktc.ants_ktc.repositories.TypePostProjection;
 
 @Service
 public class PostTypeService {
@@ -44,14 +45,12 @@ public class PostTypeService {
         return convertDto(postType);
     }
 
-    public List<PostTypeResponseDto> getPostTypes() {
-        List<PostType> postTypes = postTypeRepository.findAllActive();
+    public List<TypePostProjection> getPostTypes() {
+        List<TypePostProjection> postTypes = postTypeRepository.findAllActive();
         if (postTypes.isEmpty()) {
             throw new IllegalArgumentException("No post types found");
         }
-        return postTypes.stream()
-                .map(this::convertDto)
-                .toList();
+        return postTypes;
     }
 
     public PostTypeResponseDto updatePostType(PostTypeJpaUpdateDto postTypeJpaUpdateDto) {

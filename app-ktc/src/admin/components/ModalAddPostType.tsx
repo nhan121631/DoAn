@@ -6,6 +6,7 @@ interface ModelCreatePostTypeProps {
   setOpen: (open: boolean) => void;
   form: any;
   handleCreate: () => void;
+  errorMessage: string | null;
 }
 
 const ModelCreatePostType: React.FC<ModelCreatePostTypeProps> = ({
@@ -13,6 +14,7 @@ const ModelCreatePostType: React.FC<ModelCreatePostTypeProps> = ({
   setOpen,
   form,
   handleCreate,
+  errorMessage,
 }) => {
   return (
     <Modal
@@ -22,13 +24,20 @@ const ModelCreatePostType: React.FC<ModelCreatePostTypeProps> = ({
       onCancel={() => setOpen(false)}
       okText="Create"
     >
+      {errorMessage && (
+        <div style={{ color: "red", marginBottom: 12 }}>{errorMessage}</div>
+      )}
       <Form form={form} layout="vertical">
         <Form.Item
           label="Code"
           name="code"
           rules={[{ required: true, message: "Please input code!" }]}
         >
-          <Input />
+          <Input
+            onChange={(e) => {
+              form.setFieldsValue({ code: e.target.value.toUpperCase() });
+            }}
+          />
         </Form.Item>
         <Form.Item
           label="Name"
