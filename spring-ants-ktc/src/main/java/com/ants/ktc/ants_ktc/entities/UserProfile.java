@@ -26,9 +26,6 @@ public class UserProfile extends BaseEntity {
     @Column(name = "avatar")
     private String avatar;
 
-    @Column(name = "is_active")
-    private int isActive;
-
     @Column(name = "bank_name")
     private String bankName;
 
