@@ -3,46 +3,13 @@ import type { NavigateFunction } from 'react-router';
 import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
 import apiClient from '../lib/api-client-ad';
-
-
-
-export interface Address {
-  id: string;
-  street: string;
-  ward: {
-    id: number;
-    name: string;
-    district: {
-      id: number;
-      name: string;
-      province: {
-        id: number;
-        name: string;
-      };
-    };
-  };
-}
-
-export interface UserProfile {
-  email: string;
-  phoneNumber: string | null;
-  avatar: string | null;
-  isActive: number;
-  bankName: string | null;
-  binCode: string | null;
-  bankNumber: string | null;
-  accoutHolderName: string | null;
-  address: Address;
-}
-
+import type { UserProfile } from '../types/type';
 export interface LoggedInUser {
   id: string;
   username: string;
   roles: string[];
   userProfile: UserProfile;
 }
-
-
 export interface AuthState {
   access_token?: string;
   refresh_token?: string;

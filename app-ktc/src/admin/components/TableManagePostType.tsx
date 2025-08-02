@@ -1,25 +1,41 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Table } from "antd";
 import type { TableColumnsType } from "antd";
 import type { IPostType } from "../types/type";
+import { fetchTypePosts } from "../service/TypePostService";
 
 const TableManagePostType: React.FC = () => {
-  const [data] = useState<IPostType[]>([
-    {
-      id: "1",
-      code: "post_type_1",
-      name: "Post Type 1",
-      pricePerDay: 10,
-      description: "Description for Post Type 1",
-    },
-    {
-      id: "2",
-      code: "post_type_2",
-      name: "Post Type 2",
-      pricePerDay: 20,
-      description: "Description for Post Type 2",
-    },
-  ]);
+  // const [data] = useState<IPostType[]>([
+  //   {
+  //     id: "1",
+  //     code: "post_type_1",
+  //     name: "Post Type 1",
+  //     pricePerDay: 10,
+  //     description: "Description for Post Type 1",
+  //   },
+  //   {
+  //     id: "2",
+  //     code: "post_type_2",
+  //     name: "Post Type 2",
+  //     pricePerDay: 20,
+  //     description: "Description for Post Type 2",
+  //   },
+  // ]);
+
+  const [typePosts, setTypePost] = useState<IPostType[]>([]);
+
+  useEffect(() => {
+    const getTypePosts = async () => {
+      try {
+        const res = (await fetchTypePosts()) as IPostType[];
+        setTypePost(res || []);
+      } catch (error) {
+        console.error("Error fetching type posts:", error);
+      }
+    };
+
+    getTypePosts();
+  }, []);
 
   const columns: TableColumnsType<IPostType> = [
     {
@@ -74,7 +90,7 @@ const TableManagePostType: React.FC = () => {
   return (
     <Table<IPostType>
       columns={columns}
-      dataSource={data}
+      dataSource={typePosts}
       pagination={{ pageSize: 5 }}
       rowKey="id"
     />

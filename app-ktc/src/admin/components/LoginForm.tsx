@@ -109,6 +109,7 @@ export default function LoginForm() {
             <input
               type={showLoginPassword ? "text" : "password"}
               id="loginPassword"
+              autoComplete="new-password" // Thêm dòng này
               className={`w-full p-3 border ${
                 errors.password ? "border-red-500" : "border-gray-300"
               } rounded-md focus:outline-none focus:ring-2 focus:ring-white text-white pr-10`}
