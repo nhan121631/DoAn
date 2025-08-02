@@ -6,7 +6,7 @@ import org.springframework.stereotype.Repository;
 import com.ants.ktc.ants_ktc.entities.address.Province;
 
 @Repository
-public interface ProvinceRepository extends JpaRepository<Province, Long> {
+public interface ProvinceJpaRepository extends JpaRepository<Province, Long> {
     
     // Additional query methods can be defined here if needed
 

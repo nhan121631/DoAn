@@ -6,6 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.ants.ktc.ants_ktc.entities.Transaction;
 
-public interface TransactionsRepository extends JpaRepository<Transaction, UUID> {
+public interface TransactionsJpaRepository extends JpaRepository<Transaction, UUID> {
 
 }

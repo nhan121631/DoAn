@@ -1,5 +1,7 @@
 package com.ants.ktc.ants_ktc.dtos.address;
 
+import java.util.UUID;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -9,10 +11,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class WardResponseDto {
-    private Long id;
-    private String name;
-    private DistrictResponseDto district;
-    // private DistrictResponseDto district;
+public class AddressResponseDto {
+    private UUID id;
+    private String street;
+    private WardResponseDto ward;
 
 }
