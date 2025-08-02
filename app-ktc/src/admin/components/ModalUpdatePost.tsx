@@ -1,28 +1,31 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Modal, Form, Input, InputNumber } from "antd";
+import type { IPostType } from "../types/type";
 
-interface ModelCreatePostTypeProps {
+interface ModelUpdatePostTypeProps {
   open: boolean;
   setOpen: (open: boolean) => void;
   form: any;
-  handleCreate: () => void;
+  handleUpdate: () => void;
   errorMessage: string | null;
+  data: IPostType | null; // Assuming 'data' is the post type data to be updated
 }
 
-const ModelCreatePostType: React.FC<ModelCreatePostTypeProps> = ({
+const ModelUpdatePostType: React.FC<ModelUpdatePostTypeProps> = ({
   open,
   setOpen,
   form,
-  handleCreate,
+  handleUpdate,
   errorMessage,
+  data, // Assuming 'data' is the post type data to be updated
 }) => {
   return (
     <Modal
-      title="Create Post Type"
+      title="Update Post Type"
       open={open}
-      onOk={handleCreate}
+      onOk={handleUpdate}
       onCancel={() => setOpen(false)}
-      okText="Create"
+      okText="Update"
     >
       {errorMessage && (
         <div style={{ color: "red", marginBottom: 12 }}>{errorMessage}</div>
@@ -32,6 +35,7 @@ const ModelCreatePostType: React.FC<ModelCreatePostTypeProps> = ({
           label="Code"
           name="code"
           rules={[{ required: true, message: "Please input code!" }]}
+          initialValue={data?.code}
         >
           <Input
             onChange={(e) => {
@@ -43,6 +47,7 @@ const ModelCreatePostType: React.FC<ModelCreatePostTypeProps> = ({
           label="Name"
           name="name"
           rules={[{ required: true, message: "Please input name!" }]}
+          initialValue={data?.name}
         >
           <Input />
         </Form.Item>
@@ -50,6 +55,7 @@ const ModelCreatePostType: React.FC<ModelCreatePostTypeProps> = ({
           label="Price Per Day"
           name="pricePerDay"
           rules={[{ required: true, message: "Please input price!" }]}
+          initialValue={data?.pricePerDay}
         >
           <InputNumber min={0} style={{ width: "100%" }} />
         </Form.Item>
@@ -57,6 +63,7 @@ const ModelCreatePostType: React.FC<ModelCreatePostTypeProps> = ({
           label="Description"
           name="description"
           rules={[{ required: true, message: "Please input description!" }]}
+          initialValue={data?.description}
         >
           <Input.TextArea rows={3} />
         </Form.Item>
@@ -65,4 +72,4 @@ const ModelCreatePostType: React.FC<ModelCreatePostTypeProps> = ({
   );
 };
 
-export default ModelCreatePostType;
+export default ModelUpdatePostType;
