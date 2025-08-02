@@ -1,4 +1,4 @@
-package com.ants.ktc.config;
+package com.ants.ktc.ants_ktc.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

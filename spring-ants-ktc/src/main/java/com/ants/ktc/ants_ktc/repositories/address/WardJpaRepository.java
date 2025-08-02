@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 import com.ants.ktc.ants_ktc.entities.address.Ward;
 
 @Repository
-public interface WardRepository extends JpaRepository<Ward, Long> {
+public interface WardJpaRepository extends JpaRepository<Ward, Long> {
 
     public List<Ward> findByDistrictId(Long districtId);
 

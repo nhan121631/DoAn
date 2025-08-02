@@ -7,13 +7,13 @@ import org.springframework.stereotype.Service;
 
 import com.ants.ktc.ants_ktc.dtos.address.ProvinceResponseDto;
 import com.ants.ktc.ants_ktc.entities.address.Province;
-import com.ants.ktc.ants_ktc.repositories.address.ProvinceRepository;
+import com.ants.ktc.ants_ktc.repositories.address.ProvinceJpaRepository;
 
 @Service
 public class ProvinceService {
-    private final ProvinceRepository provinceRepository;
+    private final ProvinceJpaRepository provinceRepository;
 
-    public ProvinceService(ProvinceRepository provinceRepository) {
+    public ProvinceService(ProvinceJpaRepository provinceRepository) {
         this.provinceRepository = provinceRepository;
     }
 

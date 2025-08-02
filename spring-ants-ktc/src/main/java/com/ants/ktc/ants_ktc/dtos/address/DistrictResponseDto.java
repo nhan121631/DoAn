@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 public class DistrictResponseDto {
     private Long id;
     private String name;
+    private ProvinceResponseDto province;
     // private ProvinceResponseDto province;
     // private List<WardResponseDto> wards;
 
