@@ -13,7 +13,7 @@ import lombok.EqualsAndHashCode;
 @Table(name = "requirements")
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class Requirements extends BaseEntity {
+public class Requirement extends BaseEntity {
     @Column(name = "description", length = 500)
     private String description;
 

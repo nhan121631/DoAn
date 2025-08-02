@@ -8,7 +8,7 @@ import lombok.EqualsAndHashCode;
 @Table(name = "ratings")
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class Ratings extends BaseEntity {
+public class Rating extends BaseEntity {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;

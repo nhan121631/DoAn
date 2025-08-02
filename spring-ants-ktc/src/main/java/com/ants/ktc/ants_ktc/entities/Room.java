@@ -58,7 +58,7 @@ public class Room extends BaseEntity {
     private List<Maintenances> maintenances = new ArrayList<>();
 
     @OneToMany(mappedBy = "room", fetch = FetchType.LAZY)
-    private List<Requirements> requirements = new ArrayList<>();
+    private List<Requirement> requirements = new ArrayList<>();
 
     @OneToMany(mappedBy = "room", fetch = FetchType.LAZY)
     private List<Booking> bookings = new ArrayList<>();

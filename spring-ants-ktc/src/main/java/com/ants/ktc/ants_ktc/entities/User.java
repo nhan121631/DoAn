@@ -29,7 +29,7 @@ public class User extends BaseEntity {
     private String password;
 
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
-    private List<Requirements> requirements;
+    private List<Requirement> requirements;
 
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     private List<Booking> bookings;

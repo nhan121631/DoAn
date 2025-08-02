@@ -13,7 +13,7 @@ import lombok.EqualsAndHashCode;
 @Table(name = "transactions")
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class Transactions extends BaseEntity {
+public class Transaction extends BaseEntity {
     @Column(name = "amount", nullable = false)
     private Double amount;
 

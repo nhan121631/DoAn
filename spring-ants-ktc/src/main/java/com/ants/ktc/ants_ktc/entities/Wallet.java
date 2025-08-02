@@ -26,5 +26,5 @@ public class Wallet extends BaseEntity {
     private User user;
 
     @OneToMany(mappedBy = "wallet", fetch = FetchType.LAZY)
-    private List<Transactions> transactions = new ArrayList<>();
+    private List<Transaction> transactions = new ArrayList<>();
 }
