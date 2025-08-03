@@ -27,7 +27,6 @@ public class AccountManagementService {
     private final UserJpaRepository userJpaRepository;
     private final RoleJpaRepository roleJpaRepository;
 
-    @Autowired
     public AccountManagementService(UserJpaRepository userJpaRepository, RoleJpaRepository roleJpaRepository) {
         this.userJpaRepository = userJpaRepository;
         this.roleJpaRepository = roleJpaRepository;
