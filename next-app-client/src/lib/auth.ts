@@ -13,6 +13,7 @@ interface UserType {
   refreshToken: string;
   roles: string[];
   userProfile: {
+    fullName: string;
     email: string;
     phoneNumber: string | null;
     avatar: string | null;

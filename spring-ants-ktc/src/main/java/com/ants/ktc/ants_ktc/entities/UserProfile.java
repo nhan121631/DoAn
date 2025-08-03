@@ -18,6 +18,9 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true)
 public class UserProfile extends BaseEntity {
 
+    @Column(name = "full_name")
+    private String fullName;
+
     @Column(name = "email")
     private String email;
 

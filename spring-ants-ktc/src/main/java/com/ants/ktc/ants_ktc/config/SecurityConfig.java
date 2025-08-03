@@ -43,6 +43,7 @@ public class SecurityConfig {
                                 .authorizeHttpRequests(auth -> auth
                                                 .requestMatchers("/api/auth/**").permitAll()
                                                 .requestMatchers("/api/post-types/**").hasAnyRole("Administrators")
+                                                .requestMatchers("/api/wallets/**").hasAnyRole("Landlords")
                                                 .anyRequest().permitAll())
                                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 

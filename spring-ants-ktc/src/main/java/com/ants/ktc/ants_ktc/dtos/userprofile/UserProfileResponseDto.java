@@ -13,10 +13,10 @@ import lombok.NoArgsConstructor;
 @Builder
 public class UserProfileResponseDto {
 
+    private String fullName;
     private String email;
     private String phoneNumber;
     private String avatar;
-    private int isActive;
     private String bankName;
     private String binCode;
     private String bankNumber;

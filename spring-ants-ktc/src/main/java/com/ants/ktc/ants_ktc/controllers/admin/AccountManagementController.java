@@ -58,9 +58,9 @@ public class AccountManagementController {
     // }
     @GetMapping("/{id}")
     public ResponseEntity<UserResponseDto> getUserById(@PathVariable("id") UUID id) {
-        System.err.println("Đã gọi getUserById");
         UserResponseDto userDto = accountManagementService.getUserById(id);
         return ResponseEntity.ok(userDto);
+
     }
 
     @PatchMapping("/{id}/status")

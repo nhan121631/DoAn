@@ -7,6 +7,7 @@ import type { UserProfile } from '../types/type';
 export interface LoggedInUser {
   id: string;
   username: string;
+  isActive: number;
   roles: string[];
   userProfile: UserProfile;
 }
@@ -53,6 +54,7 @@ export const useAuthStore = create<AuthState>()(
                   loggedInUser: {
                     id: response.id,
                     username: response.username,
+                    isActive: response.isActive,
                     roles: response.roles,
                     userProfile: response.userProfile,
                   },
