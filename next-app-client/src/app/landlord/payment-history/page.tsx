@@ -5,7 +5,6 @@ import React, { useEffect, useState } from "react";
 import PaymentFilter from "../components/payment/PaymentFilter";
 import { Table, Tag, Pagination } from "antd";
 import type { ColumnsType } from "antd/es/table";
-import { getAllTransactionsByUserId } from "@/services/PaymentServive";
 import { formatCurrency } from "@/lib/vnpay-utils";
 
 const formatDate = (dateString: string) => {
@@ -33,14 +32,17 @@ export default function PaymentHistoryPage() {
   useEffect(() => {
     const fetchPayments = async () => {
       try {
-        const userId = "44256067-6f69-11f0-8622-b42e993f445f";
-        let allPayments = await getAllTransactionsByUserId(userId);
+        // Gọi API Next.js thay vì gọi trực tiếp backend
+        const response = await fetch("/api/landlord/payment-history");
+        const result = await response.json();
 
-        console.log("All payments:", allPayments);
-        // Đảm bảo luôn là mảng
-        if (!Array.isArray(allPayments)) {
+        // Nếu trả về lỗi hoặc không phải mảng thì set rỗng
+        let allPayments = Array.isArray(result) ? result : [];
+        if (result.status === "fail" || result.status === "error") {
           allPayments = [];
         }
+
+        console.log("All payments:", allPayments);
 
         let paymentData: any[] = [];
         switch (filter) {
@@ -66,7 +68,7 @@ export default function PaymentHistoryPage() {
         );
       } catch (error) {
         console.error("Error loading payments:", error);
-        setPayments([]); // Đảm bảo payments luôn là mảng
+        setPayments([]);
       }
     };
     fetchPayments();
