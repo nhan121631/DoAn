@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState } from "react";
@@ -6,17 +7,17 @@ import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { MdErrorOutline } from "react-icons/md";
 import { useForm, SubmitHandler } from "react-hook-form";
 import * as yup from "yup";
-
-
-import RegisterForm from "./RegisterForm";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { signIn } from "next-auth/react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
+
+import RegisterForm from "./RegisterForm";
 
 interface ILoginInputs {
   username: string;
   password: string;
 }
+
 const schema = yup
   .object({
     username: yup.string().required("Please enter phone number or email"),
@@ -27,28 +28,23 @@ const schema = yup
   })
   .required();
 
-export default function AuthForms({
-  csrfToken,
-}: {
-  csrfToken: string | undefined;
-}) {
-  const [activeTab, setActiveTab] = useState<"login" | "register">("login");
-
+export default function AuthForms({ csrfToken }: { csrfToken?: string }) {
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
   const [loginGeneralErrorMessage, setLoginGeneralErrorMessage] = useState("");
 
   const {
     register,
     handleSubmit,
     formState: { errors },
-    reset,
   } = useForm<ILoginInputs>({
     resolver: yupResolver(schema),
   });
 
   const router = useRouter();
+  const pathname = usePathname(); // lấy URL hiện tại
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/user-dashboard";
-  // Handle Login form submission
+
   const onLoginSubmit: SubmitHandler<ILoginInputs> = async (data) => {
     const res = await signIn("credentials", {
       username: data.username,
@@ -56,62 +52,55 @@ export default function AuthForms({
       redirect: false,
       callbackUrl,
     });
-    console.log("handleLoginProvider", res);
+
     if (!res?.error) {
-      console.log(callbackUrl);
       router.push(callbackUrl);
     } else {
       setLoginGeneralErrorMessage("Invalid email or password");
-      console.error("Login failed:", res?.error);
     }
   };
 
-  const [showLoginPassword, setShowLoginPassword] = useState(false);
+  const isLoginPage = pathname === "/auth/login";
+  const isRegisterPage = pathname === "/auth/register";
 
   return (
     <div className="relative w-full max-w-md p-8 shadow-xl bg-white/20 backdrop-blur-md rounded-xl">
       {/* Header Tabs */}
       <div className="flex justify-around mb-8 border-b border-gray-200">
-        <button
-          type="button"
-          onClick={() => setActiveTab("login")}
+        <Link
+          href="/auth/login"
           className={`py-3 px-4 font-bold transition ${
-            activeTab === "login"
+            isLoginPage
               ? "text-white border-b-2 border-white"
               : "text-black hover:text-pink-50"
           }`}
         >
           Log in
-        </button>
-        <button
-          type="button"
-          onClick={() => setActiveTab("register")}
+        </Link>
+        <Link
+          href="/auth/register"
           className={`py-3 px-4 font-bold transition ${
-            activeTab === "register"
+            isRegisterPage
               ? "text-white border-b-2 border-white"
               : "text-black hover:text-pink-50"
           }`}
         >
           Create a new account
-        </button>
+        </Link>
       </div>
 
       {/* Login Form */}
-      {activeTab === "login" && (
+      {isLoginPage && (
         <form onSubmit={handleSubmit(onLoginSubmit)}>
           <input type="hidden" name="csrfToken" value={csrfToken} />
-          {/* Identifier Input (Phone Number or Email) */}
+          {/* Username */}
           <div className="mb-4">
-            <label htmlFor="loginIdentifier" className="sr-only">
-              Username
-            </label>
             <input
               type="text"
-              id="loginIdentifier"
+              placeholder="Phone number or Email"
               className={`w-full p-3 border ${
                 errors.username ? "border-red-500" : "border-gray-300"
               } rounded-md focus:outline-none focus:ring-2 focus:ring-white text-white`}
-              placeholder="Phone number or Email"
               {...register("username")}
             />
             {errors.username && (
@@ -122,28 +111,22 @@ export default function AuthForms({
             )}
           </div>
 
-          {/* Password Input */}
-          <div className="mb-6">
-            <label htmlFor="loginPassword" className="sr-only">
-              Password
-            </label>
-            <div className="relative">
-              <input
-                type={showLoginPassword ? "text" : "password"}
-                id="loginPassword"
-                className={`w-full p-3 border ${
-                  errors.password ? "border-red-500" : "border-gray-300"
-                } rounded-md focus:outline-none focus:ring-2 focus:ring-white text-white pr-10`}
-                placeholder="Password"
-                {...register("password")}
-              />
-              <span
-                className="absolute right-0 flex items-center pr-3 text-gray-200 transition -translate-y-1/2 cursor-pointer top-1/2 hover:text-gray-400"
-                onClick={() => setShowLoginPassword(!showLoginPassword)}
-              >
-                {showLoginPassword ? <FaEyeSlash /> : <FaEye />}
-              </span>
-            </div>
+          {/* Password */}
+          <div className="relative mb-6">
+            <input
+              type={showLoginPassword ? "text" : "password"}
+              placeholder="Password"
+              className={`w-full p-3 border ${
+                errors.password ? "border-red-500" : "border-gray-300"
+              } rounded-md focus:outline-none focus:ring-2 focus:ring-white text-white pr-10`}
+              {...register("password")}
+            />
+            <span
+              onClick={() => setShowLoginPassword(!showLoginPassword)}
+              className="absolute text-gray-200 -translate-y-1/2 cursor-pointer right-3 top-1/2"
+            >
+              {showLoginPassword ? <FaEyeSlash /> : <FaEye />}
+            </span>
             {errors.password && (
               <p className="flex items-center mt-1 text-xs text-red-500">
                 <MdErrorOutline className="w-4 h-4 mr-1" />
@@ -151,33 +134,29 @@ export default function AuthForms({
               </p>
             )}
           </div>
-          {/* General Error Message (for API failures) */}
+
+          {/* API Error */}
           {loginGeneralErrorMessage && (
-            <div
-              className="relative px-4 py-3 mb-4 text-sm text-red-700 bg-red-100 border border-red-400 rounded"
-              role="alert"
-            >
-              <span className="block sm:inline">
-                {loginGeneralErrorMessage}
-              </span>
+            <div className="px-4 py-3 mb-4 text-sm text-red-700 bg-red-100 border border-red-400 rounded">
+              {loginGeneralErrorMessage}
             </div>
           )}
 
-          {/* Login Button */}
+          {/* Button */}
           <button
             type="submit"
-            className="w-full py-3 text-lg font-semibold text-black transition duration-300 bg-gray-200 rounded-md hover:bg-gray-400"
+            className="w-full py-3 text-lg font-semibold text-black bg-gray-200 rounded-md hover:bg-gray-400"
           >
             Log in
           </button>
         </form>
       )}
 
-      {/* Register Form (now a separate component) */}
-      {activeTab === "register" && <RegisterForm />}
+      {/* Register Form */}
+      {isRegisterPage && <RegisterForm />}
 
-      {/* Forgot Password Link and Terms/Privacy (always visible) */}
-      {activeTab === "login" && (
+      {/* Forgot password (only login) */}
+      {isLoginPage && (
         <div className="mt-4 text-center">
           <Link
             href="/auth/forgot-password"
@@ -187,6 +166,8 @@ export default function AuthForms({
           </Link>
         </div>
       )}
+
+      {/* Terms */}
       <div className="mt-8 text-xs text-center text-gray-400">
         <p>
           By logging in or creating an account, you agree to our{" "}
