@@ -12,7 +12,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import com.ants.ktc.ants_ktc.dtos.transaction.PaginationTransactionResponseDto;
 import com.ants.ktc.ants_ktc.entities.Transaction;
 
 @Repository
