@@ -18,6 +18,8 @@ import com.ants.ktc.ants_ktc.dtos.transaction.PaginationTransactionResponseDto;
 import com.ants.ktc.ants_ktc.dtos.transaction.TransactionResponseDto;
 import com.ants.ktc.ants_ktc.services.TransactionService;
 
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping("/api/transactions")
 public class TransactionController {
@@ -40,7 +42,8 @@ public class TransactionController {
             @PathVariable("userId") UUID userId,
             @RequestParam(value = "page", defaultValue = "0") int page,
             @RequestParam(value = "size", defaultValue = "8") int size) {
-        PaginationTransactionResponseDto responseDto = transactionService.getTransactionsByUserIdPaginated(userId, page, size);
+        PaginationTransactionResponseDto responseDto = transactionService.getTransactionsByUserIdPaginated(userId, page,
+                size);
         return new ResponseEntity<>(responseDto, HttpStatus.OK);
     }
 
@@ -53,11 +56,9 @@ public class TransactionController {
     @PostMapping("/{userId}")
     public ResponseEntity<TransactionResponseDto> createTransactionByUserId(
             @PathVariable("userId") UUID userId,
-            @RequestBody CreateTransactionRequestDto requestDto) {
+            @Valid @RequestBody CreateTransactionRequestDto requestDto) {
         TransactionResponseDto savedTransaction = transactionService.createTransactionByUserId(userId, requestDto);
         return new ResponseEntity<>(savedTransaction, HttpStatus.CREATED);
     }
-
-
 
 }
