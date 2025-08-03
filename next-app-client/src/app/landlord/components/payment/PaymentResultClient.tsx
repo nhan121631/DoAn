@@ -4,10 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import VnpayResult from "@/app/landlord/components/payment/VnpayResult";
 import { formatCurrency } from "@/lib/vnpay-utils";
-import {
-  createTransactionByUserId,
-  mapPaymentDataToTransactionData,
-} from "@/services/PaymentServive";
+import { mapPaymentDataToTransactionData } from "@/services/PaymentServive";
 
 interface PaymentData {
   transactionStatus: { success: boolean; message: string };
