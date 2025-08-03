@@ -21,6 +21,16 @@ export async function createTypePost(data: IPostType) {
     }
 }
 
+export async function updateTypePost(data: IPostType) {
+    try {
+        const response = (await apiClient.patch(`/post-types`, data)) as IPostType;
+        return response;
+    } catch (error) {
+        console.error('Error updating type post:', error);
+        throw error;
+    }
+}
+
 export async function deleteTypePost(id: string) {
     try {
         const response = (await apiClient.patch(`/post-types/delete/${id}`)) as { message: string };

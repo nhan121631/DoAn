@@ -3,7 +3,9 @@ import { Button, Layout, theme, Form, message } from "antd";
 import TableManagePostType from "../components/TableManagePostType";
 import ModelCreatePostType from "../components/ModalAddPostType";
 import { useState } from "react";
-import { createTypePost } from "../service/TypePostService";
+import { createTypePost, updateTypePost } from "../service/TypePostService";
+import ModelUpdatePostType from "../components/ModalUpdatePost";
+import type { IPostType } from "../types/type";
 
 const { Content } = Layout;
 
@@ -15,6 +17,7 @@ const ManagePostTypePage = () => {
 
   // Modal state
   const [open, setOpen] = useState(false);
+  const [opentUpdate, setOpenUpdate] = useState(false);
   const [form] = Form.useForm();
   const [refreshKey, setRefreshKey] = useState(0);
 
@@ -34,7 +37,49 @@ const ManagePostTypePage = () => {
         setOpen(false);
         form.resetFields();
       } catch (error: any) {
-        // Nếu lỗi trả về dạng { message: [...] }
+        if (error?.response?.data?.message) {
+          setErrorMessage(error.response.data.message.join(", "));
+        } else {
+          setErrorMessage("An error has occurred!");
+        }
+      }
+    });
+  };
+  // Handle update post type
+  const [values, setValues] = useState<IPostType | null>(null);
+
+  const handleEdit = (record: IPostType) => {
+    setErrorMessage(null);
+    setValues(record);
+    form.setFieldsValue({
+      id: record.id,
+      code: record.code,
+      name: record.name,
+      pricePerDay: record.pricePerDay,
+      description: record.description,
+    });
+    console.log("values record:", values);
+    setOpenUpdate(true);
+  };
+
+  const handleUpdate = async () => {
+    form.validateFields().then(async (formValues) => {
+      try {
+        const updatedValues = {
+          ...formValues,
+          id: values?.id, // Lấy id từ state values
+        };
+        console.log("Update values:", updatedValues);
+        await updateTypePost(updatedValues);
+        setRefreshKey((prev) => prev + 1);
+        setErrorMessage(null);
+        messageApi.success({
+          content: "You updated the post type successfully!",
+          duration: 1.5,
+        });
+        setOpenUpdate(false);
+        form.resetFields();
+      } catch (error: any) {
         if (error?.response?.data?.message) {
           setErrorMessage(error.response.data.message.join(", "));
         } else {
@@ -60,12 +105,24 @@ const ManagePostTypePage = () => {
       <Button type="primary" className="mb-4" onClick={() => setOpen(true)}>
         Create Post Type
       </Button>
-      <TableManagePostType refreshKey={refreshKey} messageApi={messageApi} />
+      <TableManagePostType
+        refreshKey={refreshKey}
+        messageApi={messageApi}
+        handleUpdate={handleEdit}
+      />
       <ModelCreatePostType
         open={open}
         setOpen={setOpen}
         form={form}
         handleCreate={handleCreate}
+        errorMessage={errorMessage}
+      />
+      <ModelUpdatePostType
+        open={opentUpdate}
+        setOpen={setOpenUpdate}
+        form={form}
+        handleUpdate={handleUpdate}
+        data={values} // This should be the data you want to update
         errorMessage={errorMessage}
       />
     </Content>

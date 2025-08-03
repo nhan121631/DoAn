@@ -8,7 +8,8 @@ import { deleteTypePost, fetchTypePosts } from "../service/TypePostService";
 const TableManagePostType: React.FC<{
   refreshKey: number;
   messageApi: any;
-}> = ({ refreshKey, messageApi }) => {
+  handleUpdate: (record: IPostType) => void;
+}> = ({ refreshKey, messageApi, handleUpdate }) => {
   // const [data] = useState<IPostType[]>([
   //   {
   //     id: "1",
@@ -95,8 +96,7 @@ const TableManagePostType: React.FC<{
               cursor: "pointer",
             }}
             onClick={() => {
-              // TODO: Implement edit logic here
-              alert(`Edit post type: ${record.name}`);
+              handleUpdate(record);
             }}
           >
             Edit
