@@ -5,8 +5,11 @@ import { IoIosPhonePortrait } from "react-icons/io";
 import { MdOutlineMail } from "react-icons/md";
 import ButtonEditProfile from "../components/profile/ButtonEditProfile";
 import { RiBankCardFill } from "react-icons/ri";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
-export default function ProfileInfo() {
+export default async function ProfileInfo() {
+  const session = await getServerSession(authOptions);
   return (
     <div className="flex flex-col flex-1 min-h-screen w-full bg-white dark:bg-[#001529] text-gray-900 dark:text-white p-8 transition-colors duration-300">
       <div className="flex items-center justify-between mb-8">
@@ -17,13 +20,18 @@ export default function ProfileInfo() {
         {/* Left: Avatar + Balance */}
         <div className="flex flex-col items-center bg-gradient-to-br from-purple-200 via-blue-100 to-cyan-100 dark:from-[#232946] dark:via-[#1a1a2e] dark:to-[#0f3460] rounded-2xl shadow-lg p-8 min-w-[300px] max-w-[350px] w-full mx-auto md:mx-0">
           <Image
-            src="https://antimatter.vn/wp-content/uploads/2022/11/hinh-anh-avatar-nam.jpg"
+            src={
+              session?.user?.userProfile?.avatar ||
+              "https://antimatter.vn/wp-content/uploads/2022/11/hinh-anh-avatar-nam.jpg"
+            }
             alt="Avatar"
             width={128}
             height={128}
             className="rounded-full border-4 border-blue-500 mb-4"
           />
-          <span className="mt-2 font-semibold text-lg">Luan Tran</span>
+          <span className="mt-2 font-semibold text-lg">
+            {session?.user?.username}
+          </span>
           <div className="flex flex-col items-center mt-32 bg-blue-50 dark:bg-[#22304a] rounded-xl px-4 py-2 w-full shadow">
             <span className="text-gray-500 dark:text-gray-300 text-base mb-1">
               Account Balance
@@ -41,7 +49,7 @@ export default function ProfileInfo() {
             </span>
             <div>
               <div className="font-semibold text-lg">Name</div>
-              <div>Luan Tran</div>
+              <div>{session?.user?.username}</div>
             </div>
           </div>
           <div className="flex bg-gray-100 dark:bg-[#17223b] rounded-lg p-6 items-center gap-4">
@@ -50,7 +58,9 @@ export default function ProfileInfo() {
             </span>
             <div>
               <div className="font-semibold text-lg">Phone Number</div>
-              <div>0899804328</div>
+              <div>
+                {session?.user?.userProfile?.phoneNumber || "Not added yet"}
+              </div>
             </div>
           </div>
           <div className="flex bg-gray-100 dark:bg-[#17223b] rounded-lg p-6 items-center gap-4">
@@ -59,7 +69,7 @@ export default function ProfileInfo() {
             </span>
             <div>
               <div className="font-semibold text-lg">Email</div>
-              <div>ttluan113@gmail.com</div>
+              <div>{session?.user?.email || "Not added yet"}</div>
             </div>
           </div>
           <div className="flex bg-gray-100 dark:bg-[#17223b] rounded-lg p-6 items-center gap-4">
@@ -68,10 +78,14 @@ export default function ProfileInfo() {
             </span>
             <div>
               <div className="font-semibold text-lg">Address</div>
-              <div>
-                Hanoi University of Science and Technology, 1 Dai Co Viet, Hai
-                Ba Trung District, Hanoi City
-              </div>
+              {session?.user?.userProfile?.address.street +
+                ", " +
+                session?.user?.userProfile?.address.ward.name +
+                ", " +
+                session?.user?.userProfile?.address.ward.district.name +
+                ", " +
+                session?.user?.userProfile?.address.ward.district.province
+                  .name || "Not added yet"}
             </div>
           </div>
 
@@ -81,10 +95,14 @@ export default function ProfileInfo() {
             </span>
             <div>
               <div className="font-semibold text-lg">
-                {" "}
-                NH TMCP Quân Đội (MB Bank){" "}
+                {session?.user?.userProfile?.bankName || "Bank Name"}
               </div>
-              <div>1234567890 - Luan Tran</div>
+              <div>
+                {session?.user?.userProfile?.bankNumber &&
+                session?.user?.userProfile?.accoutHolderName
+                  ? `${session.user.userProfile.bankNumber}-${session.user.userProfile.accoutHolderName}`
+                  : "Not added yet"}
+              </div>
             </div>
           </div>
         </div>

@@ -16,6 +16,17 @@ html {
   scrollbar-width: none;
 }
 
+/* Ẩn icon con mắt mặc định của Edge, Chrome */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+  display: none;
+}
+
+input[type="password"]::-webkit-credentials-auto-fill-button {
+  visibility: hidden;
+  display: none !important;
+}
+
 /* --- Ant Design Select & Option dark mode --- */
 .dark .ant-select,
 .dark .ant-select-selector,

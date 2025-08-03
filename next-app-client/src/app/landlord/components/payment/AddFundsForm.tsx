@@ -25,7 +25,7 @@ export default function AddFundsForm({ onSuccess }: AddFundsFormProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           amount,
-          orderInfo: orderInfo || `Payment order ${new Date().getTime()}`,
+          orderInfo: orderInfo || `Add ${formatCurrency(amount)} to wallet`,
         }),
       });
       if (!res.ok) throw new Error("Network response was not ok");
