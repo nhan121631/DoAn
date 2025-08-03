@@ -68,7 +68,12 @@ public class TransactionService {
 
         Wallet wallet = user.getWallet();
         if (wallet == null) {
-            throw new IllegalArgumentException("Wallet not found for user");
+            wallet = new Wallet();
+            wallet.setUser(user);
+            wallet.setBalance(0.0);
+            wallet = walletRepository.save(wallet);
+            user.setWallet(wallet);
+            userRepository.save(user);
         }
 
         wallet.setBalance(wallet.getBalance() + requestDto.getAmount());
@@ -86,7 +91,6 @@ public class TransactionService {
 
         Transaction savedTransaction = transactionsJpaRepository.save(transaction);
 
-        // Lấy lại với EntityGraph để có đầy đủ thông tin wallet
         return transactionsJpaRepository.findWithWalletById(savedTransaction.getId())
                 .map(this::convertToDto)
                 .orElse(convertToDto(savedTransaction));

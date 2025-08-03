@@ -116,7 +116,7 @@ export default function PaymentHistoryPage() {
       dataIndex: "transactionDate",
       key: "transactionDate",
       width: 160,
-      render: (transactionDate: string, record: any) => (
+      render: (transactionDate: string) => (
         <div>
           <div>{transactionDate ? formatDate(transactionDate) : "N/A"}</div>
         </div>
