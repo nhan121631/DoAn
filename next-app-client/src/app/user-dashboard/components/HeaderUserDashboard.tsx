@@ -8,8 +8,13 @@ import { AiOutlineUserAdd } from "react-icons/ai";
 import { FaRegEdit } from "react-icons/fa";
 import { IoLogInOutline } from "react-icons/io5";
 import { RxHamburgerMenu } from "react-icons/rx";
+import { signOut, useSession } from "next-auth/react";
+import { Avatar, Dropdown } from "antd";
+import { IoIosLogOut } from "react-icons/io";
 
 export default function HeaderUserDashboard() {
+  const { data: session, status } = useSession();
+
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const router = useRouter();
 
@@ -49,6 +54,22 @@ export default function HeaderUserDashboard() {
       }
     }
   };
+
+  const items = [
+    {
+      key: "logout",
+      label: (
+        <button
+          className="flex items-center justify-center gap-2 w-full text-left px-4 py-2 text-red-500 hover:bg-gray-100 dark:hover:bg-gray-700"
+          onClick={() => {
+            signOut({ callbackUrl: "/auth/login" });
+          }}
+        >
+          <IoIosLogOut className="text-2xl" /> Logout
+        </button>
+      ),
+    },
+  ];
 
   return (
     <header className="h-[80px] bg-gray-900 top-0 left-0 min-w-screen flex items-center justify-between px-4 md:px-8 shadow-md">
@@ -109,18 +130,46 @@ export default function HeaderUserDashboard() {
       </nav>
 
       <div className="flex items-center gap-2 md:gap-6">
-        <button className="flex items-center gap-1 p-2 text-white transition duration-300 rounded-full shadow cursor-pointer md:px-4 md:py-2 md:gap-2 hover:bg-white/30">
-          <AiOutlineUserAdd className="w-5 h-5" />
-          <span className="hidden md:inline">Register</span>
-        </button>
-        <button className="flex items-center gap-1 p-2 text-white transition duration-300 rounded-full shadow cursor-pointer md:px-4 md:py-2 md:gap-2 hover:bg-white/30">
-          <IoLogInOutline className="w-5 h-5" />
-          <span className="hidden md:inline">Login</span>
-        </button>
-        <button className="flex items-center gap-1 p-2 transition duration-300 bg-white rounded-full shadow cursor-pointer hover:bg-gray-300 text-stone-900 md:px-4 md:py-2 md:gap-2">
-          <FaRegEdit className="w-5 h-5" />
-          <span className="hidden md:inline">Create Post</span>
-        </button>
+        {session ? (
+          <Dropdown
+            menu={{ items }}
+            trigger={["click"]}
+            placement="bottomRight"
+          >
+            <div className="flex items-center gap-2 cursor-pointer">
+              <Avatar src="https://i.pravatar.cc/40" />
+              <span className="font-semibold text-white">
+                Hi, {session.user?.username || "User"}
+              </span>
+            </div>
+          </Dropdown>
+        ) : (
+          <>
+            <Link
+              href="/auth/login"
+              className="flex items-center gap-1 p-2 text-white transition duration-300 rounded-full shadow cursor-pointer md:px-4 md:py-2 md:gap-2 hover:bg-white/30"
+            >
+              <AiOutlineUserAdd className="w-5 h-5" />
+              <span className="hidden md:inline">Register</span>
+            </Link>
+            <Link
+              href="/auth/login"
+              className="flex items-center gap-1 p-2 text-white transition duration-300 rounded-full shadow cursor-pointer md:px-4 md:py-2 md:gap-2 hover:bg-white/30"
+            >
+              <IoLogInOutline className="w-5 h-5" />
+              <span className="hidden md:inline">Login</span>
+            </Link>
+            <button
+              className="flex items-center gap-1 p-2 transition duration-300 bg-white rounded-full shadow cursor-pointer hover:bg-gray-300 text-stone-900 md:px-4 md:py-2 md:gap-2"
+              onClick={() => {
+                /* logic tạo bài đăng */
+              }}
+            >
+              <FaRegEdit className="w-5 h-5" />
+              <span className="hidden md:inline">Create Post</span>
+            </button>
+          </>
+        )}
 
         <div className="md:hidden">
           <button

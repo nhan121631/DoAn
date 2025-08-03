@@ -1,8 +1,11 @@
 import AuthHeader from "@/app/users/components/Auth/AuthHeader";
 import AuthForms from "../../users/components/Auth/AuthForms";
 import Image from "next/image";
+import { getCsrfToken } from "next-auth/react";
+import { Suspense } from "react";
 
-export default function LoginPage() {
+export default async function LoginPage() {
+  const csrfToken = await getCsrfToken();
   return (
     // Container chính cho toàn bộ trang
     <div className="relative flex items-center justify-center w-full min-h-screen overflow-hidden">
@@ -20,7 +23,9 @@ export default function LoginPage() {
       </div>
       {/* Container cho AuthForms, căn giữa màn hình */}
       <div className="relative z-20 mt-20">
-        <AuthForms />
+        <Suspense fallback={<div>Loading...</div>}>
+          <AuthForms csrfToken={csrfToken} />
+        </Suspense>
       </div>
     </div>
   );
