@@ -1,6 +1,7 @@
 import type { NextAuthOptions, Session, User } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { JWT } from "next-auth/jwt";
+import NextAuth from "next-auth";
 
 interface UserType {
   id: string;
