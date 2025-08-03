@@ -3,6 +3,7 @@ import { MenuUnfoldOutlined, MenuFoldOutlined } from "@ant-design/icons";
 import { Avatar, Dropdown } from "antd";
 import { IoIosLogOut } from "react-icons/io";
 import { ThemeContext } from "@/app/context/ThemeContext";
+import { signOut, useSession } from "next-auth/react";
 
 interface AppHeaderProps {
   collapsed: boolean;
@@ -10,12 +11,13 @@ interface AppHeaderProps {
 }
 
 function AppHeader({ collapsed, toggleCollapsed }: AppHeaderProps) {
+  const { data: session } = useSession();
   const { isDark, setIsDark } = useContext(ThemeContext);
   const handleClick = () => {
     setIsDark(!isDark);
     localStorage.setItem("theme", isDark ? "light" : "dark");
   };
-  const userName = "John Doe";
+  const userName = session?.user?.username || "User";
 
   const items = [
     {
@@ -23,7 +25,7 @@ function AppHeader({ collapsed, toggleCollapsed }: AppHeaderProps) {
       label: (
         <button
           className="flex items-center justify-center gap-2 w-full text-left px-4 py-2 text-red-500 hover:bg-gray-100 dark:hover:bg-gray-700 dark:!bg-gray-100"
-          onClick={() => alert("Logged out!")}
+          onClick={async () => await signOut({ callbackUrl: "/auth/login" })}
         >
           <IoIosLogOut className="text-2xl" /> Logout
         </button>
