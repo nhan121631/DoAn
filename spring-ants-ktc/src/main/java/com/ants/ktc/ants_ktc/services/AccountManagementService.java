@@ -60,7 +60,8 @@ public class AccountManagementService {
 
         return userJpaRepository.findById(userId)
                 .map(this::convertToUserResponseDto)
-                .orElseThrow(() -> new EntityNotFoundException("User with ID " + userId + " not found."));
+                .orElseThrow(() -> new IllegalArgumentException("User not found with id: " + userId));
+
     }
 
     @Transactional

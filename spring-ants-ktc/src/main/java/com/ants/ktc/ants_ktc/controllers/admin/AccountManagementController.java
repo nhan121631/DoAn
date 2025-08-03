@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
+import com.ants.ktc.ants_ktc.controllers.ConvenientController;
 import com.ants.ktc.ants_ktc.dtos.manage_account.RoleUpdateRequestDto;
 import com.ants.ktc.ants_ktc.dtos.manage_account.UserPageResponseDto;
 import com.ants.ktc.ants_ktc.dtos.manage_account.UserResponseDto;
@@ -26,29 +26,41 @@ import jakarta.persistence.EntityNotFoundException;
 @PreAuthorize("hasAuthority('Administrators')")
 public class AccountManagementController {
 
+    private final ConvenientController convenientController;
+
     private final AccountManagementService accountManagementService;
 
-    public AccountManagementController(AccountManagementService accountManagementService) {
+    public AccountManagementController(AccountManagementService accountManagementService,
+            ConvenientController convenientController) {
         this.accountManagementService = accountManagementService;
+        this.convenientController = convenientController;
     }
 
     @GetMapping
     public ResponseEntity<UserPageResponseDto> getPaginatedUsers(
             @RequestParam(name = "page", defaultValue = "0") int page,
-            @RequestParam(name = "size", defaultValue = "10") int size) {
+            @RequestParam(name = "size", defaultValue = "7") int size) {
 
         UserPageResponseDto response = accountManagementService.getPaginatedUsers(page, size);
         return ResponseEntity.ok(response);
     }
 
+    // @GetMapping("/{id}")
+    // public ResponseEntity<UserResponseDto> getUserById(@PathVariable("id") UUID
+    // id) {
+    // try {
+    // UserResponseDto userDto = accountManagementService.getUserById(id);
+    // return ResponseEntity.ok(userDto);
+    // } catch (EntityNotFoundException e) {
+    // return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // Trả về 404 nếu
+    // không tìm thấy user
+    // }
+    // }
     @GetMapping("/{id}")
     public ResponseEntity<UserResponseDto> getUserById(@PathVariable("id") UUID id) {
-        try {
-            UserResponseDto userDto = accountManagementService.getUserById(id);
-            return ResponseEntity.ok(userDto);
-        } catch (EntityNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // Trả về 404 nếu không tìm thấy user
-        }
+        System.err.println("Đã gọi getUserById");
+        UserResponseDto userDto = accountManagementService.getUserById(id);
+        return ResponseEntity.ok(userDto);
     }
 
     @PatchMapping("/{id}/status")
