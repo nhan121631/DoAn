@@ -10,6 +10,8 @@ import * as yup from "yup";
 
 import RegisterForm from "./RegisterForm";
 import { yupResolver } from "@hookform/resolvers/yup";
+import { signIn } from "next-auth/react";
+import { useRouter, useSearchParams } from "next/navigation";
 
 interface ILoginInputs {
   username: string;
@@ -25,11 +27,14 @@ const schema = yup
   })
   .required();
 
-export default function AuthForms() {
+export default function AuthForms({
+  csrfToken,
+}: {
+  csrfToken: string | undefined;
+}) {
   const [activeTab, setActiveTab] = useState<"login" | "register">("login");
 
   const [loginGeneralErrorMessage, setLoginGeneralErrorMessage] = useState("");
-  const [loginSuccessMessage, setLoginSuccessMessage] = useState("");
 
   const {
     register,
@@ -40,20 +45,24 @@ export default function AuthForms() {
     resolver: yupResolver(schema),
   });
 
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get("callbackUrl") || "/user-dashboard";
   // Handle Login form submission
   const onLoginSubmit: SubmitHandler<ILoginInputs> = async (data) => {
-    console.log("Login data:", data);
-    if (data.username === "user" && data.password === "123456") {
-      setLoginSuccessMessage("Login successful!");
-      reset(); // Reset form after successful submission
-      setLoginGeneralErrorMessage("");
-      // Redirect to home or dashboard
-      console.log("Redirecting to home...");
+    const res = await signIn("credentials", {
+      username: data.username,
+      password: data.password,
+      redirect: false,
+      callbackUrl,
+    });
+    console.log("handleLoginProvider", res);
+    if (!res?.error) {
+      console.log(callbackUrl);
+      router.push(callbackUrl);
     } else {
-      setLoginGeneralErrorMessage(
-        "Username or password is incorrect."
-      );
-      setLoginSuccessMessage("");
+      setLoginGeneralErrorMessage("Invalid email or password");
+      console.error("Login failed:", res?.error);
     }
   };
 
@@ -90,10 +99,11 @@ export default function AuthForms() {
       {/* Login Form */}
       {activeTab === "login" && (
         <form onSubmit={handleSubmit(onLoginSubmit)}>
+          <input type="hidden" name="csrfToken" value={csrfToken} />
           {/* Identifier Input (Phone Number or Email) */}
           <div className="mb-4">
             <label htmlFor="loginIdentifier" className="sr-only">
-              Phone number or Email
+              Username
             </label>
             <input
               type="text"
@@ -150,16 +160,6 @@ export default function AuthForms() {
               <span className="block sm:inline">
                 {loginGeneralErrorMessage}
               </span>
-            </div>
-          )}
-
-          {/* Success Message */}
-          {loginSuccessMessage && (
-            <div
-              className="relative px-4 py-3 mb-4 text-sm text-green-700 bg-green-100 border border-green-400 rounded"
-              role="alert"
-            >
-              <span className="block sm:inline">{loginSuccessMessage}</span>
             </div>
           )}
 
