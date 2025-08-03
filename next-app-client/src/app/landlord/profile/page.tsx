@@ -7,9 +7,11 @@ import ButtonEditProfile from "../components/profile/ButtonEditProfile";
 import { RiBankCardFill } from "react-icons/ri";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { getUserWallet } from "@/services/WalletService";
 
 export default async function ProfileInfo() {
   const session = await getServerSession(authOptions);
+  const wallet = await getUserWallet(session);
   return (
     <div className="flex flex-col flex-1 min-h-screen w-full bg-white dark:bg-[#001529] text-gray-900 dark:text-white p-8 transition-colors duration-300">
       <div className="flex items-center justify-between mb-8">
@@ -30,14 +32,17 @@ export default async function ProfileInfo() {
             className="rounded-full border-4 border-blue-500 mb-4"
           />
           <span className="mt-2 font-semibold text-lg">
-            {session?.user?.username}
+            {session?.user?.userProfile?.fullName || "No Name"}
           </span>
           <div className="flex flex-col items-center mt-32 bg-blue-50 dark:bg-[#22304a] rounded-xl px-4 py-2 w-full shadow">
             <span className="text-gray-500 dark:text-gray-300 text-base mb-1">
               Account Balance
             </span>
             <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-              5,000,000₫
+              {typeof wallet?.balance === "number"
+                ? wallet.balance.toLocaleString("vi-VN")
+                : "0"}
+              ₫
             </span>
           </div>
         </div>
@@ -49,7 +54,7 @@ export default async function ProfileInfo() {
             </span>
             <div>
               <div className="font-semibold text-lg">Name</div>
-              <div>{session?.user?.username}</div>
+              <div>{session?.user?.userProfile?.fullName}</div>
             </div>
           </div>
           <div className="flex bg-gray-100 dark:bg-[#17223b] rounded-lg p-6 items-center gap-4">

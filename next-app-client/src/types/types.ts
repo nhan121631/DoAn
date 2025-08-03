@@ -17,7 +17,12 @@ export type Ward = {
   districtId: number;
 };
 //--------------------------------------//
-
+//Wallet
+export type Wallet = {
+  id: string;
+  balance: number;
+};
+//--------------------------------------//
 
 export type Room = {
   name: string;

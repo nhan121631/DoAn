@@ -43,12 +43,9 @@ public class AccountManagementController {
 
     @GetMapping("/{id}")
     public ResponseEntity<UserResponseDto> getUserById(@PathVariable("id") UUID id) {
-        try {
-            UserResponseDto userDto = accountManagementService.getUserById(id);
-            return ResponseEntity.ok(userDto);
-        } catch (EntityNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // Trả về 404 nếu không tìm thấy user
-        }
+        UserResponseDto userDto = accountManagementService.getUserById(id);
+        return ResponseEntity.ok(userDto);
+
     }
 
     @PatchMapping("/{id}/status")
