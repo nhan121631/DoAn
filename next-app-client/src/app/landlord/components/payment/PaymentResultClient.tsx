@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import VnpayResult from "@/app/landlord/components/payment/VnpayResult";
 import { formatCurrency } from "@/lib/vnpay-utils";
-import { savePaymentToLocalStorage } from "@/lib/payment-storage";
+import { createTransactionByUserId, mapPaymentDataToTransactionData } from "@/services/PaymentServive";
 
 interface PaymentData {
   transactionStatus: { success: boolean; message: string };
@@ -20,7 +20,9 @@ interface PaymentData {
   vnp_TransactionStatus?: string;
 }
 
+
 export default function PaymentResultClient() {
+  const userId = "44256067-6f69-11f0-8622-b42e993f445f";
   const searchParams = useSearchParams();
   const [paymentData, setPaymentData] = useState<PaymentData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -40,7 +42,10 @@ export default function PaymentResultClient() {
         const data = await response.json();
         setPaymentData(data);
         try {
-          savePaymentToLocalStorage(data);
+          // savePaymentToLocalStorage(data);
+          const transactionData = mapPaymentDataToTransactionData(data);
+          await createTransactionByUserId(userId, transactionData);
+          console.log("Transaction data:", transactionData);
         } catch (saveError) {
           console.error("Failed to save payment data:", saveError);
         }

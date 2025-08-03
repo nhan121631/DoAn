@@ -18,6 +18,5 @@ public class LoginResponseDto {
     private List<String> roles;
     UserProfileResponseDto userProfile;
     String accessToken;
-    String refreshToken;
-
+    String refreshToken; 
 }

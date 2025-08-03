@@ -1,15 +1,15 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React, { useEffect, useState } from "react";
 import PaymentFilter from "../components/payment/PaymentFilter";
 import { Table, Tag, Pagination } from "antd";
 import type { ColumnsType } from "antd/es/table";
-import {
-  getPaymentsFromLocalStorage,
-  PaymentRecord,
-} from "@/lib/payment-storage";
+import { getAllTransactionsByUserId } from "@/services/PaymentServive";
 import { formatCurrency } from "@/lib/vnpay-utils";
+
 const formatDate = (dateString: string) => {
+  if (!dateString) return "N/A";
   const date = new Date(dateString);
   return date.toLocaleString("vi-VN", {
     year: "numeric",
@@ -21,20 +21,8 @@ const formatDate = (dateString: string) => {
   });
 };
 
-const formatVnpayDate = (vnp_PayDate?: string) => {
-  if (!vnp_PayDate) return "N/A";
-  return `${vnp_PayDate.substring(6, 8)}/${vnp_PayDate.substring(
-    4,
-    6
-  )}/${vnp_PayDate.substring(0, 4)} ${vnp_PayDate.substring(
-    8,
-    10
-  )}:${vnp_PayDate.substring(10, 12)}:${vnp_PayDate.substring(12, 14)}`;
-};
-
 export default function PaymentHistoryPage() {
-  const [payments, setPayments] = useState<PaymentRecord[]>([]);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [payments, setPayments] = useState<any[]>([]);
   const [filter, setFilter] = useState<"all" | "success" | "failed">("all");
   const [successCount, setSuccessCount] = useState(0);
   const [failedCount, setFailedCount] = useState(0);
@@ -43,46 +31,53 @@ export default function PaymentHistoryPage() {
   const pageSize = 5;
 
   useEffect(() => {
-    let paymentData: PaymentRecord[] = [];
-    try {
-      switch (filter) {
-        case "success":
-          paymentData = getPaymentsFromLocalStorage().filter(
-            (p) => p.transactionStatus.success
-          );
-          break;
-        case "failed":
-          paymentData = getPaymentsFromLocalStorage().filter(
-            (p) => !p.transactionStatus.success
-          );
-          break;
-        default:
-          paymentData = getPaymentsFromLocalStorage();
+    const fetchPayments = async () => {
+      try {
+        const userId = "44256067-6f69-11f0-8622-b42e993f445f";
+        let allPayments = await getAllTransactionsByUserId(userId);
+
+        console.log("All payments:", allPayments);
+        // Đảm bảo luôn là mảng
+        if (!Array.isArray(allPayments)) {
+          allPayments = [];
+        }
+
+        let paymentData: any[] = [];
+        switch (filter) {
+          case "success":
+            paymentData = allPayments.filter((p: any) => p.status === 1);
+            break;
+          case "failed":
+            paymentData = allPayments.filter((p: any) => p.status === 0);
+            break;
+          default:
+            paymentData = allPayments;
+        }
+        setPayments(paymentData);
+        setCurrentPage(1);
+
+        // Thống kê
+        const successList = allPayments.filter((p: any) => p.status === 1);
+        const failedList = allPayments.filter((p: any) => p.status === 0);
+        setSuccessCount(successList.length);
+        setFailedCount(failedList.length);
+        setTotalSuccess(
+          successList.reduce((total: any, p: any) => total + p.amount, 0)
+        );
+      } catch (error) {
+        console.error("Error loading payments:", error);
+        setPayments([]); // Đảm bảo payments luôn là mảng
       }
-      setPayments(paymentData);
-      setCurrentPage(1);
-      // Thống kê
-      const allPayments = getPaymentsFromLocalStorage();
-      const successList = allPayments.filter(
-        (p) => p.transactionStatus.success
-      );
-      const failedList = allPayments.filter(
-        (p) => !p.transactionStatus.success
-      );
-      setSuccessCount(successList.length);
-      setFailedCount(failedList.length);
-      setTotalSuccess(successList.reduce((total, p) => total + p.amount, 0));
-    } catch (error) {
-      console.error("Error loading payments:", error);
-    }
+    };
+    fetchPayments();
   }, [filter]);
 
   // Antd Table columns
-  const columns: ColumnsType<PaymentRecord> = [
+  const columns: ColumnsType<any> = [
     {
       title: "Mã GD",
-      dataIndex: "vnp_TxnRef",
-      key: "vnp_TxnRef",
+      dataIndex: "transactionCode",
+      key: "transactionCode",
       width: 180,
       render: (text: string) => (
         <span style={{ fontFamily: "monospace" }}>{text}</span>
@@ -101,8 +96,8 @@ export default function PaymentHistoryPage() {
     },
     {
       title: "Ngân hàng",
-      dataIndex: "vnp_BankCode",
-      key: "vnp_BankCode",
+      dataIndex: "bankTransactionName",
+      key: "bankTransactionName",
       width: 120,
       render: (bank: string) => bank || "N/A",
     },
@@ -110,33 +105,41 @@ export default function PaymentHistoryPage() {
       title: "Trạng thái",
       key: "status",
       width: 120,
-      render: (_, record) => (
-        <Tag color={record.transactionStatus.success ? "green" : "red"}>
-          {record.transactionStatus.success ? "Thành công" : "Thất bại"}
+      render: (_: any, record: any) => (
+        <Tag color={record.status === 1 ? "green" : "red"}>
+          {record.status === 1 ? "Thành công" : "Thất bại"}
         </Tag>
       ),
     },
     {
       title: "Thời gian",
-      dataIndex: "vnp_PayDate",
-      key: "vnp_PayDate",
+      dataIndex: "transactionDate",
+      key: "transactionDate",
       width: 160,
-      render: (vnp_PayDate: string, record) => (
+      render: (transactionDate: string) => (
         <div>
-          <div>{formatVnpayDate(vnp_PayDate)}</div>
-          <div style={{ color: "#888", fontSize: 12 }}>
-            Lưu: {formatDate(record.createdAt)}
-          </div>
+          <div>{transactionDate ? formatDate(transactionDate) : "N/A"}</div>
         </div>
       ),
     },
     {
       title: "Mô tả",
-      dataIndex: "vnp_OrderInfo",
-      key: "vnp_OrderInfo",
+      dataIndex: "description",
+      key: "description",
       width: 200,
       render: (info: string) => info || "",
     },
+    // {
+    //   title: "Số dư ví",
+    //   dataIndex: ["wallet", "balance"],
+    //   key: "walletBalance",
+    //   width: 120,
+    //   render: (balance: number) => (
+    //     <span style={{ color: "#8b5cf6", fontWeight: 600 }}>
+    //       {formatCurrency(balance)}
+    //     </span>
+    //   ),
+    // },
   ];
 
   const paginatedData = payments.slice(
@@ -153,7 +156,6 @@ export default function PaymentHistoryPage() {
               <h1 className="text-2xl font-bold text-gray-900 dark:!text-white">
                 Lịch sử thanh toán
               </h1>
-              {/* hskdh */}
             </div>
 
             {/* Thống kê */}
@@ -184,7 +186,7 @@ export default function PaymentHistoryPage() {
             </div>
 
             {/* Filter */}
-            <PaymentFilter />
+            <PaymentFilter filter={filter} setFilter={setFilter} />
 
             {/* Payment List */}
             <div>
@@ -192,7 +194,7 @@ export default function PaymentHistoryPage() {
                 columns={columns}
                 dataSource={paginatedData}
                 pagination={false}
-                rowKey="id"
+                rowKey="transactionCode"
                 size="small"
                 locale={{
                   emptyText: (
