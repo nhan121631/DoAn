@@ -15,8 +15,9 @@ import lombok.Setter;
 public class LoginResponseDto {
     UUID id;
     String username;
+    int isActive;
     private List<String> roles;
     UserProfileResponseDto userProfile;
     String accessToken;
-    String refreshToken; 
+    String refreshToken;
 }

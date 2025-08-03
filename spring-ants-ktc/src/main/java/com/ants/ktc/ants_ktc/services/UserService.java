@@ -71,7 +71,14 @@ public class UserService {
                         }
 
                         userProfileDto = UserProfileResponseDto.builder()
+                                        .fullName(user.getProfile().getFullName())
                                         .email(user.getProfile().getEmail())
+                                        .phoneNumber(user.getProfile().getPhoneNumber())
+                                        .avatar(user.getProfile().getAvatar())
+                                        .bankName(user.getProfile().getBankName())
+                                        .bankNumber(user.getProfile().getBankNumber())
+                                        .binCode(user.getProfile().getBinCode())
+                                        .accoutHolderName(user.getProfile().getAccoutHolderName())
                                         .address(addressDto)
                                         .build();
                 }

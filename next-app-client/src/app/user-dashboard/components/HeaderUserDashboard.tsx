@@ -146,7 +146,7 @@ export default function HeaderUserDashboard() {
         ) : (
           <>
             <Link
-              href="/auth/login"
+              href="/auth/register"
               className="flex items-center gap-1 p-2 text-white transition duration-300 rounded-full shadow cursor-pointer md:px-4 md:py-2 md:gap-2 hover:bg-white/30"
             >
               <AiOutlineUserAdd className="w-5 h-5" />
@@ -159,15 +159,13 @@ export default function HeaderUserDashboard() {
               <IoLogInOutline className="w-5 h-5" />
               <span className="hidden md:inline">Login</span>
             </Link>
-            <button
+            <Link
+              href="/users/register"
               className="flex items-center gap-1 p-2 transition duration-300 bg-white rounded-full shadow cursor-pointer hover:bg-gray-300 text-stone-900 md:px-4 md:py-2 md:gap-2"
-              onClick={() => {
-                /* logic tạo bài đăng */
-              }}
             >
               <FaRegEdit className="w-5 h-5" />
               <span className="hidden md:inline">Create Post</span>
-            </button>
+            </Link>
           </>
         )}
 

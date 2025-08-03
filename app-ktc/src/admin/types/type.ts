@@ -26,10 +26,10 @@ export interface Address {
 }
 
 export interface UserProfile {
+  fullName: string;
   email: string;
   phoneNumber: string | null;
   avatar: string | null;
-  isActive: number;
   bankName: string | null;
   binCode: string | null;
   bankNumber: string | null;
