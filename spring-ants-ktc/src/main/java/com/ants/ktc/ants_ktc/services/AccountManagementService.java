@@ -4,6 +4,7 @@ import com.ants.ktc.ants_ktc.entities.User;
 import com.ants.ktc.ants_ktc.dtos.manage_account.UserPageResponseDto;
 import com.ants.ktc.ants_ktc.dtos.manage_account.UserResponseDto;
 import com.ants.ktc.ants_ktc.entities.Role;
+import com.ants.ktc.ants_ktc.repositories.RoleJpaRepository;
 import com.ants.ktc.ants_ktc.repositories.UserJpaRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +14,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -22,10 +25,13 @@ import java.util.stream.Collectors;
 public class AccountManagementService {
 
     private final UserJpaRepository userJpaRepository;
+    private final RoleJpaRepository roleJpaRepository;
 
     @Autowired
-    public AccountManagementService(UserJpaRepository userJpaRepository) {
+    public AccountManagementService(UserJpaRepository userJpaRepository, RoleJpaRepository roleJpaRepository) {
         this.userJpaRepository = userJpaRepository;
+        this.roleJpaRepository = roleJpaRepository;
+
     }
 
     // --- Phương thức lấy danh sách tài khoản có phân trang ---
@@ -72,6 +78,25 @@ public class AccountManagementService {
         }
 
         user.setIsActive(newStatus);
+        User updatedUser = userJpaRepository.save(user);
+
+        return convertToUserResponseDto(updatedUser);
+    }
+
+    @Transactional
+    public UserResponseDto updateUserRoles(UUID userId, List<String> roleNames) {
+        User user = userJpaRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("User with ID " + userId + " not found."));
+
+        // Chuyển đổi List<String> roleNames thành List<Role>
+        List<Role> newRoles = new ArrayList<>(); // Khởi tạo ArrayList thay vì HashSet
+        for (String roleName : roleNames) {
+            Role role = roleJpaRepository.findByName(roleName)
+                    .orElseThrow(() -> new EntityNotFoundException("Role not found with name: " + roleName));
+            newRoles.add(role);
+        }
+
+        user.setRoles(newRoles); // Setter của User entity bây giờ nhận List<Role>
         User updatedUser = userJpaRepository.save(user);
 
         return convertToUserResponseDto(updatedUser);

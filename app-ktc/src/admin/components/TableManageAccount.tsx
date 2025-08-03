@@ -1,90 +1,187 @@
-import React, { useState } from "react";
-import { Table, Select, Tag, Button, Popconfirm, message, Space } from "antd";
+import React, { useState, useEffect, useCallback } from "react";
+import { Table, Select, Tag, Button, Popconfirm, message, Space, Pagination } from "antd";
 import type { TableColumnsType } from "antd";
+import apiClient from "../lib/api-client-ad";
+import { AxiosError, type AxiosResponse } from "axios";
 
 const { Option } = Select;
 
-export interface DataType {
-  key: React.Key;
-  name: string;
+export interface UserResponseDto {
+  id: string;
+  username: string;
   email: string;
-  phonenumber: string;
-  status: 0 | 1; // 0 = Active, 1 = Disabled
-  authorization: 1 | 2; // 1 = User, 2 = Landlord
+  phoneNumber: string;
+  status: string;
+  roles: string[];
+}
+
+interface UserPageResponseDto {
+  data: UserResponseDto[];
+  pageNumber: number;
+  pageSize: number;
+  totalRecords: number;
+  totalPages: number;
+  hasNext: boolean;
+  hasPrevious: boolean;
+}
+
+interface RoleUpdateRequestDto {
+  roleNames: string[];
+}
+
+interface UpdateUserStatusRequestDto {
+    status: number;
 }
 
 const TableManageAccount: React.FC = () => {
-  const [data, setData] = useState<DataType[]>([
-    {
-      key: "1",
-      name: "John Brown",
-      email: "john.brown@example.com",
-      phonenumber: "0123456789",
-      status: 1,
-      authorization: 2,
-    },
-    {
-      key: "2",
-      name: "Jim Green",
-      email: "jim.green@example.com",
-      phonenumber: "0987654321",
-      status: 0,
-      authorization: 1,
-    },
-    {
-      key: "3",
-      name: "Joe Black",
-      email: "jo@gmail.com",
-      phonenumber: "1234567890",
-      status: 0,
-      authorization: 1,
-    },
-    {
-      key: "4",
-      name: "Jane Doe",
-      email: "djoaid@gmail  .com",
-      phonenumber: "9876543210",
-      status: 1,
-      authorization: 2,
-    },
-    {
-      key: "5",
-      name: "Jane Doe",
-      email: "djoaid@gmail  .com",
-      phonenumber: "9876543210",
-      status: 1,
-      authorization: 2,
-    },
-  ]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [accountsData, setAccountsData] = useState<UserResponseDto[]>([]);
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 7,
+    total: 0,
+  });
 
-  const [editingKey, setEditingKey] = useState<React.Key | null>(null);
-  const [tempAuth, setTempAuth] = useState<1 | 2 | null>(null);
+  const [editingKey, setEditingKey] = useState<string | null>(null);
+  const [tempAuth, setTempAuth] = useState<string | null>(null);
 
-  const toggleStatus = (record: DataType) => {
-    const updated = data.map((item) =>
-      item.key === record.key
-        ? { ...item, status: (item.status === 0 ? 1 : 0) as 0 | 1 }
-        : item
-    );
-    setData(updated);
-    message.success(
-      `Account ${record.status === 0 ? "disabled" : "unlocked"} successfully`
-    );
+  const fetchAccounts = useCallback(async (page: number, size: number) => {
+    setLoading(true);
+    try {
+      console.log(`Fetching accounts for page ${page - 1}, size ${size}...`);
+      const response: AxiosResponse<UserPageResponseDto | UserResponseDto[]> = await apiClient.get(
+        `/admin/accounts?page=${page - 1}&size=${size}`
+      );
+      
+      console.log("API Response (full AxiosResponse object):", response);
+      console.log("API Response.data (the actual data body):", response.data);
+
+      let dataToProcess: UserResponseDto[] = [];
+      let totalRecordsFromResponse = 0;
+      let currentPageFromResponse = page; 
+      let pageSizeFromResponse = size; 
+
+      
+      if (typeof response.data === 'object' && response.data !== null && 'data' in response.data && Array.isArray((response.data as UserPageResponseDto).data)) {
+        const paginatedResponse = response.data as UserPageResponseDto;
+        dataToProcess = paginatedResponse.data;
+        totalRecordsFromResponse = paginatedResponse.totalRecords;
+        currentPageFromResponse = paginatedResponse.pageNumber + 1; 
+        pageSizeFromResponse = paginatedResponse.pageSize;
+        console.log("Detected paginated response structure.");
+      } 
+      else if (Array.isArray(response.data)) {
+        dataToProcess = response.data as UserResponseDto[];
+        totalRecordsFromResponse = response.data.length; 
+        currentPageFromResponse = 1; // Giả định đây là trang đầu tiên nếu không có thông tin phân trang
+        pageSizeFromResponse = response.data.length > 0 ? response.data.length : pagination.pageSize; 
+        console.log("Detected direct array response structure.");
+      } else {
+        message.error("Invalid data format received from API. Expected a paginated object or a direct array of users.");
+        console.error("Invalid data format or unexpected response:", response.data);
+        setAccountsData([]);
+        setPagination((prev) => ({ ...prev, total: 0 }));
+        setLoading(false);
+        return; 
+      }
+
+      console.log("Data extracted (before filter):", dataToProcess);
+
+      // LỌC BỎ CÁC TÀI KHOẢN CÓ VAI TRÒ "Administrators" TRƯỚC KHI HIỂN THỊ
+      const filteredData = dataToProcess.filter(
+        (account) => !account.roles.includes('Administrators')
+      );
+
+      console.log("Data extracted (after filter for display):", filteredData);
+      console.log("Total records (from response):", totalRecordsFromResponse);
+
+      setAccountsData(filteredData); // Cập nhật state với dữ liệu đã lọc
+      setPagination((prev) => ({
+        ...prev,
+        current: currentPageFromResponse,
+        pageSize: pageSizeFromResponse,
+        total: totalRecordsFromResponse, // Giữ tổng số bản ghi từ backend để phân trang tổng thể
+      }));
+
+      if (filteredData.length > 0) {
+        console.log("Data loaded successfully and filtered for display.");
+      } else {
+        console.log("No non-Admin data found or loaded on this page.");
+      }
+
+    } catch (error: any) {
+      if (error instanceof AxiosError) {
+        if (error.response) {
+          message.error(`Error loading accounts: ${error.response.status} - ${error.response.data?.message || error.message}`);
+          console.error("API Error Response:", error.response);
+        } else if (error.request) {
+          message.error("No response received from server. Please check network connection.");
+          console.error("API Error Request:", error.request);
+        } else {
+          message.error(`An unexpected error occurred: ${error.message}`);
+          console.error("API Error Message:", error.message);
+        }
+      } else {
+        message.error("An unknown error occurred while fetching accounts.");
+        console.error("Unknown Error:", error);
+      }
+      setAccountsData([]);
+      setPagination((prev) => ({ ...prev, total: 0 })); 
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchAccounts(pagination.current, pagination.pageSize);
+  }, [fetchAccounts, pagination.current, pagination.pageSize]);
+
+  const toggleStatus = async (record: UserResponseDto) => {
+    const newStatusValue = record.status === "Active" ? 1 : 0;
+    const newStatusText = newStatusValue === 0 ? "unlocked" : "disabled";
+
+    try {
+      const requestBody: UpdateUserStatusRequestDto = { status: newStatusValue };
+      await apiClient.patch<UserResponseDto>(`/admin/accounts/${record.id}/status`, requestBody);
+
+      message.success(`Account ${newStatusText} successfully`);
+      fetchAccounts(pagination.current, pagination.pageSize); 
+    } catch (error: any) {
+      if (error.response && error.response.status === 404) {
+        message.error("Account not found.");
+      } else if (error.response && error.response.status === 400) {
+        message.error("Invalid status value.");
+      } else {
+        message.error(`Failed to update status: ${error.response?.data?.message || error.message}`);
+      }
+      console.error("Status update failed:", error);
+    }
   };
 
-  const handleAuthorizationChange = (value: 1 | 2) => {
+  const handleAuthorizationChange = (value: string) => {
     setTempAuth(value);
   };
 
-  const saveAuthorization = (record: DataType) => {
-    if (tempAuth === null) return;
-    const updated = data.map((item) =>
-      item.key === record.key ? { ...item, authorization: tempAuth } : item
-    );
-    setData(updated);
-    message.success("Authorization updated");
-    setEditingKey(null);
-    setTempAuth(null);
+  const saveAuthorization = async (record: UserResponseDto) => {
+    if (tempAuth === null) {
+        message.warning("No role selected.");
+        return;
+    }
+
+    try {
+      const requestBody: RoleUpdateRequestDto = {
+        roleNames: [tempAuth]
+      };
+      await apiClient.patch<UserResponseDto>(`/admin/accounts/${record.id}/roles`, requestBody);
+
+      message.success("Authorization updated successfully!");
+      setEditingKey(null);
+      setTempAuth(null);
+      fetchAccounts(pagination.current, pagination.pageSize); 
+    } catch (error: any) {
+      message.error(`Failed to update authorization: ${error.response?.data?.message || error.message}`);
+      console.error("Authorization update failed:", error);
+    }
   };
 
   const cancelEdit = () => {
@@ -92,32 +189,32 @@ const TableManageAccount: React.FC = () => {
     setTempAuth(null);
   };
 
-  const columns: TableColumnsType<DataType> = [
+  const columns: TableColumnsType<UserResponseDto> = [
     {
       title: "Name",
-      dataIndex: "name",
-      width: "20%",
-      sorter: (a, b) => a.name.localeCompare(b.name),
+      dataIndex: "username",
+      width: "15%",
+      sorter: (a, b) => a.username.localeCompare(b.username),
     },
     {
       title: "Email",
       dataIndex: "email",
-      width: "25%",
+      width: "20%",
       sorter: (a, b) => a.email.localeCompare(b.email),
     },
     {
       title: "Phone Number",
-      dataIndex: "phonenumber",
-      width: "20%",
-      sorter: (a, b) => a.phonenumber.localeCompare(b.phonenumber),
+      dataIndex: "phoneNumber",
+      width: "15%",
+      sorter: (a, b) => a.phoneNumber.localeCompare(b.phoneNumber),
     },
     {
       title: "Status",
       dataIndex: "status",
-      width: "15%",
-      sorter: (a, b) => a.status - b.status,
-      render: (value) =>
-        value === 0 ? (
+      width: "10%",
+      sorter: (a, b) => a.status.localeCompare(b.status),
+      render: (value: string) =>
+        value === "Active" ? (
           <Tag color="green">Active</Tag>
         ) : (
           <Tag color="red">Disabled</Tag>
@@ -125,24 +222,25 @@ const TableManageAccount: React.FC = () => {
     },
     {
       title: "Authorization",
-      dataIndex: "authorization",
-      width: "25%",
-      sorter: (a, b) => a.authorization - b.authorization,
-      render: (_, record) => {
-        const isEditing = editingKey === record.key;
+      dataIndex: "roles",
+      width: "20%",
+      sorter: (a, b) => (a.roles[0] || '').localeCompare(b.roles[0] || ''),
+      render: (roles: string[], record) => {
+        const isEditing = editingKey === record.id;
+        const currentRoleDisplay = roles && roles.length > 0 ? roles[0] : "Users"; 
+
         return isEditing ? (
           <Space>
             <Select
-              defaultValue={record.authorization}
+              defaultValue={currentRoleDisplay}
+              value={tempAuth || currentRoleDisplay}
               onChange={handleAuthorizationChange}
               style={{
                 width: 120,
-                border: "1px solid #d9d9d9",
-                borderRadius: 4,
               }}
             >
-              <Option value={1}>User</Option>
-              <Option value={2}>Landlord</Option>
+              <Option value="Users">User</Option>
+              <Option value="Landlords">Landlord</Option>
             </Select>
             <Button
               type="primary"
@@ -156,24 +254,35 @@ const TableManageAccount: React.FC = () => {
             </Button>
           </Space>
         ) : (
-          <Button
-            type="link"
+          <span
             onClick={() => {
-              setEditingKey(record.key);
-              setTempAuth(record.authorization);
+                setEditingKey(record.id);
+                setTempAuth(currentRoleDisplay);
             }}
+            style={{ cursor: 'pointer', textDecoration: 'underline' }}
           >
-            {record.authorization === 1 ? "User" : "Landlord"}
-          </Button>
+            {roles && roles.length > 0 ? (
+                roles.map(role => (
+                    <Tag 
+                        key={role} 
+                        color={role === "Administrators" ? "gold" : (role === "Landlords" ? "blue" : "default")}
+                    >
+                        {role}
+                    </Tag>
+                ))
+            ) : (
+                <Tag>Users</Tag>
+            )}
+          </span>
         );
       },
     },
     {
       title: "Action",
       key: "action",
-      width: "20%",
+      width: "15%",
       render: (_, record) =>
-        record.status === 0 ? (
+        record.status === "Active" ? (
           <Popconfirm
             title="Are you sure you want to disable this account?"
             onConfirm={() => toggleStatus(record)}
@@ -196,13 +305,37 @@ const TableManageAccount: React.FC = () => {
     },
   ];
 
+  const handleTableChange = (page: number, pageSize?: number) => {
+    setPagination((prev) => ({
+      ...prev,
+      current: page,
+      pageSize: pageSize || prev.pageSize,
+    }));
+  };
+
   return (
-    <Table<DataType>
-      columns={columns}
-      dataSource={data}
-      pagination={{ pageSize: 5 }}
-      rowKey="key"
-    />
+    <div style={{ padding: '20px' }}>
+      
+      <Table<UserResponseDto>
+        columns={columns}
+        dataSource={accountsData}
+        pagination={false}
+        loading={loading}
+        rowKey="id"
+        scroll={{ x: 'max-content' }}
+      />
+      <div style={{ marginTop: '20px', textAlign: 'right' }}>
+        <Pagination
+          current={pagination.current}
+          pageSize={pagination.pageSize}
+          total={pagination.total}
+          onChange={handleTableChange}
+          // showSizeChanger
+          // pageSizeOptions={['5', '10', '20', '50']}
+          hideOnSinglePage={true}
+        />
+      </div>
+    </div>
   );
 };
 

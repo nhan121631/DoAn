@@ -1,5 +1,6 @@
 package com.ants.ktc.ants_ktc.controllers.admin;
 
+import com.ants.ktc.ants_ktc.dtos.manage_account.RoleUpdateRequestDto;
 import com.ants.ktc.ants_ktc.dtos.manage_account.UserPageResponseDto;
 import com.ants.ktc.ants_ktc.dtos.manage_account.UserResponseDto;
 import com.ants.ktc.ants_ktc.dtos.request.UpdateUserStatusRequestDto;
@@ -58,6 +59,23 @@ public class AccountManagementController {
         } catch (Exception e) {
 
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); // 500 Internal Server Error
+        }
+    }
+
+    @PatchMapping("/{id}/roles")
+    public ResponseEntity<UserResponseDto> updateUserRoles(
+            @PathVariable UUID id,
+            @RequestBody RoleUpdateRequestDto request) { // Sử dụng DTO mới
+        try {
+            UserResponseDto updatedUser = accountManagementService.updateUserRoles(id, request.getRoleNames());
+            return ResponseEntity.ok(updatedUser); // Trả về user đã cập nhật
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null); // Trả về 404 nếu user hoặc role không tìm
+                                                                           // thấy
+        } catch (Exception e) {
+            // Log lỗi chi tiết ở đây nếu cần thiết
+            System.err.println("Error updating user roles: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null); // Trả về 500 nếu có lỗi khác
         }
     }
 }
