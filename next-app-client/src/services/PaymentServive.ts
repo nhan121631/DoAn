@@ -26,6 +26,39 @@ export async function getAllTransactionsByUserId(
   }
 }
 
+export async function getTransactionsByUserIdPaginated(
+  userId: string,
+  accessToken: string,
+  page: number,
+  size: number
+) {
+  try {
+    const response = await fetch(
+      `http://localhost:3333/api/transactions/by-user/${userId}/paging?page=${page}&size=${size}`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+    if (!response.ok) throw new Error("Network error");
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error getTransactionsByUserIdPaginated:", error);
+    return {
+      transactions: [],
+      pageNumber: page,
+      pageSize: size,
+      totalRecords: 0,
+      totalPages: 0,
+      hasNext: false,
+      hasPrevious: false,
+    };
+  }
+}
+
 export async function createTransactionByUserId(
   userId: string,
   transactionData: any,

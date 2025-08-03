@@ -27,36 +27,33 @@ export default function PaymentHistoryPage() {
   const [failedCount, setFailedCount] = useState(0);
   const [totalSuccess, setTotalSuccess] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
+  const [totalRecords, setTotalRecords] = useState(0);
   const pageSize = 5;
 
   useEffect(() => {
     const fetchPayments = async () => {
       try {
-        // Gọi API Next.js thay vì gọi trực tiếp backend
-        const response = await fetch("/api/landlord/payment-history");
+        const response = await fetch(
+          `/api/landlord/payment-history?page=${
+            currentPage - 1
+          }&size=${pageSize}`
+        );
         const result = await response.json();
 
-        // Nếu trả về lỗi hoặc không phải mảng thì set rỗng
-        let allPayments = Array.isArray(result) ? result : [];
         if (result.status === "fail" || result.status === "error") {
-          allPayments = [];
+          setPayments([]);
+          setSuccessCount(0);
+          setFailedCount(0);
+          setTotalSuccess(0);
+          setTotalRecords(0);
+          return;
         }
 
-        console.log("All payments:", allPayments);
-
-        let paymentData: any[] = [];
-        switch (filter) {
-          case "success":
-            paymentData = allPayments.filter((p: any) => p.status === 1);
-            break;
-          case "failed":
-            paymentData = allPayments.filter((p: any) => p.status === 0);
-            break;
-          default:
-            paymentData = allPayments;
-        }
-        setPayments(paymentData);
-        setCurrentPage(1);
+        const allPayments = Array.isArray(result.transactions)
+          ? result.transactions
+          : [];
+        setPayments(allPayments);
+        setTotalRecords(result.totalRecords || allPayments.length);
 
         // Thống kê
         const successList = allPayments.filter((p: any) => p.status === 1);
@@ -69,10 +66,11 @@ export default function PaymentHistoryPage() {
       } catch (error) {
         console.error("Error loading payments:", error);
         setPayments([]);
+        setTotalRecords(0);
       }
     };
     fetchPayments();
-  }, [filter]);
+  }, [filter, currentPage, pageSize]);
 
   // Antd Table columns
   const columns: ColumnsType<any> = [
@@ -144,11 +142,6 @@ export default function PaymentHistoryPage() {
     // },
   ];
 
-  const paginatedData = payments.slice(
-    (currentPage - 1) * pageSize,
-    currentPage * pageSize
-  );
-
   return (
     <div>
       <div className="min-h-screen py-8  bg-white dark:bg-[#001529] text-gray-900 p-8 transition-colors duration-300">
@@ -194,7 +187,7 @@ export default function PaymentHistoryPage() {
             <div>
               <Table
                 columns={columns}
-                dataSource={paginatedData}
+                dataSource={payments}
                 pagination={false}
                 rowKey="transactionCode"
                 size="small"
@@ -215,7 +208,7 @@ export default function PaymentHistoryPage() {
               <div className="flex justify-end mt-4">
                 <Pagination
                   current={currentPage}
-                  total={payments.length}
+                  total={totalRecords}
                   pageSize={pageSize}
                   onChange={setCurrentPage}
                   showSizeChanger={false}
