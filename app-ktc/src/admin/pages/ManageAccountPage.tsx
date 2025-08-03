@@ -1,4 +1,3 @@
-
 import { Layout, theme } from "antd";
 import TableManageAccount from "../components/TableManageAccount";
 
@@ -17,7 +16,7 @@ const ManageAccountPage = () => {
         borderRadius: borderRadiusLG,
       }}
     >
-      <h2 className="text-xl font-semibold mb-4 dark:text-white">
+      <h2 className="mb-4 text-xl font-semibold dark:text-white">
         Account Management
       </h2>
       <TableManageAccount />
