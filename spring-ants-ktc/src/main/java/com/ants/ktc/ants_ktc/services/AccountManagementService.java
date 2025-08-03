@@ -62,7 +62,6 @@ public class AccountManagementService {
                 .map(this::convertToUserResponseDto)
                 .orElseThrow(() -> new IllegalArgumentException(
                         "User with ID " + userId + " not found"));
-                .orElseThrow(() -> new IllegalArgumentException("User not found with id: " + userId));
 
     }
 
