@@ -5,9 +5,29 @@ import Link from "next/link";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { MdErrorOutline } from "react-icons/md";
 import RegisterForm from "./RegisterForm";
+import { yupResolver } from "@hookform/resolvers/yup";
 import { signIn } from "next-auth/react";
+import { useRouter, useSearchParams } from "next/navigation";
 
-export default function AuthForms() {
+interface ILoginInputs {
+  username: string;
+  password: string;
+}
+const schema = yup
+  .object({
+    username: yup.string().required("Please enter phone number or email"),
+    password: yup
+      .string()
+      .min(6, "Password must be at least 6 characters.")
+      .required("Please enter your password."),
+  })
+  .required();
+
+export default function AuthForms({
+  csrfToken,
+}: {
+  csrfToken: string | undefined;
+}) {
   const [activeTab, setActiveTab] = useState<"login" | "register">("login");
   const [showLoginPassword, setShowLoginPassword] = useState(false);
 
@@ -18,59 +38,34 @@ export default function AuthForms() {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [loginGeneralErrorMessage, setLoginGeneralErrorMessage] = useState("");
-  const [loginSuccessMessage, setLoginSuccessMessage] = useState("");
-  const [loginErrors, setLoginErrors] = useState<{
-    username?: string;
-    password?: string;
-  }>({});
 
-  // Xử lý submit login
-  const handleCredentialsSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoginGeneralErrorMessage("");
-    setLoginSuccessMessage("");
-    setLoginErrors({});
-    setIsLoading(true);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  } = useForm<ILoginInputs>({
+    resolver: yupResolver(schema),
+  });
 
-    // Validate đơn giản
-    const errors: { username?: string; password?: string } = {};
-    if (!credentials.username.trim()) {
-      errors.username = "Please enter phone number or email";
-    }
-    if (!credentials.password) {
-      errors.password = "Please enter your password.";
-    } else if (credentials.password.length < 6) {
-      errors.password = "Password must be at least 6 characters.";
-    }
-
-    if (Object.keys(errors).length > 0) {
-      setLoginErrors(errors);
-      setIsLoading(false);
-      return;
-    }
-
-    try {
-      const result = await signIn("credentials", {
-        username: credentials.username,
-        password: credentials.password,
-        redirect: false,
-      });
-
-      if (result?.error) {
-        setLoginGeneralErrorMessage("Invalid credentials");
-        setLoginSuccessMessage("");
-      } else {
-        setLoginSuccessMessage("Login successful!");
-        setLoginGeneralErrorMessage("");
-        setCredentials({ username: "", password: "" });
-        window.location.href = "/";
-      }
-    } catch (error) {
-      setLoginGeneralErrorMessage("Sign in failed");
-      setLoginSuccessMessage("");
-      console.error("Sign in error:", error);
-    } finally {
-      setIsLoading(false);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get("callbackUrl") || "/user-dashboard";
+  // Handle Login form submission
+  const onLoginSubmit: SubmitHandler<ILoginInputs> = async (data) => {
+    const res = await signIn("credentials", {
+      username: data.username,
+      password: data.password,
+      redirect: false,
+      callbackUrl,
+    });
+    console.log("handleLoginProvider", res);
+    if (!res?.error) {
+      console.log(callbackUrl);
+      router.push(callbackUrl);
+    } else {
+      setLoginGeneralErrorMessage("Invalid email or password");
+      console.error("Login failed:", res?.error);
     }
   };
 
@@ -104,11 +99,12 @@ export default function AuthForms() {
 
       {/* Login Form */}
       {activeTab === "login" && (
-        <form onSubmit={handleCredentialsSubmit}>
+        <form onSubmit={handleSubmit(onLoginSubmit)}>
+          <input type="hidden" name="csrfToken" value={csrfToken} />
           {/* Identifier Input (Phone Number or Email) */}
           <div className="mb-4">
             <label htmlFor="loginIdentifier" className="sr-only">
-              Phone number or Email
+              Username
             </label>
             <input
               type="text"
@@ -178,16 +174,6 @@ export default function AuthForms() {
               <span className="block sm:inline">
                 {loginGeneralErrorMessage}
               </span>
-            </div>
-          )}
-
-          {/* Success Message */}
-          {loginSuccessMessage && (
-            <div
-              className="relative px-4 py-3 mb-4 text-sm text-green-700 bg-green-100 border border-green-400 rounded"
-              role="alert"
-            >
-              <span className="block sm:inline">{loginSuccessMessage}</span>
             </div>
           )}
 

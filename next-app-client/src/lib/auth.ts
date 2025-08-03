@@ -63,7 +63,7 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
-        const res = await fetch('http://localhost:3333/auth/login', {
+        const res = await fetch('http://localhost:3333/api/auth/login', {
           method: 'POST',
           body: JSON.stringify({
             username: credentials.username,
@@ -75,6 +75,7 @@ export const authOptions: NextAuthOptions = {
         });
 
         const user = await res.json();
+        console.log("API login response:", user); // Log ra dữ liệu trả về
 
         if (!res.ok) {
           throw new Error("UnAuthorized");
