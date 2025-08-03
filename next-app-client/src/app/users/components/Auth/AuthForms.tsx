@@ -4,6 +4,9 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { MdErrorOutline } from "react-icons/md";
+import { useForm, SubmitHandler } from "react-hook-form";
+import * as yup from "yup";
+
 import RegisterForm from "./RegisterForm";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { signIn } from "next-auth/react";
@@ -29,14 +32,7 @@ export default function AuthForms({
   csrfToken: string | undefined;
 }) {
   const [activeTab, setActiveTab] = useState<"login" | "register">("login");
-  const [showLoginPassword, setShowLoginPassword] = useState(false);
 
-  // State cho login form
-  const [credentials, setCredentials] = useState({
-    username: "",
-    password: "",
-  });
-  const [isLoading, setIsLoading] = useState(false);
   const [loginGeneralErrorMessage, setLoginGeneralErrorMessage] = useState("");
 
   const {
@@ -68,6 +64,8 @@ export default function AuthForms({
       console.error("Login failed:", res?.error);
     }
   };
+
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
 
   return (
     <div className="relative w-full max-w-md p-8 shadow-xl bg-white/20 backdrop-blur-md rounded-xl">
@@ -110,21 +108,15 @@ export default function AuthForms({
               type="text"
               id="loginIdentifier"
               className={`w-full p-3 border ${
-                loginErrors.username ? "border-red-500" : "border-gray-300"
+                errors.username ? "border-red-500" : "border-gray-300"
               } rounded-md focus:outline-none focus:ring-2 focus:ring-white text-white`}
               placeholder="Phone number or Email"
-              value={credentials.username}
-              onChange={(e) =>
-                setCredentials((prev) => ({
-                  ...prev,
-                  username: e.target.value,
-                }))
-              }
+              {...register("username")}
             />
-            {loginErrors.username && (
+            {errors.username && (
               <p className="flex items-center mt-1 text-xs text-red-500">
                 <MdErrorOutline className="w-4 h-4 mr-1" />
-                {loginErrors.username}
+                {errors.username.message}
               </p>
             )}
           </div>
@@ -139,16 +131,10 @@ export default function AuthForms({
                 type={showLoginPassword ? "text" : "password"}
                 id="loginPassword"
                 className={`w-full p-3 border ${
-                  loginErrors.password ? "border-red-500" : "border-gray-300"
+                  errors.password ? "border-red-500" : "border-gray-300"
                 } rounded-md focus:outline-none focus:ring-2 focus:ring-white text-white pr-10`}
                 placeholder="Password"
-                value={credentials.password}
-                onChange={(e) =>
-                  setCredentials((prev) => ({
-                    ...prev,
-                    password: e.target.value,
-                  }))
-                }
+                {...register("password")}
               />
               <span
                 className="absolute right-0 flex items-center pr-3 text-gray-200 transition -translate-y-1/2 cursor-pointer top-1/2 hover:text-gray-400"
@@ -157,14 +143,13 @@ export default function AuthForms({
                 {showLoginPassword ? <FaEyeSlash /> : <FaEye />}
               </span>
             </div>
-            {loginErrors.password && (
+            {errors.password && (
               <p className="flex items-center mt-1 text-xs text-red-500">
                 <MdErrorOutline className="w-4 h-4 mr-1" />
-                {loginErrors.password}
+                {errors.password.message}
               </p>
             )}
           </div>
-
           {/* General Error Message (for API failures) */}
           {loginGeneralErrorMessage && (
             <div
@@ -180,14 +165,9 @@ export default function AuthForms({
           {/* Login Button */}
           <button
             type="submit"
-            disabled={isLoading}
-            className={`w-full py-3 text-lg font-semibold text-black transition duration-300 rounded-md ${
-              isLoading
-                ? "bg-gray-400 cursor-not-allowed"
-                : "bg-gray-200 hover:bg-gray-400"
-            }`}
+            className="w-full py-3 text-lg font-semibold text-black transition duration-300 bg-gray-200 rounded-md hover:bg-gray-400"
           >
-            {isLoading ? "Signing in..." : "Log in"}
+            Log in
           </button>
         </form>
       )}
@@ -217,17 +197,6 @@ export default function AuthForms({
             privacy policy
           </Link>{" "}
           of ours
-        </p>
-      </div>
-      {/* Test Credentials Info */}
-      <div className="mt-4 p-4 bg-blue-50 rounded-md">
-        <p className="text-sm text-blue-800">
-          <strong>Test Credentials:</strong>
-          <br />
-          Username:{" "}
-          <code className="bg-blue-100 px-1 rounded">tungnt@softech.vn</code>
-          <br />
-          Password: <code className="bg-blue-100 px-1 rounded">123456789</code>
         </p>
       </div>
     </div>
