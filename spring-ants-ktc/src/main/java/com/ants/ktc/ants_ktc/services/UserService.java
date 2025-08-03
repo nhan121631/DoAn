@@ -71,6 +71,7 @@ public class UserService {
                         }
 
                         userProfileDto = UserProfileResponseDto.builder()
+                                        .id(user.getProfile().getId())
                                         .fullName(user.getProfile().getFullName())
                                         .email(user.getProfile().getEmail())
                                         .phoneNumber(user.getProfile().getPhoneNumber())
