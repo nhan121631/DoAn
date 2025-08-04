@@ -1,11 +1,12 @@
 package com.ants.ktc.ants_ktc.dtos.room;
+
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+import com.ants.ktc.ants_ktc.dtos.address.AddressResponseDto;
 import com.ants.ktc.ants_ktc.dtos.convenient.ConvenientResponseDto;
 import com.ants.ktc.ants_ktc.dtos.image.ImageResponseDto;
-import com.ants.ktc.ants_ktc.dtos.post_types.PostTypeResponseDto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -27,7 +28,9 @@ public class RoomResponseDto {
     private int hidden;
     private Date postStartDate;
     private Date postEndDate;
-    List<ImageResponseDto> images;
-    List<ConvenientResponseDto> convenients;
-    private PostTypeResponseDto postType;
+    private AddressResponseDto address;
+    private List<ImageResponseDto> images;
+    private List<ConvenientResponseDto> convenients;
+    private String typepost;
+    private UUID userId;
 }

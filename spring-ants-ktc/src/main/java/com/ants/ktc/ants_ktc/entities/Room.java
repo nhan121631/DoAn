@@ -34,17 +34,20 @@ public class Room extends BaseEntity {
     @Column(name = "price_month", nullable = false)
     private Double price_month;
 
-    @Column(name = "price_deposit")
+    @Column(name = "price_deposit", nullable = false)
     private Double price_deposit;
 
     @Column(name = "available", nullable = false)
-    private int available;
+    private int available = 0;
 
     @Column(name = "approval", nullable = false)
-    private int approval;
+    private int approval = 0;
 
     @Column(name = "hidden", nullable = false)
-    private int hidden;
+    private int hidden = 0;
+
+    @Column(name = "is_removed", nullable = false)
+    private int isRemoved = 0;
 
     @Column(name = "post_start_date")
     private Date post_start_date;
@@ -52,7 +55,7 @@ public class Room extends BaseEntity {
     @Column(name = "post_end_date")
     private Date post_end_date;
 
-    @OneToMany(mappedBy = "room", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "room", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<Image> images = new ArrayList<>();
 
     @OneToMany(mappedBy = "room", fetch = FetchType.LAZY)

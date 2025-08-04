@@ -1,187 +1,146 @@
 package com.ants.ktc.ants_ktc.services;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.ants.ktc.ants_ktc.dtos.address.AddressResponseDto;
+import com.ants.ktc.ants_ktc.dtos.address.DistrictResponseDto;
+import com.ants.ktc.ants_ktc.dtos.address.ProvinceResponseDto;
+import com.ants.ktc.ants_ktc.dtos.address.WardResponseDto;
 import com.ants.ktc.ants_ktc.dtos.convenient.ConvenientResponseDto;
+import com.ants.ktc.ants_ktc.dtos.image.ImageCreateRequestDto;
 import com.ants.ktc.ants_ktc.dtos.image.ImageResponseDto;
-import com.ants.ktc.ants_ktc.dtos.post_types.PostTypeResponseDto;
-import com.ants.ktc.ants_ktc.dtos.room.RoomRequestDto;
+import com.ants.ktc.ants_ktc.dtos.room.RoomRequestCreateDto;
 import com.ants.ktc.ants_ktc.dtos.room.RoomResponseDto;
 import com.ants.ktc.ants_ktc.entities.Convenient;
 import com.ants.ktc.ants_ktc.entities.Image;
+import com.ants.ktc.ants_ktc.entities.PostType;
 import com.ants.ktc.ants_ktc.entities.Room;
+import com.ants.ktc.ants_ktc.entities.User;
+import com.ants.ktc.ants_ktc.entities.address.Address;
+import com.ants.ktc.ants_ktc.entities.address.Ward;
 import com.ants.ktc.ants_ktc.repositories.ConvenientsRepository;
+import com.ants.ktc.ants_ktc.repositories.PostTypeJpaRepository;
 import com.ants.ktc.ants_ktc.repositories.RoomJpaRepository;
+import com.ants.ktc.ants_ktc.repositories.UserJpaRepository;
+import com.ants.ktc.ants_ktc.repositories.address.WardJpaRepository;
 
 @Service
 public class RoomService {
-    @Autowired
-    private RoomJpaRepository roomJpaRepository;
+        @Autowired
+        private RoomJpaRepository roomJpaRepository;
 
-    @Autowired
-    private ConvenientsRepository convenientRepository;
+        @Autowired
+        private PostTypeJpaRepository postTypeJpaRepository;
 
-    private RoomResponseDto convertToDto(Room room) {
-        return RoomResponseDto.builder()
-                .id(room.getId())
-                .title(room.getTitle())
-                .images(room.getImages() != null
-                        ? room.getImages().stream()
-                                .map(image -> new ImageResponseDto(image.getId(), image.getUrl()))
-                                .collect(Collectors.toList())
-                        : new ArrayList<>())
-                .description(room.getDescription())
-                .priceMonth(room.getPrice_month())
-                .priceDeposit(room.getPrice_deposit())
-                .available(room.getAvailable())
-                .approval(room.getApproval())
-                .hidden(room.getHidden())
-                .postStartDate(room.getPost_start_date())
-                .postEndDate(room.getPost_end_date())
-                .convenients(room.getConvenients() != null
-                        ? room.getConvenients().stream()
-                                .map(convenient -> new ConvenientResponseDto(convenient.getId(), convenient.getName()))
-                                .collect(Collectors.toList())
-                        : new ArrayList<>())
-                .build();
-    }
+        @Autowired
+        private UserJpaRepository userJpaRepository;
 
-    // Create room
-    public RoomResponseDto createRoom(RoomRequestDto requestDto) throws IOException {
-        Room room = new Room();
-        room.setTitle(requestDto.getTitle());
-        room.setDescription(requestDto.getDescription());
-        room.setPrice_month(requestDto.getPriceMonth());
-        room.setPrice_deposit(requestDto.getPriceDeposit());
-        room.setAvailable(requestDto.getAvailable());
-        room.setApproval(requestDto.getApproval());
-        room.setHidden(requestDto.getHidden());
-        room.setPost_start_date(requestDto.getPostStartDate());
-        room.setPost_end_date(requestDto.getPostEndDate());
+        @Autowired
+        private WardJpaRepository wardRepository;
 
-        // Thêm tiện ích
-        if (requestDto.getConvenientIds() != null) {
-            List<Convenient> convenients = convenientRepository.findAllById(requestDto.getConvenientIds());
-            room.setConvenients(convenients);
-        }
+        @Autowired
+        private ConvenientsRepository convenientJpaRepository;
 
-        // Xử lý ảnh
-        List<Image> images = handleRoomImages(requestDto.getImages(), room);
-        room.setImages(images);
+        public RoomResponseDto createRoom(List<MultipartFile> files, RoomRequestCreateDto requestDto) {
+                Room room = new Room();
+                for (MultipartFile file : files) {
+                        if (file.isEmpty()) {
+                                throw new IllegalArgumentException("File is empty");
+                        }
+                        try {
+                                String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+                                Path filePath = Paths.get("public/uploads/" + fileName);
+                                Files.createDirectories(filePath.getParent());
+                                Files.write(filePath, file.getBytes());
 
-        Room savedRoom = roomJpaRepository.save(room);
-        return convertToDto(savedRoom);
-    }
+                                String fileUrl = "/uploads/" + fileName;
+                                ImageCreateRequestDto imageDto = new ImageCreateRequestDto();
+                                imageDto.setUrl(fileUrl);
+                                Image image = new Image();
+                                image.setUrl(fileUrl);
+                                image.setRoom(room);
+                                room.getImages().add(image);
 
-    // Tạo phòng mới và gán cho user
-    public RoomResponseDto createRoomByUserId(UUID userId, RoomRequestDto requestDto) throws IOException {
-        Room room = new Room();
-        room.setTitle(requestDto.getTitle());
-        room.setDescription(requestDto.getDescription());
-        room.setPrice_month(requestDto.getPriceMonth());
-        room.setPrice_deposit(requestDto.getPriceDeposit());
-        room.setAvailable(requestDto.getAvailable());
-        room.setApproval(requestDto.getApproval());
-        room.setHidden(requestDto.getHidden());
-        room.setPost_start_date(requestDto.getPostStartDate());
-        room.setPost_end_date(requestDto.getPostEndDate());
-
-        // Gắn user cho phòng
-        room.setId(userId);
-
-        // Thêm tiện ích
-        if (requestDto.getConvenientIds() != null) {
-            List<Convenient> convenients = convenientRepository.findAllById(requestDto.getConvenientIds());
-            room.setConvenients(convenients);
-        }
-
-        // Xử lý ảnh
-        List<Image> images = handleRoomImages(requestDto.getImages(), room);
-        room.setImages(images);
-
-        Room savedRoom = roomJpaRepository.save(room);
-        return convertToDto(savedRoom);
-    }
-
-    // Lấy phòng theo id, trả về DTO kèm ảnh và tiện ích
-    public RoomResponseDto getRoom(UUID id) {
-        Room room = roomJpaRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Room not found"));
-
-        List<ImageResponseDto> imageDtos = room.getImages() != null
-                ? room.getImages().stream()
-                        .map(image -> new ImageResponseDto(image.getId(), image.getUrl()))
-                        .collect(Collectors.toList())
-                : new ArrayList<>();
-
-        List<ConvenientResponseDto> convenientDtos = room.getConvenients() != null
-                ? room.getConvenients().stream()
-                        .map(convenient -> new ConvenientResponseDto(convenient.getId(), convenient.getName()))
-                        .collect(Collectors.toList())
-                : new ArrayList<>();
-
-        PostTypeResponseDto postTypeDto = null;
-        if (room.getPostType() != null) {
-            postTypeDto = PostTypeResponseDto.builder()
-                    .id(room.getPostType().getId())
-                    .code(room.getPostType().getCode())
-                    .name(room.getPostType().getName())
-                    .pricePerDay(room.getPostType().getPricePerDay())
-                    .description(room.getPostType().getDescription())
-                    .build();
-        }
-
-        return RoomResponseDto.builder()
-                .id(room.getId())
-                .title(room.getTitle())
-                .description(room.getDescription())
-                .priceMonth(room.getPrice_month())
-                .priceDeposit(room.getPrice_deposit())
-                .available(room.getAvailable())
-                .approval(room.getApproval())
-                .hidden(room.getHidden())
-                .postStartDate(room.getPost_start_date())
-                .postEndDate(room.getPost_end_date())
-                .images(imageDtos)
-                .convenients(convenientDtos)
-                .postType(postTypeDto)
-                .build();
-    }
-
-    // Hàm lưu file ảnh
-    private String saveFile(MultipartFile file) throws IOException {
-        String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
-        Path filePath = Paths.get("public/uploads/" + fileName);
-        Files.createDirectories(filePath.getParent());
-        Files.write(filePath, file.getBytes());
-        return "/uploads/" + fileName;
-    }
-
-    private List<Image> handleRoomImages(List<MultipartFile> files, Room room) throws IOException {
-        List<Image> images = new ArrayList<>();
-        if (files != null) {
-            for (MultipartFile file : files) {
-                if (file != null && !file.isEmpty()) {
-                    String url = saveFile(file);
-                    Image image = new Image();
-                    image.setUrl(url);
-                    image.setRoom(room);
-                    images.add(image);
+                        } catch (Exception e) {
+                                throw new IllegalArgumentException("Failed to save file: " + e.getMessage(), e);
+                        }
                 }
-            }
-        }
-        return images;
-    }
+                room.setTitle(requestDto.getTitle());
+                room.setDescription(requestDto.getDescription());
+                room.setPrice_month(requestDto.getPriceMonth());
+                room.setPrice_deposit(requestDto.getPriceDeposit());
+                room.setPost_start_date(requestDto.getPostStartDate());
+                room.setPost_end_date(requestDto.getPostEndDate());
 
+                PostType postType = postTypeJpaRepository.findById(requestDto.getTypepostId())
+                                .orElseThrow(() -> new IllegalArgumentException("PostType not found"));
+                room.setPostType(postType);
+
+                User user = userJpaRepository.findById(requestDto.getUserId())
+                                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                room.setUser(user);
+                Address address = new Address();
+                address.setStreet(requestDto.getAddress().getStreet());
+                Ward ward = wardRepository.findById(requestDto.getAddress().getWardId())
+                                .orElseThrow(() -> new RuntimeException("Ward Not Found"));
+                address.setWard(ward);
+                room.setAddress(address);
+                for (Long convenientId : requestDto.getConvenientIds()) {
+                        Convenient convenientEntity = convenientJpaRepository.findById(convenientId)
+                                        .orElseThrow(() -> new RuntimeException("Convenient not found"));
+                        room.getConvenients().add(convenientEntity);
+                }
+                roomJpaRepository.save(room);
+                return RoomResponseDto.builder()
+                                .id(room.getId())
+                                .title(room.getTitle())
+                                .description(room.getDescription())
+                                .priceMonth(room.getPrice_month())
+                                .priceDeposit(room.getPrice_deposit())
+                                .postStartDate(room.getPost_start_date())
+                                .postEndDate(room.getPost_end_date())
+                                .typepost(postType.getName())
+                                .userId(requestDto.getUserId())
+                                .convenients(room.getConvenients().stream()
+                                                .map(convenient -> ConvenientResponseDto.builder()
+                                                                .id(convenient.getId())
+                                                                .name(convenient.getName())
+                                                                .build())
+                                                .toList())
+                                .images(room.getImages().stream()
+                                                .map(image -> ImageResponseDto.builder()
+                                                                .id(image.getId())
+                                                                .url(image.getUrl())
+                                                                .build())
+                                                .toList())
+                                .address(AddressResponseDto.builder()
+                                                .id(address.getId())
+                                                .street(address.getStreet())
+                                                .ward(WardResponseDto.builder()
+                                                                .id(ward.getId())
+                                                                .name(ward.getName())
+                                                                .district(DistrictResponseDto.builder()
+                                                                                .id(ward.getDistrict().getId())
+                                                                                .name(ward.getDistrict().getName())
+                                                                                .province(ProvinceResponseDto.builder()
+                                                                                                .id(ward.getDistrict()
+                                                                                                                .getProvince()
+                                                                                                                .getId())
+                                                                                                .name(ward.getDistrict()
+                                                                                                                .getProvince()
+                                                                                                                .getName())
+                                                                                                .build())
+                                                                                .build())
+                                                                .build())
+                                                .build())
+                                .build();
+
+        }
 }
