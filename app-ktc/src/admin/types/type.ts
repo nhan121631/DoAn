@@ -36,3 +36,37 @@ export interface UserProfile {
   accoutHolderName: string | null;
   address: Address;
 }
+
+
+//-----------------------------------//
+// User DTO
+export interface UserResponseDto {
+  id: string;
+  username: string;
+  email: string;
+  phoneNumber: string;
+  status: string;
+  roles: string[];
+}
+
+// Kiểu dữ liệu trả về khi phân trang
+export interface UserPageResponseDto {
+  data: UserResponseDto[];
+  pageNumber: number;
+  pageSize: number;
+  totalRecords: number;
+  totalPages: number;
+  hasNext: boolean;
+  hasPrevious: boolean;
+}
+
+// Request DTO khi update role
+export interface RoleUpdateRequestDto {
+  roleNames: string[];
+}
+
+// Request DTO khi update status
+export interface UpdateUserStatusRequestDto {
+  status: number;
+}
+

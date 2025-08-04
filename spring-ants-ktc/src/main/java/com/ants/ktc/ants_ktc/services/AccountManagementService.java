@@ -60,19 +60,18 @@ public class AccountManagementService {
                 .map(this::convertToUserResponseDto)
                 .orElseThrow(() -> new IllegalArgumentException(
                         "User with ID " + userId + " not found"));
+
     }
 
     @Transactional
     public UserResponseDto updateUserStatus(UUID userId, int newStatus) {
-        Optional<User> userOptional = userJpaRepository.findById(userId);
+        User user = userJpaRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "User with ID " + userId + " not found."));
 
-        if (userOptional.isEmpty()) {
-            throw new EntityNotFoundException("User with ID " + userId + " not found.");
-        }
-
-        User user = userOptional.get();
         if (newStatus != 0 && newStatus != 1) {
-            throw new IllegalArgumentException("Invalid status value. Must be 0 (Active) or 1 (Disabled).");
+            throw new IllegalArgumentException(
+                    "Invalid status value. Must be 0 (Active) or 1 (Disabled).");
         }
 
         user.setIsActive(newStatus);
@@ -84,17 +83,18 @@ public class AccountManagementService {
     @Transactional
     public UserResponseDto updateUserRoles(UUID userId, List<String> roleNames) {
         User user = userJpaRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("User with ID " + userId + " not found."));
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "User with ID " + userId + " not found."));
 
-        // Chuyển đổi List<String> roleNames thành List<Role>
-        List<Role> newRoles = new ArrayList<>(); // Khởi tạo ArrayList thay vì HashSet
+        List<Role> newRoles = new ArrayList<>();
         for (String roleName : roleNames) {
             Role role = roleJpaRepository.findByName(roleName)
-                    .orElseThrow(() -> new EntityNotFoundException("Role not found with name: " + roleName));
+                    .orElseThrow(() -> new IllegalArgumentException(
+                            "Role not found with name: " + roleName));
             newRoles.add(role);
         }
 
-        user.setRoles(newRoles); // Setter của User entity bây giờ nhận List<Role>
+        user.setRoles(newRoles);
         User updatedUser = userJpaRepository.save(user);
 
         return convertToUserResponseDto(updatedUser);
