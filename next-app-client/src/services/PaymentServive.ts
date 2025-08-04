@@ -1,6 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { API_URL } from "./Constant";
-
 export async function getTransactionsByUserIdPaginated(
   page: number,
   size: number
@@ -31,19 +29,14 @@ export async function getTransactionsByUserIdPaginated(
   }
 }
 
-export async function createTransactionByUserId(
-  userId: string,
-  transactionData: any,
-  accessToken: string
-) {
+export async function createTransactionByUserId(transactionData: any) {
   try {
-    const response = await fetch(`${API_URL}/transactions/${userId}`, {
+    const response = await fetch("/api/landlord/payment-result-client", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${accessToken}`,
       },
-      body: JSON.stringify({ userId, ...transactionData }),
+      body: JSON.stringify(transactionData),
     });
     if (!response.ok) {
       throw new Error("Failed to create transaction");
@@ -91,7 +84,6 @@ export function mapPaymentDataToTransactionData(payment: PaymentData) {
     description: payment.vnp_OrderInfo || "",
   };
 }
-
 
 // export async function getAllTransactionsByUserId(
 //   userId: string,
