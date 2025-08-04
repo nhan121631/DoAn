@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { authOptions } from "@/lib/auth";
 import { getTransactionsByUserIdPaginated } from "@/services/PaymentServive";
 import { getServerSession } from "next-auth/next";

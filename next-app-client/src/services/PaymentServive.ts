@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-const API_URL = "http://localhost:3333/api";
+import { API_URL } from "./Constant";
 
 export async function getAllTransactionsByUserId(
   userId: string,
@@ -7,7 +7,7 @@ export async function getAllTransactionsByUserId(
 ) {
   try {
     const response = await fetch(
-      `http://localhost:3333/api/transactions/${userId}`,
+      `${API_URL}/transactions/${userId}`,
       {
         headers: {
           "Content-Type": "application/json",
@@ -34,7 +34,7 @@ export async function getTransactionsByUserIdPaginated(
 ) {
   try {
     const response = await fetch(
-      `http://localhost:3333/api/transactions/by-user/${userId}/paging?page=${page}&size=${size}`,
+      `${API_URL}/transactions/by-user/${userId}/paging?page=${page}&size=${size}`,
       {
         headers: {
           "Content-Type": "application/json",
