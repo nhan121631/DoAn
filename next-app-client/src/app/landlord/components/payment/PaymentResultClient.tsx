@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import VnpayResult from "@/app/landlord/components/payment/VnpayResult";
 import { formatCurrency } from "@/lib/vnpay-utils";
-import { createTransactionByUserId, mapPaymentDataToTransactionData } from "@/services/PaymentServive";
+import { mapPaymentDataToTransactionData } from "@/services/PaymentServive";
 
 interface PaymentData {
   transactionStatus: { success: boolean; message: string };
@@ -20,13 +20,24 @@ interface PaymentData {
   vnp_TransactionStatus?: string;
 }
 
-
 export default function PaymentResultClient() {
-  const userId = "44256067-6f69-11f0-8622-b42e993f445f";
+  const [userId, setUserId] = useState("");
   const searchParams = useSearchParams();
   const [paymentData, setPaymentData] = useState<PaymentData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchSession = async () => {
+      const res = await fetch("/api/auth/session");
+      const session = await res.json();
+      console.log("Session:", session);
+      if (session?.user?.id) {
+        setUserId(session.user.id);
+      }
+    };
+    fetchSession();
+  }, [userId]);
 
   useEffect(() => {
     const fetchPaymentResult = async () => {
@@ -44,7 +55,12 @@ export default function PaymentResultClient() {
         try {
           // savePaymentToLocalStorage(data);
           const transactionData = mapPaymentDataToTransactionData(data);
-          await createTransactionByUserId(userId, transactionData);
+          // await createTransactionByUserId(userId, transactionData);
+          await fetch("/api/landlord/payment-result-client", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(transactionData),
+          });
           console.log("Transaction data:", transactionData);
         } catch (saveError) {
           console.error("Failed to save payment data:", saveError);

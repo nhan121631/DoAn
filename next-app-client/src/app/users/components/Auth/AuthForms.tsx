@@ -1,14 +1,13 @@
-
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { MdErrorOutline } from "react-icons/md";
 import { useForm, SubmitHandler } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { signIn } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 
 import RegisterForm from "./RegisterForm";
@@ -44,6 +43,20 @@ export default function AuthForms({ csrfToken }: { csrfToken?: string }) {
   const pathname = usePathname(); // lấy URL hiện tại
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/user-dashboard";
+  const { data: session } = useSession();
+  useEffect(() => {
+    if (session) {
+      const roles = session.user.roles || [];
+      // Điều hướng theo role
+      if (roles.includes("Users")) {
+        router.push("/users");
+      } else if (roles.includes("Landlords")) {
+        router.push("/landlord");
+      } else {
+        router.push("/users");
+      }
+    }
+  }, [session, router]);
 
   const onLoginSubmit: SubmitHandler<ILoginInputs> = async (data) => {
     const res = await signIn("credentials", {
@@ -54,6 +67,7 @@ export default function AuthForms({ csrfToken }: { csrfToken?: string }) {
     });
 
     if (!res?.error) {
+      // Đăng nhập thành công, điều hướng đến callbackUrl
       router.push(callbackUrl);
     } else {
       setLoginGeneralErrorMessage("Invalid email or password");

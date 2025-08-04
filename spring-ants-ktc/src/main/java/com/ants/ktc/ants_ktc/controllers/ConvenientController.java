@@ -1,6 +1,7 @@
 package com.ants.ktc.ants_ktc.controllers;
 
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -43,4 +44,10 @@ public class ConvenientController {
         convenientService.deleteConvenient(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
+
+    @GetMapping("/room/{roomId}/convenients")
+    public List<ConvenientResponseDto> getConvenientByRoomId(@PathVariable("roomId") UUID id) {
+        return convenientService.getConvenientByRoomId(id);
+    }
+
 }

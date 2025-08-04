@@ -2,40 +2,40 @@
 "use client";
 
 import { useState } from "react";
+import { createTransactionByUserId } from "@/services/PaymentServive";
 
 interface AddFundsFormProps {
   onSuccess?: () => void;
 }
 
 export default function AddFundsForm({ onSuccess }: AddFundsFormProps) {
-  const [amount, setAmount] = useState(50000);
+  const [amount, setAmount] = useState<string>("50000");
   const [orderInfo, setOrderInfo] = useState("");
   //   const [bankCode, setBankCode] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handlePay = async () => {
-    if (amount < 5000) {
+    const amountNumber = Number(amount);
+    if (amountNumber < 5000) {
       alert("Minimum amount is 5,000 VND");
       return;
     }
     setLoading(true);
     try {
-      const res = await fetch("/api/vnpay", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          amount,
-          orderInfo: orderInfo || `Add ${formatCurrency(amount)} to wallet`,
-        }),
-      });
-      if (!res.ok) throw new Error("Network response was not ok");
-      const data = await res.json();
-      if (data.error) {
-        alert(data.error);
+      const transactionData = {
+        amount: amountNumber,
+        orderInfo: orderInfo || `Add ${formatCurrency(amountNumber)} to wallet`,
+      };
+      const result = await createTransactionByUserId(transactionData);
+
+      if (result.error) {
+        alert(result.error);
         return;
       }
-      // Redirect to VNPay
-      window.location.href = data.url;
+      // Nếu backend trả về url để redirect VNPay
+      if (result.url) {
+        window.location.href = result.url;
+      }
       if (onSuccess) onSuccess();
     } catch (error) {
       console.error("Payment error:", error);
@@ -67,7 +67,7 @@ export default function AddFundsForm({ onSuccess }: AddFundsFormProps) {
         <input
           type="number"
           value={amount}
-          onChange={(e) => setAmount(Number(e.target.value))}
+          onChange={(e) => setAmount(e.target.value)}
           min="5000"
           step="1000"
           className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg dark:placeholder:!text-gray-400"
@@ -77,7 +77,7 @@ export default function AddFundsForm({ onSuccess }: AddFundsFormProps) {
         <p className="text-sm text-gray-500 mt-1  dark:!text-white">
           Amount:{" "}
           <span className="font-semibold text-blue-700">
-            {formatCurrency(amount)}
+            {formatCurrency(Number(amount))}
           </span>
         </p>
       </div>
@@ -126,7 +126,7 @@ export default function AddFundsForm({ onSuccess }: AddFundsFormProps) {
       </div>
       <button
         type="submit"
-        disabled={loading || amount < 5000}
+        disabled={loading || Number(amount) < 5000}
         className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-3 px-6 rounded-lg font-semibold hover:from-blue-700 hover:to-blue-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center text-lg"
       >
         {loading ? (

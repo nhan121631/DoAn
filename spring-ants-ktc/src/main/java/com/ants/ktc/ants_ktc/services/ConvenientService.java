@@ -1,6 +1,7 @@
 package com.ants.ktc.ants_ktc.services;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,5 +44,13 @@ public class ConvenientService {
             throw new IllegalArgumentException("Convenient with id " + id + " does not exist");
         }
         convenientsRepository.deleteById(id);
+    }
+
+    // // get convennient by roomid(UUID)
+    public List<ConvenientResponseDto> getConvenientByRoomId(UUID id) {
+        List<Convenient> convenients = convenientsRepository.findByRoomId(id);
+        return convenients.stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
     }
 }

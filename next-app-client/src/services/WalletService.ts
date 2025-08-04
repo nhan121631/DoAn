@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { authOptions } from "@/lib/auth";
 import { getServerSession } from "next-auth";
 import { API_URL } from "./Constant";
@@ -15,9 +16,19 @@ export async function getUserWallet(session: any) {
     // Nếu dùng server actions, có thể cần thêm: cache: "no-store"
   });
 
-  if (!response.ok) {
-    throw new Error("Failed to fetch user wallet");
+  if (response.status === 400) {
+    // Wallet not found for user
+    return null;
   }
+
+  if (response.status === 403) {
+  return { forbidden: true };
+}
+if (!response.ok) {
+  // Có thể trả về null hoặc throw với message chi tiết từ API
+  const error = await response.json();
+  throw new Error(error.message?.[0] || error.error || "Failed to fetch user wallet");
+}
 
   const wallet = await response.json();
   return wallet;

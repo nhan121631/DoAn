@@ -1,15 +1,22 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import React from "react";
-import { Modal, Form, Input, Upload, Button } from "antd";
+
+import {
+  getDistricts,
+  getProvinces,
+  getWards,
+} from "@/services/AddressService";
+import { getBanks } from "@/services/ProfileService";
+import { District, Province, Ward } from "@/types/types";
 import { UploadOutlined } from "@ant-design/icons";
-import Image from "next/image";
-import { FaUser, FaMapMarkerAlt } from "react-icons/fa";
-import { IoIosPhonePortrait } from "react-icons/io";
-import { MdOutlineMail } from "react-icons/md";
+import { Button, Form, Input, Modal, Select, Upload } from "antd";
+import type { FormInstance } from "antd/es/form";
 import type { UploadChangeParam } from "antd/es/upload";
 import type { UploadFile } from "antd/es/upload/interface";
-import type { FormInstance } from "antd/es/form";
+import Image from "next/image";
+import { useEffect, useState } from "react";
+import { FaUser } from "react-icons/fa";
+import { IoIosPhonePortrait } from "react-icons/io";
+import { MdOutlineMail } from "react-icons/md";
 
 interface ModalProfileProps {
   open: boolean;
@@ -19,134 +26,442 @@ interface ModalProfileProps {
     phone: string;
     email: string;
     address: string;
+    ward: string;
+    bank: string;
+    binCode: string;
+    accountNumber: string;
+    accountHolder: string;
+    avatar?: File[] | null;
   }) => void;
   avatarUrl: string;
   onAvatarChange: (info: UploadChangeParam<UploadFile<any>>) => void;
   form: FormInstance;
+  userProfile?: any;
 }
+
+type BankOption = {
+  bin: string;
+  short_name: string;
+};
+
+type SelectOption = {
+  label: string;
+  value: string;
+};
 
 export default function ModalProfile({
   open,
   onCancel,
   onSave,
   avatarUrl,
-  // onAvatarChange,
   form,
+  userProfile,
 }: ModalProfileProps) {
+  const [fileList, setFileList] = useState<UploadFile[]>([]);
+  const [previewUrl, setPreviewUrl] = useState<string>();
+  const [provinces, setProvinces] = useState<SelectOption[]>([]);
+  const [districts, setDistricts] = useState<SelectOption[]>([]);
+  const [wards, setWards] = useState<SelectOption[]>([]);
+  const [banks, setBanks] = useState<SelectOption[]>([]);
+  const [selectedProvince, setSelectedProvince] = useState<string>();
+  const [selectedDistrict, setSelectedDistrict] = useState<string>();
+  const [loadingDistricts, setLoadingDistricts] = useState(false);
+  const [loadingWards, setLoadingWards] = useState(false);
+
+  // Lấy giá trị mặc định từ session
+  useEffect(() => {
+    if (userProfile && open) {
+      const provinceId = userProfile.address?.ward?.district?.province?.id;
+      const districtId = userProfile.address?.ward?.district?.id;
+      const wardId = userProfile.address?.ward?.id;
+      form.setFieldsValue({
+        name: userProfile.fullName,
+        phone: userProfile.phoneNumber,
+        email: userProfile.email,
+        address: userProfile.address?.street,
+        province: provinceId,
+        district: districtId,
+        ward: wardId,
+        bank: userProfile.bankName,
+        binCode: userProfile.binCode,
+        accountNumber: userProfile.bankNumber,
+        accountHolder: userProfile.accoutHolderName,
+      });
+
+      // Tự động fetch lại districts và wards để Select hiển thị label
+      if (provinceId) {
+        setSelectedProvince(provinceId);
+        setLoadingDistricts(true);
+        getDistricts(provinceId).then((districtData) => {
+          const districtOptions = districtData.map((item: District) => ({
+            label: item.name,
+            value: item.id,
+          }));
+          setDistricts(districtOptions);
+          setLoadingDistricts(false);
+        });
+      }
+      if (districtId) {
+        setSelectedDistrict(districtId);
+        setLoadingWards(true);
+        getWards(districtId).then((wardData) => {
+          const wardOptions = wardData.map((item: Ward) => ({
+            label: item.name,
+            value: item.id,
+          }));
+          setWards(wardOptions);
+          setLoadingWards(false);
+        });
+      }
+    }
+  }, [userProfile, form, open]);
+
+  const handleBankChange = (_: string, option: any) => {
+    form.setFieldsValue({ binCode: option.bin });
+  };
+
+  const handleAvatarChange = (info: UploadChangeParam<UploadFile<unknown>>) => {
+    setFileList(info.fileList);
+    const file = info.fileList?.[0]?.originFileObj;
+    if (file) {
+      const url = URL.createObjectURL(file);
+      setPreviewUrl(url);
+    } else {
+      setPreviewUrl(undefined);
+    }
+  };
+
+  useEffect(() => {
+    const fetchProvinces = async () => {
+      try {
+        const data = await getProvinces();
+        const options = data.map((item: Province) => ({
+          label: item.name,
+          value: item.id,
+        }));
+        setProvinces(options);
+      } catch (err) {
+        console.error("Error fetching provinces", err);
+      }
+    };
+    fetchProvinces();
+  }, []);
+
+  useEffect(() => {
+    const fetchBanks = async () => {
+      try {
+        const data = await getBanks();
+        const arr = Array.isArray(data) ? data : [];
+        const options = arr.map((item: BankOption) => ({
+          label: item.short_name,
+          value: item.short_name,
+          bin: item.bin,
+        }));
+        setBanks(options);
+      } catch (err) {
+        console.error("Error fetching banks", err);
+        setBanks([]);
+      }
+    };
+    fetchBanks();
+  }, []);
+
+  const handleProvinceChange = async (provinceId: string) => {
+    setSelectedProvince(provinceId);
+    setSelectedDistrict(undefined);
+    setDistricts([]);
+    setWards([]);
+    form.setFieldsValue({ district: undefined, ward: undefined });
+
+    setLoadingDistricts(true);
+    try {
+      const data = await getDistricts(provinceId);
+      const options = data.map((item: District) => ({
+        label: item.name,
+        value: item.id,
+      }));
+      setDistricts(options);
+    } catch (err) {
+      console.error("Error fetching districts", err);
+    } finally {
+      setLoadingDistricts(false);
+    }
+  };
+
+  const handleDistrictChange = async (districtId: string) => {
+    setSelectedDistrict(districtId);
+    setWards([]);
+    form.setFieldsValue({ ward: undefined });
+
+    setLoadingWards(true);
+    try {
+      const data = await getWards(districtId);
+      const options = data.map((item: Ward) => ({
+        label: item.name,
+        value: item.id,
+      }));
+      setWards(options);
+    } catch (err) {
+      console.error("Error fetching wards", err);
+    } finally {
+      setLoadingWards(false);
+    }
+  };
+
   return (
     <Modal
-      title={
-        <span className="font-bold text-lg">Edit Personal Information</span>
-      }
       open={open}
       onCancel={onCancel}
       footer={null}
       centered
-      width={480}
+      width={560}
+      title={
+        <span className="font-bold text-lg">Edit Personal Information</span>
+      }
       styles={{ body: { paddingTop: 24, paddingBottom: 8 } }}
     >
-      <div className="flex flex-col items-center mb-4">
-        <Image
-          src={avatarUrl}
-          alt="Avatar"
-          width={100}
-          height={100}
-          className="rounded-full border-2 border-blue-500 mb-2"
-        />
-      </div>
       <Form form={form} layout="vertical" onFinish={onSave}>
-        <Form.Item
-          name="avatar"
-          label="Avatar"
-          valuePropName="fileList"
-          getValueFromEvent={(e) => (Array.isArray(e) ? e : e && e.fileList)}
-        >
-          <Upload
-            showUploadList={false}
-            beforeUpload={() => false}
-            maxCount={1}
-            accept="image/*"
+        <div className="flex flex-col items-center mb-4">
+          <Image
+            src={previewUrl || avatarUrl}
+            alt="Avatar"
+            width={100}
+            height={100}
+            className="rounded-full border-2 border-blue-500 mb-2"
+          />
+          <Form.Item
+            name="avatar"
+            valuePropName="fileList"
+            getValueFromEvent={(e) => (Array.isArray(e) ? e : e?.fileList)}
+            style={{ marginBottom: 0 }}
           >
-            <Button icon={<UploadOutlined />}>Upload Image</Button>
-          </Upload>
-        </Form.Item>
-        <Form.Item
-          name="name"
-          label="Full Name"
-          rules={[{ required: true, message: "Please enter your name" }]}
-        >
+            <Upload
+              showUploadList={false}
+              beforeUpload={(file) => {
+                const isImage = file.type.startsWith("image/");
+                if (!isImage) {
+                  window?.alert("Only image files are allowed!");
+                }
+                return isImage ? false : Upload.LIST_IGNORE;
+              }}
+              maxCount={1}
+              accept="image/*"
+              onChange={handleAvatarChange}
+            >
+              <Button icon={<UploadOutlined />}>Upload Image</Button>
+            </Upload>
+          </Form.Item>
+        </div>
+
+        <Form.Item name="name" label="Full Name">
           <Input prefix={<FaUser />} placeholder="Full Name" />
         </Form.Item>
+
         <Form.Item
           name="phone"
           label="Phone Number"
           rules={[
             { required: true, message: "Please enter your phone number" },
+            {
+              pattern: /^\d{10,15}$/,
+              message: "Phone number must be 10-15 digits",
+            },
           ]}
         >
           <Input prefix={<IoIosPhonePortrait />} placeholder="Phone Number" />
         </Form.Item>
+
         <Form.Item
           name="email"
           label="Email"
           rules={[
-            {
-              required: true,
-              type: "email",
-              message: "Please enter a valid email",
-            },
+            { required: true, message: "Please enter your email" },
+            { type: "email", message: "Invalid email format" },
           ]}
         >
           <Input prefix={<MdOutlineMail />} placeholder="Email" />
         </Form.Item>
+
+        <div className="flex gap-2">
+          <Form.Item
+            label="Province"
+            name="province"
+            className="flex-1"
+            rules={[
+              {
+                validator: (_, value) => {
+                  const anyFilled =
+                    value ||
+                    form.getFieldValue("district") ||
+                    form.getFieldValue("ward") ||
+                    form.getFieldValue("address");
+                  return anyFilled && !value
+                    ? Promise.reject("Please select province")
+                    : Promise.resolve();
+                },
+              },
+            ]}
+          >
+            <Select
+              showSearch
+              placeholder="Select province"
+              options={provinces}
+              onChange={handleProvinceChange}
+              optionFilterProp="label"
+            />
+          </Form.Item>
+
+          <Form.Item
+            label="District"
+            name="district"
+            className="flex-1"
+            rules={[
+              {
+                validator: (_, value) => {
+                  const anyFilled =
+                    value ||
+                    form.getFieldValue("province") ||
+                    form.getFieldValue("ward") ||
+                    form.getFieldValue("address");
+                  return anyFilled && !value
+                    ? Promise.reject("Please select district")
+                    : Promise.resolve();
+                },
+              },
+            ]}
+          >
+            <Select
+              showSearch
+              placeholder="Select district"
+              options={districts}
+              loading={loadingDistricts}
+              disabled={!selectedProvince}
+              onChange={handleDistrictChange}
+              optionFilterProp="label"
+            />
+          </Form.Item>
+
+          <Form.Item
+            label="Ward"
+            name="ward"
+            className="flex-1"
+            rules={[
+              {
+                validator: (_, value) => {
+                  const anyFilled =
+                    value ||
+                    form.getFieldValue("province") ||
+                    form.getFieldValue("district") ||
+                    form.getFieldValue("address");
+                  return anyFilled && !value
+                    ? Promise.reject("Please select ward")
+                    : Promise.resolve();
+                },
+              },
+            ]}
+          >
+            <Select
+              showSearch
+              placeholder="Select ward"
+              options={wards}
+              loading={loadingWards}
+              disabled={!selectedDistrict}
+              optionFilterProp="label"
+            />
+          </Form.Item>
+        </div>
+
         <Form.Item
-          name="address"
           label="Address"
-          rules={[{ required: true, message: "Please enter your address" }]}
+          name="address"
+          rules={[
+            {
+              validator: (_, value) => {
+                const anyFilled =
+                  value ||
+                  form.getFieldValue("province") ||
+                  form.getFieldValue("district") ||
+                  form.getFieldValue("ward");
+                return anyFilled && !value
+                  ? Promise.reject("Please enter address")
+                  : Promise.resolve();
+              },
+            },
+          ]}
         >
-          <Input prefix={<FaMapMarkerAlt />} placeholder="Address" />
+          <Input placeholder="Enter your address" />
         </Form.Item>
 
         <Form.Item
           name="bank"
           label="Bank"
-          rules={[{ required: true, message: "Please select your bank" }]}
+          rules={[
+            {
+              validator: (_, value) => {
+                const anyFilled =
+                  value ||
+                  form.getFieldValue("accountNumber") ||
+                  form.getFieldValue("accountHolder");
+                return anyFilled && !value
+                  ? Promise.reject("Please select a bank")
+                  : Promise.resolve();
+              },
+            },
+          ]}
         >
-          <select className="ant-input w-full rounded border px-3 py-2">
-            <option value="">Select Bank</option>
-            <option value="Vietcombank">Vietcombank</option>
-            <option value="VietinBank">VietinBank</option>
-            <option value="BIDV">BIDV</option>
-            <option value="MB Bank">MB Bank</option>
-            <option value="Techcombank">Techcombank</option>
-            <option value="ACB">ACB</option>
-            <option value="Sacombank">Sacombank</option>
-            <option value="Agribank">Agribank</option>
-            <option value="TPBank">TPBank</option>
-            <option value="VPBank">VPBank</option>
-          </select>
+          <Select
+            placeholder="Select bank"
+            options={banks}
+            showSearch
+            onChange={handleBankChange}
+            optionFilterProp="label"
+          />
         </Form.Item>
+
+        <Form.Item name="binCode" style={{ display: "none" }}>
+          <Input type="hidden" />
+        </Form.Item>
+
         <Form.Item
           name="accountNumber"
           label="Account Number"
           rules={[
-            { required: true, message: "Please enter your account number" },
+            {
+              validator: (_, value) => {
+                const anyFilled =
+                  value ||
+                  form.getFieldValue("bank") ||
+                  form.getFieldValue("accountHolder");
+                return anyFilled && !value
+                  ? Promise.reject("Please enter account number")
+                  : Promise.resolve();
+              },
+            },
           ]}
         >
           <Input placeholder="Account Number" />
         </Form.Item>
+
         <Form.Item
           name="accountHolder"
           label="Account Holder Name"
           rules={[
             {
-              required: true,
-              message: "Please enter the account holder's name",
+              validator: (_, value) => {
+                const anyFilled =
+                  value ||
+                  form.getFieldValue("bank") ||
+                  form.getFieldValue("accountNumber");
+                return anyFilled && !value
+                  ? Promise.reject("Please enter the account holder name")
+                  : Promise.resolve();
+              },
             },
           ]}
         >
           <Input placeholder="Account Holder Name" />
         </Form.Item>
+
         <div className="flex justify-end gap-2 mt-4">
           <Button onClick={onCancel}>Cancel</Button>
           <Button type="primary" htmlType="submit">
