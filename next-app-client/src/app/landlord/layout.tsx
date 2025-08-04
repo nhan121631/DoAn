@@ -12,7 +12,7 @@ export default async function LandlordLayout({
   const session = await getServerSession(authOptions);
   if (!session || !session.user || !session.user.roles.includes("Landlords")) {
     // Redirect to login if not authenticated
-    redirect("/auth/login");
+    redirect("/accessdenied");
   }
   console.log("Session in LandlordLayout:", session?.user);
 
