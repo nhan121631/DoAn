@@ -23,6 +23,20 @@ export type Wallet = {
   balance: number;
 };
 //--------------------------------------//
+//TypePost
+export type TypePost = {
+  id: string;
+  name: string;
+  code: string;
+  pricePerDay: number;
+  description: string;
+};
+//--------------------------------------//
+//Convenient
+export type Convenient = {
+  id: string;
+  name: string;
+};
 
 export type Room = {
   name: string;
