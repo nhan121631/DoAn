@@ -23,8 +23,11 @@ export default async function ProfileInfo() {
         <div className="flex flex-col items-center bg-gradient-to-br from-purple-200 via-blue-100 to-cyan-100 dark:from-[#232946] dark:via-[#1a1a2e] dark:to-[#0f3460] rounded-2xl shadow-lg p-8 min-w-[300px] max-w-[350px] w-full mx-auto md:mx-0">
           <Image
             src={
-              "http://localhost:3333" + session?.user?.userProfile?.avatar ||
-              "https://antimatter.vn/wp-content/uploads/2022/11/hinh-anh-avatar-nam.jpg"
+              typeof session?.user?.userProfile?.avatar === "string" && session.user.userProfile.avatar.trim() !== ""
+                ? session.user.userProfile.avatar.startsWith("http")
+                  ? session.user.userProfile.avatar
+                  : `http://localhost:3333${session.user.userProfile.avatar}`
+                : "/images/default/avatar.jpg"
             }
             alt="Avatar"
             width={128}
@@ -54,7 +57,9 @@ export default async function ProfileInfo() {
             </span>
             <div>
               <div className="font-semibold text-lg">Name</div>
-              <div>{session?.user?.userProfile?.fullName}</div>
+              <div>
+                {session?.user?.userProfile?.fullName || "Not added yet"}
+              </div>
             </div>
           </div>
           <div className="flex bg-gray-100 dark:bg-[#17223b] rounded-lg p-6 items-center gap-4">
@@ -83,14 +88,13 @@ export default async function ProfileInfo() {
             </span>
             <div>
               <div className="font-semibold text-lg">Address</div>
-              {session?.user?.userProfile?.address.street +
-                ", " +
-                session?.user?.userProfile?.address.ward.name +
-                ", " +
-                session?.user?.userProfile?.address.ward.district.name +
-                ", " +
-                session?.user?.userProfile?.address.ward.district.province
-                  .name || "Not added yet"}
+              {session?.user?.userProfile?.address &&
+              session.user.userProfile.address.street &&
+              session.user.userProfile.address.ward?.name &&
+              session.user.userProfile.address.ward.district?.name &&
+              session.user.userProfile.address.ward.district.province?.name
+                ? `${session.user.userProfile.address.street}, ${session.user.userProfile.address.ward.name}, ${session.user.userProfile.address.ward.district.name}, ${session.user.userProfile.address.ward.district.province.name}`
+                : "Not added yet"}
             </div>
           </div>
 

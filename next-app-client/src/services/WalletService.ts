@@ -15,6 +15,10 @@ export async function getUserWallet(session: any) {
     // Nếu dùng server actions, có thể cần thêm: cache: "no-store"
   });
 
+  if (response.status === 400) {
+    // Wallet not found for user
+    return null;
+  }
   if (!response.ok) {
     throw new Error("Failed to fetch user wallet");
   }
