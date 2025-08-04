@@ -19,10 +19,9 @@ import com.ants.ktc.ants_ktc.services.ConvenientService;
 
 import jakarta.validation.Valid;
 
-
 @RestController
 @RequestMapping("/api/convenients")
-class ConvenientController {
+public class ConvenientController {
 
     @Autowired
     private ConvenientService convenientService;
@@ -31,10 +30,10 @@ class ConvenientController {
     public List<ConvenientResponseDto> getAllConvenients() {
         return (List<ConvenientResponseDto>) convenientService.getAllConvenient();
     }
-    
 
     @PostMapping()
-    public ResponseEntity<ConvenientResponseDto> createConvenient(@Valid @RequestBody CreateConvenientRequestDto requestDto) {
+    public ResponseEntity<ConvenientResponseDto> createConvenient(
+            @Valid @RequestBody CreateConvenientRequestDto requestDto) {
         ConvenientResponseDto responseDto = convenientService.createConvenient(requestDto);
         return new ResponseEntity<>(responseDto, HttpStatus.CREATED);
     }
