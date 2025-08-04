@@ -1,7 +1,8 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { authOptions } from "@/lib/auth";
-import { getTransactionsByUserIdPaginated } from "@/services/PaymentServive";
 import { getServerSession } from "next-auth/next";
 import { NextResponse } from "next/server";
+import { API_URL } from "@/services/Constant";
 
 export async function GET(request: Request) {
   const session = await getServerSession(authOptions);
@@ -13,21 +14,24 @@ export async function GET(request: Request) {
     );
   }
 
-  // Lấy page và size từ query string
   const { searchParams } = new URL(request.url);
   const page = Number(searchParams.get("page")) || 0;
   const size = Number(searchParams.get("size")) || 5;
 
   try {
-    const result = await getTransactionsByUserIdPaginated(
-      session.user.id,
-      session.user.accessToken,
-      page,
-      size
+    // Gọi trực tiếp backend
+    const backendRes = await fetch(
+      `${API_URL}/transactions/by-user/${session.user.id}/paging?page=${page}&size=${size}`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.user.accessToken}`,
+        },
+      }
     );
+    const result = await backendRes.json();
     return NextResponse.json(result);
   } catch (error) {
-    console.error("Error fetching payment history:", error);
     return new NextResponse(
       JSON.stringify({
         status: "error",

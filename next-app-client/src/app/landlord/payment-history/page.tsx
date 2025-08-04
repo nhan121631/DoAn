@@ -1,11 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import React, { useEffect, useState } from "react";
-import PaymentFilter from "../components/payment/PaymentFilter";
-import { Table, Tag, Pagination } from "antd";
-import type { ColumnsType } from "antd/es/table";
 import { formatCurrency } from "@/lib/vnpay-utils";
+import { Pagination, Table, Tag } from "antd";
+import type { ColumnsType } from "antd/es/table";
+import { useEffect, useState } from "react";
+import PaymentFilter from "../components/payment/PaymentFilter";
+import { redirect } from "next/navigation";
+import { getTransactionsByUserIdPaginated } from "@/services/PaymentServive";
 
 const formatDate = (dateString: string) => {
   if (!dateString) return "N/A";
@@ -48,6 +50,10 @@ export default function PaymentHistoryPage() {
       );
       const result = await response.json();
 
+      if (result.forbidden) {
+        redirect("/auth/login");
+      }
+
       const transactions = Array.isArray(result.transactions)
         ? result.transactions
         : [];
@@ -76,30 +82,22 @@ export default function PaymentHistoryPage() {
   // Fetch payments for current page only
   useEffect(() => {
     const fetchPayments = async () => {
-      try {
-        const response = await fetch(
-          `/api/landlord/payment-history?page=${
-            currentPage - 1
-          }&size=${pageSize}`
-        );
-        const result = await response.json();
+      const result = await getTransactionsByUserIdPaginated(
+        currentPage - 1,
+        pageSize
+      );
 
-        if (result.status === "fail" || result.status === "error") {
-          setPayments([]);
-          setTotalRecords(0);
-          return;
-        }
-
-        const allPayments = Array.isArray(result.transactions)
-          ? result.transactions
-          : [];
-        setPayments(allPayments);
-        setTotalRecords(result.totalRecords || allPayments.length);
-      } catch (error) {
-        console.error("Error fetching payments:", error);
+      if (result.status === "fail" || result.status === "error") {
         setPayments([]);
         setTotalRecords(0);
+        return;
       }
+
+      const allPayments = Array.isArray(result.transactions)
+        ? result.transactions
+        : [];
+      setPayments(allPayments);
+      setTotalRecords(result.totalRecords || allPayments.length);
     };
     fetchPayments();
   }, [currentPage, pageSize]);

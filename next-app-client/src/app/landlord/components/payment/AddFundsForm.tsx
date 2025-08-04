@@ -2,6 +2,7 @@
 "use client";
 
 import { useState } from "react";
+import { createTransactionByUserId } from "@/services/PaymentServive";
 
 interface AddFundsFormProps {
   onSuccess?: () => void;
@@ -21,23 +22,20 @@ export default function AddFundsForm({ onSuccess }: AddFundsFormProps) {
     }
     setLoading(true);
     try {
-      const res = await fetch("/api/vnpay", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          amount: amountNumber,
-          orderInfo:
-            orderInfo || `Add ${formatCurrency(amountNumber)} to wallet`,
-        }),
-      });
-      if (!res.ok) throw new Error("Network response was not ok");
-      const data = await res.json();
-      if (data.error) {
-        alert(data.error);
+      const transactionData = {
+        amount: amountNumber,
+        orderInfo: orderInfo || `Add ${formatCurrency(amountNumber)} to wallet`,
+      };
+      const result = await createTransactionByUserId(transactionData);
+
+      if (result.error) {
+        alert(result.error);
         return;
       }
-      // Redirect to VNPay
-      window.location.href = data.url;
+      // Nếu backend trả về url để redirect VNPay
+      if (result.url) {
+        window.location.href = result.url;
+      }
       if (onSuccess) onSuccess();
     } catch (error) {
       console.error("Payment error:", error);

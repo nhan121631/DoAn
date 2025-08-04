@@ -1,44 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-const API_URL = "http://localhost:3333/api";
-
-export async function getAllTransactionsByUserId(
-  userId: string,
-  accessToken: string
-) {
-  try {
-    const response = await fetch(
-      `http://localhost:3333/api/transactions/${userId}`,
-      {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
-        },
-      }
-    );
-    if (!response.ok) throw new Error("Network error");
-    const data = await response.json();
-    // Đảm bảo luôn trả về mảng
-    if (!Array.isArray(data)) return [];
-    return data;
-  } catch (error) {
-    console.error("Error getAllTransactionsByUserId:", error);
-    return [];
-  }
-}
-
 export async function getTransactionsByUserIdPaginated(
-  userId: string,
-  accessToken: string,
   page: number,
   size: number
 ) {
   try {
     const response = await fetch(
-      `http://localhost:3333/api/transactions/by-user/${userId}/paging?page=${page}&size=${size}`,
+      `/api/landlord/payment-history?page=${page}&size=${size}`,
       {
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
         },
       }
     );
@@ -46,7 +16,7 @@ export async function getTransactionsByUserIdPaginated(
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error("Error getTransactionsByUserIdPaginated:", error);
+    console.error("Error fetching transactions:", error);
     return {
       transactions: [],
       pageNumber: page,
@@ -59,19 +29,14 @@ export async function getTransactionsByUserIdPaginated(
   }
 }
 
-export async function createTransactionByUserId(
-  userId: string,
-  transactionData: any,
-  accessToken: string
-) {
+export async function createTransactionByUserId(transactionData: any) {
   try {
-    const response = await fetch(`${API_URL}/transactions/${userId}`, {
+    const response = await fetch("/api/landlord/payment-result-client", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${accessToken}`,
       },
-      body: JSON.stringify({ userId, ...transactionData }),
+      body: JSON.stringify(transactionData),
     });
     if (!response.ok) {
       throw new Error("Failed to create transaction");
@@ -119,3 +84,35 @@ export function mapPaymentDataToTransactionData(payment: PaymentData) {
     description: payment.vnp_OrderInfo || "",
   };
 }
+
+// export async function getAllTransactionsByUserId(
+//   userId: string,
+//   accessToken: string
+// ) {
+//   try {
+//     const response = await fetch(`${API_URL}/transactions/${userId}`, {
+//       headers: {
+//         "Content-Type": "application/json",
+//         Authorization: `Bearer ${accessToken}`,
+//       },
+//     });
+
+//     if (response.status === 400) {
+//       return null;
+//     }
+
+//     if (response.status === 403) {
+//       console.log("Forbidden access to transactions");
+//       return { forbidden: true };
+//     }
+
+//     if (!response.ok) throw new Error("Network error");
+//     const data = await response.json();
+//     // Đảm bảo luôn trả về mảng
+//     if (!Array.isArray(data)) return [];
+//     return data;
+//   } catch (error) {
+//     console.error("Error getAllTransactionsByUserId:", error);
+//     return [];
+//   }
+// }
