@@ -19,8 +19,6 @@ import com.ants.ktc.ants_ktc.dtos.convenient.CreateConvenientRequestDto;
 import com.ants.ktc.ants_ktc.services.ConvenientService;
 
 import jakarta.validation.Valid;
-import org.springframework.web.bind.annotation.RequestParam;
-
 
 @RestController
 @RequestMapping("/api/convenients")
@@ -51,5 +49,5 @@ public class ConvenientController {
     public List<ConvenientResponseDto> getConvenientByRoomId(@PathVariable("roomId") UUID id) {
         return convenientService.getConvenientByRoomId(id);
     }
-    
+
 }
