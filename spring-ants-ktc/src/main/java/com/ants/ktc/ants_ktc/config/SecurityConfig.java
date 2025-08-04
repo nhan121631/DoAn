@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -42,6 +43,10 @@ public class SecurityConfig {
                                                 .accessDeniedHandler(this.customAccessDeniedHandler))
                                 .authorizeHttpRequests(auth -> auth
                                                 .requestMatchers("/api/auth/**").permitAll()
+                                                // Cho phép GET /api/post-types/** cho cả Landlords và Administrators
+                                                .requestMatchers(HttpMethod.GET, "/api/post-types/**")
+                                                .hasAnyRole("Landlords", "Administrators")
+                                                // Các phương thức khác chỉ cho Administrators
                                                 .requestMatchers("/api/post-types/**").hasAnyRole("Administrators")
                                                 .requestMatchers("/api/wallets/**").hasAnyRole("Landlords")
                                                 .anyRequest().permitAll())
