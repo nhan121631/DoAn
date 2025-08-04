@@ -1,33 +1,38 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import { Form, message } from "antd";
-import { useSession } from "next-auth/react";
+// import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import ModalProfile from "./ModalProfile";
+import { UploadChangeParam, UploadFile } from "antd/es/upload";
 
-export default function ButtonEditProfile() {
+export default function ButtonEditProfile({
+  userProfile,
+}: {
+  userProfile: any;
+}) {
   const [open, setOpen] = useState(false);
   const [form] = Form.useForm();
   const [avatarUrl, setAvatarUrl] = useState("");
-  const [errorMsg, setErrorMsg] = useState<string>("");
-  const { data: session } = useSession();
   const [messageApi, contextHolder] = message.useMessage();
+
+  // Nhận userProfile qua props
+  // const props = arguments[0] || {};
+  // const userProfile = props.userProfile;
+
   useEffect(() => {
-    if (!session?.user?.userProfile?.avatar) {
+    if (!userProfile?.avatar) {
       setAvatarUrl("/images/default/avatar.jpg");
       return;
     }
-    const image = "http://localhost:3333" + session?.user?.userProfile?.avatar;
-    console.log("Avatar URL:", image);
+    const image = userProfile.avatar.startsWith("http")
+      ? userProfile.avatar
+      : "http://localhost:3333" + userProfile.avatar;
     if (image) {
       setAvatarUrl(image);
     }
-  }, [session]);
-  const handleAvatarChange = (
-    info: import("antd/es/upload").UploadChangeParam<
-      import("antd/es/upload/interface").UploadFile<any>
-    >
-  ) => {
+  }, [userProfile]);
+  const handleAvatarChange = (info: UploadChangeParam<UploadFile<any>>) => {
     const file = info.file.originFileObj;
     if (file) {
       const reader = new FileReader();
@@ -55,7 +60,7 @@ export default function ButtonEditProfile() {
 
     // Tạo object profile đúng chuẩn API
     const profile = {
-      id: session?.user?.userProfile?.id,
+      id: userProfile?.id,
       fullName: values.name,
       email: values.email,
       phoneNumber: values.phone,
@@ -112,7 +117,6 @@ export default function ButtonEditProfile() {
       >
         Chỉnh sửa thông tin
       </button>
-      {errorMsg && <div style={{ color: "red", marginTop: 8 }}>{errorMsg}</div>}
       <ModalProfile
         open={open}
         onCancel={() => setOpen(false)}
@@ -120,7 +124,7 @@ export default function ButtonEditProfile() {
         avatarUrl={avatarUrl}
         onAvatarChange={handleAvatarChange}
         form={form}
-        userProfile={session?.user?.userProfile}
+        userProfile={userProfile}
       />
     </>
   );

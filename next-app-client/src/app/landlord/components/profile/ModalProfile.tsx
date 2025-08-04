@@ -214,7 +214,7 @@ export default function ModalProfile({
       onCancel={onCancel}
       footer={null}
       centered
-      width={480}
+      width={560}
       title={
         <span className="font-bold text-lg">Edit Personal Information</span>
       }
