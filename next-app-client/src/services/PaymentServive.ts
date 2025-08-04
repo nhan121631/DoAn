@@ -1,10 +1,19 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 const API_URL = "http://localhost:3333/api";
 
-export async function getAllTransactionsByUserId(userId: string) {
+export async function getAllTransactionsByUserId(
+  userId: string,
+  accessToken: string
+) {
   try {
     const response = await fetch(
-      `http://localhost:3333/api/transactions/${userId}`
+      `http://localhost:3333/api/transactions/${userId}`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
     );
     if (!response.ok) throw new Error("Network error");
     const data = await response.json();
@@ -17,15 +26,50 @@ export async function getAllTransactionsByUserId(userId: string) {
   }
 }
 
+export async function getTransactionsByUserIdPaginated(
+  userId: string,
+  accessToken: string,
+  page: number,
+  size: number
+) {
+  try {
+    const response = await fetch(
+      `http://localhost:3333/api/transactions/by-user/${userId}/paging?page=${page}&size=${size}`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+    if (!response.ok) throw new Error("Network error");
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error getTransactionsByUserIdPaginated:", error);
+    return {
+      transactions: [],
+      pageNumber: page,
+      pageSize: size,
+      totalRecords: 0,
+      totalPages: 0,
+      hasNext: false,
+      hasPrevious: false,
+    };
+  }
+}
+
 export async function createTransactionByUserId(
   userId: string,
-  transactionData: any
+  transactionData: any,
+  accessToken: string
 ) {
   try {
     const response = await fetch(`${API_URL}/transactions/${userId}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
       },
       body: JSON.stringify({ userId, ...transactionData }),
     });
@@ -33,7 +77,7 @@ export async function createTransactionByUserId(
       throw new Error("Failed to create transaction");
     }
     const data = await response.json();
-    return data.transaction;
+    return data.transaction || data;
   } catch (error) {
     console.error("Error creating transaction:", error);
     throw error;

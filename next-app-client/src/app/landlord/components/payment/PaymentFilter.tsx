@@ -19,7 +19,7 @@ export default function PaymentFilter({
           onClick={() => setFilter(filterType)}
           className={`px-4 py-2 rounded transition ${
             filter === filterType
-              ? "bg-blue-600 text-white"
+              ? "bg-blue-600 !text-white"
               : "bg-gray-200 text-gray-700 hover:bg-gray-300"
           }`}
         >

@@ -4,10 +4,14 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.ants.ktc.ants_ktc.dtos.transaction.CreateTransactionRequestDto;
+import com.ants.ktc.ants_ktc.dtos.transaction.PaginationTransactionResponseDto;
 import com.ants.ktc.ants_ktc.dtos.transaction.TransactionResponseDto;
 import com.ants.ktc.ants_ktc.dtos.wallet.WalletResponseDto;
 import com.ants.ktc.ants_ktc.entities.Transaction;
@@ -94,5 +98,46 @@ public class TransactionService {
         return transactionsJpaRepository.findWithWalletById(savedTransaction.getId())
                 .map(this::convertToDto)
                 .orElse(convertToDto(savedTransaction));
+    }
+
+    // Phương thức mới với phân trang
+    public PaginationTransactionResponseDto getTransactionsByUserId(UUID userId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Transaction> transactionPage = transactionsJpaRepository.findAll(pageable);
+        List<TransactionResponseDto> transactionDtos = transactionPage.getContent().stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
+
+        return PaginationTransactionResponseDto.builder()
+                .transactions(transactionDtos)
+                .pageNumber(transactionPage.getNumber())
+                .pageSize(transactionPage.getSize())
+                .totalRecords(transactionPage.getTotalElements())
+                .totalPages(transactionPage.getTotalPages())
+                .hasNext(transactionPage.hasNext())
+                .hasPrevious(transactionPage.hasPrevious())
+                .build();
+    }
+
+    // Phương thức mới với phân trang cho transaction theo userId
+    public PaginationTransactionResponseDto getTransactionsByUserIdPaginated(UUID userId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+
+        // Lấy dữ liệu phân trang từ repository theo userId
+        Page<Transaction> transactionPage = transactionsJpaRepository.findAllByUserId(userId, pageable);
+
+        List<TransactionResponseDto> transactionDtos = transactionPage.getContent().stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
+
+        return PaginationTransactionResponseDto.builder()
+                .transactions(transactionDtos)
+                .pageNumber(transactionPage.getNumber())
+                .pageSize(transactionPage.getSize())
+                .totalRecords(transactionPage.getTotalElements())
+                .totalPages(transactionPage.getTotalPages())
+                .hasNext(transactionPage.hasNext())
+                .hasPrevious(transactionPage.hasPrevious())
+                .build();
     }
 }
