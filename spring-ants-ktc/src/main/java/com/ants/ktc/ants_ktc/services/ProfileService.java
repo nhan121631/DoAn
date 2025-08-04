@@ -4,9 +4,11 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.ants.ktc.ants_ktc.dtos.address.AddressResponseDto;
@@ -112,6 +114,49 @@ public class ProfileService {
                 .bankNumber(profile.getBankNumber())
                 .accoutHolderName(profile.getAccoutHolderName())
                 .address(addressDto)
+                .build();
+    }
+
+    public UserProfileResponseDto getProfile(UUID id) {
+        UserProfile profile = profileJpaRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Profile not found"));
+
+        Address address = profile.getAddress();
+        if (address == null) {
+            address = new Address();
+        }
+
+        Ward ward = address.getWard();
+        if (ward == null) {
+            ward = new Ward();
+        }
+
+        return UserProfileResponseDto.builder()
+                .id(profile.getId())
+                .fullName(profile.getFullName())
+                .email(profile.getEmail())
+                .phoneNumber(profile.getPhoneNumber())
+                .avatar(profile.getAvatar())
+                .bankName(profile.getBankName())
+                .binCode(profile.getBinCode())
+                .bankNumber(profile.getBankNumber())
+                .accoutHolderName(profile.getAccoutHolderName())
+                .address(AddressResponseDto.builder()
+                        .id(address.getId())
+                        .street(address.getStreet())
+                        .ward(WardResponseDto.builder()
+                                .id(ward.getId())
+                                .name(ward.getName())
+                                .district(DistrictResponseDto.builder()
+                                        .id(ward.getDistrict().getId())
+                                        .name(ward.getDistrict().getName())
+                                        .province(ProvinceResponseDto.builder()
+                                                .id(ward.getDistrict().getProvince().getId())
+                                                .name(ward.getDistrict().getProvince().getName())
+                                                .build())
+                                        .build())
+                                .build())
+                        .build())
                 .build();
     }
 }
