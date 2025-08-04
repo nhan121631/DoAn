@@ -2,15 +2,19 @@ package com.ants.ktc.ants_ktc.dtos.room;
 
 import java.util.Date;
 import java.util.List;
-import java.util.UUID;
 
 import org.springframework.web.multipart.MultipartFile;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+
 
 @Data
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class RoomRequestDto {
     private String title;
     private String description;
@@ -22,5 +26,5 @@ public class RoomRequestDto {
     private Date postStartDate;
     private Date postEndDate;
     private List<MultipartFile> images;
-    private List<UUID> convenientIds;
+    private List<Long> convenientIds;
 }

@@ -46,7 +46,7 @@ public class ConvenientService {
         convenientsRepository.deleteById(id);
     }
 
-    //get convennient by roomid(UUID)
+    // // get convennient by roomid(UUID)
     public List<ConvenientResponseDto> getConvenientByRoomId(UUID id) {
         List<Convenient> convenients = convenientsRepository.findByRoomId(id);
         return convenients.stream()
