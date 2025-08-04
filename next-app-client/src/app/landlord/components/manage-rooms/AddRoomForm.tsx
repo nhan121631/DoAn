@@ -11,6 +11,8 @@ import {
 } from "@/services/AddressService";
 import { getPostTypes } from "@/services/TypePostService";
 import { getConvenients } from "@/services/Convenients";
+import { createRoom } from "@/services/RoomService";
+import { message } from "antd";
 
 type ProvinceOption = {
   label: string;
@@ -26,6 +28,7 @@ const AddRoomForm: React.FC<{ onFinish?: (values: RoomData) => void }> = (
     //   onFinish,
   }
 ) => {
+  const [messageApi, contextHolder] = message.useMessage();
   const [form] = Form.useForm();
   const [fileList, setFileList] = React.useState<UploadFile[]>([]);
 
@@ -172,15 +175,43 @@ const AddRoomForm: React.FC<{ onFinish?: (values: RoomData) => void }> = (
   const handleSubmit = async () => {
     try {
       const values = await form.validateFields();
-      const roomData: RoomData = {
-        ...values,
-        images: fileList.map((file) => file.originFileObj as File),
-        typepostId: selectedTypePostId,
-        startDate,
-        endDate,
-      };
-      console.log("Submitted Room Data:", roomData);
 
+      // Build address object
+      const address = {
+        street: values.address,
+        wardId: values.ward,
+      };
+
+      // Build convenientIds array
+      const convenientIds = values.convenients;
+
+      // Build final room data
+      const roomData = {
+        title: values.name,
+        description: values.description,
+        priceMonth: values.priceMonth,
+        priceDeposit: values.priceDeposit,
+        postStartDate: startDate,
+        postEndDate: endDate,
+        typepostId: selectedTypePostId,
+        // userId: "44256067-6f69-11f0-8622-b42e993f445f", // đã handled trong server action api next
+        address,
+        convenientIds,
+        // images: fileList.map((file) => file.originFileObj as File), // nếu cần gửi ảnh
+      };
+
+      const images = fileList
+      .map((file) => file.originFileObj)
+      .filter(Boolean) as File[];
+
+    const result = await createRoom(images, JSON.stringify(roomData));
+    messageApi.success({
+      content: "Đã gửi thông tin phòng mới!",
+      duration: 1.5,
+    });
+    console.log("Kết quả:", result);
+
+      console.log("Submitted Room Data:", roomData);
       // form.resetFields();
       // setFileList([]);
     } catch (error) {
@@ -189,6 +220,9 @@ const AddRoomForm: React.FC<{ onFinish?: (values: RoomData) => void }> = (
   };
 
   return (
+    <>
+      {contextHolder}
+    
     <div className="w-full min-h-screen flex items-center justify-center bg-gray-50 dark:bg-[#171f2f] dark:text-white p-0 m-0">
       <Form
         form={form}
@@ -501,6 +535,7 @@ const AddRoomForm: React.FC<{ onFinish?: (values: RoomData) => void }> = (
         </div>
       </Form>
     </div>
+    </>
   );
 };
 

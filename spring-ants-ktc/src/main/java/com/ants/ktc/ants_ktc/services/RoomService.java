@@ -7,6 +7,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.ants.ktc.ants_ktc.dtos.address.AddressResponseDto;
@@ -48,30 +49,11 @@ public class RoomService {
         @Autowired
         private ConvenientsRepository convenientJpaRepository;
 
+        @Transactional
         public RoomResponseDto createRoom(List<MultipartFile> files, RoomRequestCreateDto requestDto) {
                 Room room = new Room();
-                for (MultipartFile file : files) {
-                        if (file.isEmpty()) {
-                                throw new IllegalArgumentException("File is empty");
-                        }
-                        try {
-                                String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
-                                Path filePath = Paths.get("public/uploads/" + fileName);
-                                Files.createDirectories(filePath.getParent());
-                                Files.write(filePath, file.getBytes());
 
-                                String fileUrl = "/uploads/" + fileName;
-                                ImageCreateRequestDto imageDto = new ImageCreateRequestDto();
-                                imageDto.setUrl(fileUrl);
-                                Image image = new Image();
-                                image.setUrl(fileUrl);
-                                image.setRoom(room);
-                                room.getImages().add(image);
-
-                        } catch (Exception e) {
-                                throw new IllegalArgumentException("Failed to save file: " + e.getMessage(), e);
-                        }
-                }
+                // Set các thuộc tính cơ bản
                 room.setTitle(requestDto.getTitle());
                 room.setDescription(requestDto.getDescription());
                 room.setPrice_month(requestDto.getPriceMonth());
@@ -79,6 +61,7 @@ public class RoomService {
                 room.setPost_start_date(requestDto.getPostStartDate());
                 room.setPost_end_date(requestDto.getPostEndDate());
 
+                // Lấy PostType và User
                 PostType postType = postTypeJpaRepository.findById(requestDto.getTypepostId())
                                 .orElseThrow(() -> new IllegalArgumentException("PostType not found"));
                 room.setPostType(postType);
@@ -86,18 +69,50 @@ public class RoomService {
                 User user = userJpaRepository.findById(requestDto.getUserId())
                                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
                 room.setUser(user);
+
+                // Set địa chỉ
                 Address address = new Address();
                 address.setStreet(requestDto.getAddress().getStreet());
+
                 Ward ward = wardRepository.findById(requestDto.getAddress().getWardId())
                                 .orElseThrow(() -> new RuntimeException("Ward Not Found"));
                 address.setWard(ward);
                 room.setAddress(address);
-                for (Long convenientId : requestDto.getConvenientIds()) {
-                        Convenient convenientEntity = convenientJpaRepository.findById(convenientId)
-                                        .orElseThrow(() -> new RuntimeException("Convenient not found"));
-                        room.getConvenients().add(convenientEntity);
+
+                // Set tiện ích (convenients)
+                List<Convenient> convenients = convenientJpaRepository.findAllById(requestDto.getConvenientIds());
+                if (convenients.size() != requestDto.getConvenientIds().size()) {
+                        throw new RuntimeException("Một số Convenient không tồn tại");
                 }
+                room.setConvenients(convenients);
+
+                // Xử lý images
+                List<Image> images = files.stream()
+                                .filter(file -> file != null && !file.isEmpty())
+                                .map(file -> {
+                                        try {
+                                                String fileName = System.currentTimeMillis() + "_"
+                                                                + file.getOriginalFilename();
+                                                Path filePath = Paths.get("public/uploads/" + fileName);
+                                                Files.createDirectories(filePath.getParent());
+                                                Files.write(filePath, file.getBytes());
+
+                                                String fileUrl = "/uploads/" + fileName;
+                                                Image image = new Image();
+                                                image.setUrl(fileUrl);
+                                                image.setRoom(room); // quan hệ 2 chiều
+                                                return image;
+                                        } catch (Exception e) {
+                                                throw new RuntimeException("Failed to save file: " + e.getMessage(), e);
+                                        }
+                                })
+                                .toList();
+                room.setImages(images);
+
+                // Lưu phòng
                 roomJpaRepository.save(room);
+
+                // Trả về DTO
                 return RoomResponseDto.builder()
                                 .id(room.getId())
                                 .title(room.getTitle())
@@ -107,17 +122,17 @@ public class RoomService {
                                 .postStartDate(room.getPost_start_date())
                                 .postEndDate(room.getPost_end_date())
                                 .typepost(postType.getName())
-                                .userId(requestDto.getUserId())
-                                .convenients(room.getConvenients().stream()
-                                                .map(convenient -> ConvenientResponseDto.builder()
-                                                                .id(convenient.getId())
-                                                                .name(convenient.getName())
+                                .userId(user.getId())
+                                .convenients(convenients.stream()
+                                                .map(c -> ConvenientResponseDto.builder()
+                                                                .id(c.getId())
+                                                                .name(c.getName())
                                                                 .build())
                                                 .toList())
-                                .images(room.getImages().stream()
-                                                .map(image -> ImageResponseDto.builder()
-                                                                .id(image.getId())
-                                                                .url(image.getUrl())
+                                .images(images.stream()
+                                                .map(img -> ImageResponseDto.builder()
+                                                                .id(img.getId())
+                                                                .url(img.getUrl())
                                                                 .build())
                                                 .toList())
                                 .address(AddressResponseDto.builder()
@@ -141,6 +156,6 @@ public class RoomService {
                                                                 .build())
                                                 .build())
                                 .build();
-
         }
+
 }

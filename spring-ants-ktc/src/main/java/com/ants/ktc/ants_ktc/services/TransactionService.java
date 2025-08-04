@@ -100,26 +100,7 @@ public class TransactionService {
                 .orElse(convertToDto(savedTransaction));
     }
 
-    // Phương thức mới với phân trang
-    public PaginationTransactionResponseDto getTransactionsByUserId(UUID userId, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
-        Page<Transaction> transactionPage = transactionsJpaRepository.findAll(pageable);
-        List<TransactionResponseDto> transactionDtos = transactionPage.getContent().stream()
-                .map(this::convertToDto)
-                .collect(Collectors.toList());
-
-        return PaginationTransactionResponseDto.builder()
-                .transactions(transactionDtos)
-                .pageNumber(transactionPage.getNumber())
-                .pageSize(transactionPage.getSize())
-                .totalRecords(transactionPage.getTotalElements())
-                .totalPages(transactionPage.getTotalPages())
-                .hasNext(transactionPage.hasNext())
-                .hasPrevious(transactionPage.hasPrevious())
-                .build();
-    }
-
-    // Phương thức mới với phân trang cho transaction theo userId
+    // Phân trang cho transaction theo userId
     public PaginationTransactionResponseDto getTransactionsByUserIdPaginated(UUID userId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
 
