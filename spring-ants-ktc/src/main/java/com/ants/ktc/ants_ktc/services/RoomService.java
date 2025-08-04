@@ -21,11 +21,16 @@ import com.ants.ktc.ants_ktc.dtos.room.RoomResponseDto;
 import com.ants.ktc.ants_ktc.entities.Convenient;
 import com.ants.ktc.ants_ktc.entities.Image;
 import com.ants.ktc.ants_ktc.entities.Room;
+import com.ants.ktc.ants_ktc.entities.User;
 import com.ants.ktc.ants_ktc.repositories.ConvenientsRepository;
 import com.ants.ktc.ants_ktc.repositories.RoomJpaRepository;
+import com.ants.ktc.ants_ktc.repositories.UserJpaRepository;
 
 @Service
 public class RoomService {
+
+    @Autowired
+    private UserJpaRepository userRepository;
     @Autowired
     private RoomJpaRepository roomJpaRepository;
 
@@ -97,8 +102,10 @@ public class RoomService {
         room.setPost_start_date(requestDto.getPostStartDate());
         room.setPost_end_date(requestDto.getPostEndDate());
 
-        // Gắn user cho phòng
-        room.setId(userId);
+        // ✅ Gắn user đúng cách
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        room.setUser(user); // Nếu entity Room có quan hệ @ManyToOne User
 
         // Thêm tiện ích
         if (requestDto.getConvenientIds() != null) {
