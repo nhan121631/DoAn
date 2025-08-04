@@ -22,5 +22,5 @@ public class RoomRequestDto {
     private Date postStartDate;
     private Date postEndDate;
     private List<MultipartFile> images;
-    private List<UUID> convenientIds;
+    private List<Long> convenientIds;
 }
