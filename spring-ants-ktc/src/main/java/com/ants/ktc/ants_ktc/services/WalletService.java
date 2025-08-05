@@ -17,6 +17,6 @@ public class WalletService {
     public WalletResponseDto getWalletByUserId(UUID userId) {
         return walletRepository.findByUserId(userId)
                 .map(wallet -> new WalletResponseDto(wallet.getId(), wallet.getBalance()))
-                .orElseThrow(() -> new IllegalArgumentException("Wallet not found for user ID: " + userId));
+                .orElse(new WalletResponseDto(null, 0));
     }
 }

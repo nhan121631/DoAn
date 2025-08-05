@@ -18,4 +18,6 @@ public interface ProfileJpaRepository extends JpaRepository<UserProfile, UUID> {
     })
     Optional<UserProfile> findById(UUID id);
     // Define custom query methods if needed
+
+    boolean existsByEmail(String email);
 }

@@ -175,7 +175,7 @@ export default function AuthForms({ csrfToken }: { csrfToken?: string }) {
           <div className="mb-4">
             <input
               type="text"
-              placeholder="Phone number or Email"
+              placeholder="Username"
               className={`w-full p-3 border ${
                 errors.username ? "border-red-500" : "border-gray-300"
               } rounded-md focus:outline-none focus:ring-2 focus:ring-white text-white`}

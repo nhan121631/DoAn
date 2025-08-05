@@ -35,10 +35,10 @@ public class CustomUserDetailsService implements UserDetailsService {
             // Nếu dùng @PreAuthorize("hasRole('Administrators')") thì authorities.add(new
             authorities.add(new SimpleGrantedAuthority("ROLE_" + role.getName()));
         });
-
+        String password = user.getPassword() != null ? user.getPassword() : "";
         return org.springframework.security.core.userdetails.User.builder()
                 .username(user.getUsername())
-                .password(user.getPassword())
+                .password(password)
                 .authorities(authorities)
                 .build();
     }

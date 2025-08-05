@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.ants.ktc.ants_ktc.dtos.auth.GoogleLoginRequestDto;
 import com.ants.ktc.ants_ktc.dtos.auth.LoginRequestDto;
 import com.ants.ktc.ants_ktc.dtos.auth.LoginResponseDto;
+import com.ants.ktc.ants_ktc.dtos.auth.RegisterRequestDto;
+import com.ants.ktc.ants_ktc.dtos.auth.RegisterResponseDto;
 import com.ants.ktc.ants_ktc.services.UserService;
 
 import jakarta.validation.Valid;
@@ -29,6 +31,12 @@ public class AuthController {
     @PostMapping("/google-login")
     public ResponseEntity<LoginResponseDto> googleLogin(@RequestBody @Valid GoogleLoginRequestDto request) {
         LoginResponseDto result = this.userService.googleLogin(request);
+        return ResponseEntity.ok(result);
+    }
+
+    @PostMapping("/register")
+    public ResponseEntity<RegisterResponseDto> register(@RequestBody @Valid RegisterRequestDto request) {
+        RegisterResponseDto result = this.userService.register(request);
         return ResponseEntity.ok(result);
     }
 

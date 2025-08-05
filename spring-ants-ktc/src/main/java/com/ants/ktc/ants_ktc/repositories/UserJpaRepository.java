@@ -37,7 +37,7 @@ public interface UserJpaRepository extends JpaRepository<User, UUID> {
                 LEFT JOIN FETCH u.roles r
                 WHERE u.username = :email
             """)
-    Optional<User> findByEmail(@Param("email") String email);
+    User findByEmail(@Param("email") String email);
 
     @EntityGraph(attributePaths = {
             "profile",
@@ -48,4 +48,6 @@ public interface UserJpaRepository extends JpaRepository<User, UUID> {
             "roles"
     })
     Page<User> findAll(Pageable pageable);
+
+    boolean existsByUsername(String username);
 }
