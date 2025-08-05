@@ -77,7 +77,7 @@ export default function ForgotPasswordForm() {
         {/* Submit Button */}
         <button
           type="submit"
-          className="flex items-center justify-center w-full gap-2 py-3 text-lg font-semibold text-black transition duration-300 bg-gray-200 rounded-md hover:bg-gray-400"
+          className="flex items-center justify-center w-full gap-2 py-3 text-lg font-semibold text-black transition duration-300 bg-white rounded-md hover:bg-gray-200"
         >
           Send Password Reset Link <span className="text-xl">&rarr;</span> {/* Translated */}
         </button>
