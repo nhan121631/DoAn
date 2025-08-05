@@ -1,10 +1,16 @@
 package com.ants.ktc.ants_ktc.services;
 
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.net.URI;
+import java.util.List;
 import java.util.Map;
 
+import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -15,13 +21,18 @@ import com.ants.ktc.ants_ktc.dtos.address.WardResponseDto;
 import com.ants.ktc.ants_ktc.dtos.auth.GoogleLoginRequestDto;
 import com.ants.ktc.ants_ktc.dtos.auth.LoginRequestDto;
 import com.ants.ktc.ants_ktc.dtos.auth.LoginResponseDto;
+import com.ants.ktc.ants_ktc.dtos.auth.RegisterRequestDto;
+import com.ants.ktc.ants_ktc.dtos.auth.RegisterResponseDto;
 import com.ants.ktc.ants_ktc.dtos.userprofile.UserProfileResponseDto;
 import com.ants.ktc.ants_ktc.entities.Role;
 import com.ants.ktc.ants_ktc.entities.User;
+import com.ants.ktc.ants_ktc.entities.UserProfile;
 import com.ants.ktc.ants_ktc.entities.address.District;
 import com.ants.ktc.ants_ktc.entities.address.Province;
 import com.ants.ktc.ants_ktc.entities.address.Ward;
 import com.ants.ktc.ants_ktc.exceptions.HttpException;
+import com.ants.ktc.ants_ktc.repositories.ProfileJpaRepository;
+import com.ants.ktc.ants_ktc.repositories.RoleJpaRepository;
 import com.ants.ktc.ants_ktc.repositories.UserJpaRepository;
 import com.ants.ktc.ants_ktc.services.auth.JwtService;
 
@@ -33,6 +44,15 @@ public class UserService {
         @Autowired
         private JwtService jwtService;
 
+        @Autowired
+        private RoleJpaRepository roleJpaRepository;
+
+        @Autowired
+        private ProfileJpaRepository profileJpaRepository;
+
+        @Autowired
+        private PasswordEncoder passwordEncoder;
+
         private final RestTemplate restTemplate = new RestTemplate();
 
         public LoginResponseDto login(LoginRequestDto request) throws Exception {
@@ -40,8 +60,13 @@ public class UserService {
                                 .orElseThrow(() -> new HttpException("Invalid username or password",
                                                 HttpStatus.UNAUTHORIZED));
 
-                if (!request.getPassword().equals(user.getPassword())) {
+                if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
                         throw new HttpException("Invalid username or password", HttpStatus.UNAUTHORIZED);
+                }
+
+                if (user.getIsActive() == 1) {
+                        throw new HttpException("Your account is not active. Please contact support.",
+                                        HttpStatus.FORBIDDEN);
                 }
 
                 String accessToken = jwtService.generateAccessToken(user);
@@ -129,9 +154,38 @@ public class UserService {
                         throw new HttpException("Google token has expired", HttpStatus.UNAUTHORIZED);
                 }
 
-                User user = userJpaRepository.findByEmail(email)
-                                .orElseThrow(() -> new IllegalArgumentException(
-                                                "User not found with email: " + email));
+                User user = userJpaRepository.findByEmail(email);
+
+                if (user == null) {
+                        user = new User();
+                        user.setUsername(email);
+                        user.setIsActive(0);
+                        UserProfile profile = new UserProfile();
+                        profile.setEmail(email);
+                        profile.setFullName(payload.get("name").toString());
+                        // Tải ảnh về server
+
+                        String pictureUrl = payload.get("picture").toString();
+                        String fileName = "google_" + System.currentTimeMillis() + ".jpg";
+                        String uploadPath = "public/uploads/" + fileName;
+                        try (InputStream in = URI.create(pictureUrl).toURL().openStream();
+                                        FileOutputStream out = new FileOutputStream(uploadPath)) {
+                                IOUtils.copy(in, out);
+                                profile.setAvatar("/uploads/" + fileName);
+                        } catch (Exception e) {
+                                profile.setAvatar(null);
+                        }
+                        user.setProfile(profile);
+                        // Gán role USER
+                        Role userRole = roleJpaRepository.findByName("Users").orElseThrow();
+                        user.setRoles(List.of(userRole));
+                        userJpaRepository.save(user);
+                }
+
+                if (user.getIsActive() == 1) {
+                        throw new HttpException("Your account is not active. Please contact support.",
+                                        HttpStatus.FORBIDDEN);
+                }
 
                 String accessToken = jwtService.generateAccessToken(user);
                 String refreshToken = jwtService.generateRefreshToken(user);
@@ -190,5 +244,41 @@ public class UserService {
                                 .refreshToken(refreshToken)
                                 .build();
 
+        }
+
+        public RegisterResponseDto register(RegisterRequestDto request) {
+                if (userJpaRepository.existsByUsername(request.getUsername())) {
+                        throw new IllegalArgumentException("Username already exists");
+                }
+                if (profileJpaRepository.existsByEmail(request.getEmail())) {
+                        throw new IllegalArgumentException("Email already exists");
+                }
+
+                User user = new User();
+                user.setUsername(request.getUsername());
+                user.setPassword(passwordEncoder.encode(request.getPassword()));
+                UserProfile userProfile = new UserProfile();
+                userProfile.setEmail(request.getEmail());
+                userProfile.setFullName(request.getFullName());
+                user.setProfile(userProfile);
+
+                if (request.getAccountType() == 0) {
+                        Role userRole = roleJpaRepository.findByName("Users").orElseThrow();
+                        user.setRoles(List.of(userRole));
+                } else if (request.getAccountType() == 1) {
+                        Role landlordRole = roleJpaRepository.findByName("Landlords").orElseThrow();
+                        user.setRoles(List.of(landlordRole));
+                }
+
+                System.out.println(
+                                "User register: username=" + user.getUsername() + ", email=" + userProfile.getEmail()
+                                                + ", password=" + user.getPassword() + ", accountType="
+                                                + request.getAccountType());
+                userJpaRepository.save(user);
+
+                return RegisterResponseDto.builder()
+                                .username(user.getUsername())
+                                .message("Registration successful")
+                                .build();
         }
 }

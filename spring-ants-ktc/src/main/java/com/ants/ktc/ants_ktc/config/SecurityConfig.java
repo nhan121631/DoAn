@@ -48,8 +48,10 @@ public class SecurityConfig {
                                                 .hasAnyRole("Landlords", "Administrators")
                                                 // Các phương thức khác chỉ cho Administrators
                                                 .requestMatchers("/api/post-types/**").hasAnyRole("Administrators")
-                                                .requestMatchers("/api/wallets/**").hasAnyRole("Landlords")
-                                                .requestMatchers("/api/transactions/**").hasAnyRole("Landlords")
+                                                .requestMatchers("/api/wallets/**")
+                                                .hasAnyRole("Landlords", "Administrators")
+                                                .requestMatchers("/api/transactions/**")
+                                                .hasAnyRole("Landlords", "Administrators")
                                                 .anyRequest().permitAll())
                                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 

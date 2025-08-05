@@ -7,13 +7,15 @@ import { useForm } from "react-hook-form";
 
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
+import { RegisterService } from "@/services/RegisterService";
+import { message } from "antd";
 
-interface IRegisterInputs {
+export interface IRegisterInputs {
   fullName: string;
-  email?: string;
-  phoneNumber: string;
+  email: string;
+  username: string;
   password: string;
-  accountType: string; // Change to required string
+  accountType: string;
 }
 
 const schema = yup
@@ -23,14 +25,18 @@ const schema = yup
       .string()
       .email("Invalid email.")
       .required("Please enter your email."),
-    phoneNumber: yup
+    username: yup
       .string()
-      .required("Please enter your phone number.")
-      .matches(/^[0-9]{10}$/, "Invalid phone number."),
+      .required("Please enter your user name.")
+      .matches(/^[a-zA-Z0-9]{3,30}$/, "Invalid user name."),
     password: yup
       .string()
       .min(6, "Password must be at least 6 characters.")
       .required("Please enter your password."),
+    repeatPassword: yup
+      .string()
+      .oneOf([yup.ref("password")], "Passwords must match.")
+      .required("Please repeat your password."),
     accountType: yup
       .string()
       .oneOf(["0", "1"], "Please select an account type.")
@@ -39,10 +45,10 @@ const schema = yup
   .required();
 export default function RegisterForm() {
   const [showRegisterPassword, setShowRegisterPassword] = useState(false);
+  const [messageApi, contextHolder] = message.useMessage();
 
   // const [registerGeneralErrorMessage, setRegisterGeneralErrorMessage] =
   //   useState("");
-  const [registerSuccessMessage, setRegisterSuccessMessage] = useState("");
 
   const {
     register,
@@ -54,20 +60,33 @@ export default function RegisterForm() {
     defaultValues: {
       fullName: "",
       email: "",
-      phoneNumber: "",
+      username: "",
       password: "",
-      // Removed accountType default value
+      repeatPassword: "",
     },
   });
 
   const onRegisterSubmit = async (values: IRegisterInputs) => {
-    setRegisterSuccessMessage("Registration successful!");
-    reset(); // Reset form after successful submission
-    console.log("Register data:", values);
+    // ...existing code...
+    try {
+      const response = await RegisterService(values);
+      messageApi.success({
+        content: "Registration successful!",
+        duration: 2,
+      });
+      reset();
+    } catch (error: any) {
+      // Lấy lỗi chi tiết từ error.message
+      messageApi.error({
+        content: error.message,
+        duration: 2,
+      });
+    }
   };
 
   return (
     <form onSubmit={handleSubmit(onRegisterSubmit)}>
+      {contextHolder}
       <div className="mb-4">
         <label htmlFor="registerFullName" className="sr-only">
           Full Name
@@ -88,7 +107,7 @@ export default function RegisterForm() {
           </p>
         )}
       </div>
-      
+
       <div className="mb-4">
         <label htmlFor="registerEmail" className="sr-only">
           Email
@@ -110,29 +129,27 @@ export default function RegisterForm() {
         )}
       </div>
 
-
       <div className="mb-4">
-        <label htmlFor="registerPhoneNumber" className="sr-only">
-          Phone Number
+        <label htmlFor="registerUserName" className="sr-only">
+          UserName
         </label>
         <input
-          type="tel"
-          id="registerPhoneNumber"
+          type="text"
+          id="registerUserName"
           className={`w-full p-3 border ${
-            errors.phoneNumber ? "border-red-500" : "border-gray-300"
+            errors.username ? "border-red-500" : "border-gray-300"
           } rounded-md focus:outline-none focus:ring-2 focus:ring-white text-white`}
-          placeholder="Phone Number"
-          {...register("phoneNumber")}
+          placeholder="User Name"
+          {...register("username")}
         />
-        {errors.phoneNumber && (
+        {errors.username && (
           <p className="flex items-center mt-1 text-xs text-red-500">
             <MdErrorOutline className="w-4 h-4 mr-1" />
-            {errors.phoneNumber.message}
+            {errors.username.message}
           </p>
         )}
       </div>
 
-      
       {/* Password Input (for Register) */}
 
       <div className="mb-4">
@@ -160,6 +177,28 @@ export default function RegisterForm() {
           <p className="flex items-center mt-1 text-xs text-red-500">
             <MdErrorOutline className="w-4 h-4 mr-1" />
             {errors.password.message}
+          </p>
+        )}
+      </div>
+
+      {/* Repeat Password Input */}
+      <div className="mb-4">
+        <label htmlFor="repeatPassword" className="sr-only">
+          Repeat Password
+        </label>
+        <input
+          type={showRegisterPassword ? "text" : "password"}
+          id="repeatPassword"
+          className={`w-full p-3 border ${
+            errors.repeatPassword ? "border-red-500" : "border-gray-300"
+          } rounded-md focus:outline-none focus:ring-2 focus:ring-white text-white`}
+          placeholder="Repeat Password"
+          {...register("repeatPassword")}
+        />
+        {errors.repeatPassword && (
+          <p className="flex items-center mt-1 text-xs text-red-500">
+            <MdErrorOutline className="w-4 h-4 mr-1" />
+            {errors.repeatPassword.message}
           </p>
         )}
       </div>
@@ -194,16 +233,6 @@ export default function RegisterForm() {
           </p>
         )}
       </div>
-
-      {/* Success Message */}
-      {registerSuccessMessage && (
-        <div
-          className="relative px-4 py-3 mb-4 text-sm text-green-700 bg-green-100 border border-green-400 rounded"
-          role="alert"
-        >
-          <span className="block sm:inline">{registerSuccessMessage}</span>
-        </div>
-      )}
 
       {/* Register Button */}
       <button

@@ -80,7 +80,6 @@ export const authOptions: NextAuthOptions = {
             const errorMsg = user?.message?.[0] || user?.errors?.[0] || "UnAuthorized with login";
             throw new Error(errorMsg);
           }
-          console.log("User from login:", user);
           if (user) {
             return {
               id: user.id,
@@ -107,10 +106,9 @@ export const authOptions: NextAuthOptions = {
           const user = await res.json();
           if (!res.ok) {
             // Trả về message lỗi chi tiết cho frontend
-            const errorMsg = user?.message?.[0] || user?.error || "UnAuthorized with google login";
+            const errorMsg = user?.message?.[0] || user.errors?.[0] || "UnAuthorized with google login";
             throw new Error(errorMsg);
           }
-          console.log("User from Google login:", user);
           if (user) {
             return {
               id: user.id,
@@ -159,7 +157,7 @@ export const authOptions: NextAuthOptions = {
         roles: token.roles as string[] ?? [],
         userProfile: token.userProfile ?? {},
       };
-
+      console.log("Session user object:", userObject);
       session.user = userObject;
       return session;
     },
