@@ -27,6 +27,18 @@ public interface UserJpaRepository extends JpaRepository<User, UUID> {
             """)
     Optional<User> findByUsername(@Param("username") String username);
 
+    @Query("""
+                SELECT u FROM User u
+                LEFT JOIN FETCH u.profile p
+                LEFT JOIN FETCH p.address a
+                LEFT JOIN FETCH a.ward w
+                LEFT JOIN FETCH w.district d
+                LEFT JOIN FETCH d.province pr
+                LEFT JOIN FETCH u.roles r
+                WHERE u.username = :email
+            """)
+    Optional<User> findByEmail(@Param("email") String email);
+
     @EntityGraph(attributePaths = {
             "profile",
             "profile.address",

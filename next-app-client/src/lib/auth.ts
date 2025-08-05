@@ -6,8 +6,8 @@ import { JWT } from "next-auth/jwt";
 interface UserType {
   id: string;
   username: string;
-  email: string;
-  avatar: string | null;
+  // email: string;
+  // avatar: string | null;
   accessToken: string;
   refreshToken: string;
   roles: string[];
@@ -59,42 +59,68 @@ export const authOptions: NextAuthOptions = {
           placeholder: "example",
         },
         password: { label: "Password", type: "password" },
+        credential: { label: "Google Credential", type: "text" },
       },
       authorize: async (credentials) => {
-        if (!credentials?.username || !credentials.password) {
+        // Đăng nhập thường
+        if (credentials?.username && credentials.password) {
+          const res = await fetch('http://localhost:3333/api/auth/login', {
+            method: 'POST',
+            body: JSON.stringify({
+              username: credentials.username,
+              password: credentials.password,
+            }),
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          });
+          const user = await res.json();
+          if (!res.ok) {
+            throw new Error("UnAuthorized with login");
+          }
+          console.log("User from login:", user);
+          if (user) {
+            return {
+              id: user.id,
+              username: user.username,
+              email: user.userProfile?.email ?? "",
+              avatar: user.userProfile?.avatar ?? null,
+              accessToken: user.accessToken,
+              refreshToken: user.refreshToken,
+              roles: user.roles ?? [],
+              userProfile: user.userProfile,
+            } as UserType;
+          }
           return null;
         }
-
-        const res = await fetch('http://localhost:3333/api/auth/login', {
-          method: 'POST',
-          body: JSON.stringify({
-            username: credentials.username,
-            password: credentials.password,
-          }),
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-
-        const user = await res.json();
-        console.log("API login response:", user); // Log ra dữ liệu trả về
-
-        if (!res.ok) {
-          throw new Error("UnAuthorized");
+        // Đăng nhập Google
+        if (credentials?.credential) {
+          const res = await fetch('http://localhost:3333/api/auth/google-login', {
+            method: 'POST',
+            body: JSON.stringify({ credential: credentials.credential }),
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          });
+          const user = await res.json();
+          if (!res.ok) {
+            throw new Error("UnAuthorized with google login");
+          }
+          console.log("User from Google login:", user);
+          if (user) {
+            return {
+              id: user.id,
+              username: user.username,
+              email: user.userProfile?.email ?? "",
+              avatar: user.userProfile?.avatar ?? null,
+              accessToken: user.accessToken,
+              refreshToken: user.refreshToken,
+              roles: user.roles ?? [],
+              userProfile: user.userProfile,
+            } as UserType;
+          }
+          return null;
         }
-        if (user) {
-          return {
-            id: user.id,
-            username: user.username,
-            email: user.userProfile?.email ?? "",
-            avatar: user.userProfile?.avatar ?? null,
-            accessToken: user.accessToken,
-            refreshToken: user.refreshToken,
-            roles: user.roles ?? [],
-            userProfile: user.userProfile,
-          } as UserType;
-        }
-
         return null;
       },
     }),
@@ -107,8 +133,8 @@ export const authOptions: NextAuthOptions = {
           ...token,
           id: user.id,
           username: user.username,
-          email: user.email,
-          avatar: user.avatar,
+          // email: user.email,
+          // avatar: user.avatar,
           accessToken: user.accessToken,
           refreshToken: user.refreshToken,
           roles: user.roles,
@@ -122,8 +148,8 @@ export const authOptions: NextAuthOptions = {
       const userObject: UserType = {
         id: token.id as string,
         username: (token.username as string) ?? "",
-        email: (token.email as string) ?? "",
-        avatar: (token.avatar as string) ?? null,
+        // email: (token.email as string) ?? "",
+        // avatar: (token.avatar as string) ?? null,
         accessToken: (token.accessToken as string) ?? "",
         refreshToken: (token.refreshToken as string) ?? "",
         roles: token.roles as string[] ?? [],
