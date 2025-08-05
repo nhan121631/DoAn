@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,6 +53,9 @@ public class UserService {
 
         @Autowired
         private PasswordEncoder passwordEncoder;
+
+        @Autowired
+        private MailService mailService;
 
         private final RestTemplate restTemplate = new RestTemplate();
 
@@ -280,5 +284,23 @@ public class UserService {
                                 .username(user.getUsername())
                                 .message("Registration successful")
                                 .build();
+        }
+
+        public String generateResetCode() {
+                Random random = new Random();
+                // Tạo số ngẫu nhiên từ 100000 đến 999999
+                int code = 100000 + random.nextInt(900000);
+                return String.valueOf(code);
+        }
+
+        public void resetPassword(String email) {
+                System.err.println("Reset password for email: " + email);
+                if (!profileJpaRepository.existsByEmail(email)) {
+                        throw new IllegalArgumentException("Email not found");
+                }
+
+                String resetCode = generateResetCode();
+                mailService.sendResetCode(email, resetCode);
+
         }
 }
