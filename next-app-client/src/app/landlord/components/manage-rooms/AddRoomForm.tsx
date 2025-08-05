@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect } from "react";
 import { Form, Input, InputNumber, Button, Upload, Select } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
