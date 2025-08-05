@@ -13,7 +13,9 @@ export async function createRoom(images: File[] | null, room: string) {
   });
 
     if (!(response).ok) {
-        throw new Error("Failed to create room");
+        // throw new Error("Failed to create room");
+        const data = await response.json();
+        throw data;
     }
     return response.json();
 

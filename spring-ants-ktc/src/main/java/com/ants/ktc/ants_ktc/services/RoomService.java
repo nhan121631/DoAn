@@ -3,6 +3,8 @@ package com.ants.ktc.ants_ktc.services;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +17,6 @@ import com.ants.ktc.ants_ktc.dtos.address.DistrictResponseDto;
 import com.ants.ktc.ants_ktc.dtos.address.ProvinceResponseDto;
 import com.ants.ktc.ants_ktc.dtos.address.WardResponseDto;
 import com.ants.ktc.ants_ktc.dtos.convenient.ConvenientResponseDto;
-import com.ants.ktc.ants_ktc.dtos.image.ImageCreateRequestDto;
 import com.ants.ktc.ants_ktc.dtos.image.ImageResponseDto;
 import com.ants.ktc.ants_ktc.dtos.room.RoomRequestCreateDto;
 import com.ants.ktc.ants_ktc.dtos.room.RoomResponseDto;
@@ -66,8 +67,21 @@ public class RoomService {
                                 .orElseThrow(() -> new IllegalArgumentException("PostType not found"));
                 room.setPostType(postType);
 
+                long diffDays = ChronoUnit.DAYS.between(
+                                requestDto.getPostStartDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate(),
+                                requestDto.getPostEndDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
+                if (diffDays == 0) {
+                        diffDays = 1;
+                }
+
                 User user = userJpaRepository.findById(requestDto.getUserId())
                                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+                System.out.println("Diff Date: " + diffDays);
+
+                if (diffDays * postType.getPricePerDay() > user.getWallet().getBalance()) {
+                        throw new IllegalArgumentException("User does not have enough balance to create this room");
+                }
                 room.setUser(user);
 
                 // Set địa chỉ
@@ -75,14 +89,14 @@ public class RoomService {
                 address.setStreet(requestDto.getAddress().getStreet());
 
                 Ward ward = wardRepository.findById(requestDto.getAddress().getWardId())
-                                .orElseThrow(() -> new RuntimeException("Ward Not Found"));
+                                .orElseThrow(() -> new IllegalArgumentException("Ward Not Found"));
                 address.setWard(ward);
                 room.setAddress(address);
 
                 // Set tiện ích (convenients)
                 List<Convenient> convenients = convenientJpaRepository.findAllById(requestDto.getConvenientIds());
                 if (convenients.size() != requestDto.getConvenientIds().size()) {
-                        throw new RuntimeException("Một số Convenient không tồn tại");
+                        throw new IllegalArgumentException("Convenients not found");
                 }
                 room.setConvenients(convenients);
 
