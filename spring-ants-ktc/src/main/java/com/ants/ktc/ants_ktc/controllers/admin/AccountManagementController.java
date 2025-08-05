@@ -13,14 +13,14 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ants.ktc.ants_ktc.dtos.manage_account.RoleUpdateRequestDto;
+import com.ants.ktc.ants_ktc.dtos.manage_account.UpdateUserStatusRequestDto;
 import com.ants.ktc.ants_ktc.dtos.manage_account.UserPageResponseDto;
 import com.ants.ktc.ants_ktc.dtos.manage_account.UserResponseDto;
-import com.ants.ktc.ants_ktc.dtos.request.UpdateUserStatusRequestDto;
 import com.ants.ktc.ants_ktc.services.AccountManagementService;
 
 @RestController
 @RequestMapping("/api/admin/accounts")
-@PreAuthorize("hasAuthority('Administrators')")
+// @PreAuthorize("hasAuthority('Administrators')")
 public class AccountManagementController {
 
     private final AccountManagementService accountManagementService;

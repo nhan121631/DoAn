@@ -29,6 +29,7 @@ export async function fetchAccounts(page: number, size: number) {
   }
 }
 
+
 // Update status
 export async function updateAccountStatus(id: string, status: number) {
   const body: UpdateUserStatusRequestDto = { status };
