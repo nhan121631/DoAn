@@ -47,18 +47,23 @@ export async function getUserProfile(session: any) {
     // Nếu dùng server actions, có thể cần thêm: cache: "no-store"
   });
 
-  if (response.status === 400) {
-    // Wallet not found for user
+  if (response.status === 400 || response.status === 404) {
+    // Profile not found for user
     return null;
   }
-if (!response.ok) {
-  // Có thể trả về null hoặc throw với message chi tiết từ API
-  const error = await response.json();
-  throw new Error(error.message?.[0] || error.error || "Failed to fetch user profile");
-}
+  if (!response.ok) {
+    let errorMsg = "Failed to fetch user profile";
+    try {
+      const error = await response.json();
+      errorMsg = Array.isArray(error.message) ? error.message[0]
+        : error.message || error.error || errorMsg;
+    } catch (e) {
+      // Nếu không parse được JSON, giữ nguyên errorMsg mặc định
+    }
+    throw new Error(errorMsg);
+  }
 
   const profile = await response.json();
   return profile;
 }
-
   

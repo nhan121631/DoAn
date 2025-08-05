@@ -50,7 +50,8 @@ export default async function ProfileInfo() {
               Account Balance
             </span>
             <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-              {typeof wallet?.balance === "number"
+              {typeof wallet?.balance !== null &&
+              typeof wallet?.balance === "number"
                 ? wallet.balance.toLocaleString("vi-VN")
                 : "0"}
               ₫

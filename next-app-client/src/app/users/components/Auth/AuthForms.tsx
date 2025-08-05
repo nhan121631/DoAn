@@ -19,6 +19,7 @@ import {
 } from "@react-oauth/google";
 
 import RegisterForm from "./RegisterForm";
+import { message } from "antd";
 
 interface ILoginInputs {
   username: string;
@@ -38,6 +39,8 @@ const schema = yup
 export default function AuthForms({ csrfToken }: { csrfToken?: string }) {
   const [showLoginPassword, setShowLoginPassword] = useState(false);
   const [loginGeneralErrorMessage, setLoginGeneralErrorMessage] = useState("");
+
+  const [messageApi, contextHolder] = message.useMessage();
 
   const {
     register,
@@ -67,27 +70,66 @@ export default function AuthForms({ csrfToken }: { csrfToken?: string }) {
   }, [session, router]);
 
   const onLoginSubmit: SubmitHandler<ILoginInputs> = async (data) => {
-    const res = await signIn("credentials", {
-      username: data.username,
-      password: data.password,
-      redirect: false,
-      callbackUrl,
-    });
+    try {
+      const res = await signIn("credentials", {
+        username: data.username,
+        password: data.password,
+        redirect: false,
+        callbackUrl,
+      });
 
-    if (!res?.error) {
-      // Đăng nhập thành công, điều hướng đến callbackUrl
-      router.push(callbackUrl);
-    } else {
-      setLoginGeneralErrorMessage("Invalid email or password");
+      if (!res?.error) {
+        // Đăng nhập thành công, điều hướng đến callbackUrl
+        messageApi.success({
+          content: "Login successful!",
+          duration: 2,
+        });
+        router.push(callbackUrl);
+      } else {
+        messageApi.error({
+          content: res.error,
+          duration: 3,
+        });
+      }
+    } catch (error: any) {
+      messageApi.error({
+        content: error?.message || "Login failed. Please try again.",
+        duration: 3,
+      });
     }
   };
 
-  const handleSuccess = (credentialResponse: any) => {
-    const { credential } = credentialResponse;
+  const handleSuccess = async (credentialResponse: any) => {
+    try {
+      const { credential } = credentialResponse;
 
-    console.log("Credential token:", credential);
-    const decoded = jwtDecode(credential);
-    console.log("User Info:", decoded);
+      console.log("Credential token:", credential);
+      const decoded = jwtDecode(credential);
+      console.log("User Info:", decoded);
+
+      const res = await signIn("credentials", {
+        credential: credential,
+        redirect: false,
+        callbackUrl,
+      });
+      if (!res?.error) {
+        messageApi.success({
+          content: "Google login successful!",
+          duration: 2,
+        });
+        router.push(callbackUrl);
+      } else {
+        messageApi.error({
+          content: res.error,
+          duration: 3,
+        });
+      }
+    } catch (error: any) {
+      messageApi.error({
+        content: error?.message || "Google login failed. Please try again.",
+        duration: 3,
+      });
+    }
 
     // save the token to localStorage or state management
     // localStorage.setItem("google_user", JSON.stringify(decoded));
@@ -100,6 +142,7 @@ export default function AuthForms({ csrfToken }: { csrfToken?: string }) {
   const isRegisterPage = pathname === "/auth/register";
   return (
     <div className="relative w-full max-w-md p-8 shadow-xl bg-white/20 backdrop-blur-md rounded-xl">
+      {contextHolder}
       {/* Header Tabs */}
       <div className="flex justify-around mb-8 border-b border-gray-200">
         <Link
@@ -132,7 +175,7 @@ export default function AuthForms({ csrfToken }: { csrfToken?: string }) {
           <div className="mb-4">
             <input
               type="text"
-              placeholder="Phone number or Email"
+              placeholder="Username"
               className={`w-full p-3 border ${
                 errors.username ? "border-red-500" : "border-gray-300"
               } rounded-md focus:outline-none focus:ring-2 focus:ring-white text-white`}
@@ -150,21 +193,21 @@ export default function AuthForms({ csrfToken }: { csrfToken?: string }) {
           <div className="mb-6">
             <div className="relative">
               <input
-              type={showLoginPassword ? "text" : "password"}
-              placeholder="Password"
-              className={`w-full p-3 border ${
-                errors.password ? "border-red-500" : "border-gray-300"
-              } rounded-md focus:outline-none focus:ring-2 focus:ring-white text-white pr-10`}
-              {...register("password")}
-            />
-            <span
-              onClick={() => setShowLoginPassword(!showLoginPassword)}
-              className="absolute text-gray-200 -translate-y-1/2 cursor-pointer right-3 top-1/2"
-            >
-              {showLoginPassword ? <FaEyeSlash /> : <FaEye />}
-            </span>
+                type={showLoginPassword ? "text" : "password"}
+                placeholder="Password"
+                className={`w-full p-3 border ${
+                  errors.password ? "border-red-500" : "border-gray-300"
+                } rounded-md focus:outline-none focus:ring-2 focus:ring-white text-white pr-10`}
+                {...register("password")}
+              />
+              <span
+                onClick={() => setShowLoginPassword(!showLoginPassword)}
+                className="absolute text-gray-200 -translate-y-1/2 cursor-pointer right-3 top-1/2"
+              >
+                {showLoginPassword ? <FaEyeSlash /> : <FaEye />}
+              </span>
             </div>
-            
+
             {errors.password && (
               <p className="flex items-center mt-1 text-xs text-red-500">
                 <MdErrorOutline className="w-4 h-4 mr-1" />

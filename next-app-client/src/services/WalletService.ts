@@ -22,15 +22,25 @@ export async function getUserWallet(session: any) {
   }
 
   if (response.status === 403) {
-  return { forbidden: true };
-}
+    return { forbidden: true };
+  }
 if (!response.ok) {
-  // Có thể trả về null hoặc throw với message chi tiết từ API
-  const error = await response.json();
-  throw new Error(error.message?.[0] || error.error || "Failed to fetch user wallet");
+  let errorMsg = "Failed to fetch user wallet";
+  try {
+    const error = await response.json();
+    errorMsg = Array.isArray(error.message) ? error.message[0]
+      : error.message || error.error || errorMsg;
+    if (errorMsg === "password cannot be null") {
+      // Xử lý riêng, ví dụ: return { passwordNull: true }
+      return { passwordNull: true };
+    }
+  } catch (e) {}
+  throw new Error(errorMsg);
 }
 
   const wallet = await response.json();
+  // Nếu backend trả về null (không có ví), cũng trả về null
+  if (!wallet) return null;
   return wallet;
 }
 
