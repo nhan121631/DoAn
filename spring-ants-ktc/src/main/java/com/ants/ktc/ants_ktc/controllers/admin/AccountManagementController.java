@@ -19,8 +19,6 @@ import com.ants.ktc.ants_ktc.dtos.manage_account.UserResponseDto;
 import com.ants.ktc.ants_ktc.dtos.request.UpdateUserStatusRequestDto;
 import com.ants.ktc.ants_ktc.services.AccountManagementService;
 
-import jakarta.persistence.EntityNotFoundException;
-
 @RestController
 @RequestMapping("/api/admin/accounts")
 @PreAuthorize("hasAuthority('Administrators')")
@@ -45,17 +43,6 @@ public class AccountManagementController {
         return ResponseEntity.ok(response);
     }
 
-    // @GetMapping("/{id}")
-    // public ResponseEntity<UserResponseDto> getUserById(@PathVariable("id") UUID
-    // id) {
-    // try {
-    // UserResponseDto userDto = accountManagementService.getUserById(id);
-    // return ResponseEntity.ok(userDto);
-    // } catch (EntityNotFoundException e) {
-    // return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // Trả về 404 nếu
-    // không tìm thấy user
-    // }
-    // }
     @GetMapping("/{id}")
     public ResponseEntity<UserResponseDto> getUserById(@PathVariable("id") UUID id) {
         UserResponseDto userDto = accountManagementService.getUserById(id);

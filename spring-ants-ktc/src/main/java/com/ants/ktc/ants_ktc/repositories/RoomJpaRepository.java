@@ -1,5 +1,6 @@
 package com.ants.ktc.ants_ktc.repositories;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -11,11 +12,15 @@ import com.ants.ktc.ants_ktc.entities.Room;
 
 @Repository
 public interface RoomJpaRepository extends JpaRepository<Room, UUID> {
-    @EntityGraph(attributePaths = {"images", "convenients", "postType"})
+    @EntityGraph(attributePaths = { "images", "convenients", "postType" })
     Optional<Room> findById(UUID id);
 
     @EntityGraph(attributePaths = {
             "user", "user.roles", "address", "address.ward", "address.ward.district", "address.ward.district.province"
     })
     Optional<Room> findDetailedById(UUID id);
+
+    @EntityGraph(attributePaths = { "address", "address.ward", "address.ward.district",
+            "address.ward.district.province", "postType", "images", "convenients", "user" })
+    List<Room> findByUserId(UUID userId);
 }

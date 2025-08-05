@@ -4,6 +4,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -142,5 +143,65 @@ public class RoomService {
                                                 .build())
                                 .build();
 
+        }
+
+        public List<RoomResponseDto> getAllRooms() {
+                List<Room> rooms = roomJpaRepository.findAll(); // Lấy tất cả các phòng
+                return rooms.stream()
+                                .map(this::convertToRoomResponseDto) // Chuyển đổi từng Room sang RoomResponseDto
+                                .collect(Collectors.toList());
+        }
+
+        private RoomResponseDto convertToRoomResponseDto(Room room) {
+                return RoomResponseDto.builder()
+                                .id(room.getId())
+                                .title(room.getTitle())
+                                .description(room.getDescription())
+                                .priceMonth(room.getPrice_month())
+                                .priceDeposit(room.getPrice_deposit())
+                                .postStartDate(room.getPost_start_date())
+                                .postEndDate(room.getPost_end_date())
+                                .typepost(room.getPostType().getName())
+                                .userId(room.getUser().getId())
+                                .convenients(room.getConvenients().stream()
+                                                .map(convenient -> ConvenientResponseDto.builder()
+                                                                .id(convenient.getId())
+                                                                .name(convenient.getName())
+                                                                .build())
+                                                .collect(Collectors.toList()))
+                                .images(room.getImages().stream()
+                                                .map(image -> ImageResponseDto.builder()
+                                                                .id(image.getId())
+                                                                .url(image.getUrl())
+                                                                .build())
+                                                .collect(Collectors.toList()))
+                                .address(AddressResponseDto.builder()
+                                                .id(room.getAddress().getId())
+                                                .street(room.getAddress().getStreet())
+                                                .ward(WardResponseDto.builder()
+                                                                .id(room.getAddress().getWard().getId())
+                                                                .name(room.getAddress().getWard().getName())
+                                                                .district(DistrictResponseDto.builder()
+                                                                                .id(room.getAddress().getWard()
+                                                                                                .getDistrict().getId())
+                                                                                .name(room.getAddress().getWard()
+                                                                                                .getDistrict()
+                                                                                                .getName())
+                                                                                .province(ProvinceResponseDto.builder()
+                                                                                                .id(room.getAddress()
+                                                                                                                .getWard()
+                                                                                                                .getDistrict()
+                                                                                                                .getProvince()
+                                                                                                                .getId())
+                                                                                                .name(room.getAddress()
+                                                                                                                .getWard()
+                                                                                                                .getDistrict()
+                                                                                                                .getProvince()
+                                                                                                                .getName())
+                                                                                                .build())
+                                                                                .build())
+                                                                .build())
+                                                .build())
+                                .build();
         }
 }
