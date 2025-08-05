@@ -9,6 +9,13 @@ import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { signIn, useSession } from "next-auth/react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
+import { jwtDecode } from "jwt-decode";
+
+import {
+  GoogleLogin,
+  GoogleOAuthProvider,
+  useGoogleLogin,
+} from "@react-oauth/google";
 
 import RegisterForm from "./RegisterForm";
 
@@ -74,9 +81,22 @@ export default function AuthForms({ csrfToken }: { csrfToken?: string }) {
     }
   };
 
+  const handleSuccess = (credentialResponse: any) => {
+    const { credential } = credentialResponse;
+
+    console.log("Credential token:", credential);
+    const decoded = jwtDecode(credential);
+    console.log("User Info:", decoded);
+
+    // save the token to localStorage or state management
+    // localStorage.setItem("google_user", JSON.stringify(decoded));
+  };
+
+  const handleError = () => {
+    console.log("Login Failed");
+  };
   const isLoginPage = pathname === "/auth/login";
   const isRegisterPage = pathname === "/auth/register";
-
   return (
     <div className="relative w-full max-w-md p-8 shadow-xl bg-white/20 backdrop-blur-md rounded-xl">
       {/* Header Tabs */}
@@ -163,6 +183,23 @@ export default function AuthForms({ csrfToken }: { csrfToken?: string }) {
           >
             Log in
           </button>
+
+          {/* Google Login */}
+          <GoogleOAuthProvider
+            clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || ""}
+          >
+            <div className="mt-6 ">
+              <GoogleLogin
+                onSuccess={handleSuccess}
+                onError={handleError}
+                // useOneTap
+              />
+
+              {/* <div>
+            <GoogleLoginButton />
+          </div> */}
+            </div>
+          </GoogleOAuthProvider>
         </form>
       )}
 

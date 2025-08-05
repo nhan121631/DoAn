@@ -17,14 +17,14 @@ import lombok.NoArgsConstructor;
 @Builder
 public class ProfileUpdateRequestDto {
 
-    private UUID id; // Assuming this is the ID of the user profile
+    private UUID id; 
     private String fullName;
 
     @NotBlank(message = "Email is required")
     @Email(message = "Email should be valid")
     private String email;
 
-    @NotBlank(message = "Phone number is required")
+    // @NotBlank(message = "Phone number is required")
     private String phoneNumber;
     private String avatar;
     private String bankName;
