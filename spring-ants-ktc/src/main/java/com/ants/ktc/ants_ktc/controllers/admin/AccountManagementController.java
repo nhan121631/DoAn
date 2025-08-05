@@ -2,7 +2,6 @@ package com.ants.ktc.ants_ktc.controllers.admin;
 
 import java.util.UUID;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import com.ants.ktc.ants_ktc.controllers.ConvenientController;
+
 import com.ants.ktc.ants_ktc.dtos.manage_account.RoleUpdateRequestDto;
 import com.ants.ktc.ants_ktc.dtos.manage_account.UserPageResponseDto;
 import com.ants.ktc.ants_ktc.dtos.manage_account.UserResponseDto;
@@ -24,14 +23,10 @@ import com.ants.ktc.ants_ktc.services.AccountManagementService;
 @PreAuthorize("hasAuthority('Administrators')")
 public class AccountManagementController {
 
-    private final ConvenientController convenientController;
-
     private final AccountManagementService accountManagementService;
 
-    public AccountManagementController(AccountManagementService accountManagementService,
-            ConvenientController convenientController) {
+    public AccountManagementController(AccountManagementService accountManagementService) {
         this.accountManagementService = accountManagementService;
-        this.convenientController = convenientController;
     }
 
     @GetMapping

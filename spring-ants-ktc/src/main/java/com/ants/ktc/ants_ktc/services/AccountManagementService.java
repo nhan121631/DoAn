@@ -1,23 +1,22 @@
 package com.ants.ktc.ants_ktc.services;
 
-import com.ants.ktc.ants_ktc.entities.User;
-import com.ants.ktc.ants_ktc.dtos.manage_account.UserPageResponseDto;
-import com.ants.ktc.ants_ktc.dtos.manage_account.UserResponseDto;
-import com.ants.ktc.ants_ktc.entities.Role;
-import com.ants.ktc.ants_ktc.repositories.RoleJpaRepository;
-import com.ants.ktc.ants_ktc.repositories.UserJpaRepository;
-import jakarta.persistence.EntityNotFoundException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.stream.Collectors;
+import com.ants.ktc.ants_ktc.dtos.manage_account.UserPageResponseDto;
+import com.ants.ktc.ants_ktc.dtos.manage_account.UserResponseDto;
+import com.ants.ktc.ants_ktc.entities.Role;
+import com.ants.ktc.ants_ktc.entities.User;
+import com.ants.ktc.ants_ktc.repositories.RoleJpaRepository;
+import com.ants.ktc.ants_ktc.repositories.UserJpaRepository;
 
 @Service
 public class AccountManagementService {
