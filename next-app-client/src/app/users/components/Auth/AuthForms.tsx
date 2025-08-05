@@ -82,12 +82,18 @@ export default function AuthForms({ csrfToken }: { csrfToken?: string }) {
     }
   };
 
-  const handleSuccess = (credentialResponse: any) => {
+  const handleSuccess = async (credentialResponse: any) => {
     const { credential } = credentialResponse;
 
     console.log("Credential token:", credential);
     const decoded = jwtDecode(credential);
     console.log("User Info:", decoded);
+
+    const res = await signIn("credentials", {
+      credential: credential,
+      redirect: false,
+      callbackUrl,
+    });
 
     // save the token to localStorage or state management
     // localStorage.setItem("google_user", JSON.stringify(decoded));
@@ -150,21 +156,21 @@ export default function AuthForms({ csrfToken }: { csrfToken?: string }) {
           <div className="mb-6">
             <div className="relative">
               <input
-              type={showLoginPassword ? "text" : "password"}
-              placeholder="Password"
-              className={`w-full p-3 border ${
-                errors.password ? "border-red-500" : "border-gray-300"
-              } rounded-md focus:outline-none focus:ring-2 focus:ring-white text-white pr-10`}
-              {...register("password")}
-            />
-            <span
-              onClick={() => setShowLoginPassword(!showLoginPassword)}
-              className="absolute text-gray-200 -translate-y-1/2 cursor-pointer right-3 top-1/2"
-            >
-              {showLoginPassword ? <FaEyeSlash /> : <FaEye />}
-            </span>
+                type={showLoginPassword ? "text" : "password"}
+                placeholder="Password"
+                className={`w-full p-3 border ${
+                  errors.password ? "border-red-500" : "border-gray-300"
+                } rounded-md focus:outline-none focus:ring-2 focus:ring-white text-white pr-10`}
+                {...register("password")}
+              />
+              <span
+                onClick={() => setShowLoginPassword(!showLoginPassword)}
+                className="absolute text-gray-200 -translate-y-1/2 cursor-pointer right-3 top-1/2"
+              >
+                {showLoginPassword ? <FaEyeSlash /> : <FaEye />}
+              </span>
             </div>
-            
+
             {errors.password && (
               <p className="flex items-center mt-1 text-xs text-red-500">
                 <MdErrorOutline className="w-4 h-4 mr-1" />
