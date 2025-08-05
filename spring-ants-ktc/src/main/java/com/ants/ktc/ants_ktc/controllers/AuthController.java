@@ -2,6 +2,7 @@ package com.ants.ktc.ants_ktc.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -38,6 +39,12 @@ public class AuthController {
     public ResponseEntity<RegisterResponseDto> register(@RequestBody @Valid RegisterRequestDto request) {
         RegisterResponseDto result = this.userService.register(request);
         return ResponseEntity.ok(result);
+    }
+
+    @PostMapping("/reset-password/{email}")
+    public ResponseEntity<Void> resetPassword(@PathVariable("email") String email) {
+        this.userService.resetPassword(email);
+        return ResponseEntity.ok().build();
     }
 
 }

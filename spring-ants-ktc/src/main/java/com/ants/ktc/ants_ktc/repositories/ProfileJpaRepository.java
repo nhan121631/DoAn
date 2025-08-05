@@ -20,4 +20,9 @@ public interface ProfileJpaRepository extends JpaRepository<UserProfile, UUID> {
     // Define custom query methods if needed
 
     boolean existsByEmail(String email);
+
+    @EntityGraph(attributePaths = {
+            "user", "user.roles", "address", "address.ward", "address.ward.district", "address.ward.district.province"
+    })
+    Optional<UserProfile> findByEmail(String email);
 }
