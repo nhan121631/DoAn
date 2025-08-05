@@ -14,7 +14,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.ants.ktc.ants_ktc.dtos.room.RoomRequestCreateDto;
 import com.ants.ktc.ants_ktc.dtos.room.RoomResponseDto;
-import com.ants.ktc.ants_ktc.dtos.userprofile.ProfileUpdateRequestDto;
 import com.ants.ktc.ants_ktc.services.RoomService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
