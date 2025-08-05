@@ -76,7 +76,9 @@ export const authOptions: NextAuthOptions = {
           });
           const user = await res.json();
           if (!res.ok) {
-            throw new Error("UnAuthorized with login");
+            // Trả về message lỗi chi tiết cho frontend
+            const errorMsg = user?.message?.[0] || user?.errors?.[0] || "UnAuthorized with login";
+            throw new Error(errorMsg);
           }
           console.log("User from login:", user);
           if (user) {
@@ -104,7 +106,9 @@ export const authOptions: NextAuthOptions = {
           });
           const user = await res.json();
           if (!res.ok) {
-            throw new Error("UnAuthorized with google login");
+            // Trả về message lỗi chi tiết cho frontend
+            const errorMsg = user?.message?.[0] || user?.error || "UnAuthorized with google login";
+            throw new Error(errorMsg);
           }
           console.log("User from Google login:", user);
           if (user) {
