@@ -16,10 +16,10 @@ const AddRoomPage: React.FC = () => {
           onClick={() => router.push("/landlord/manage-rooms")}
           className="mb-4 !bg-sky-600 dark:!bg-[#171f2f] !text-white"
         >
-          Quay lại
+          Go Back
         </Button>
         <h2 className="text-xl font-bold mb-4 dark:!text-white">
-          Thêm phòng mới
+          Add New Room
         </h2>
       </div>
 
