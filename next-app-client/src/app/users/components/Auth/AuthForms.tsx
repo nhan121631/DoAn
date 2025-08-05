@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React, { useEffect, useState } from "react";
@@ -146,8 +147,9 @@ export default function AuthForms({ csrfToken }: { csrfToken?: string }) {
           </div>
 
           {/* Password */}
-          <div className="relative mb-6">
-            <input
+          <div className="mb-6">
+            <div className="relative">
+              <input
               type={showLoginPassword ? "text" : "password"}
               placeholder="Password"
               className={`w-full p-3 border ${
@@ -161,6 +163,8 @@ export default function AuthForms({ csrfToken }: { csrfToken?: string }) {
             >
               {showLoginPassword ? <FaEyeSlash /> : <FaEye />}
             </span>
+            </div>
+            
             {errors.password && (
               <p className="flex items-center mt-1 text-xs text-red-500">
                 <MdErrorOutline className="w-4 h-4 mr-1" />
