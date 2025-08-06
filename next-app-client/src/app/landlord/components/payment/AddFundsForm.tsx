@@ -29,6 +29,7 @@ export default function AddFundsForm({ onSuccess }: AddFundsFormProps) {
       const result = await createTransactionByUserId(transactionData);
 
       if (result.error) {
+
         alert(result.error);
         return;
       }
