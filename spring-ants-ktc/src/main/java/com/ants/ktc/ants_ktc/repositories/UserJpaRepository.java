@@ -72,4 +72,5 @@ public interface UserJpaRepository extends JpaRepository<User, UUID> {
             WHERE r.name != 'ROLE_ADMIN' OR r IS NULL
             """, countQuery = "SELECT count(u) FROM User u JOIN u.roles r WHERE r.name != 'ROLE_ADMIN'")
     Page<User> findAllExcludingAdmins(Pageable pageable);
+
 }
