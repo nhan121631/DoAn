@@ -3,11 +3,15 @@ package com.ants.ktc.ants_ktc.services;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cglib.core.Local;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -24,12 +28,14 @@ import com.ants.ktc.ants_ktc.entities.Convenient;
 import com.ants.ktc.ants_ktc.entities.Image;
 import com.ants.ktc.ants_ktc.entities.PostType;
 import com.ants.ktc.ants_ktc.entities.Room;
+import com.ants.ktc.ants_ktc.entities.Transaction;
 import com.ants.ktc.ants_ktc.entities.User;
 import com.ants.ktc.ants_ktc.entities.address.Address;
 import com.ants.ktc.ants_ktc.entities.address.Ward;
 import com.ants.ktc.ants_ktc.repositories.ConvenientsRepository;
 import com.ants.ktc.ants_ktc.repositories.PostTypeJpaRepository;
 import com.ants.ktc.ants_ktc.repositories.RoomJpaRepository;
+import com.ants.ktc.ants_ktc.repositories.TransactionsJpaRepository;
 import com.ants.ktc.ants_ktc.repositories.UserJpaRepository;
 import com.ants.ktc.ants_ktc.repositories.address.WardJpaRepository;
 
@@ -50,6 +56,9 @@ public class RoomService {
         @Autowired
         private ConvenientsRepository convenientJpaRepository;
 
+        @Autowired
+        private TransactionsJpaRepository transactionsJpaRepository;
+
         @Transactional
         public RoomResponseDto createRoom(List<MultipartFile> files, RoomRequestCreateDto requestDto) {
                 Room room = new Room();
@@ -67,6 +76,18 @@ public class RoomService {
                                 .orElseThrow(() -> new IllegalArgumentException("PostType not found"));
                 room.setPostType(postType);
 
+                LocalDate startDate = requestDto.getPostStartDate().toInstant().atZone(ZoneId.systemDefault())
+                                .toLocalDate();
+                LocalDate endDate = requestDto.getPostEndDate().toInstant().atZone(ZoneId.systemDefault())
+                                .toLocalDate();
+                LocalDate today = LocalDate.now(ZoneId.systemDefault());
+                if (endDate.isBefore(startDate)) {
+                        throw new IllegalArgumentException("End date must be after start date");
+                }
+                if (startDate.isBefore(today)) {
+                        throw new IllegalArgumentException("Start date must be today or later");
+                }
+
                 long diffDays = ChronoUnit.DAYS.between(
                                 requestDto.getPostStartDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate(),
                                 requestDto.getPostEndDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
@@ -77,7 +98,57 @@ public class RoomService {
                 User user = userJpaRepository.findById(requestDto.getUserId())
                                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
+                if (user.getProfile().getBankNumber() == null || user.getProfile().getBankNumber().isEmpty()) {
+                        throw new IllegalArgumentException("User does not have a bank number set");
+                }
+
+                if (user.getWallet() == null) {
+                        throw new IllegalArgumentException(
+                                        "The user's wallet is not active. Please top up your wallet before creating a post");
+                }
+
+                // get price per day from PostType
+                if (postType.getPricePerDay() == null) {
+                        throw new IllegalArgumentException("PostType does not have price per day set");
+                }
+                Double pricePerDay = postType.getPricePerDay();
+                Double totalPrice = diffDays * pricePerDay;
+
+                System.out.println("Total Price: " + totalPrice);
+
+                Double balance = user.getWallet().getBalance();
+                System.out.println("User Balance: " + balance);
+                if (totalPrice > balance) {
+                        throw new IllegalArgumentException("User does not have enough balance to create this room");
+                }
+
+                //*** */
+                Date transactionDate = new Date();
+                user.getWallet().setBalance(balance - totalPrice);
+                userJpaRepository.save(user);
+
                 System.out.println("Diff Date: " + diffDays);
+
+                // transaction
+                Transaction transaction = new Transaction();
+                transaction.setAmount(-totalPrice);
+                transaction.setDescription("Create a New Room Post " + room.getTitle());
+                transaction.setTransactionDate(transactionDate);
+
+                // Tạo mã giao dịch
+                LocalDateTime now = LocalDateTime.now(ZoneId.systemDefault());
+                String day = String.format("%02d", now.getDayOfMonth());
+                String hour = String.format("%02d", now.getHour());
+                String random = String.format("%04d", (int) (Math.random() * 10000));
+                String transactionCode = day + hour + random;
+                transaction.setTransactionCode(transactionCode);
+
+                transaction.setBankTransactionName("Ants Wallet");
+                transaction.setDescription("Payment for room post: " + room.getTitle());
+                transaction.setStatus(1); // 1: thành công, 0: thất bại
+
+                transaction.setWallet(user.getWallet());
+                transactionsJpaRepository.save(transaction);
 
                 if (diffDays * postType.getPricePerDay() > user.getWallet().getBalance()) {
                         throw new IllegalArgumentException("User does not have enough balance to create this room");
