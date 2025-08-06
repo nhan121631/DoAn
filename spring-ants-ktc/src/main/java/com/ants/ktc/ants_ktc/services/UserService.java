@@ -310,6 +310,8 @@ public class UserService {
                 }
 
                 String resetCode = generateResetCode();
+                User user = userJpaRepository.findByEmail(email);
+
                 mailService.sendResetCode(email, resetCode);
 
         }

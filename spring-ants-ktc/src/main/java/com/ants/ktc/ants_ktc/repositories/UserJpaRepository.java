@@ -49,5 +49,15 @@ public interface UserJpaRepository extends JpaRepository<User, UUID> {
     })
     Page<User> findAll(Pageable pageable);
 
+    @EntityGraph(attributePaths = {
+            "profile",
+            "profile.address",
+            "profile.address.ward",
+            "profile.address.ward.district",
+            "profile.address.ward.district.province",
+            "roles"
+    })
+    Optional<User> findByProfileEmail(String email);
+
     boolean existsByUsername(String username);
 }
