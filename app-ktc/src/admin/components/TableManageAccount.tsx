@@ -138,6 +138,18 @@ const TableManageAccount: React.FC = () => {
           total={pagination.total}
           onChange={(page, size) => setPagination(prev => ({ ...prev, current: page, pageSize: size || prev.pageSize }))}
         />
+        {/* <Pagination
+  current={pagination.current}
+  pageSize={pagination.pageSize}
+  total={pagination.total}
+  onChange={(page, size) => {
+    setPagination(prev => ({
+      ...prev,
+      current: size !== prev.pageSize ? 1 : page, // Nếu đổi pageSize thì về trang 1
+      pageSize: size || prev.pageSize
+    }));
+  }}
+/> */}
       </div>
     </div>
   );

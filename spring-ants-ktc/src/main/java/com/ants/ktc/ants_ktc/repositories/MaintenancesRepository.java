@@ -1,0 +1,38 @@
+package com.ants.ktc.ants_ktc.repositories;
+
+import com.ants.ktc.ants_ktc.entities.Maintenances;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+@Repository
+public interface MaintenancesRepository extends JpaRepository<Maintenances, UUID> {
+
+    // List<Maintenances> findByRoom_UserId(UUID userId);
+
+    // List<Maintenances> findByRoom_UserIdAndStatusAndRoom_Id(UUID userId, Integer
+    // status, UUID roomId);
+
+    // List<Maintenances> findByRoom_UserIdAndStatus(UUID userId, Integer status);
+
+    // List<Maintenances> findByRoom_UserIdAndRoom_Id(UUID userId, UUID roomId);
+
+    List<Maintenances> findByRoom_UserIdAndIsRemovedFalse(UUID userId);
+
+    List<Maintenances> findByRoom_UserIdAndStatusAndRoom_IdAndIsRemovedFalse(UUID userId, Integer status, UUID roomId);
+
+    List<Maintenances> findByRoom_UserIdAndStatusAndIsRemovedFalse(UUID userId, Integer status);
+
+    List<Maintenances> findByRoom_UserIdAndRoom_IdAndIsRemovedFalse(UUID userId, UUID roomId);
+
+    Optional<Maintenances> findByIdAndRoom_UserIdAndIsRemovedFalse(UUID id, UUID userId);
+
+    Optional<Maintenances> findByIdAndRoom_UserId(UUID id, UUID userId);
+
+}

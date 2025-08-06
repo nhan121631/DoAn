@@ -1,4 +1,4 @@
-package com.ants.ktc.ants_ktc.dtos.request;
+package com.ants.ktc.ants_ktc.dtos.manage_account;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
