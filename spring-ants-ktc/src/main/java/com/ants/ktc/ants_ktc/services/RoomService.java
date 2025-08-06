@@ -254,7 +254,7 @@ public class RoomService {
 
                 Pageable pageable = PageRequest.of(page, size);
 
-                Page<Room> roomPage = roomJpaRepository.findAllByUser(userId, pageable);
+                Page<Room> roomPage = roomJpaRepository.findAllByLandlord(userId, pageable);
 
                 List<RoomResponseDto> roomDtos = roomPage.getContent().stream()
                                 .map(room -> RoomResponseDto.builder()

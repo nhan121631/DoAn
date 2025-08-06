@@ -27,5 +27,5 @@ public interface RoomJpaRepository extends JpaRepository<Room, UUID> {
     List<Room> findAllByUser(UUID userId);
 
     @Query("SELECT r FROM Room r WHERE r.user.id = :userId")
-    Page<Room> findAllByUser(UUID userId, Pageable pageable);
+    Page<Room> findAllByLandlord(UUID userId, Pageable pageable);
 }
