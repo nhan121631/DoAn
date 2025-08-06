@@ -1,5 +1,6 @@
 package com.ants.ktc.ants_ktc.repositories;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -64,13 +65,20 @@ public interface UserJpaRepository extends JpaRepository<User, UUID> {
     @Query(value = """
             SELECT DISTINCT u FROM User u
             LEFT JOIN u.roles r
+            WHERE r.name != 'Administrators'
+            """)
+    List<User> findAllExcludingAdmins();
+
+    @Query(value = """
+            SELECT DISTINCT u FROM User u
+            LEFT JOIN u.roles r
             LEFT JOIN FETCH u.profile p
             LEFT JOIN FETCH p.address a
             LEFT JOIN FETCH a.ward w
             LEFT JOIN FETCH w.district d
             LEFT JOIN FETCH d.province pr
-            WHERE r.name != 'ROLE_ADMIN' OR r IS NULL
-            """, countQuery = "SELECT count(u) FROM User u JOIN u.roles r WHERE r.name != 'ROLE_ADMIN'")
+            WHERE r.name != 'Administrators' OR r IS NULL
+            """, countQuery = "SELECT count(DISTINCT u) FROM User u LEFT JOIN u.roles r WHERE r.name != 'Administrators' OR r IS NULL")
     Page<User> findAllExcludingAdmins(Pageable pageable);
 
 }
