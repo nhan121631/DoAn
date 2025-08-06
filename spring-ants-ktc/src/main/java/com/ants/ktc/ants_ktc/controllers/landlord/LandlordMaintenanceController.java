@@ -30,12 +30,15 @@ public class LandlordMaintenanceController {
 
     // Các API khác của bạn sẽ được chỉnh sửa để gọi
     // userService.getAuthenticatedUserId()
-    @GetMapping("/rooms")
-    public ResponseEntity<List<RoomResponseDto>> getLandlordRoomsForMaintenance() {
-        UUID currentUserId = userService.getAuthenticatedUserId(); // <== GỌI TỪ SERVICE
-        List<RoomResponseDto> rooms = maintenanceService.getRoomsForLandlord(currentUserId);
-        return ResponseEntity.ok(rooms);
-    }
+    // @GetMapping("/rooms")
+    // public ResponseEntity<List<RoomResponseDto>> getLandlordRoomsForMaintenance()
+    // {
+    // UUID currentUserId = userService.getAuthenticatedUserId(); // <== GỌI TỪ
+    // SERVICE
+    // List<RoomResponseDto> rooms =
+    // maintenanceService.getRoomsForLandlord(currentUserId);
+    // return ResponseEntity.ok(rooms);
+    // }
 
     @PostMapping
     public ResponseEntity<MaintenanceResponseDto> createMaintenance(
