@@ -35,13 +35,13 @@ public class MaintenanceService {
     private RoomJpaRepository roomJpaRepository;
 
     // ĐÃ SỬA: Thêm @Transactional
-    @Transactional(readOnly = true)
-    public List<RoomResponseDto> getRoomsForLandlord(UUID userId) {
-        List<Room> rooms = roomJpaRepository.findByUserId(userId);
-        return rooms.stream()
-                .map(this::convertToRoomResponseDto)
-                .collect(Collectors.toList());
-    }
+    // @Transactional(readOnly = true)
+    // public List<RoomResponseDto> getRoomsForLandlord(UUID userId) {
+    // List<Room> rooms = roomJpaRepository.findByUserId(userId);
+    // return rooms.stream()
+    // .map(this::convertToRoomResponseDto)
+    // .collect(Collectors.toList());
+    // }
 
     private RoomResponseDto convertToRoomResponseDto(Room room) {
         RoomResponseDto dto = RoomResponseDto.builder()

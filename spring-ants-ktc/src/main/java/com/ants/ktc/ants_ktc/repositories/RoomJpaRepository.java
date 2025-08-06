@@ -6,7 +6,10 @@ import java.util.UUID;
 
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import com.ants.ktc.ants_ktc.entities.Room;
 
@@ -21,5 +24,9 @@ public interface RoomJpaRepository extends JpaRepository<Room, UUID> {
         })
         Optional<Room> findDetailedById(UUID id);
 
-        List<Room> findByUserId(UUID userId);
+        @Query("SELECT r FROM Room r WHERE r.user.id = :userId")
+        List<Room> findAllByUser(UUID userId);
+
+        @Query("SELECT r FROM Room r WHERE r.user.id = :userId")
+        Page<Room> findAllByUser(UUID userId, Pageable pageable);
 }
