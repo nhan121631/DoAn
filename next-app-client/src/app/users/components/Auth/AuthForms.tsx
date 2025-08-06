@@ -15,7 +15,7 @@ import { jwtDecode } from "jwt-decode";
 import {
   GoogleLogin,
   GoogleOAuthProvider,
-  useGoogleLogin,
+  // useGoogleLogin,
 } from "@react-oauth/google";
 
 import RegisterForm from "./RegisterForm";
@@ -226,7 +226,7 @@ export default function AuthForms({ csrfToken }: { csrfToken?: string }) {
           {/* Button */}
           <button
             type="submit"
-            className="w-full py-3 text-lg font-semibold text-black bg-gray-200 rounded-md hover:bg-gray-400"
+            className="w-full py-3 text-lg font-semibold text-black bg-white rounded-md hover:bg-gray-200"
           >
             Log in
           </button>

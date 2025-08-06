@@ -50,6 +50,16 @@ public interface UserJpaRepository extends JpaRepository<User, UUID> {
     })
     Page<User> findAll(Pageable pageable);
 
+    @EntityGraph(attributePaths = {
+            "profile",
+            "profile.address",
+            "profile.address.ward",
+            "profile.address.ward.district",
+            "profile.address.ward.district.province",
+            "roles"
+    })
+    Optional<User> findByProfileEmail(String email);
+
     boolean existsByUsername(String username);
 
     @Query(value = """
@@ -70,4 +80,5 @@ public interface UserJpaRepository extends JpaRepository<User, UUID> {
             WHERE r.name != 'Administrators' OR r IS NULL
             """, countQuery = "SELECT count(DISTINCT u) FROM User u LEFT JOIN u.roles r WHERE r.name != 'Administrators' OR r IS NULL")
     Page<User> findAllExcludingAdmins(Pageable pageable);
+
 }

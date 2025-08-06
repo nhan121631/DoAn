@@ -166,10 +166,19 @@ public class UserService {
                 User user = userJpaRepository.findByEmail(email);
 
                 if (user == null) {
+                        UserProfile existingProfile = profileJpaRepository.findByEmail(email).orElse(null);
+                        if (existingProfile != null) {
+                                throw new HttpException(
+                                                "Email already exists with username "
+                                                                + existingProfile.getUser().getUsername(),
+                                                HttpStatus.CONFLICT);
+                        }
+
                         user = new User();
                         user.setUsername(email);
                         user.setIsActive(0);
                         UserProfile profile = new UserProfile();
+
                         profile.setEmail(email);
                         profile.setFullName(payload.get("name").toString());
                         // Tải ảnh về server
@@ -279,10 +288,11 @@ public class UserService {
                         user.setRoles(List.of(landlordRole));
                 }
 
-                System.out.println(
-                                "User register: username=" + user.getUsername() + ", email=" + userProfile.getEmail()
-                                                + ", password=" + user.getPassword() + ", accountType="
-                                                + request.getAccountType());
+                // System.out.println(
+                // "User register: username=" + user.getUsername() + ", email=" +
+                // userProfile.getEmail()
+                // + ", password=" + user.getPassword() + ", accountType="
+                // + request.getAccountType());
                 userJpaRepository.save(user);
 
                 return RegisterResponseDto.builder()
@@ -305,6 +315,8 @@ public class UserService {
                 }
 
                 String resetCode = generateResetCode();
+                User user = userJpaRepository.findByEmail(email);
+
                 mailService.sendResetCode(email, resetCode);
 
         }
@@ -319,4 +331,5 @@ public class UserService {
 
                 return user.getId();
         }
+        
 }

@@ -18,12 +18,12 @@ public class MailService {
                 """
                         <div style='font-family: Arial, sans-serif; background: #f6f6f6; padding: 32px;'>
                           <div style='max-width: 400px; margin: auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px #eee; padding: 24px;'>
-                            <h2 style='color: #1976d2; text-align: center;'>Đặt lại mật khẩu</h2>
-                            <p style='font-size: 16px; color: #333; text-align: center;'>Bạn vừa yêu cầu đặt lại mật khẩu. Mã xác thực của bạn là:</p>
+                            <h2 style='color: #1976d2; text-align: center;'>Reset Password</h2>
+                            <p style='font-size: 16px; color: #333; text-align: center;'>You have requested to reset your password. Your verification code is:</p>
                             <div style='font-size: 32px; font-weight: bold; color: #1976d2; text-align: center; margin: 16px 0;'>%s</div>
-                            <p style='font-size: 14px; color: #888; text-align: center;'>Vui lòng nhập mã này để tiếp tục quá trình đặt lại mật khẩu.</p>
+                            <p style='font-size: 14px; color: #888; text-align: center;'>Please enter this code to continue the password reset process.</p>
                             <hr style='margin: 24px 0;'>
-                            <p style='font-size: 12px; color: #aaa; text-align: center;'>Nếu bạn không yêu cầu, hãy bỏ qua email này.</p>
+                            <p style='font-size: 12px; color: #aaa; text-align: center;'>If you did not request this, please ignore this email.</p>
                           </div>
                         </div>
                         """,
@@ -33,15 +33,15 @@ public class MailService {
             MimeMessage mimeMessage = emailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
             helper.setTo(to);
-            helper.setSubject("Mã đặt lại mật khẩu");
+            helper.setSubject("Password Reset Code");
             helper.setText(html, true);
             emailSender.send(mimeMessage);
         } catch (Exception e) {
-            // fallback: gửi text đơn giản nếu lỗi
+            // fallback: send simple text if error
             SimpleMailMessage message = new SimpleMailMessage();
             message.setTo(to);
-            message.setSubject("Mã đặt lại mật khẩu");
-            message.setText("Mã của bạn là: " + code);
+            message.setSubject("Password Reset Code");
+            message.setText("Your code is: " + code);
             emailSender.send(message);
         }
     }

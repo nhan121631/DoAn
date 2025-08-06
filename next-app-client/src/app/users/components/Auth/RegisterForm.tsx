@@ -237,7 +237,7 @@ export default function RegisterForm() {
       {/* Register Button */}
       <button
         type="submit"
-        className="w-full py-3 text-lg font-semibold text-black transition duration-300 bg-gray-200 rounded-md hover:bg-gray-400"
+        className="w-full py-3 text-lg font-semibold text-black transition duration-300 bg-white rounded-md hover:bg-gray-200"
       >
         Create Account
       </button>

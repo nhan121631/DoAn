@@ -26,6 +26,7 @@ public class RoomResponseDto {
     private int available;
     private int approval;
     private int hidden;
+    private int isRemoved;
     private Date postStartDate;
     private Date postEndDate;
     private AddressResponseDto address;
@@ -33,4 +34,27 @@ public class RoomResponseDto {
     private List<ConvenientResponseDto> convenients;
     private String typepost;
     private UUID userId;
+
+    // constructor
+    public RoomResponseDto(UUID id, String title, String description, Double priceMonth, Double priceDeposit,
+            int available, int approval, int hidden, int isRemoved, Date postStartDate, Date postEndDate,
+            AddressResponseDto address,
+            List<ConvenientResponseDto> convenients, String typepost, UUID userId) {
+        this.id = id;
+        this.title = title;
+        this.description = description;
+        this.priceMonth = priceMonth;
+        this.priceDeposit = priceDeposit;
+        this.available = available;
+        this.approval = approval;
+        this.hidden = hidden;
+        this.isRemoved = isRemoved;
+        this.postStartDate = postStartDate;
+        this.postEndDate = postEndDate;
+        this.address = address;
+        this.convenients = convenients;
+        this.typepost = typepost;
+        this.userId = userId;
+    }
+
 }

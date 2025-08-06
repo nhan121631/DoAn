@@ -1,184 +1,136 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import React, { useState } from "react";
-import { Table, Tag, Button, Popconfirm, message, Space, Popover } from "antd";
+import { getRoomsByLandlord } from "@/services/RoomService";
+import { Button, message, Popconfirm, Popover, Space, Table, Tag } from "antd";
+import type { ColumnsType, TablePaginationConfig } from "antd/es/table";
 import { useRouter } from "next/navigation";
-
-import RoomInfoModal from "../components/manage-rooms/RoomInfoModal";
-import type { ColumnsType } from "antd/es/table";
+import { useEffect, useState } from "react";
 import { AiOutlineInfoCircle, AiOutlinePlus } from "react-icons/ai";
 import { FaRegEdit } from "react-icons/fa";
-import { RoomData } from "../types";
 import EditPostModal from "../components/manage-rooms/EditPostModal";
+import RoomInfoModal from "../components/manage-rooms/RoomInfoModal";
 
-const initialData: RoomData[] = [
-  {
-    key: "1",
-    name: "Mr. Nam’s Room 1",
-    address: "Dong Da, Hanoi",
-    area: 20,
-    price: 3999999,
-    postStartDate: "2025-01-01",
-    postEndDate: "2025-12-31",
-    available: "Available",
-    approval: 0,
-    isRemove: 0,
-    hidden: 1,
-  },
-  {
-    key: "2",
-    name: "Mr. Nam’s Room 2",
-    address: "Thanh Xuan, Hanoi",
-    area: 25,
-    price: 3000000,
-    postStartDate: "2025-02-01",
-    postEndDate: "2025-07-10",
-    available: "Rented",
-    approval: 0,
-    isRemove: 0,
-    hidden: 0,
-  },
-  {
-    key: "3",
-    name: "Mr. Nam’s Room 3",
-    address: "Cau Giay, Hanoi",
-    area: 30,
-    price: 2000000,
-    postStartDate: "2025-03-01",
-    postEndDate: "2025-09-30",
-    available: "Available",
-    approval: 2,
-    isRemove: 1,
-    hidden: 0,
-  },
-  {
-    key: "4",
-    name: "Ms. Lan’s Room 1",
-    address: "Hoan Kiem, Hanoi",
-    area: 35,
-    price: 5000000,
-    postStartDate: "2025-04-01",
-    postEndDate: "2025-10-31",
-    available: "Available",
-    approval: 1,
-    isRemove: 0,
-    hidden: 0,
-  },
-  {
-    key: "5",
-    name: "Ms. Lan’s Room 2",
-    address: "Ba Dinh, Hanoi",
-    area: 40,
-    price: 4500000,
-    postStartDate: "2025-05-01",
-    postEndDate: "2025-11-30",
-    available: "Rented",
-    approval: 1,
-    isRemove: 0,
-    hidden: 0,
-  },
-];
-
-const TableManageRoom: React.FC = () => {
-  const [data, setData] = useState<RoomData[]>(initialData);
-  const [selectedRoom, setSelectedRoom] = useState<RoomData | null>(null);
+function TableManageRoom() {
+  const [data, setData] = useState<any[]>([]);
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 5,
+    total: 0,
+  });
+  const [loading, setLoading] = useState(false);
+  const [selectedRoom, setSelectedRoom] = useState<any | null>(null);
   const [isModalOpen, setModalOpen] = useState(false);
   const [isInfoModalOpen, setInfoModalOpen] = useState(false);
 
   const [extendingKey, setExtendingKey] = useState<string | null>(null);
-  const [selectedMonths, setSelectedMonths] = useState<number>(1);
-  // const [isAddRoomOpen, setAddRoomOpen] = useState(false);
+  const [extendDates, setExtendDates] = useState<{ [id: string]: string }>({});
+
   const router = useRouter();
 
-  const toggleHidden = (record: RoomData) => {
-    const updated = data.map((item) =>
-      item.key === record.key
-        ? { ...item, hidden: (item.hidden === 1 ? 0 : 1) as 0 | 1 }
-        : item
-    );
-    setData(updated);
-    message.success(
-      record.hidden === 1 ? "Post is now visible." : "Post has been hidden."
-    );
+  const fetchRooms = async (page = 1, pageSize = 5) => {
+    setLoading(true);
+    try {
+      const res = await getRoomsByLandlord(page - 1, pageSize);
+      console.log("Rooms API response:", res); // <-- Thêm dòng này để log dữ liệu
+      setData(res.rooms || []);
+      setPagination({
+        current: (res.pageNumber ?? 0) + 1,
+        pageSize: res.pageSize ?? pageSize,
+        total: res.totalRecords ?? 0,
+      });
+    } catch (error) {
+      message.error("Failed to fetch rooms");
+      console.error("Error fetching rooms:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleMailClick = (record: RoomData) => {
+  useEffect(() => {
+    fetchRooms(pagination.current, pagination.pageSize);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleTableChange = (pag: TablePaginationConfig) => {
+    fetchRooms(pag.current!, pag.pageSize!);
+  };
+
+  const toggleHidden = (record: any) => {
+    // TODO: Gọi API cập nhật trạng thái ẩn/hiện và fetch lại danh sách phòng
+    console.log("Toggle hidden for:", record);
+  };
+
+  // Hàm xử lý khi nhấn nút edit
+  const handleEditClick = (record: any) => {
     setSelectedRoom(record);
     setModalOpen(true);
   };
 
-  const handleInfoClick = (record: RoomData) => {
+  // Hàm xử lý khi nhấn nút info
+  const handleInfoClick = (record: any) => {
     setSelectedRoom(record);
     setInfoModalOpen(true);
   };
 
-  const columns: ColumnsType<RoomData> = [
+  const columns: ColumnsType<any> = [
     {
       title: "Room Name",
-      dataIndex: "name",
-      key: "name",
-      sorter: (a, b) => a.name.localeCompare(b.name),
+      dataIndex: "title",
+      key: "title",
+      sorter: (a, b) => a.title.localeCompare(b.title),
     },
     {
       title: "Address",
-      dataIndex: "address",
       key: "address",
-    },
-    {
-      title: "Area (m²)",
-      dataIndex: "area",
-      key: "area",
-      sorter: (a, b) => a.area - b.area,
-      render: (_, record) => (record.area ? record.area + " m²" : "-"),
+      render: (_, record) =>
+        [
+          record.address?.street,
+          record.address?.ward?.name,
+          record.address?.ward?.district?.name,
+          record.address?.ward?.district?.province?.name,
+        ]
+          .filter(Boolean)
+          .join(", "),
     },
     {
       title: "Price/month",
-      dataIndex: "price",
-      key: "price",
-      sorter: (a, b) => a.price - b.price,
-      render: (price) => price.toLocaleString("vi-VN") + " ₫",
+      dataIndex: "priceMonth",
+      key: "priceMonth",
+      sorter: (a, b) => a.priceMonth - b.priceMonth,
+      render: (priceMonth) => priceMonth.toLocaleString("vi-VN") + " ₫",
+    },
+    {
+      title: "Deposit",
+      dataIndex: "priceDeposit",
+      key: "priceDeposit",
+      render: (priceDeposit) => priceDeposit.toLocaleString("vi-VN") + " ₫",
     },
     {
       title: "Post Start",
       dataIndex: "postStartDate",
       key: "postStartDate",
-      render: (date: string, record: RoomData) => {
-        // fallback nếu date là undefined/null
-        const d = date || record.postStartDate;
-        if (!d) return "-";
-        try {
-          const parsed = new Date(d);
-          if (isNaN(parsed.getTime())) return d;
-          return parsed.toLocaleDateString("vi-VN", {
-            year: "numeric",
-            month: "2-digit",
-            day: "2-digit",
-          });
-        } catch {
-          return d;
-        }
-      },
+      render: (date) =>
+        date
+          ? new Date(date).toLocaleDateString("vi-VN", {
+              year: "numeric",
+              month: "2-digit",
+              day: "2-digit",
+            })
+          : "-",
     },
     {
       title: "Post End",
       dataIndex: "postEndDate",
       key: "postEndDate",
-      render: (date: string, record: RoomData) => {
-        const d = date || record.postEndDate;
-        if (!d) return "-";
-        try {
-          const parsed = new Date(d);
-          if (isNaN(parsed.getTime())) return d;
-          return parsed.toLocaleDateString("vi-VN", {
-            year: "numeric",
-            month: "2-digit",
-            day: "2-digit",
-          });
-        } catch {
-          return d;
-        }
-      },
+      render: (date) =>
+        date
+          ? new Date(date).toLocaleDateString("vi-VN", {
+              year: "numeric",
+              month: "2-digit",
+              day: "2-digit",
+            })
+          : "-",
     },
-
     {
       title: "Gia hạn",
       key: "extend",
@@ -192,36 +144,38 @@ const TableManageRoom: React.FC = () => {
           return <Tag color="green">Còn hạn</Tag>;
         }
 
+        // Format min date as yyyy-MM-dd (ngày sau postEndDate)
+        const minDate = new Date(end.getTime() + 24 * 60 * 60 * 1000)
+          .toISOString()
+          .slice(0, 10);
+
         const popoverContent = (
-          <Space>
-            <select
-              value={selectedMonths}
-              onChange={(e) => setSelectedMonths(Number(e.target.value))}
+          <Space direction="vertical">
+            <input
+              type="date"
+              min={minDate}
+              value={extendDates[record.id] || ""}
+              onChange={(e) =>
+                setExtendDates((prev) => ({
+                  ...prev,
+                  [record.id]: e.target.value,
+                }))
+              }
               style={{
                 padding: "4px 8px",
                 borderRadius: 4,
                 border: "1px solid #ccc",
               }}
-            >
-              {[1, 2, 3, 4, 5].map((m) => (
-                <option key={m} value={m}>
-                  {m} tháng
-                </option>
-              ))}
-            </select>
-
-            <div>
-              <span style={{ color: "black", fontWeight: 600 }}>
-                {(record.price * selectedMonths).toLocaleString("vi-VN")} ₫
-              </span>
-            </div>
-
+            />
             <Button
               type="primary"
               size="small"
+              disabled={!extendDates[record.id]}
               onClick={() => {
                 message.success(
-                  `Gia hạn ${selectedMonths} tháng cho "${record.name}"`
+                  `Gia hạn đến ngày ${extendDates[record.id]} cho "${
+                    record.title
+                  }"`
                 );
                 setExtendingKey(null);
               }}
@@ -234,13 +188,16 @@ const TableManageRoom: React.FC = () => {
         return (
           <Popover
             content={popoverContent}
-            title="Chọn thời gian gia hạn"
+            title="Chọn ngày gia hạn"
             trigger="click"
-            open={extendingKey === record.key}
+            open={extendingKey === record.id}
             onOpenChange={(visible) => {
               if (visible) {
-                setExtendingKey(record.key);
-                setSelectedMonths(1);
+                setExtendingKey(record.id);
+                setExtendDates((prev) => ({
+                  ...prev,
+                  [record.id]: "",
+                }));
               } else {
                 setExtendingKey(null);
               }
@@ -257,19 +214,23 @@ const TableManageRoom: React.FC = () => {
       title: "Available",
       dataIndex: "available",
       key: "available",
-      render: (available) => (
-        <Tag color={available === "Rented" ? "green" : "blue"}>{available}</Tag>
-      ),
-      sorter: (a, b) => a.available.localeCompare(b.available),
+      render: (available) =>
+        available === 1 ? (
+          <Tag color="green">Rented</Tag>
+        ) : (
+          <Tag color="blue">Available</Tag>
+        ),
+      sorter: (a, b) => a.available - b.available,
     },
     {
       title: "Approval",
+      dataIndex: "approval",
       key: "approval",
       sorter: (a, b) => a.approval - b.approval,
-      render: (_, record) => {
-        if (record.approval === 0) {
+      render: (approval) => {
+        if (approval === 0) {
           return <Tag color="orange">Pending</Tag>;
-        } else if (record.approval === 1) {
+        } else if (approval === 1) {
           return <Tag color="green">Approved</Tag>;
         } else {
           return <Tag color="red">Rejected</Tag>;
@@ -278,21 +239,19 @@ const TableManageRoom: React.FC = () => {
     },
     {
       title: "Hide/Show",
-      key: "hiden",
-      render: (_, record) => (
+      dataIndex: "hidden",
+      key: "hidden",
+      render: (hidden, record) => (
         <Popconfirm
           title={
-            record.hidden === 1
+            hidden === 1
               ? "Do you want to show this post again?"
               : "Are you sure to remove this post?"
           }
           onConfirm={() => toggleHidden(record)}
         >
-          <Button
-            size="small"
-            type={record.hidden === 1 ? "default" : "primary"}
-          >
-            {record.hidden === 1 ? "Show" : "Hide"}
+          <Button size="small" type={hidden === 1 ? "default" : "primary"}>
+            {hidden === 1 ? "Show" : "Hide"}
           </Button>
         </Popconfirm>
       ),
@@ -302,9 +261,9 @@ const TableManageRoom: React.FC = () => {
       key: "actions",
       render: (_, record) => {
         const now = new Date();
-        const start = new Date(record.postStartDate);
+        // const start = new Date(record.postStartDate);
         const end = new Date(record.postEndDate);
-        const isStillValid = start <= now && now <= end;
+        const isStillValid = now <= end;
 
         if (!isStillValid) {
           return (
@@ -314,7 +273,7 @@ const TableManageRoom: React.FC = () => {
           );
         }
 
-        if (record.isRemove === 1) {
+        if (record.isRemoved === 1) {
           return (
             <span style={{ color: "red", fontWeight: 600 }}>
               Admin đã gỡ bài
@@ -326,7 +285,7 @@ const TableManageRoom: React.FC = () => {
             <Button
               type="text"
               icon={<FaRegEdit size={18} />}
-              onClick={() => handleMailClick(record)}
+              onClick={() => handleEditClick(record)}
             />
             <Button
               type="text"
@@ -343,17 +302,18 @@ const TableManageRoom: React.FC = () => {
     <div className="mx-4 my-6 p-6 min-h-[280px] dark:!bg-[#171f2f] dark:!text-white">
       <div className="flex items-center justify-between mb-4">
         <div className="mb-4">
-        <h2 className="text-4xl font-semibold dark:!text-white">Manage Rooms</h2>
-        <p className="text-xl text-gray-500">Room Post Management.</p>
-      </div>
-        {/* Button to add new post room */}
+          <h2 className="text-4xl font-semibold dark:!text-white">
+            Manage Rooms
+          </h2>
+          <p className="text-xl text-gray-500">Room Post Management.</p>
+        </div>
         <div>
           <Button
             type="primary"
             icon={<AiOutlinePlus size={18} />}
             onClick={() => router.push("/landlord/manage-rooms/add-room")}
           >
-            Thêm phòng
+            Add Room
           </Button>
         </div>
       </div>
@@ -361,11 +321,17 @@ const TableManageRoom: React.FC = () => {
       <Table
         columns={columns}
         dataSource={data}
-        rowKey="key"
-        pagination={{ pageSize: 7 }}
+        rowKey="id"
+        loading={loading}
+        pagination={{
+          current: pagination.current,
+          pageSize: pagination.pageSize,
+          total: pagination.total,
+          // showSizeChanger: true,
+        }}
+        onChange={handleTableChange}
       />
 
-      {/* AddRoomModal đã chuyển sang trang riêng */}
       <EditPostModal
         open={isModalOpen}
         onClose={() => setModalOpen(false)}
@@ -378,6 +344,6 @@ const TableManageRoom: React.FC = () => {
       />
     </div>
   );
-};
+}
 
 export default TableManageRoom;
