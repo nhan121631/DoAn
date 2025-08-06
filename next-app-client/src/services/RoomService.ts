@@ -12,11 +12,31 @@ export async function createRoom(images: File[] | null, room: string) {
     body: formData,
   });
 
-    if (!(response).ok) {
-        // throw new Error("Failed to create room");
-        const data = await response.json();
-        throw data;
+  if (!response.ok) {
+    // throw new Error("Failed to create room");
+    const data = await response.json();
+    throw data;
+  }
+  return response.json();
+}
+
+export async function getRoomsByLandlord(page: number, size: number) {
+  try {
+    const response = await fetch(`/api/landlord/room?page=${page}&size=${size}`);
+    if (!response.ok) {
+      throw new Error("Failed to fetch rooms");
     }
     return response.json();
-
+  } catch (error) {
+    console.error("Error fetching rooms:", error);
+    return {
+      rooms: [],
+      pageNumber: page,
+      pageSize: size,
+      totalRecords: 0,
+      totalPages: 0,
+      hasNext: false,
+      hasPrevious: false,
+    };    
+  }
 }

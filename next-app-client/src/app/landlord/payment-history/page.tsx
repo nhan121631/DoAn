@@ -15,7 +15,8 @@ export default function PaymentHistoryPage() {
   const [stats, setStats] = useState({
     successCount: 0,
     failedCount: 0,
-    totalSuccess: 0,
+    totalIn: 0,
+    totalOut: 0,
   });
   const [currentPage, setCurrentPage] = useState(1);
   const [totalRecords, setTotalRecords] = useState(0);
@@ -25,7 +26,8 @@ export default function PaymentHistoryPage() {
     const fetchAllStats = async () => {
       let successCount = 0;
       let failedCount = 0;
-      let totalSuccess = 0;
+      let totalIn = 0; // tiền vào
+      let totalOut = 0; // tiền ra
 
       let page = 0;
       const statsPageSize = 20;
@@ -48,7 +50,8 @@ export default function PaymentHistoryPage() {
         transactions.forEach((t: any) => {
           if (t.status === 1) {
             successCount++;
-            totalSuccess += t.amount;
+            if (t.amount > 0) totalIn += t.amount;
+            if (t.amount < 0) totalOut += t.amount;
           } else if (t.status === 0) {
             failedCount++;
           }
@@ -59,7 +62,7 @@ export default function PaymentHistoryPage() {
         if (page >= totalPages) break;
       }
 
-      setStats({ successCount, failedCount, totalSuccess });
+      setStats({ successCount, failedCount, totalIn, totalOut });
     };
 
     fetchAllStats();
@@ -91,9 +94,9 @@ export default function PaymentHistoryPage() {
 
   const filteredPayments = payments.filter((p) =>
     filter === "success"
-      ? p.status === 1
+      ? Number(p.status) === 1
       : filter === "failed"
-      ? p.status === 0
+      ? Number(p.status) === 0
       : true
   );
 
