@@ -26,7 +26,16 @@ export default function AddFundsForm({ onSuccess }: AddFundsFormProps) {
         amount: amountNumber,
         orderInfo: orderInfo || `Add ${formatCurrency(amountNumber)} to wallet`,
       };
-      const result = await createTransactionByUserId(transactionData);
+      const result = await fetch("/api/vnpay", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ...transactionData,
+          // bankCode, // Uncomment if you want to use bankCode
+        }),
+      }).then((res) => res.json());
 
       if (result.error) {
         alert(result.error);
