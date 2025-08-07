@@ -2,7 +2,6 @@ package com.ants.ktc.ants_ktc.controllers;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -22,10 +21,15 @@ import org.springframework.web.multipart.MultipartFile;
 import com.ants.ktc.ants_ktc.dtos.room.PaginationRoomResponseDto;
 import com.ants.ktc.ants_ktc.dtos.room.RoomRequestCreateDto;
 import com.ants.ktc.ants_ktc.dtos.room.RoomResponseDto;
+import com.ants.ktc.ants_ktc.dtos.room.RoomResponseProjectionDto;
+import com.ants.ktc.ants_ktc.dtos.room.RoomShowHideProjectionDto;
+import com.ants.ktc.ants_ktc.dtos.room.RoomUpdateExpireDateRequestDto;
+import com.ants.ktc.ants_ktc.dtos.room.RoomUpdateExpireDateResponseDto;
 import com.ants.ktc.ants_ktc.services.RoomService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Valid;
 import jakarta.validation.Validator;
 
 @RestController
@@ -78,9 +82,10 @@ public class RoomController {
     }
 
     // @GetMapping("/by-landlord/{id}")
-    // public ResponseEntity<List<RoomResponseDto>> getAllRoomByLandlordId(@PathVariable("id") UUID id) {
-    //     List<RoomResponseDto> rooms = roomService.getAllRoomByLandlordId(id);
-    //     return ResponseEntity.ok(rooms);
+    // public ResponseEntity<List<RoomResponseDto>>
+    // getAllRoomByLandlordId(@PathVariable("id") UUID id) {
+    // List<RoomResponseDto> rooms = roomService.getAllRoomByLandlordId(id);
+    // return ResponseEntity.ok(rooms);
     // }
 
     @GetMapping("/by-landlord/{id}/paging")
@@ -92,9 +97,16 @@ public class RoomController {
     }
 
     @PatchMapping("/{id}/hidden")
-    public ResponseEntity<?> updateHidden(@PathVariable UUID id, @RequestBody Map<String, Integer> body) {
-        int hidden = body.get("hidden");
-        roomService.updateHidden(id, hidden);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<RoomShowHideProjectionDto> updateHidden(@PathVariable UUID id,
+            @Valid @RequestBody RoomShowHideProjectionDto body) {
+        RoomShowHideProjectionDto result = roomService.updateHidden(id, body);
+        return ResponseEntity.ok(result);
+    }
+
+    @PatchMapping("/update-post-extend")
+    public ResponseEntity<RoomUpdateExpireDateResponseDto> extendPostDate(
+            @RequestBody RoomUpdateExpireDateRequestDto request) {
+        RoomUpdateExpireDateResponseDto roomResponse = roomService.updateExpirePostDate(request);
+        return ResponseEntity.ok(roomResponse);
     }
 }

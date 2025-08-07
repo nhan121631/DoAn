@@ -17,18 +17,21 @@ import com.ants.ktc.ants_ktc.repositories.projection.RoomByLandlordPagingProject
 
 @Repository
 public interface RoomJpaRepository extends JpaRepository<Room, UUID> {
-        @EntityGraph(attributePaths = { "images", "convenients", "postType" })
-        Optional<Room> findById(UUID id);
+    @EntityGraph(attributePaths = { "images", "convenients", "postType" })
+    Optional<Room> findById(UUID id);
 
-        @EntityGraph(attributePaths = {
-                        "user", "user.roles", "address", "address.ward", "address.ward.district",
-                        "address.ward.district.province"
-        })
-        Optional<Room> findDetailedById(UUID id);
+    @EntityGraph(attributePaths = {
+            "user", "user.roles", "address", "address.ward", "address.ward.district",
+            "address.ward.district.province"
+    })
+    Optional<Room> findDetailedById(UUID id);
 
-        @Query("SELECT r FROM Room r WHERE r.user.id = :userId")
-        List<Room> findAllByUser(UUID userId);
+    @Query("SELECT r FROM Room r WHERE r.user.id = :userId")
+    List<Room> findAllByUser(UUID userId);
 
     @Query("SELECT r FROM Room r WHERE r.user.id = :userId")
     Page<RoomByLandlordPagingProjection> findAllByLandlord(@Param("userId") UUID userId, Pageable pageable);
+
+    @Query("SELECT r FROM Room r JOIN FETCH r.user u JOIN FETCH u.wallet w JOIN FETCH r.postType pt WHERE r.id = :roomId")
+    Optional<Room> findForExtendById(@Param("roomId") UUID roomId);
 }

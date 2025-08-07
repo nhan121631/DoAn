@@ -1,6 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import { getRoomsByLandlord } from "@/services/RoomService";
+import {
+  getRoomsByLandlord,
+  updateRoomPostExtend,
+} from "@/services/RoomService";
 import { Button, message, Popconfirm, Popover, Space, Table, Tag } from "antd";
 import type { ColumnsType, TablePaginationConfig } from "antd/es/table";
 import { useRouter } from "next/navigation";
@@ -126,6 +129,7 @@ function TableManageRoom() {
       dataIndex: "priceDeposit",
       key: "priceDeposit",
       render: (priceDeposit) => priceDeposit.toLocaleString("vi-VN") + " ₫",
+      sorter: (a, b) => a.priceDeposit - b.priceDeposit,
     },
     {
       title: "Post Start",
@@ -139,6 +143,11 @@ function TableManageRoom() {
               day: "2-digit",
             })
           : "-",
+      sorter: (a, b) => {
+        const dateA = new Date(a.postStartDate);
+        const dateB = new Date(b.postStartDate);
+        return dateA.getTime() - dateB.getTime();
+      },
     },
     {
       title: "Post End",
@@ -152,6 +161,11 @@ function TableManageRoom() {
               day: "2-digit",
             })
           : "-",
+      sorter: (a, b) => {
+        const dateA = new Date(a.postEndDate);
+        const dateB = new Date(b.postEndDate);
+        return dateA.getTime() - dateB.getTime();
+      },
     },
     {
       title: "Extend",
@@ -161,6 +175,8 @@ function TableManageRoom() {
         const start = new Date(record.postStartDate);
         const end = new Date(record.postEndDate);
         const isStillValid = start <= now && now <= end;
+
+        const isExpired = now > end;
 
         if (isStillValid) {
           return <Tag color="green">Still valid</Tag>;
@@ -258,13 +274,31 @@ function TableManageRoom() {
               type="primary"
               size="small"
               disabled={!extendDates[record.id] || !selectedTypePostId}
-              onClick={() => {
-                messageApi.success({
-                  content: `Extend until ${extendDates[record.id]} for "${
-                    record.title
-                  }"`,
-                  duration: 3,
-                });
+              onClick={async () => {
+                const formatDate = (date: Date | string) => {
+                  const d = typeof date === "string" ? new Date(date) : date;
+                  return d.toISOString();
+                };
+                try {
+                  await updateRoomPostExtend(
+                    record.id,
+                    formatDate(new Date()),
+                    formatDate(extendDates[record.id]),
+                    selectedTypePostId as string
+                  );
+                  messageApi.success({
+                    content: `Extend until ${extendDates[record.id]} for "${
+                      record.title
+                    }", waiting for approval`,
+                    duration: 3,
+                  });
+                  fetchRooms(pagination.current, pagination.pageSize);
+                } catch (error: any) {
+                  messageApi.error({
+                    content: error.message || "Failed to extend post",
+                    duration: 3,
+                  });
+                }
                 setExtendingKey(null);
               }}
             >
@@ -294,12 +328,17 @@ function TableManageRoom() {
             <Button
               size="small"
               type="primary"
-              disabled={record.isRemoved === 1}
+              disabled={record.isRemoved === 1 || isExpired}
             >
               Extend
             </Button>
           </Popover>
         );
+      },
+      sorter: (a, b) => {
+        const dateA = new Date(a.postEndDate);
+        const dateB = new Date(b.postEndDate);
+        return dateA.getTime() - dateB.getTime();
       },
     },
     {
@@ -338,7 +377,7 @@ function TableManageRoom() {
           title={
             hidden === 1
               ? "Do you want to show this post again?"
-              : "Are you sure to remove this post?"
+              : "Are you sure you want to hide this post?"
           }
           onConfirm={() => toggleHidden(record)}
         >
@@ -347,6 +386,8 @@ function TableManageRoom() {
           </Button>
         </Popconfirm>
       ),
+      sorter: (a, b) => a.hidden - b.hidden,
+      defaultSortOrder: "ascend",
     },
     {
       title: "Actions",
@@ -360,7 +401,7 @@ function TableManageRoom() {
         if (!isStillValid) {
           return (
             <span style={{ color: "gray", fontWeight: 600 }}>
-              Bài đăng đã hết hạn
+              This post has expired
             </span>
           );
         }
@@ -368,7 +409,7 @@ function TableManageRoom() {
         if (record.isRemoved === 1) {
           return (
             <span style={{ color: "red", fontWeight: 600 }}>
-              Admin đã gỡ bài
+              Removed by admin
             </span>
           );
         }

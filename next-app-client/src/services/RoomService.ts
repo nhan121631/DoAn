@@ -43,3 +43,29 @@ export async function getRoomsByLandlord(page: number, size: number) {
     // };    
   }
 }
+
+export async function updateRoomPostExtend(
+  roomId: string,
+  postStartDate: string,
+  postEndDate: string,
+  typepostId: string
+) {
+  const response = await fetch("/api/landlord/room/update-post-extend", {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      roomId,
+      postStartDate,
+      postEndDate,
+      typepostId,
+    }),
+  });
+
+  if (!response.ok) {
+    const data = await response.json();
+    throw new Error(data.message || "Failed to update room post");
+  }
+  return response.json();
+}
