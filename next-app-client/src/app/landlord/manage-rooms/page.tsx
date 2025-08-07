@@ -9,6 +9,8 @@ import { AiOutlineInfoCircle, AiOutlinePlus } from "react-icons/ai";
 import { FaRegEdit } from "react-icons/fa";
 import EditPostModal from "../components/manage-rooms/EditPostModal";
 import RoomInfoModal from "../components/manage-rooms/RoomInfoModal";
+import { TypePost } from "@/types/types";
+import { getPostTypes } from "@/services/TypePostService";
 
 function TableManageRoom() {
   const [data, setData] = useState<any[]>([]);
@@ -24,6 +26,10 @@ function TableManageRoom() {
 
   const [extendingKey, setExtendingKey] = useState<string | null>(null);
   const [extendDates, setExtendDates] = useState<{ [id: string]: string }>({});
+  const [selectedTypePostId, setSelectedTypePostId] = useState<
+    string | undefined
+  >(undefined);
+  const [typeposts, setTypeposts] = useState<TypePost[]>([]);
 
   const [messageApi, contextHolder] = message.useMessage();
 
@@ -50,6 +56,17 @@ function TableManageRoom() {
       setLoading(false);
     }
   };
+  useEffect(() => {
+    const fetchTypePosts = async () => {
+      try {
+        const data = await getPostTypes();
+        setTypeposts(data);
+      } catch (error) {
+        console.error("Failed to fetch type posts:", error);
+      }
+    };
+    fetchTypePosts();
+  }, []);
 
   useEffect(() => {
     fetchRooms(pagination.current, pagination.pageSize);
@@ -154,6 +171,22 @@ function TableManageRoom() {
           .toISOString()
           .slice(0, 10);
 
+        // Tính tổng phí gia hạn
+        let totalFee = 0;
+        if (extendDates[record.id] && selectedTypePostId) {
+          const selectedType = typeposts.find(
+            (tp) => tp.id === selectedTypePostId
+          );
+          if (selectedType) {
+            const newDate = new Date(extendDates[record.id]);
+            // Số ngày = ngày mới - ngày kết thúc hiện tại
+            const diffMs = newDate.getTime() - end.getTime();
+            let diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+            if (diffDays <= 1) diffDays = 1;
+            totalFee = diffDays * selectedType.pricePerDay;
+          }
+        }
+
         const popoverContent = (
           <Space direction="vertical">
             <input
@@ -172,10 +205,59 @@ function TableManageRoom() {
                 border: "1px solid #ccc",
               }}
             />
+            <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead className="bg-gray-100 dark:bg-[#232b3b]">
+                  <tr>
+                    <th className="px-4 py-2 text-left font-semibold">
+                      Post Type
+                    </th>
+                    <th className="px-4 py-2 text-left font-semibold">
+                      Price/Day (₫)
+                    </th>
+                    <th className="px-4 py-2 text-center font-semibold">
+                      Select
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white dark:bg-[#232b3b]">
+                  {typeposts.map((typepost) => (
+                    <tr
+                      key={typepost.id}
+                      className="hover:bg-gray-50 dark:hover:bg-[#1a2233] transition"
+                    >
+                      <td className="px-4 py-2 border-b border-gray-200 dark:border-gray-700">
+                        {typepost.name}
+                      </td>
+                      <td className="px-4 py-2 border-b border-gray-200 dark:border-gray-700">
+                        {typepost.pricePerDay.toLocaleString("vi-VN")}
+                      </td>
+                      <td className="px-4 py-2 border-b border-gray-200 dark:border-gray-700 text-center">
+                        <input
+                          type="radio"
+                          name={`typepostId-${record.id}`}
+                          value={typepost.id}
+                          checked={selectedTypePostId === typepost.id}
+                          onChange={() => setSelectedTypePostId(typepost.id)}
+                          className="accent-blue-600 scale-125 cursor-pointer"
+                          style={{ margin: 0 }}
+                        />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            {/* Hiển thị tổng phí gia hạn */}
+            {totalFee > 0 && (
+              <div style={{ fontWeight: 600, color: "#1677ff", marginTop: 8 }}>
+                Tổng phí gia hạn: {totalFee.toLocaleString("vi-VN")} ₫
+              </div>
+            )}
             <Button
               type="primary"
               size="small"
-              disabled={!extendDates[record.id]}
+              disabled={!extendDates[record.id] || !selectedTypePostId}
               onClick={() => {
                 messageApi.success({
                   content: `Extend until ${extendDates[record.id]} for "${
