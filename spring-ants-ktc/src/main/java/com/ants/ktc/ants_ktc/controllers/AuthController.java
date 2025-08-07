@@ -1,5 +1,7 @@
 package com.ants.ktc.ants_ktc.controllers;
 
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -42,9 +44,36 @@ public class AuthController {
     }
 
     @PostMapping("/reset-password/{email}")
-    public ResponseEntity<Void> resetPassword(@PathVariable("email") String email) {
+    public ResponseEntity<Object> resetPassword(@PathVariable("email") String email) {
         this.userService.resetPassword(email);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(
+                Map.of("message", "Password reset email sent"));
+    }
+
+    @PostMapping("/verify-reset-code")
+    public ResponseEntity<Object> verifyResetCode(@RequestBody Map<String, String> request) {
+        String email = request.get("email");
+        String code = request.get("code");
+        boolean isValid = this.userService.verifyResetCode(email, code);
+        if (isValid) {
+            return ResponseEntity.ok(Map.of("message", "Reset code is valid"));
+        } else {
+            return ResponseEntity.badRequest().body(Map.of("message", "Invalid reset code"));
+        }
+    }
+
+    @PostMapping("/update-password")
+    public ResponseEntity<Object> changePassword(@RequestBody Map<String, String> request) {
+        String email = request.get("email");
+        String newPassword = request.get("newPassword");
+        String code = request.get("code");
+
+        boolean isChanged = this.userService.updatePassword(email, newPassword, code);
+        if (isChanged) {
+            return ResponseEntity.ok(Map.of("message", "Password changed successfully"));
+        } else {
+            return ResponseEntity.badRequest().body(Map.of("message", "Failed to change password"));
+        }
     }
 
 }

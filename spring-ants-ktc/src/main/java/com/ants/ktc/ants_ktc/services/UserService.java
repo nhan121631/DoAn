@@ -5,6 +5,7 @@ import java.util.UUID;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.net.URI;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -41,6 +42,8 @@ import com.ants.ktc.ants_ktc.repositories.ProfileJpaRepository;
 import com.ants.ktc.ants_ktc.repositories.RoleJpaRepository;
 import com.ants.ktc.ants_ktc.repositories.UserJpaRepository;
 import com.ants.ktc.ants_ktc.services.auth.JwtService;
+
+import jakarta.transaction.Transactional;
 
 @Service
 public class UserService {
@@ -308,6 +311,7 @@ public class UserService {
                 return String.valueOf(code);
         }
 
+        @Transactional
         public void resetPassword(String email) {
                 System.err.println("Reset password for email: " + email);
                 if (!profileJpaRepository.existsByEmail(email)) {
@@ -315,10 +319,56 @@ public class UserService {
                 }
 
                 String resetCode = generateResetCode();
-                User user = userJpaRepository.findByEmail(email);
+                User user = userJpaRepository.findByProfileEmail(email)
+                                .orElseThrow(() -> new IllegalArgumentException(
+                                                "User not found for email: " + email));
+                user.setResetPasswordCode(resetCode);
+                user.setResetPasswordCodeCreationTime(LocalDateTime.now());
+                userJpaRepository.save(user);
 
                 mailService.sendResetCode(email, resetCode);
 
+        }
+
+        public boolean verifyResetCode(String email, String code) {
+                User user = userJpaRepository.findByProfileEmail(email)
+                                .orElseThrow(() -> new IllegalArgumentException(
+                                                "User not found for email: " + email));
+
+                if (user.getResetPasswordCode() == null || !user.getResetPasswordCode().equals(code)) {
+                        throw new IllegalArgumentException("Invalid reset code");
+                }
+
+                if (user.getResetPasswordCodeCreationTime() == null
+                                || user.getResetPasswordCodeCreationTime()
+                                                .isBefore(LocalDateTime.now().minusMinutes(5))) {
+                        throw new IllegalArgumentException("Reset code has expired");
+                }
+                return true;
+
+        }
+
+        public boolean updatePassword(String email, String newPassword, String resetCode) {
+                User user = userJpaRepository.findByProfileEmail(email)
+                                .orElseThrow(() -> new UsernameNotFoundException(
+                                                "User not found in database for email: " + email));
+
+                if (user.getResetPasswordCode() == null ||
+                                !user.getResetPasswordCode().equals(resetCode)) {
+                        throw new IllegalArgumentException("Invalid reset code");
+                }
+
+                if (user.getResetPasswordCodeCreationTime() == null
+                                || user.getResetPasswordCodeCreationTime()
+                                                .isBefore(LocalDateTime.now().minusMinutes(5))) {
+                        throw new IllegalArgumentException("Reset code has expired");
+                }
+
+                user.setPassword(passwordEncoder.encode(newPassword));
+                user.setResetPasswordCode(null);
+                user.setResetPasswordCodeCreationTime(null);
+                userJpaRepository.save(user);
+                return true;
         }
 
         public UUID getAuthenticatedUserId() {
@@ -331,5 +381,5 @@ public class UserService {
 
                 return user.getId();
         }
-        
+
 }
