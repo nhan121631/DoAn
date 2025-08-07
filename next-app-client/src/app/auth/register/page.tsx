@@ -12,8 +12,8 @@ export default async function LoginPage() {
       <Image
         src="/images/banner3.jpg"
         alt="Login Background"
-        layout="fill"
-        objectFit="cover"
+        fill
+        style={{ objectFit: "cover" }}
         className="absolute inset-0 z-0"
         priority
       />

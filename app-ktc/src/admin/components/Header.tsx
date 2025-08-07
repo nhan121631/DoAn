@@ -26,7 +26,7 @@ function AppHeader({ collapsed, toggleCollapsed }: AppHeaderProps) {
       key: "logout",
       label: (
         <button
-          className="flex items-center justify-center gap-2 w-full text-left px-4 py-2 text-red-500 hover:bg-gray-100 dark:hover:bg-gray-700"
+          className="flex items-center justify-center w-full gap-2 px-4 py-2 text-left text-red-500 hover:bg-gray-100 dark:hover:bg-gray-700"
           onClick={() => {
             logOut();
             navigate("/login");
@@ -42,7 +42,7 @@ function AppHeader({ collapsed, toggleCollapsed }: AppHeaderProps) {
     <header className="w-full flex justify-between items-center px-4 py-0 bg-slate-50 dark:bg-[#001529] border-[1px] border-gray-200 dark:border-gray-600">
       <button
         onClick={toggleCollapsed}
-        className="text-lg w-16 h-16 flex items-center justify-center text-gray-700 dark:text-white"
+        className="flex items-center justify-center w-16 h-16 text-lg text-gray-700 dark:text-white"
       >
         {collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
       </button>

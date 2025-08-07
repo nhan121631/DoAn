@@ -1,17 +1,23 @@
 package com.ants.ktc.ants_ktc.services;
 
+import java.util.UUID;
+
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.net.URI;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -36,6 +42,8 @@ import com.ants.ktc.ants_ktc.repositories.ProfileJpaRepository;
 import com.ants.ktc.ants_ktc.repositories.RoleJpaRepository;
 import com.ants.ktc.ants_ktc.repositories.UserJpaRepository;
 import com.ants.ktc.ants_ktc.services.auth.JwtService;
+
+import jakarta.transaction.Transactional;
 
 @Service
 public class UserService {
@@ -161,10 +169,19 @@ public class UserService {
                 User user = userJpaRepository.findByEmail(email);
 
                 if (user == null) {
+                        UserProfile existingProfile = profileJpaRepository.findByEmail(email).orElse(null);
+                        if (existingProfile != null) {
+                                throw new HttpException(
+                                                "Email already exists with username "
+                                                                + existingProfile.getUser().getUsername(),
+                                                HttpStatus.CONFLICT);
+                        }
+
                         user = new User();
                         user.setUsername(email);
                         user.setIsActive(0);
                         UserProfile profile = new UserProfile();
+
                         profile.setEmail(email);
                         profile.setFullName(payload.get("name").toString());
                         // Tải ảnh về server
@@ -274,10 +291,11 @@ public class UserService {
                         user.setRoles(List.of(landlordRole));
                 }
 
-                System.out.println(
-                                "User register: username=" + user.getUsername() + ", email=" + userProfile.getEmail()
-                                                + ", password=" + user.getPassword() + ", accountType="
-                                                + request.getAccountType());
+                // System.out.println(
+                // "User register: username=" + user.getUsername() + ", email=" +
+                // userProfile.getEmail()
+                // + ", password=" + user.getPassword() + ", accountType="
+                // + request.getAccountType());
                 userJpaRepository.save(user);
 
                 return RegisterResponseDto.builder()
@@ -293,6 +311,7 @@ public class UserService {
                 return String.valueOf(code);
         }
 
+        @Transactional
         public void resetPassword(String email) {
                 System.err.println("Reset password for email: " + email);
                 if (!profileJpaRepository.existsByEmail(email)) {
@@ -300,7 +319,67 @@ public class UserService {
                 }
 
                 String resetCode = generateResetCode();
+                User user = userJpaRepository.findByProfileEmail(email)
+                                .orElseThrow(() -> new IllegalArgumentException(
+                                                "User not found for email: " + email));
+                user.setResetPasswordCode(resetCode);
+                user.setResetPasswordCodeCreationTime(LocalDateTime.now());
+                userJpaRepository.save(user);
+
                 mailService.sendResetCode(email, resetCode);
 
         }
+
+        public boolean verifyResetCode(String email, String code) {
+                User user = userJpaRepository.findByProfileEmail(email)
+                                .orElseThrow(() -> new IllegalArgumentException(
+                                                "User not found for email: " + email));
+
+                if (user.getResetPasswordCode() == null || !user.getResetPasswordCode().equals(code)) {
+                        throw new IllegalArgumentException("Invalid reset code");
+                }
+
+                if (user.getResetPasswordCodeCreationTime() == null
+                                || user.getResetPasswordCodeCreationTime()
+                                                .isBefore(LocalDateTime.now().minusMinutes(5))) {
+                        throw new IllegalArgumentException("Reset code has expired");
+                }
+                return true;
+
+        }
+
+        // public void updatePassword(String email, String newPassword, String
+        // resetCode) {
+        // User user = userJpaRepository.findByProfileEmail(email)
+        // .orElseThrow(() -> new UsernameNotFoundException(
+        // "User not found in database for email: " + email));
+
+        // if (user.getResetPasswordCode() == null ||
+        // !user.getResetPasswordCode().equals(resetCode)) {
+        // throw new IllegalArgumentException("Invalid reset code");
+        // }
+
+        // if (user.getResetPasswordCodeCreationTime() == null
+        // || user.getResetPasswordCodeCreationTime()
+        // .isBefore(LocalDateTime.now().minusMinutes(10))) {
+        // throw new IllegalArgumentException("Reset code has expired");
+        // }
+
+        // user.setPassword(passwordEncoder.encode(newPassword));
+        // user.setResetPasswordCode(null);
+        // user.setResetPasswordCodeCreationTime(null);
+        // userJpaRepository.save(user);
+        // }
+
+        public UUID getAuthenticatedUserId() {
+                Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+                String username = authentication.getName(); // Lấy username từ Principal
+
+                User user = userJpaRepository.findByUsername(username) // Sử dụng userJpaRepository đã được @Autowired
+                                .orElseThrow(() -> new UsernameNotFoundException(
+                                                "User not found in database for username: " + username));
+
+                return user.getId();
+        }
+
 }
