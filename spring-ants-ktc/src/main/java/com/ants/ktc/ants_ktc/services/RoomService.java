@@ -30,6 +30,7 @@ import com.ants.ktc.ants_ktc.dtos.room.PaginationRoomResponseDto;
 import com.ants.ktc.ants_ktc.dtos.room.RoomRequestCreateDto;
 import com.ants.ktc.ants_ktc.dtos.room.RoomResponseDto;
 import com.ants.ktc.ants_ktc.dtos.room.RoomResponseProjectionDto;
+import com.ants.ktc.ants_ktc.dtos.room.RoomShowHideProjectionDto;
 import com.ants.ktc.ants_ktc.entities.Convenient;
 import com.ants.ktc.ants_ktc.entities.Image;
 import com.ants.ktc.ants_ktc.entities.PostType;
@@ -328,6 +329,19 @@ public class RoomService {
                                 .totalPages(roomPage.getTotalPages())
                                 .hasNext(roomPage.hasNext())
                                 .hasPrevious(roomPage.hasPrevious())
+                                .build();
+        }
+        
+        public RoomShowHideProjectionDto updateHidden(UUID roomId, int hidden) {
+                Room room = roomJpaRepository.findById(roomId)
+                                .orElseThrow(() -> new IllegalArgumentException("Room not found"));
+
+                room.setHidden(hidden);
+                roomJpaRepository.save(room);
+
+                return RoomShowHideProjectionDto.builder()
+                                .id(room.getId())
+                                .isHidden(room.getHidden())
                                 .build();
         }
 

@@ -137,7 +137,7 @@ function TableManageRoom() {
           : "-",
     },
     {
-      title: "Gia hạn",
+      title: "Extend",
       key: "extend",
       render: (_, record) => {
         const now = new Date();
@@ -146,7 +146,7 @@ function TableManageRoom() {
         const isStillValid = start <= now && now <= end;
 
         if (isStillValid) {
-          return <Tag color="green">Còn hạn</Tag>;
+          return <Tag color="green">Still valid</Tag>;
         }
 
         // Format min date as yyyy-MM-dd (ngày sau postEndDate)
@@ -178,7 +178,7 @@ function TableManageRoom() {
               disabled={!extendDates[record.id]}
               onClick={() => {
                 messageApi.success({
-                  content: `Gia hạn đến ngày ${extendDates[record.id]} cho "${
+                  content: `Extend until ${extendDates[record.id]} for "${
                     record.title
                   }"`,
                   duration: 3,
@@ -194,7 +194,7 @@ function TableManageRoom() {
         return (
           <Popover
             content={popoverContent}
-            title="Chọn ngày gia hạn"
+            title="Select new end date"
             trigger="click"
             open={extendingKey === record.id}
             onOpenChange={(visible) => {
@@ -209,8 +209,12 @@ function TableManageRoom() {
               }
             }}
           >
-            <Button size="small" type="primary">
-              Gia hạn
+            <Button
+              size="small"
+              type="primary"
+              disabled={record.isRemoved === 1}
+            >
+              Extend
             </Button>
           </Popover>
         );

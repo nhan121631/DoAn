@@ -2,14 +2,17 @@ package com.ants.ktc.ants_ktc.controllers;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -86,5 +89,12 @@ public class RoomController {
             @RequestParam(value = "size", defaultValue = "5") int size) {
         PaginationRoomResponseDto rooms = roomService.getAllRoomByLandlordIdPaginated(id, page, size);
         return ResponseEntity.ok(rooms);
+    }
+
+    @PatchMapping("/{id}/hidden")
+    public ResponseEntity<?> updateHidden(@PathVariable UUID id, @RequestBody Map<String, Integer> body) {
+        int hidden = body.get("hidden");
+        roomService.updateHidden(id, hidden);
+        return ResponseEntity.ok().build();
     }
 }
