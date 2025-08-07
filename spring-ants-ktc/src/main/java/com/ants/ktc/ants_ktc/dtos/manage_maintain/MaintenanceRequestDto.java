@@ -49,9 +49,4 @@ public class MaintenanceRequestDto {
     @PositiveOrZero(message = "Cost must be a non-negative value")
     private Double cost;
 
-    // Status sẽ được đặt mặc định ở Backend hoặc được quy định rõ ràng.
-    // Nếu bạn muốn Landlord có thể đặt trạng thái ban đầu (vd: "Đã yêu cầu"), bạn
-    // có thể thêm:
-    // private int status; // Cần định nghĩa rõ các giá trị int tương ứng với trạng
-    // thái
 }
