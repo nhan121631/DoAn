@@ -40,6 +40,9 @@ public class Room extends BaseEntity {
     @Column(name = "available", nullable = false)
     private int available = 0;
 
+    @Column(name = "area", nullable = false)
+    private Double area;
+
     @Column(name = "approval", nullable = false)
     private int approval = 0;
 

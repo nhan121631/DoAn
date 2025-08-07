@@ -87,4 +87,11 @@ public class RoomController {
         PaginationRoomResponseDto rooms = roomService.getAllRoomByLandlordIdPaginated(id, page, size);
         return ResponseEntity.ok(rooms);
     }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<RoomResponseDto> getRoomById(@PathVariable("id") UUID id) {
+        RoomResponseDto room = roomService.getRoomById(id);
+        return ResponseEntity.ok(room);
+    }
+
 }

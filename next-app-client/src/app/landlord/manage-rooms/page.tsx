@@ -20,7 +20,7 @@ function TableManageRoom() {
     total: 0,
   });
   const [loading, setLoading] = useState(false);
-  const [selectedRoom, setSelectedRoom] = useState<any | null>(null);
+  const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
   const [isModalOpen, setModalOpen] = useState(false);
   const [isInfoModalOpen, setInfoModalOpen] = useState(false);
 
@@ -78,19 +78,18 @@ function TableManageRoom() {
   };
 
   const toggleHidden = (record: any) => {
-    // TODO: Gọi API cập nhật trạng thái ẩn/hiện và fetch lại danh sách phòng
     console.log("Toggle hidden for:", record);
   };
 
   // Hàm xử lý khi nhấn nút edit
   const handleEditClick = (record: any) => {
-    setSelectedRoom(record);
+    setSelectedRoomId(record.id);
     setModalOpen(true);
   };
 
   // Hàm xử lý khi nhấn nút info
   const handleInfoClick = (record: any) => {
-    setSelectedRoom(record);
+    setSelectedRoomId(record.id);
     setInfoModalOpen(true);
   };
 
@@ -421,15 +420,15 @@ function TableManageRoom() {
         onChange={handleTableChange}
       />
 
-      <EditPostModal
+      {/* <EditPostModal
         open={isModalOpen}
         onClose={() => setModalOpen(false)}
-        selectedRoom={selectedRoom}
-      />
+        roomId={selectedRoomId}
+      /> */}
       <RoomInfoModal
         open={isInfoModalOpen}
         onClose={() => setInfoModalOpen(false)}
-        selectedRoom={selectedRoom}
+        roomId={selectedRoomId}
       />
     </div>
   );

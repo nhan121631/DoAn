@@ -23,6 +23,7 @@ public class RoomResponseDto {
     private String description;
     private Double priceMonth;
     private Double priceDeposit;
+    private Double area;
     private int available;
     private int approval;
     private int hidden;

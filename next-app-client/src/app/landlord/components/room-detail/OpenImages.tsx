@@ -19,12 +19,14 @@ interface ImageType {
 interface OpenImagesProps {
   images: ImageType[];
   indexImg: number;
+  address: string;
   onClose: () => void;
 }
 
 export default function OpenImages({
   images,
   indexImg,
+  address,
   onClose,
 }: OpenImagesProps) {
   const [isActive, setIsActive] = React.useState(true);
@@ -53,7 +55,7 @@ export default function OpenImages({
             onClick={onClose}
             aria-label="Đóng"
           >
-            <span className="text-3xl">×</span>
+            <span className="text-3xl text-white">×</span>
           </button>
         </div>
         {/* Nội dung ảnh/map full vùng còn lại */}
@@ -61,7 +63,11 @@ export default function OpenImages({
           className="flex-1 w-full h-full overflow-y-auto scrollbar-hide"
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         >
-          {isActive ? <Images images={images} indexImg={indexImg} /> : <Map />}
+          {isActive ? (
+            <Images images={images} indexImg={indexImg} />
+          ) : (
+            <Map address={address} />
+          )}
         </div>
       </div>
     </div>
