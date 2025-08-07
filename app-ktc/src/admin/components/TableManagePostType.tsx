@@ -73,7 +73,7 @@ const TableManagePostType: React.FC<{
       dataIndex: "pricePerDay",
       width: "20%",
       sorter: (a, b) => a.pricePerDay - b.pricePerDay,
-      render: (value: number) => `${value} USD`,
+      render: (value: number) => `${value.toLocaleString("vi-VN")} đ`,
     },
     {
       title: "Description",

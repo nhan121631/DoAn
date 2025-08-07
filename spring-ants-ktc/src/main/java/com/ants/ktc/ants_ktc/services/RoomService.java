@@ -125,7 +125,9 @@ public class RoomService {
 
                 Double balance = user.getWallet().getBalance();
                 System.out.println("User Balance: " + balance);
+                System.out.println("Price total: " + totalPrice);
                 if (totalPrice > balance) {
+                        System.out.println("User does not have enough balance to create this room");
                         throw new IllegalArgumentException("User does not have enough balance to create this room");
                 }
 
@@ -157,9 +159,9 @@ public class RoomService {
                 transaction.setWallet(user.getWallet());
                 transactionsJpaRepository.save(transaction);
 
-                if (diffDays * postType.getPricePerDay() > user.getWallet().getBalance()) {
-                        throw new IllegalArgumentException("User does not have enough balance to create this room");
-                }
+                // if (diffDays * postType.getPricePerDay() > user.getWallet().getBalance()) {
+                //         throw new IllegalArgumentException("User does not have enough balance to create this room");
+                // }
                 room.setUser(user);
 
                 // Set địa chỉ
