@@ -1,11 +1,9 @@
 package com.ants.ktc.ants_ktc.dtos.room;
 
 import java.util.Date;
-import java.util.List;
 import java.util.UUID;
 
 import com.ants.ktc.ants_ktc.dtos.address.AddressResponseDto;
-import com.ants.ktc.ants_ktc.dtos.convenient.ConvenientResponseDto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
