@@ -26,6 +26,11 @@ const schema = yup
   .required();
 
 export default function ForgotPasswordForm() {
+  const [showPasswordForm, setShowPasswordForm] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [repeatPassword, setRepeatPassword] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [resetting, setResetting] = useState(false);
   const [messageApi, contextHolder] = message.useMessage();
   const [loading, setLoading] = useState(false);
   const [showCodeInput, setShowCodeInput] = useState(false);
@@ -46,6 +51,36 @@ export default function ForgotPasswordForm() {
     },
   });
 
+  // Handle password reset form submit
+  const handlePasswordResetSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPasswordError("");
+    if (!newPassword || newPassword.length < 6) {
+      setPasswordError("Password must be at least 6 characters.");
+      return;
+    }
+    if (newPassword !== repeatPassword) {
+      setPasswordError("Passwords do not match.");
+      return;
+    }
+    setResetting(true);
+    // Console log the data
+    console.log({
+      email: resetEmail,
+      code,
+      password: newPassword,
+      repeatPassword,
+    });
+    // You can call your backend API here
+    setTimeout(() => {
+      setResetting(false);
+      messageApi.success({
+        content: "Password reset data logged!",
+        duration: 2,
+      });
+    }, 1000);
+  };
+
   // Xử lý xác thực mã code
   const handleVerifyCode = async (code: string) => {
     if (!/^[0-9]{6}$/.test(code)) {
@@ -57,6 +92,7 @@ export default function ForgotPasswordForm() {
     try {
       await verifyResetCode(resetEmail, code);
       messageApi.success({ content: "Code verified!", duration: 2 });
+      setShowPasswordForm(true);
     } catch (err: any) {
       messageApi.error({
         content: err?.message || "Invalid code or email.",
@@ -68,16 +104,6 @@ export default function ForgotPasswordForm() {
     }
     console.log("Verifying code:", code, "for email:", resetEmail);
   };
-
-  // // Gọi API xác thực code với email
-  // verifyResetCode(resetEmail, code)
-  //   .then(() => {
-  //     messageApi.success({ content: "Code verified!", duration: 2 });
-  //   })
-  //   .catch((err) => {
-  //     setCodeError(err?.message || "Invalid code or email.");
-  //   });
-  // return true;
 
   // Handle form submission
   const onSubmit: SubmitHandler<IForgotPasswordInputs> = async (values) => {
@@ -171,6 +197,74 @@ export default function ForgotPasswordForm() {
                   Send Password Reset Code{" "}
                   <span className="text-xl">&rarr;</span>
                 </>
+              )}
+            </button>
+          </form>
+        </>
+      ) : showPasswordForm ? (
+        <>
+          <h2 className="mb-4 text-3xl font-bold text-white">Reset Password</h2>
+          <p className="mb-6 text-gray-200">Enter your new password below.</p>
+          <form onSubmit={handlePasswordResetSubmit}>
+            <div className="mb-6">
+              <input
+                type="password"
+                className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-white text-black"
+                placeholder="New password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                minLength={6}
+              />
+            </div>
+            <div className="mb-6">
+              <input
+                type="password"
+                className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-white text-black"
+                placeholder="Repeat new password"
+                value={repeatPassword}
+                onChange={(e) => setRepeatPassword(e.target.value)}
+                minLength={6}
+              />
+            </div>
+            {passwordError && (
+              <p className="flex items-center mt-1 text-xs text-red-500">
+                <MdErrorOutline className="w-4 h-4 mr-1" />
+                {passwordError}
+              </p>
+            )}
+            <button
+              type="submit"
+              disabled={resetting}
+              className={`w-full py-3 text-lg font-semibold text-black bg-white rounded-md hover:bg-gray-200 ${
+                resetting ? "opacity-60 cursor-not-allowed" : ""
+              }`}
+            >
+              {resetting ? (
+                <span className="flex items-center gap-2">
+                  <svg
+                    className="animate-spin h-5 w-5 text-gray-500"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8v8z"
+                    />
+                  </svg>
+                  Resetting...
+                </span>
+              ) : (
+                "Reset Password"
               )}
             </button>
           </form>

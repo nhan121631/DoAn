@@ -21,7 +21,7 @@ public class MailService {
             <div style='font-family: Arial, sans-serif; background: #f6f6f6; padding: 32px;'>
               <div style='max-width: 400px; margin: auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px #eee; padding: 24px;'>
                 <h2 style='color: #1976d2; text-align: center;'>Reset Password</h2>
-                <p style='font-size: 16px; color: #333; text-align: center;'>You have requested to reset your password. The code is valid for 5 minutes. Your verification code is:</p>
+                <p style='font-size: 16px; color: #333; text-align: center;'>You have requested to reset your password. The code is valid for <strong>5 minutes</strong>. Your verification code is:</p>
                 <div style='font-size: 32px; font-weight: bold; color: #1976d2; text-align: center; margin: 16px 0;'>%s</div>
                 <p style='font-size: 14px; color: #888; text-align: center;'>Please enter this code to continue the password reset process.</p>
                 <hr style='margin: 24px 0;'>

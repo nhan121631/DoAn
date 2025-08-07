@@ -8,7 +8,7 @@ import { usePathname } from "next/navigation";
 
 export default function AuthHeader() {
   const pathname = usePathname();
-  const showLoginButton = pathname !== '/auth/login';
+  const showLoginButton = pathname !== "/auth/login";
   return (
     <header className="absolute top-0 left-0 z-50 flex items-center justify-between w-full h-[80px] px-4 md:px-8 shadow-md">
       <div className="flex items-center gap-2 md:gap-4">
@@ -19,6 +19,7 @@ export default function AuthHeader() {
             width={100}
             height={40}
             priority
+            style={{ width: "auto" }}
           />
         </Link>
       </div>
@@ -37,13 +38,3 @@ export default function AuthHeader() {
     </header>
   );
 }
-
-
-
-
-
-
-
-
-      
-   
