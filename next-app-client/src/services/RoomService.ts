@@ -29,14 +29,15 @@ export async function getRoomsByLandlord(page: number, size: number) {
     return response.json();
   } catch (error) {
     console.error("Error fetching rooms:", error);
-    return {
-      rooms: [],
-      pageNumber: page,
-      pageSize: size,
-      totalRecords: 0,
-      totalPages: 0,
-      hasNext: false,
-      hasPrevious: false,
-    };    
+    return null;
+    // return {
+    //   rooms: [],
+    //   pageNumber: page,
+    //   pageSize: size,
+    //   totalRecords: 0,
+    //   totalPages: 0,
+    //   hasNext: false,
+    //   hasPrevious: false,
+    // };    
   }
 }

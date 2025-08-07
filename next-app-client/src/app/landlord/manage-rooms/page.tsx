@@ -31,7 +31,7 @@ function TableManageRoom() {
     setLoading(true);
     try {
       const res = await getRoomsByLandlord(page - 1, pageSize);
-      console.log("Rooms API response:", res); // <-- Thêm dòng này để log dữ liệu
+      console.log("Rooms API response:", res); 
       setData(res.rooms || []);
       setPagination({
         current: (res.pageNumber ?? 0) + 1,
