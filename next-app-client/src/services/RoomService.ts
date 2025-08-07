@@ -1,3 +1,5 @@
+import { API_URL } from "./Constant";
+
 export async function createRoom(images: File[] | null, room: string) {
   const formData = new FormData();
   if (images && Array.isArray(images)) {
@@ -68,4 +70,18 @@ export async function updateRoomPostExtend(
     throw new Error(data.message || "Failed to update room post");
   }
   return response.json();
+}
+export async function getRoomById(id: string) {
+  try {
+    console.log("Fetching room with ID:", id);
+    const response = await fetch(`${API_URL}/rooms/${id}`);
+    if (!response.ok) {
+      const data = await response.json();
+      throw new Error(data.message || "Failed to fetch room");
+    }
+    return response.json();
+  } catch (error) {
+    console.error("Error fetching room:", error);
+    return null;
+  }
 }

@@ -80,6 +80,7 @@ public class RoomService {
                 room.setPrice_deposit(requestDto.getPriceDeposit());
                 room.setPost_start_date(requestDto.getPostStartDate());
                 room.setPost_end_date(requestDto.getPostEndDate());
+                room.setArea(requestDto.getArea());
 
                 // Lấy PostType và User
                 PostType postType = postTypeJpaRepository.findById(requestDto.getTypepostId())
@@ -219,6 +220,7 @@ public class RoomService {
                                 .priceDeposit(room.getPrice_deposit())
                                 .postStartDate(room.getPost_start_date())
                                 .postEndDate(room.getPost_end_date())
+                                .area(room.getArea())
                                 .typepost(postType.getName())
                                 .userId(user.getId())
                                 .convenients(convenients.stream()
@@ -272,6 +274,7 @@ public class RoomService {
                                 .priceDeposit(room.getPrice_deposit())
                                 .postStartDate(room.getPost_start_date())
                                 .postEndDate(room.getPost_end_date())
+                                .area(room.getArea())
                                 .typepost(room.getPostType().getName())
                                 .userId(room.getUser().getId())
                                 .convenients(room.getConvenients().stream()
@@ -475,6 +478,67 @@ public class RoomService {
         // .build())
         // .toList();
         // }
+
+        public RoomResponseDto getRoomById(UUID id) {
+                Room room = roomJpaRepository.findDetailedById(id)
+                                .orElseThrow(() -> new IllegalArgumentException("Room not found"));
+
+                return RoomResponseDto.builder()
+                                .id(room.getId())
+                                .title(room.getTitle())
+                                .description(room.getDescription())
+                                .priceMonth(room.getPrice_month())
+                                .priceDeposit(room.getPrice_deposit())
+                                .postStartDate(room.getPost_start_date())
+                                .area(room.getArea())
+                                .postEndDate(room.getPost_end_date())
+                                .typepost(room.getPostType().getName())
+                                .userId(room.getUser().getId())
+                                .convenients(room.getConvenients().stream()
+                                                .map(c -> ConvenientResponseDto.builder()
+                                                                .id(c.getId())
+                                                                .name(c.getName())
+                                                                .build())
+                                                .toList())
+                                .images(room.getImages().stream()
+                                                .map(img -> ImageResponseDto.builder()
+                                                                .id(img.getId())
+                                                                .url(img.getUrl())
+                                                                .build())
+                                                .toList())
+                                .address(AddressResponseDto.builder()
+                                                .id(room.getAddress().getId())
+                                                .street(room.getAddress().getStreet())
+                                                .ward(WardResponseDto.builder()
+                                                                .id(room.getAddress().getWard().getId())
+                                                                .name(room.getAddress().getWard().getName())
+                                                                .district(DistrictResponseDto.builder()
+                                                                                .id(room.getAddress().getWard()
+                                                                                                .getDistrict().getId())
+                                                                                .name(room.getAddress().getWard()
+                                                                                                .getDistrict()
+                                                                                                .getName())
+                                                                                .province(ProvinceResponseDto.builder()
+                                                                                                .id(room.getAddress()
+                                                                                                                .getWard()
+                                                                                                                .getDistrict()
+                                                                                                                .getProvince()
+                                                                                                                .getId())
+                                                                                                .name(room.getAddress()
+                                                                                                                .getWard()
+                                                                                                                .getDistrict()
+                                                                                                                .getProvince()
+                                                                                                                .getName())
+                                                                                                .build())
+                                                                                .build())
+                                                                .build())
+                                                .build())
+
+                                .build();
+        }
+        // Thêm dòng này để trả về đối tượng Address
+        // nếu không có thì sẽ trả về null
+        // nếu có thì sẽ trả về đối tượng Address
 
         // converter room pagin find by user id
         public RoomResponseProjectionDto convertToDto(RoomByLandlordPagingProjection room) {

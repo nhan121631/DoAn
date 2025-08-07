@@ -20,6 +20,7 @@ public class RoomRequestCreateDto {
     private String title;
     private String description;
     private Double priceMonth;
+    private Double area;
     private Double priceDeposit;
     private Date postStartDate;
     private Date postEndDate;

@@ -109,4 +109,10 @@ public class RoomController {
         RoomUpdateExpireDateResponseDto roomResponse = roomService.updateExpirePostDate(request);
         return ResponseEntity.ok(roomResponse);
     }
+    @GetMapping("/{id}")
+    public ResponseEntity<RoomResponseDto> getRoomById(@PathVariable("id") UUID id) {
+        RoomResponseDto room = roomService.getRoomById(id);
+        return ResponseEntity.ok(room);
+    }
+
 }
