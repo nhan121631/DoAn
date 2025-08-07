@@ -2,6 +2,7 @@
 "use client";
 import {
   getRoomsByLandlord,
+  hideShowRoom,
   updateRoomPostExtend,
 } from "@/services/RoomService";
 import { Button, message, Popconfirm, Popover, Space, Table, Tag } from "antd";
@@ -80,8 +81,20 @@ function TableManageRoom() {
     fetchRooms(pag.current!, pag.pageSize!);
   };
 
-  const toggleHidden = (record: any) => {
-    console.log("Toggle hidden for:", record);
+  const toggleHidden = async (record: any) => {
+    try {
+      await hideShowRoom(record.id, record.hidden === 1 ? 0 : 1);
+      messageApi.success({
+        content: `Room is now ${record.hidden === 1 ? "visible" : "hidden"}`,
+        duration: 3,
+      });
+      fetchRooms(pagination.current, pagination.pageSize);
+    } catch (error: any) {
+      messageApi.error({
+        content: error.message || "Failed to update room visibility",
+        duration: 3,
+      });
+    }
   };
 
   // Hàm xử lý khi nhấn nút edit
@@ -371,20 +384,29 @@ function TableManageRoom() {
       title: "Hide/Show",
       dataIndex: "hidden",
       key: "hidden",
-      render: (hidden, record) => (
-        <Popconfirm
-          title={
-            hidden === 1
-              ? "Do you want to show this post again?"
-              : "Are you sure you want to hide this post?"
-          }
-          onConfirm={() => toggleHidden(record)}
-        >
-          <Button size="small" type={hidden === 1 ? "default" : "primary"}>
-            {hidden === 1 ? "Show" : "Hide"}
-          </Button>
-        </Popconfirm>
-      ),
+      render: (hidden, record) => {
+        const now = new Date();
+        const end = new Date(record.postEndDate);
+        const isExpired = now > end;
+        return (
+          <Popconfirm
+            title={
+              hidden === 1
+                ? "Do you want to show this post again?"
+                : "Are you sure you want to hide this post?"
+            }
+            onConfirm={() => toggleHidden(record)}
+          >
+            <Button
+              size="small"
+              type={hidden === 1 ? "default" : "primary"}
+              disabled={record.isRemoved === 1 || isExpired}
+            >
+              {hidden === 1 ? "Show" : "Hide"}
+            </Button>
+          </Popconfirm>
+        );
+      },
       sorter: (a, b) => a.hidden - b.hidden,
       defaultSortOrder: "ascend",
     },

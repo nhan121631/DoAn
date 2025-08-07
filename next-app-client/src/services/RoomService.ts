@@ -24,9 +24,10 @@ export async function createRoom(images: File[] | null, room: string) {
 
 export async function getRoomsByLandlord(page: number, size: number) {
   try {
-    const response = await fetch(`/api/landlord/room?page=${page}&size=${size}`);
+    const response = await fetch(
+      `/api/landlord/room?page=${page}&size=${size}`
+    );
     if (!response.ok) {
-
       const data = await response.json();
       throw new Error(data.message || "Failed to fetch rooms");
     }
@@ -42,7 +43,7 @@ export async function getRoomsByLandlord(page: number, size: number) {
     //   totalPages: 0,
     //   hasNext: false,
     //   hasPrevious: false,
-    // };    
+    // };
   }
 }
 
@@ -71,6 +72,23 @@ export async function updateRoomPostExtend(
   }
   return response.json();
 }
+
+export async function hideShowRoom(roomId: string, isHidden: number) {
+  const response = await fetch(`/api/landlord/room/hide-show`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ roomId, isHidden }),
+  });
+
+  if (!response.ok) {
+    const data = await response.json();
+    throw new Error(data.message || "Failed to update room visibility");
+  }
+  return response.json();
+}
+
 export async function getRoomById(id: string) {
   try {
     console.log("Fetching room with ID:", id);
