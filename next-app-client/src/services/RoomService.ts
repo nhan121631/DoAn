@@ -24,7 +24,9 @@ export async function getRoomsByLandlord(page: number, size: number) {
   try {
     const response = await fetch(`/api/landlord/room?page=${page}&size=${size}`);
     if (!response.ok) {
-      throw new Error("Failed to fetch rooms");
+
+      const data = await response.json();
+      throw new Error(data.message || "Failed to fetch rooms");
     }
     return response.json();
   } catch (error) {

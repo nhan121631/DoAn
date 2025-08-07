@@ -25,22 +25,27 @@ function TableManageRoom() {
   const [extendingKey, setExtendingKey] = useState<string | null>(null);
   const [extendDates, setExtendDates] = useState<{ [id: string]: string }>({});
 
+  const [messageApi, contextHolder] = message.useMessage();
+
   const router = useRouter();
 
   const fetchRooms = async (page = 1, pageSize = 5) => {
     setLoading(true);
     try {
       const res = await getRoomsByLandlord(page - 1, pageSize);
-      console.log("Rooms API response:", res); 
+      console.log("Rooms API response:", res);
       setData(res.rooms || []);
       setPagination({
         current: (res.pageNumber ?? 0) + 1,
         pageSize: res.pageSize ?? pageSize,
         total: res.totalRecords ?? 0,
       });
-    } catch (error) {
-      message.error("Failed to fetch rooms");
-      console.error("Error fetching rooms:", error);
+    } catch (error: any) {
+      messageApi.error({
+        content: "Failed to fetch rooms " + error.message,
+        duration: 3,
+      });
+      console.error("Error fetching rooms:", error.message);
     } finally {
       setLoading(false);
     }
@@ -172,11 +177,12 @@ function TableManageRoom() {
               size="small"
               disabled={!extendDates[record.id]}
               onClick={() => {
-                message.success(
-                  `Gia hạn đến ngày ${extendDates[record.id]} cho "${
+                messageApi.success({
+                  content: `Gia hạn đến ngày ${extendDates[record.id]} cho "${
                     record.title
-                  }"`
-                );
+                  }"`,
+                  duration: 3,
+                });
                 setExtendingKey(null);
               }}
             >
@@ -300,6 +306,7 @@ function TableManageRoom() {
 
   return (
     <div className="mx-4 my-6 p-6 min-h-[280px] dark:!bg-[#171f2f] dark:!text-white">
+      {contextHolder}
       <div className="flex items-center justify-between mb-4">
         <div className="mb-4">
           <h2 className="text-4xl font-semibold dark:!text-white">
