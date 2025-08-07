@@ -1,14 +1,20 @@
 // src/app/users/components/Auth/ForgotPassword.tsx
 "use client";
 
-import React, { useState } from "react";
+import React, { use, useState } from "react";
 import Link from "next/link";
 import { MdErrorOutline } from "react-icons/md";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import { resetPassword, verifyResetCode } from "@/services/ResetPassService";
+import {
+  changePassword,
+  resetPassword,
+  verifyResetCode,
+} from "@/services/ResetPassService";
+import { useRouter } from "next/navigation";
 import { message } from "antd";
+import { redirect } from "next/navigation";
 
 interface IForgotPasswordInputs {
   email: string;
@@ -19,13 +25,14 @@ const schema = yup
     email: yup
       .string()
       .trim()
-      .email("Invalid email.") // Translated
-      .required("Please enter your email.") // Translated
+      .email("Invalid email.")
+      .required("Please enter your email.")
       .lowercase(),
   })
   .required();
 
 export default function ForgotPasswordForm() {
+  const router = useRouter();
   const [showPasswordForm, setShowPasswordForm] = useState(false);
   const [newPassword, setNewPassword] = useState("");
   const [repeatPassword, setRepeatPassword] = useState("");
@@ -72,13 +79,29 @@ export default function ForgotPasswordForm() {
       repeatPassword,
     });
     // You can call your backend API here
-    setTimeout(() => {
-      setResetting(false);
+    try {
+      await changePassword(resetEmail, newPassword, code);
       messageApi.success({
-        content: "Password reset data logged!",
+        content: "Password has been reset successfully!",
         duration: 2,
       });
-    }, 1000);
+      setShowPasswordForm(false);
+      reset();
+      setNewPassword("");
+      setRepeatPassword("");
+      setCode("");
+      setShowCodeInput(false);
+      router.push("/auth/login");
+    } catch (error) {
+      console.error("Error resetting password:", error);
+      messageApi.error({
+        content:
+          error instanceof Error ? error.message : "Failed to reset password.",
+        duration: 3,
+      });
+    } finally {
+      setResetting(false);
+    }
   };
 
   // Xử lý xác thực mã code

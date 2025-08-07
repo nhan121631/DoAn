@@ -38,3 +38,25 @@ export async function verifyResetCode(email: string, code: string) {
 
     return data;
 }
+
+export async function changePassword(email: string, newPassword: string, code: string) {
+    const formData = new FormData();
+    formData.append("email", email);
+    formData.append("newPassword", newPassword);
+    formData.append("code", code);
+
+    const response = await fetch("/api/change-pass", {
+        method: "POST",
+        body: formData,
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+        // Trả về lỗi chi tiết từ backend nếu có
+        const msg = data?.message?.[0] || data?.error || "Failed to change password";
+        throw new Error(msg);
+    }
+
+    return data;
+}

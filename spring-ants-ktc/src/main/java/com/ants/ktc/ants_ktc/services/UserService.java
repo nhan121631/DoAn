@@ -348,28 +348,28 @@ public class UserService {
 
         }
 
-        // public void updatePassword(String email, String newPassword, String
-        // resetCode) {
-        // User user = userJpaRepository.findByProfileEmail(email)
-        // .orElseThrow(() -> new UsernameNotFoundException(
-        // "User not found in database for email: " + email));
+        public boolean updatePassword(String email, String newPassword, String resetCode) {
+                User user = userJpaRepository.findByProfileEmail(email)
+                                .orElseThrow(() -> new UsernameNotFoundException(
+                                                "User not found in database for email: " + email));
 
-        // if (user.getResetPasswordCode() == null ||
-        // !user.getResetPasswordCode().equals(resetCode)) {
-        // throw new IllegalArgumentException("Invalid reset code");
-        // }
+                if (user.getResetPasswordCode() == null ||
+                                !user.getResetPasswordCode().equals(resetCode)) {
+                        throw new IllegalArgumentException("Invalid reset code");
+                }
 
-        // if (user.getResetPasswordCodeCreationTime() == null
-        // || user.getResetPasswordCodeCreationTime()
-        // .isBefore(LocalDateTime.now().minusMinutes(10))) {
-        // throw new IllegalArgumentException("Reset code has expired");
-        // }
+                if (user.getResetPasswordCodeCreationTime() == null
+                                || user.getResetPasswordCodeCreationTime()
+                                                .isBefore(LocalDateTime.now().minusMinutes(5))) {
+                        throw new IllegalArgumentException("Reset code has expired");
+                }
 
-        // user.setPassword(passwordEncoder.encode(newPassword));
-        // user.setResetPasswordCode(null);
-        // user.setResetPasswordCodeCreationTime(null);
-        // userJpaRepository.save(user);
-        // }
+                user.setPassword(passwordEncoder.encode(newPassword));
+                user.setResetPasswordCode(null);
+                user.setResetPasswordCodeCreationTime(null);
+                userJpaRepository.save(user);
+                return true;
+        }
 
         public UUID getAuthenticatedUserId() {
                 Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

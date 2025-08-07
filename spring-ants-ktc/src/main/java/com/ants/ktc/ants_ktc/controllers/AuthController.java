@@ -62,4 +62,18 @@ public class AuthController {
         }
     }
 
+    @PostMapping("/update-password")
+    public ResponseEntity<Object> changePassword(@RequestBody Map<String, String> request) {
+        String email = request.get("email");
+        String newPassword = request.get("newPassword");
+        String code = request.get("code");
+
+        boolean isChanged = this.userService.updatePassword(email, newPassword, code);
+        if (isChanged) {
+            return ResponseEntity.ok(Map.of("message", "Password changed successfully"));
+        } else {
+            return ResponseEntity.badRequest().body(Map.of("message", "Failed to change password"));
+        }
+    }
+
 }
