@@ -29,4 +29,7 @@ public interface RoomJpaRepository extends JpaRepository<Room, UUID> {
 
         @Query("SELECT r FROM Room r WHERE r.user.id = :userId")
         Page<Room> findAllByUser(UUID userId, Pageable pageable);
+
+        List<RoomNameProjection> findByUserIdAndIsRemovedFalse(UUID userId);
+
 }
