@@ -28,8 +28,7 @@ public class AccountManagementService {
 
         @Transactional(readOnly = true)
         public List<UserResponseDto> getAllUsers() {
-                // --- Đảm bảo gọi đúng phương thức findAllExcludingAdmins() không có tham số
-                // ---
+
                 List<User> users = userJpaRepository.findAllExcludingAdmins();
 
                 return users.stream()
@@ -37,8 +36,6 @@ public class AccountManagementService {
                                 .collect(Collectors.toList());
         }
 
-        // ... (Giữ nguyên các hàm còn lại: getUserById, updateUserStatus,
-        // updateUserRoles, convertToUserResponseDto)
         @Transactional(readOnly = true)
         public UserResponseDto getUserById(UUID userId) {
 

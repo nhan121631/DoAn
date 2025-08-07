@@ -32,4 +32,6 @@ public interface RoomJpaRepository extends JpaRepository<Room, UUID> {
 
         List<RoomNameProjection> findByUserIdAndIsRemovedFalse(UUID userId);
 
+        Optional<Room> findByIdAndUserIdAndIsRemovedFalse(UUID id, UUID userId);
+
 }

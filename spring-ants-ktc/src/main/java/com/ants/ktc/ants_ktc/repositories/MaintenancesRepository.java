@@ -12,13 +12,14 @@ import java.util.UUID;
 @Repository
 public interface MaintenancesRepository extends JpaRepository<Maintenances, UUID> {
 
-    List<Maintenances> findByRoom_UserIdAndIsRemovedFalse(UUID userId);
+    List<MaintenanceProjection> findByRoom_UserIdAndIsRemovedFalse(UUID userId);
 
-    List<Maintenances> findByRoom_UserIdAndStatusAndRoom_IdAndIsRemovedFalse(UUID userId, Integer status, UUID roomId);
+    List<MaintenanceProjection> findByRoom_UserIdAndStatusAndRoom_IdAndIsRemovedFalse(UUID userId, Integer status,
+            UUID roomId);
 
-    List<Maintenances> findByRoom_UserIdAndStatusAndIsRemovedFalse(UUID userId, Integer status);
+    List<MaintenanceProjection> findByRoom_UserIdAndStatusAndIsRemovedFalse(UUID userId, Integer status);
 
-    List<Maintenances> findByRoom_UserIdAndRoom_IdAndIsRemovedFalse(UUID userId, UUID roomId);
+    List<MaintenanceProjection> findByRoom_UserIdAndRoom_IdAndIsRemovedFalse(UUID userId, UUID roomId);
 
     Optional<Maintenances> findByIdAndRoom_UserIdAndIsRemovedFalse(UUID id, UUID userId);
 
