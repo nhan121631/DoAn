@@ -16,7 +16,7 @@ on:
 # Biến môi trường dùng chung cho toàn bộ workflow
 env:
   # Tên Docker image sẽ được push lên Docker Hub
-  DOCKER_IMAGE: nhan12163/rentalroom:latest
+  DOCKER_IMAGE: nhan12163/rentalroom
   # Phiên bản Java sử dụng trong project
   JAVA_VERSION: "21"
 
