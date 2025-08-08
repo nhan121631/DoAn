@@ -7,7 +7,7 @@ on:
     # branches:
     #   - main
     # paths:
-    #   - 'demo/**'
+    #   - 'spring-ants-ktc/**'
     tags:
       # Chỉ chạy khi tạo tag bắt đầu bằng 'deployment'
       # Ví dụ: deployment-v1.0.0, deployment-prod, deployment-staging
@@ -50,22 +50,22 @@ jobs:
             ~/.gradle/caches
             ~/.gradle/wrapper
           # Key để định danh cache dựa trên OS và hash của file gradle
-          key: ${{ runner.os }}-gradle-${{ hashFiles('demo/**/*.gradle*', 'demo/**/gradle-wrapper.properties') }}
+          key: ${{ runner.os }}-gradle-${{ hashFiles('spring-ants-ktc/**/*.gradle*', 'spring-ants-ktc/**/gradle-wrapper.properties') }}
           # Fallback keys nếu không tìm thấy cache chính xác
           restore-keys: |
             ${{ runner.os }}-gradle-
 
       # Bước 4: Cấp quyền thực thi cho file gradlew (Gradle Wrapper)
       - name: Make gradlew executable
-        run: chmod +x ./demo/gradlew
+        run: chmod +x ./spring-ants-ktc/gradlew
 
       # Bước 5: Chạy unit tests (hiện tại đang bị comment)
       # Nên bỏ comment để đảm bảo code quality trước khi deploy
       # - name: Run tests
-      #   run: cd demo && ./gradlew test
+      #   run: cd spring-ants-ktc && ./gradlew test
       # Bước 6: Build ứng dụng Spring Boot thành file JAR
       - name: Build with Gradle
-        run: cd demo && ./gradlew clean bootJar --no-daemon
+        run: cd spring-ants-ktc && ./gradlew clean bootJar --no-daemon
         # clean: xóa thư mục build cũ
         # bootJar: tạo file JAR có thể chạy độc lập (executable JAR)
         # --no-daemon: không sử dụng Gradle daemon để tránh memory leak
