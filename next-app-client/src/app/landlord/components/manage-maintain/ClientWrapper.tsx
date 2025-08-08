@@ -9,10 +9,10 @@ import { Room, MaintainData, FormValues } from "@/types/types";
 
 const availableRooms: Room[] = [
   { name: "Mr. Nam's Room 1", address: "Ngu Hanh Son, Da Nang" },
-  { name: "Mr. Tien's Room 2", address: "Son Tra, Da Nang" },
-  { name: "Mr. Duong's Room 3", address: "Lien Chieu, Da Nang" },
-  { name: "Ms. Phung's Room 1", address: "Hoa Vang , Da Nang" },
-  { name: "Ms. Lan's Room 2", address: "Hoa Xuan , Da Nang" },
+  { name: "Mr. Nam's Room 2", address: "Ngu Hanh Son, Da Nang" },
+  { name: "Mr. Nam's Room 3", address: "Ngu Hanh Son, Da Nang" },
+  { name: "Ms. Nam's Room 4", address: "Ngu Hanh Son, Da Nang" },
+  { name: "Ms. Nam's Room 5", address: "Ngu Hanh Son, Da Nang" },
 ];
 
 const initialMaintainData: MaintainData[] = [
@@ -27,8 +27,8 @@ const initialMaintainData: MaintainData[] = [
   },
   {
     key: "2",
-    roomName: "Mr. Tien's Room 2",
-    address: "Son Tra, Da Nang",
+    roomName: "Mr. Nam's Room 2",
+    address: "Ngu Hanh Son, Da Nang",
     issue: "Bảo trì điều hòa",
     cost: 9000000,
     date: "08/10/2023",
@@ -36,8 +36,8 @@ const initialMaintainData: MaintainData[] = [
   },
   {
     key: "3",
-    roomName: "Mr. Duong's Room 3",
-    address: "Lien Chieu, Da Nang",
+    roomName: "Mr. Nam's Room 3",
+    address: "Ngu Hanh Son, Da Nang",
     issue: "Thay bóng đèn hỏng",
     cost: 100000,
     date: "08/15/2023",
@@ -45,8 +45,8 @@ const initialMaintainData: MaintainData[] = [
   },
   {
     key: "4",
-    roomName: "Ms. Phung's Room 1",
-    address: "Hoa Vang , Da Nang",
+    roomName: "Ms. Nam's Room 1",
+    address: "Ngu Hanh Son, Da Nang",
     issue: "Kiểm tra hệ thống sưởi ấm",
     cost: 500000,
     date: "08/20/2023",
@@ -54,8 +54,8 @@ const initialMaintainData: MaintainData[] = [
   },
   {
     key: "5",
-    roomName: "Ms. Lan's Room 2",
-    address: "Hoa Xuan , Da Nang",
+    roomName: "Ms. Nam's Room 2",
+    address: "Ngu Hanh Son, Da Nang",
     issue: "Sửa chữa cửa sổ",
     cost: 300000,
     date: "08/25/2023",
@@ -194,7 +194,7 @@ const ClientWrapper: React.FC = () => {
 
   return (
     <div className="flex flex-col flex-1">
-      <div className="flex justify-between items-center mt-2 mb-2">
+      <div className="flex items-center justify-between mt-2 mb-2">
         <Button
           type="primary"
           className="mr-4"

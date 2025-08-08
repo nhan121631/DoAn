@@ -294,3 +294,10 @@ html.dark .ant-modal-content {
   color: #94a3b8 !important;
   opacity: 1 !important;
 }
+
+/* InputNumber addonAfter dark mode */
+.dark .ant-input-number-group-addon {
+  background: #22304a !important;
+  color: #fff !important;
+  border-color: #334155 !important;
+}

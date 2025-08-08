@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import {
@@ -304,6 +305,7 @@ export default function ModalProfile({
           >
             <Select
               showSearch
+              allowClear
               placeholder="Select province"
               options={provinces}
               onChange={handleProvinceChange}
@@ -332,6 +334,7 @@ export default function ModalProfile({
           >
             <Select
               showSearch
+              allowClear
               placeholder="Select district"
               options={districts}
               loading={loadingDistricts}
@@ -362,6 +365,7 @@ export default function ModalProfile({
           >
             <Select
               showSearch
+              allowClear
               placeholder="Select ward"
               options={wards}
               loading={loadingWards}

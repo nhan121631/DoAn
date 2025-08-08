@@ -1,41 +1,37 @@
-
-
 import apiClient from "../lib/api-client-ad";
 import type {
   UserResponseDto,
-  UserPageResponseDto,
   RoleUpdateRequestDto,
-  UpdateUserStatusRequestDto
+  UpdateUserStatusRequestDto,
 } from "../types/type";
-import { type AxiosResponse } from "axios";
 
-// Lấy danh sách account
-export async function fetchAccounts(page: number, size: number) {
-  const res: AxiosResponse<UserPageResponseDto | UserResponseDto[]> = await apiClient.get(
-    `/admin/accounts?page=${page}&size=${size}`
-  );
+// ✅ Lấy danh sách account
+export async function fetchAccounts(): Promise<UserResponseDto[]> {
+  try {
+    const data = await apiClient.get(`/admin/accounts`);
 
-  if (Array.isArray(res.data)) {
-    // API trả mảng
-    return {
-      data: res.data as UserResponseDto[],
-      pageNumber: 0,
-      pageSize: res.data.length,
-      totalRecords: res.data.length
-    };
-  } else {
-    // API trả object phân trang
-    return res.data as UserPageResponseDto;
+    console.log("✅ API raw data:", data);
+    console.log("🔍 Array.isArray(data):", Array.isArray(data));
+
+    if (!Array.isArray(data)) {
+      console.error("❌ API không trả về mảng:", data);
+      return [];
+    }
+
+    return data;
+  } catch (error: any) {
+    console.error("❌ Lỗi khi fetchAccounts:", error);
+    throw error;
   }
 }
 
-// Update status
+// ✅ Update status
 export async function updateAccountStatus(id: string, status: number) {
   const body: UpdateUserStatusRequestDto = { status };
   return await apiClient.patch(`/admin/accounts/${id}/status`, body);
 }
 
-// Update roles
+// ✅ Update roles
 export async function updateAccountRoles(id: string, roleNames: string[]) {
   const body: RoleUpdateRequestDto = { roleNames };
   return await apiClient.patch(`/admin/accounts/${id}/roles`, body);

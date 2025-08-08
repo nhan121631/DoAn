@@ -23,9 +23,11 @@ public class RoomResponseDto {
     private String description;
     private Double priceMonth;
     private Double priceDeposit;
+    private Double area;
     private int available;
     private int approval;
     private int hidden;
+    private int isRemoved;
     private Date postStartDate;
     private Date postEndDate;
     private AddressResponseDto address;
@@ -33,4 +35,5 @@ public class RoomResponseDto {
     private List<ConvenientResponseDto> convenients;
     private String typepost;
     private UUID userId;
+
 }

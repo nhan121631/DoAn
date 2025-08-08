@@ -17,7 +17,7 @@ function AppHeader({ collapsed, toggleCollapsed }: AppHeaderProps) {
     setIsDark(!isDark);
     localStorage.setItem("theme", isDark ? "light" : "dark");
   };
-  const userName = session?.user?.username || "User";
+  const userName = session?.user?.userProfile.fullName || "User";
 
   const items = [
     {

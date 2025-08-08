@@ -1,5 +1,6 @@
 package com.ants.ktc.ants_ktc.entities;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import jakarta.persistence.CascadeType;
@@ -12,18 +13,28 @@ import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
-import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 
 @Entity
 @Table(name = "users")
-@Data
+@Getter
+@Setter
+@ToString(exclude = "profile")
 @EqualsAndHashCode(callSuper = true)
 public class User extends BaseEntity {
     @Column(name = "username", unique = true, nullable = false)
     private String username;
     @Column(name = "password")
     private String password;
+
+    @Column(name = "resetpasswordcode")
+    private String resetPasswordCode;
+
+    @Column(name="resetpasswordcodecreationtime")
+	private LocalDateTime resetPasswordCodeCreationTime;
 
     @Column(name = "is_active", nullable = false, columnDefinition = "int default 0")
     private int isActive;

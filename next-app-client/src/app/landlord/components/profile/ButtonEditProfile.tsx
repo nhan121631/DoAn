@@ -95,7 +95,11 @@ export default function ButtonEditProfile({
         setOpen(false);
       } else {
         // Hiển thị lỗi chi tiết từ API
-        const msg = data?.message?.[0] || data?.error || "Upload failed";
+        const msg =
+          data?.message?.[0] ||
+          data?.errors?.[0] ||
+          data?.error ||
+          "Upload failed";
         messageApi.error({
           content: msg,
           duration: 2,
