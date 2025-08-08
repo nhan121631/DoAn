@@ -408,7 +408,7 @@ public class RoomService {
 
                 return RoomShowHideProjectionDto.builder()
                                 // .id(room.getId())
-                                // .isHidden(room.getHidden())
+                                .isHidden(room.getHidden())
                                 .message("Room visibility updated successfully"
                                                 + (room.getHidden() == 1 ? " (hidden)" : " (visible)"))
                                 .build();
