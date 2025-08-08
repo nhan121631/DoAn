@@ -46,12 +46,12 @@ export default function PaymentHistoryPage() {
         const transactions = Array.isArray(result.transactions)
           ? result.transactions
           : [];
-
+          // console.log("Transactions:", transactions);
         transactions.forEach((t: any) => {
           if (t.status === 1) {
             successCount++;
-            if (t.amount > 0) totalIn += t.amount;
-            if (t.amount < 0) totalOut += t.amount;
+            if (t.transactionType == 1) totalIn += t.amount;
+            if (t.transactionType == 0) totalOut += t.amount;
           } else if (t.status === 0) {
             failedCount++;
           }
