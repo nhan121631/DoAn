@@ -75,7 +75,7 @@ export default function AuthForms({ csrfToken }: { csrfToken?: string }) {
         username: data.username,
         password: data.password,
         redirect: false,
-        callbackUrl,
+        // callbackUrl,
       });
 
       if (!res?.error) {
@@ -110,7 +110,7 @@ export default function AuthForms({ csrfToken }: { csrfToken?: string }) {
       const res = await signIn("credentials", {
         credential: credential,
         redirect: false,
-        callbackUrl,
+        // callbackUrl,
       });
       if (!res?.error) {
         messageApi.success({
@@ -239,7 +239,7 @@ export default function AuthForms({ csrfToken }: { csrfToken?: string }) {
               <GoogleLogin
                 onSuccess={handleSuccess}
                 onError={handleError}
-                // useOneTap
+                useOneTap
               />
 
               {/* <div>
