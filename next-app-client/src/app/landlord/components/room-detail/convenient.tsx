@@ -1,28 +1,42 @@
 import React from "react";
 import { BsCheckCircleFill } from "react-icons/bs";
 
-const features = [
-  { label: "Đầy đủ nội thất", enabled: true },
-  { label: "Có máy giặt", enabled: true },
-  { label: "Giờ giấc tự do", enabled: true },
-  { label: "Có gác", enabled: true },
-  { label: "Có tủ lạnh", enabled: true },
-  { label: "Có kệ bếp", enabled: true },
-  { label: "Có máy lạnh", enabled: true },
-  { label: "Không chung chủ", enabled: true },
-  { label: "Có thang máy", enabled: false },
-  { label: "Có bảo vệ 24/24", enabled: false },
-  { label: "Có hầm để xe", enabled: false },
+const convenients = [
+  { label: "furnished", enabled: false },
+  { label: "washing_machine", enabled: false },
+  { label: "no_curfew", enabled: false },
+  { label: "mezzanine", enabled: false },
+  { label: "fridge", enabled: false },
+  { label: "kitchen_shelf", enabled: false },
+  { label: "aircon", enabled: false },
+  { label: "private_entry", enabled: false },
+  { label: "elevator", enabled: false },
+  { label: "security_24h", enabled: false },
+  { label: "garage", enabled: false },
 ];
 
-export default function Convenient() {
+interface Feature {
+  id: string;
+  name: string;
+}
+
+const Props = {
+  features: [] as Feature[],
+};
+
+export default function Convenient({ features = [] }: { features: Feature[] }) {
+  const featureMap = new Map(features.map((f) => [f.name, f]));
+  const convenientFeatures = convenients.map((feature) => ({
+    label: feature.label,
+    enabled: featureMap.has(feature.label),
+  }));
   return (
     <div className="mt-6">
       <h2 className="text-lg font-bold text-gray-800 mb-3 dark:text-white">
-        Nổi bật
+        Conveniences
       </h2>
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-y-2 gap-x-6 text-[15px]">
-        {features.map((feature) => (
+        {convenientFeatures.map((feature) => (
           <div key={feature.label} className="flex items-center space-x-2">
             <span
               className={feature.enabled ? "text-green-600" : "text-gray-300"}
