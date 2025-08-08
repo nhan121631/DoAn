@@ -22,7 +22,7 @@ const RoomDetail: React.FC<RoomDetailProps> = ({ id }) => {
     getRoomById(id)
       .then((data) => {
         setRoom(data as RoomDetail);
-        console.log("Room data:", data.images);
+        console.log("Room data:", data);
       })
       .catch(() => {
         setError("Room not found");
@@ -61,7 +61,12 @@ const RoomDetail: React.FC<RoomDetailProps> = ({ id }) => {
       {/* Room Info Card */}
       <div className="mt-6 p-5 rounded-lg bg-[#f9f9f9] dark:bg-[#232b3b] shadow-sm flex flex-col gap-4">
         <div className="flex items-center mb-2">
-          <span className="text-[#e53935] font-bold text-xl mr-2 dark:text-[#ff6b6b]">
+          <span className="text-white font-bold text-xl mr-2 bg-red-500 px-2 rounded">
+            {room.typepost
+              ? room.typepost.charAt(0).toUpperCase() + room.typepost.slice(1)
+              : ""}
+          </span>
+          <span className="text-[#e53935] font-semibold text-xl mr-2 dark:text-[#ff6b6b]">
             {room.title || "Room for rent"}
           </span>
         </div>
@@ -80,6 +85,12 @@ const RoomDetail: React.FC<RoomDetailProps> = ({ id }) => {
           <span className="w-4/5 ml-1">{room.address?.ward?.name || ""}</span>
         </div>
         <div className="text-gray-700 dark:text-gray-200 text-[15px] mb-1 flex justify-start">
+          <span className="w-1/5">District:</span>
+          <span className="w-4/5 ml-1">
+            {room.address?.ward?.district?.name || ""}
+          </span>
+        </div>
+        <div className="text-gray-700 dark:text-gray-200 text-[15px] mb-1 flex justify-start">
           <span className="w-1/5">City/Province:</span>
           <span className="w-4/5 ml-1">
             {room.address?.ward?.district?.province?.name || ""}
@@ -90,7 +101,7 @@ const RoomDetail: React.FC<RoomDetailProps> = ({ id }) => {
           <span className="w-4/5 ml-1">{room.address?.street || ""}</span>
         </div>
         <div className="text-gray-700 dark:text-gray-200 text-[15px] mb-1 flex justify-start">
-          <span className="w-1/5">Ngày đăng:</span>
+          <span className="w-1/5">Post Start Date:</span>
           <span className="ml-1">
             {room.postStartDate
               ? new Date(room.postStartDate).toLocaleString()
@@ -98,7 +109,7 @@ const RoomDetail: React.FC<RoomDetailProps> = ({ id }) => {
           </span>
         </div>
         <div className="text-gray-700 dark:text-gray-200 text-[15px] mb-1 flex justify-start">
-          <span className="w-1/5">Hết hạn:</span>
+          <span className="w-1/5">Post End Date:</span>
           <span className="ml-1">
             {room.postEndDate
               ? new Date(room.postEndDate).toLocaleString()
@@ -124,7 +135,7 @@ const RoomDetail: React.FC<RoomDetailProps> = ({ id }) => {
             <p>No description</p>
           )}
         </div>
-        <Convenient />
+        <Convenient features={room.convenients} />
         <hr className="my-5 text-gray-300" />
         <MapSection
           address={

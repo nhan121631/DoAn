@@ -65,7 +65,7 @@ export type RoomDetail = {
     postStartDate: string;
     postEndDate: string;
     images: Image[];
-    typePost: TypePost;
+    typepost: string;
     convenients: Convenient[];
     
 };
