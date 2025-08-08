@@ -30,6 +30,9 @@ import com.ants.ktc.ants_ktc.dtos.room.PaginationRoomResponseDto;
 import com.ants.ktc.ants_ktc.dtos.room.RoomRequestCreateDto;
 import com.ants.ktc.ants_ktc.dtos.room.RoomResponseDto;
 import com.ants.ktc.ants_ktc.dtos.room.RoomResponseProjectionDto;
+import com.ants.ktc.ants_ktc.dtos.room.RoomShowHideProjectionDto;
+import com.ants.ktc.ants_ktc.dtos.room.RoomUpdateExpireDateRequestDto;
+import com.ants.ktc.ants_ktc.dtos.room.RoomUpdateExpireDateResponseDto;
 import com.ants.ktc.ants_ktc.entities.Convenient;
 import com.ants.ktc.ants_ktc.entities.Image;
 import com.ants.ktc.ants_ktc.entities.PostType;
@@ -334,6 +337,80 @@ public class RoomService {
                                 .totalPages(roomPage.getTotalPages())
                                 .hasNext(roomPage.hasNext())
                                 .hasPrevious(roomPage.hasPrevious())
+                                .build();
+        }
+
+        @Transactional
+        public RoomUpdateExpireDateResponseDto updateExpirePostDate(RoomUpdateExpireDateRequestDto request) {
+                Room room = roomJpaRepository.findForExtendById(request.getRoomId())
+                                .orElseThrow(() -> new IllegalArgumentException("Room not found"));
+
+                PostType postType = postTypeJpaRepository.findById(request.getTypepostId())
+                                .orElseThrow(() -> new IllegalArgumentException("PostType not found"));
+                room.setPostType(postType);
+
+                // Parse ngày từ request (ISO string -> Date)
+                Date newStartDate = request.getPostStartDate();
+                Date newEndDate = request.getPostEndDate();
+
+                LocalDate reqStartDate = newStartDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+                LocalDate reqEndDate = newEndDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+                long diffDays = ChronoUnit.DAYS.between(reqStartDate, reqEndDate);
+                if (diffDays <= 0) {
+                        throw new IllegalArgumentException("End date must be after start date");
+                }
+
+                // Tính tổng phí gia hạn
+                Double pricePerDay = postType.getPricePerDay();
+                Double totalPrice = diffDays * pricePerDay;
+
+                // Trừ tiền ví
+                User user = room.getUser();
+                Double balance = user.getWallet().getBalance();
+                if (totalPrice > balance) {
+                        throw new IllegalArgumentException("User does not have enough balance to extend this room");
+                }
+                user.getWallet().setBalance(balance - totalPrice);
+                userJpaRepository.save(user);
+
+                Transaction transaction = new Transaction();
+                transaction.setAmount(-totalPrice);
+                transaction.setDescription("Extend room post: " + room.getTitle());
+                transaction.setTransactionDate(new Date());
+                LocalDateTime now = LocalDateTime.now(ZoneId.systemDefault());
+                String day = String.format("%02d", now.getDayOfMonth());
+                String hour = String.format("%02d", now.getHour());
+                String random = String.format("%04d", (int) (Math.random() * 10000));
+                String transactionCode = day + hour + random;
+                transaction.setTransactionCode(transactionCode);
+                transaction.setBankTransactionName("Ants Wallet");
+                transaction.setStatus(1); // 1: thành công
+                transaction.setWallet(user.getWallet());
+                transactionsJpaRepository.save(transaction);
+
+                room.setPost_start_date(newStartDate);
+                room.setPost_end_date(newEndDate);
+                roomJpaRepository.save(room);
+
+                // Trả về DTO
+                return RoomUpdateExpireDateResponseDto.builder()
+                        .postStartDate(newStartDate)
+                        .postEndDate(newEndDate)
+                        .message("Room post updated successfully").build();
+        }
+
+        public RoomShowHideProjectionDto updateHidden(UUID roomId, RoomShowHideProjectionDto hidden) {
+                Room room = roomJpaRepository.findById(roomId)
+                                .orElseThrow(() -> new IllegalArgumentException("Room not found"));
+
+                room.setHidden(hidden.getIsHidden());
+                roomJpaRepository.save(room);
+
+                return RoomShowHideProjectionDto.builder()
+                                // .id(room.getId())
+                                // .isHidden(room.getHidden())
+                                .message("Room visibility updated successfully"
+                                                + (room.getHidden() == 1 ? " (hidden)" : " (visible)"))
                                 .build();
         }
 

@@ -192,6 +192,7 @@ const AddRoomForm: React.FC<{ onFinish?: (values: RoomData) => void }> = (
         description: values.description,
         priceMonth: values.priceMonth,
         priceDeposit: values.priceDeposit,
+        area: values.area,
         postStartDate: startDate,
         postEndDate: endDate,
         typepostId: selectedTypePostId,

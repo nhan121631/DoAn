@@ -8,8 +8,10 @@ import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -19,10 +21,15 @@ import org.springframework.web.multipart.MultipartFile;
 import com.ants.ktc.ants_ktc.dtos.room.PaginationRoomResponseDto;
 import com.ants.ktc.ants_ktc.dtos.room.RoomRequestCreateDto;
 import com.ants.ktc.ants_ktc.dtos.room.RoomResponseDto;
+import com.ants.ktc.ants_ktc.dtos.room.RoomResponseProjectionDto;
+import com.ants.ktc.ants_ktc.dtos.room.RoomShowHideProjectionDto;
+import com.ants.ktc.ants_ktc.dtos.room.RoomUpdateExpireDateRequestDto;
+import com.ants.ktc.ants_ktc.dtos.room.RoomUpdateExpireDateResponseDto;
 import com.ants.ktc.ants_ktc.services.RoomService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Valid;
 import jakarta.validation.Validator;
 
 @RestController
@@ -75,9 +82,10 @@ public class RoomController {
     }
 
     // @GetMapping("/by-landlord/{id}")
-    // public ResponseEntity<List<RoomResponseDto>> getAllRoomByLandlordId(@PathVariable("id") UUID id) {
-    //     List<RoomResponseDto> rooms = roomService.getAllRoomByLandlordId(id);
-    //     return ResponseEntity.ok(rooms);
+    // public ResponseEntity<List<RoomResponseDto>>
+    // getAllRoomByLandlordId(@PathVariable("id") UUID id) {
+    // List<RoomResponseDto> rooms = roomService.getAllRoomByLandlordId(id);
+    // return ResponseEntity.ok(rooms);
     // }
 
     @GetMapping("/by-landlord/{id}/paging")
@@ -88,6 +96,19 @@ public class RoomController {
         return ResponseEntity.ok(rooms);
     }
 
+    @PatchMapping("/{id}/hidden")
+    public ResponseEntity<RoomShowHideProjectionDto> updateHidden(@PathVariable UUID id,
+            @Valid @RequestBody RoomShowHideProjectionDto body) {
+        RoomShowHideProjectionDto result = roomService.updateHidden(id, body);
+        return ResponseEntity.ok(result);
+    }
+
+    @PatchMapping("/update-post-extend")
+    public ResponseEntity<RoomUpdateExpireDateResponseDto> extendPostDate(
+            @RequestBody RoomUpdateExpireDateRequestDto request) {
+        RoomUpdateExpireDateResponseDto roomResponse = roomService.updateExpirePostDate(request);
+        return ResponseEntity.ok(roomResponse);
+    }
     @GetMapping("/{id}")
     public ResponseEntity<RoomResponseDto> getRoomById(@PathVariable("id") UUID id) {
         RoomResponseDto room = roomService.getRoomById(id);
