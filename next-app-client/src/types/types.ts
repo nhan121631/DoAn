@@ -38,7 +38,7 @@ export type Convenient = {
   name: string;
 };
 //--------------------------------------//
-//Room
+//RoomDetail
 export type RoomDetail = {
   id: string;
   title: string;
@@ -75,11 +75,11 @@ export type Image = {
   url: string;
 }
 //--------------------------------------//
-// export type Room = {
-//   name: string;
-//   address: string;
-//   // approval?: 0 | 1 | 2; // 0 = pending, 1 = approved, 2 = rejected
-// };
+export type Room = {
+  name: string;
+  address: string;
+  // approval?: 0 | 1 | 2; // 0 = pending, 1 = approved, 2 = rejected
+};
 
 export type MaintainData = {
   key: string;

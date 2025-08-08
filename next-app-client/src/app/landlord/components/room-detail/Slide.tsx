@@ -4,6 +4,7 @@ import React from "react";
 import Image from "next/image";
 import { FaAngleLeft } from "react-icons/fa";
 import OpenImages from "./OpenImages";
+import { URL_IMAGE } from "@/services/Constant";
 
 interface Image {
   id: number;
@@ -63,7 +64,7 @@ export const Slide = ({ images, address }: Props) => {
                 src={
                   images[indexImg].url.startsWith("http")
                     ? images[indexImg].url
-                    : `http://localhost:3333${images[indexImg].url}`
+                    : `${URL_IMAGE}${images[indexImg].url}`
                 }
                 alt="room image"
                 width={600}
@@ -105,7 +106,7 @@ export const Slide = ({ images, address }: Props) => {
                 src={
                   item.url.startsWith("http")
                     ? item.url
-                    : `http://localhost:3333${item.url}`
+                    : `${URL_IMAGE}${item.url}`
                 }
                 alt={`Thumbnail for image ${item.id}`}
                 width={100}

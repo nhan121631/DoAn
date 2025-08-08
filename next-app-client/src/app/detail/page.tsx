@@ -1,4 +1,4 @@
-import Convenient from "../landlord/components/room-detail/convenient";
+// import Convenient from "../landlord/components/room-detail/convenient";
 import MapSection from "../landlord/components/room-detail/map";
 // import { Slide } from "../landlord/components/room-detail/Slide";
 
@@ -89,7 +89,7 @@ export default function DetailPage() {
           <li>Contact: 0906.646.585 (Thao)</li>
         </ul>
 
-        <Convenient />
+        {/* <Convenient /> */}
         <hr className="my-5 text-gray-300" />
         <MapSection address="90 Nguyen Thuc Tu, Hoa Hai, Ngu Hanh Son, Da Nang" />
       </div>

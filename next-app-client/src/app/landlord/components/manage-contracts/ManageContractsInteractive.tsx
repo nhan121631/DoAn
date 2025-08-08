@@ -1,23 +1,36 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 
-"use client"; 
-import React, {  useState } from "react";
-import { Table, Tag, Button, Modal, Popconfirm, message, Space, Input } from "antd";
+"use client";
+import React, { useState } from "react";
+import {
+  Table,
+  Tag,
+  Button,
+  Modal,
+  Popconfirm,
+  message,
+  Space,
+  Input,
+} from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { AiOutlineDelete, AiOutlineEdit } from "react-icons/ai";
-import { MdOutlinePictureAsPdf } from "react-icons/md"; 
-import ContractFormModal from "./ContractFormModal"; 
-import InvoiceExportModal from "./InvoiceExportModal"; 
-import { ContractData, ContractFormValues, Room, InvoiceFormValues } from "@/types/types"; 
-import * as XLSX from 'xlsx';
-import Image from 'next/image';
+import { MdOutlinePictureAsPdf } from "react-icons/md";
+// import ContractFormModal from "./ContractFormModal";
+import InvoiceExportModal from "./InvoiceExportModal";
+import {
+  ContractData,
+  ContractFormValues,
+  InvoiceFormValues,
+} from "@/types/types";
+import * as XLSX from "xlsx";
+import Image from "next/image";
 
-
-const availableRooms: Room[] = [
-  { name: "Mr. Nam's Room 1", address: "Ngu Hanh Son, Da Nang"},
+const availableRooms = [
+  { name: "Mr. Nam's Room 1", address: "Ngu Hanh Son, Da Nang" },
   { name: "Mr. Tien's Room 2", address: "Son Tra, Da Nang" },
   { name: "Mr. Duong's Room 3", address: "Lien Chieu, Da Nang" },
   { name: "Ms. Phung's Room 1", address: "Hoa Vang , Da Nang" },
-  { name: "Ms. Lan's Room 2", address: "Hoa Xuan , Da Nang"},
+  { name: "Ms. Lan's Room 2", address: "Hoa Xuan , Da Nang" },
 ];
 
 const initialContractData: ContractData[] = [
@@ -33,7 +46,8 @@ const initialContractData: ContractData[] = [
     startDate: "01/01/2024",
     endDate: "01/07/2024",
     status: 0, // Rented
-    contractImageUrl: "https://placehold.co/400x300/E0BBE4/FFFFFF?text=Contract+001", 
+    contractImageUrl:
+      "https://placehold.co/400x300/E0BBE4/FFFFFF?text=Contract+001",
   },
   {
     key: "c_002",
@@ -47,7 +61,8 @@ const initialContractData: ContractData[] = [
     startDate: "15/05/2024",
     endDate: "15/07/2024",
     status: 1, // Checked Out
-    contractImageUrl: "https://placehold.co/400x300/957DAD/FFFFFF?text=Contract+002", 
+    contractImageUrl:
+      "https://placehold.co/400x300/957DAD/FFFFFF?text=Contract+002",
   },
   {
     key: "c_003",
@@ -55,13 +70,14 @@ const initialContractData: ContractData[] = [
     roomName: "Mr. Duong's Room 3",
     tenantName: "Peter Jones",
     phoneNumber: "0901122334",
-    numberOfPeople: 3, 
+    numberOfPeople: 3,
     price: 90000000,
-    durationMonths: 0, 
+    durationMonths: 0,
     startDate: "01/06/2024",
     endDate: "01/06/2024",
     status: 0, // Rented
-    contractImageUrl: "https://placehold.co/400x300/D291BC/FFFFFF?text=Contract+003", 
+    contractImageUrl:
+      "https://placehold.co/400x300/D291BC/FFFFFF?text=Contract+003",
   },
   {
     key: "c_004",
@@ -69,13 +85,14 @@ const initialContractData: ContractData[] = [
     roomName: "Ms. Phung's Room 1",
     tenantName: "Alice Brown",
     phoneNumber: "0977889900",
-    numberOfPeople: 1, 
+    numberOfPeople: 1,
     price: 100000,
     durationMonths: 5,
     startDate: "20/03/2024",
     endDate: "20/08/2024",
     status: 0, // Rented
-    contractImageUrl: "https://placehold.co/400x300/FFC72C/FFFFFF?text=Contract+004", 
+    contractImageUrl:
+      "https://placehold.co/400x300/FFC72C/FFFFFF?text=Contract+004",
   },
 ];
 
@@ -84,42 +101,49 @@ const ManageContractsInteractive: React.FC = () => {
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [isViewContractModalOpen, setIsViewContractModalOpen] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [selectedContract, setSelectedContract] = useState<ContractData | null>(null);
-  const [editingContract, setEditingContract] = useState<ContractData | null>(null);
-  const [isInvoiceModalOpen, setIsInvoiceModalOpen] = useState(false); 
-  const [contractToExport, setContractToExport] = useState<ContractData | null>(null); 
+  const [selectedContract, setSelectedContract] = useState<ContractData | null>(
+    null
+  );
+  const [editingContract, setEditingContract] = useState<ContractData | null>(
+    null
+  );
+  const [isInvoiceModalOpen, setIsInvoiceModalOpen] = useState(false);
+  const [contractToExport, setContractToExport] = useState<ContractData | null>(
+    null
+  );
 
-  const calculateEndDate = (startDate: string, durationMonths: number): string => {
-    const start = new Date(startDate.split('/').reverse().join('-'));
-    if (isNaN(start.getTime())) return "Invalid Date"; 
+  const calculateEndDate = (
+    startDate: string,
+    durationMonths: number
+  ): string => {
+    const start = new Date(startDate.split("/").reverse().join("-"));
+    if (isNaN(start.getTime())) return "Invalid Date";
     start.setMonth(start.getMonth() + durationMonths);
-    return start.toLocaleDateString('en-US'); 
+    return start.toLocaleDateString("en-US");
   };
 
   const handleFormSubmit = (values: ContractFormValues) => {
     const endDate = calculateEndDate(values.startDate, values.durationMonths);
 
-    let imageUrl = values.contractImageUrl; 
+    let imageUrl = values.contractImageUrl;
     if (values.contractImageFile) {
-     
-      imageUrl = "https://placehold.co/400x300/8ECDA9/FFFFFF?text=Uploaded+Contract";
-     
+      imageUrl =
+        "https://placehold.co/400x300/8ECDA9/FFFFFF?text=Uploaded+Contract";
     } else if (editingContract && !values.contractImageUrl) {
-        imageUrl = undefined;
+      imageUrl = undefined;
     }
-
 
     if (editingContract) {
       const updatedData = data.map((item) =>
         item.key === editingContract.key
-          ? {
+          ? ({
               ...item,
               ...values,
               endDate,
               status: values.status !== undefined ? values.status : item.status,
-              numberOfPeople: values.numberOfPeople, 
-              contractImageUrl: imageUrl, 
-            } as ContractData
+              numberOfPeople: values.numberOfPeople,
+              contractImageUrl: imageUrl,
+            } as ContractData)
           : item
       );
       setData(updatedData);
@@ -153,7 +177,7 @@ const ManageContractsInteractive: React.FC = () => {
   };
 
   const handleDeleteContract = (recordKey: string) => {
-    const updatedData = data.filter(item => item.key !== recordKey);
+    const updatedData = data.filter((item) => item.key !== recordKey);
     setData(updatedData);
     message.success("Contract deleted successfully!");
   };
@@ -164,8 +188,8 @@ const ManageContractsInteractive: React.FC = () => {
   };
 
   const handleExportInvoice = (record: ContractData) => {
-    setContractToExport(record); 
-    setIsInvoiceModalOpen(true); 
+    setContractToExport(record);
+    setIsInvoiceModalOpen(true);
   };
 
   const handleInvoiceFormSubmit = (values: InvoiceFormValues) => {
@@ -174,9 +198,9 @@ const ManageContractsInteractive: React.FC = () => {
       return;
     }
 
-    const updatedData = data.map(item =>
+    const updatedData = data.map((item) =>
       item.key === contractToExport.key
-        ? { ...item, status: 1 as (0 | 1) } // Explicitly cast 1 to (0 | 1)
+        ? { ...item, status: 1 as 0 | 1 } // Explicitly cast 1 to (0 | 1)
         : item
     );
     setData(updatedData);
@@ -193,16 +217,26 @@ const ManageContractsInteractive: React.FC = () => {
       ["Start Date:", contractToExport.startDate],
       ["End Date:", contractToExport.endDate],
       ["Installation Cost (VND):", values.installationCost || 0],
-      ["Total Amount (VND):", contractToExport.price + (values.installationCost || 0)],
+      [
+        "Total Amount (VND):",
+        contractToExport.price + (values.installationCost || 0),
+      ],
       ["Status:", getStatusDisplay(1).text],
-      ["Export Date:", new Date().toLocaleDateString('en-US') + ' ' + new Date().toLocaleTimeString('en-US')],
+      [
+        "Export Date:",
+        new Date().toLocaleDateString("en-US") +
+          " " +
+          new Date().toLocaleTimeString("en-US"),
+      ],
     ];
 
     const ws = XLSX.utils.aoa_to_sheet(invoiceData);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Invoice");
 
-    const excelFileName = `${values.invoiceName || 'Invoice'}_${contractToExport.contractName}.xlsx`;
+    const excelFileName = `${values.invoiceName || "Invoice"}_${
+      contractToExport.contractName
+    }.xlsx`;
     XLSX.writeFile(wb, excelFileName);
 
     message.success("Checked out and invoice exported successfully!");
@@ -211,12 +245,14 @@ const ManageContractsInteractive: React.FC = () => {
     setContractToExport(null);
   };
 
-
   const getStatusDisplay = (status: 0 | 1) => {
     switch (status) {
-      case 0: return { text: "Rented", color: "green" }; 
-      case 1: return { text: "Checked Out", color: "volcano" }; 
-      default: return { text: "Unknown", color: "default" };
+      case 0:
+        return { text: "Rented", color: "green" };
+      case 1:
+        return { text: "Checked Out", color: "volcano" };
+      default:
+        return { text: "Unknown", color: "default" };
     }
   };
 
@@ -245,7 +281,7 @@ const ManageContractsInteractive: React.FC = () => {
       key: "phoneNumber",
     },
     {
-      title: "Number of People", 
+      title: "Number of People",
       dataIndex: "numberOfPeople",
       key: "numberOfPeople",
       sorter: (a, b) => a.numberOfPeople - b.numberOfPeople,
@@ -254,7 +290,7 @@ const ManageContractsInteractive: React.FC = () => {
       title: "Contract File",
       key: "viewContract",
       render: (_, record) => (
-        <Button onClick={() => handleViewContract(record)}>View File</Button> 
+        <Button onClick={() => handleViewContract(record)}>View File</Button>
       ),
     },
     {
@@ -296,7 +332,7 @@ const ManageContractsInteractive: React.FC = () => {
             icon={<MdOutlinePictureAsPdf size={18} />}
             onClick={() => handleExportInvoice(record)}
             title="Export Invoice"
-            disabled={record.status === 1} 
+            disabled={record.status === 1}
           />
           <Popconfirm
             title="Are you sure you want to delete this contract?"
@@ -304,7 +340,12 @@ const ManageContractsInteractive: React.FC = () => {
             okText="Yes"
             cancelText="No"
           >
-            <Button type="text" danger icon={<AiOutlineDelete size={18} />} title="Delete Contract" />
+            <Button
+              type="text"
+              danger
+              icon={<AiOutlineDelete size={18} />}
+              title="Delete Contract"
+            />
           </Popconfirm>
         </Space>
       ),
@@ -339,7 +380,7 @@ const ManageContractsInteractive: React.FC = () => {
       />
 
       {/* Add/Edit Contract Modal */}
-      <ContractFormModal
+      {/* <ContractFormModal
         open={isFormModalOpen}
         onCancel={() => {
           setIsFormModalOpen(false);
@@ -348,7 +389,7 @@ const ManageContractsInteractive: React.FC = () => {
         onSubmit={handleFormSubmit}
         editingContract={editingContract}
         availableRooms={availableRooms}
-      />
+      /> */}
 
       {/* View Contract Details Modal */}
       <Modal
@@ -361,12 +402,16 @@ const ManageContractsInteractive: React.FC = () => {
         {/* Always show a generic placeholder image */}
         <div className="mt-4 text-center">
           <h4 className="font-semibold mb-2">Contract File:</h4>
-          <a href="https://cdn.luatminhkhue.vn/lmk/articles/18/91724/quy-dinh-ve-ngon-ngu-hop-dong---91724.jpg" target="_blank" rel="noopener noreferrer">
+          <a
+            href="https://cdn.luatminhkhue.vn/lmk/articles/18/91724/quy-dinh-ve-ngon-ngu-hop-dong---91724.jpg"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             <Image
               src="https://cdn.luatminhkhue.vn/lmk/articles/18/91724/quy-dinh-ve-ngon-ngu-hop-dong---91724.jpg"
               alt="Quy định về ngôn ngữ hợp đồng"
-              width={600} 
-              height={400} 
+              width={600}
+              height={400}
               className="rounded-md shadow-md mx-auto"
             />
           </a>

@@ -9,6 +9,7 @@ import { IoIosPhonePortrait } from "react-icons/io";
 import { MdOutlineMail } from "react-icons/md";
 import { RiBankCardFill } from "react-icons/ri";
 import ButtonEditProfile from "../components/profile/ButtonEditProfile";
+import { URL_IMAGE } from "@/services/Constant";
 
 export default async function ProfileInfo() {
   const session = await getServerSession(authOptions);
@@ -33,7 +34,7 @@ export default async function ProfileInfo() {
               userProfile.avatar?.trim() !== ""
                 ? userProfile.avatar.startsWith("http")
                   ? userProfile.avatar
-                  : `http://localhost:3333${userProfile.avatar}`
+                  : `${URL_IMAGE}${userProfile.avatar}`
                 : "/images/default/avatar.jpg"
             }
             alt="Avatar"

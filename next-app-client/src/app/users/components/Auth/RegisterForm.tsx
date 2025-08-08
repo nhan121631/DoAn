@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 "use client";
 
 import React, { useState } from "react";
@@ -69,7 +71,7 @@ export default function RegisterForm() {
   const onRegisterSubmit = async (values: IRegisterInputs) => {
     // ...existing code...
     try {
-      const response = await RegisterService(values);
+      await RegisterService(values);
       messageApi.success({
         content: "Registration successful!",
         duration: 2,

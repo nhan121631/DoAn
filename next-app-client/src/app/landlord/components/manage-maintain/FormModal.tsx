@@ -2,7 +2,7 @@
 
 import React, { useEffect, useCallback } from "react";
 import { Modal, Button, Input, Select, Form } from "antd";
-import { Room, MaintainData, FormValues } from "@/types/types"; 
+import { MaintainData, FormValues, Room } from "@/types/types";
 
 const { Option } = Select;
 
@@ -11,7 +11,7 @@ interface FormModalProps {
   onCancel: () => void;
   onSubmit: (values: FormValues) => void;
   editingMaintain: MaintainData | null;
-  availableRooms: Room[]; 
+  availableRooms: Room[];
 }
 
 const FormContent: React.FC<{
@@ -29,21 +29,20 @@ const FormContent: React.FC<{
     }
   }, [editingMaintain, form]);
 
-  const handleRoomNameChange = useCallback((value: string) => {
-    const selectedRoom = availableRooms.find(room => room.name === value);
-    if (selectedRoom) {
-      form.setFieldsValue({ address: selectedRoom.address });
-    } else {
-      form.setFieldsValue({ address: "" });
-    }
-  }, [form, availableRooms]);
+  const handleRoomNameChange = useCallback(
+    (value: string) => {
+      const selectedRoom = availableRooms.find((room) => room.name === value);
+      if (selectedRoom) {
+        form.setFieldsValue({ address: selectedRoom.address });
+      } else {
+        form.setFieldsValue({ address: "" });
+      }
+    },
+    [form, availableRooms]
+  );
 
   return (
-    <Form
-      form={form}
-      layout="vertical"
-      onFinish={onSubmit}
-    >
+    <Form form={form} layout="vertical" onFinish={onSubmit}>
       <Form.Item
         label="Room Name"
         name="roomName"
@@ -55,7 +54,9 @@ const FormContent: React.FC<{
           showSearch
           optionFilterProp="children"
           filterOption={(input, option) =>
-            String(option?.children).toLowerCase().indexOf(input.toLowerCase()) >= 0
+            String(option?.children)
+              .toLowerCase()
+              .indexOf(input.toLowerCase()) >= 0
           }
         >
           {availableRooms.map((room) => (
@@ -71,7 +72,7 @@ const FormContent: React.FC<{
         rules={[{ required: true, message: "Please enter address!" }]}
       >
         <Input
-          value={form.getFieldValue('address')}
+          value={form.getFieldValue("address")}
           onChange={(e) => form.setFieldsValue({ address: e.target.value })}
         />
       </Form.Item>
@@ -85,7 +86,12 @@ const FormContent: React.FC<{
       <Form.Item
         label="Estimated costs (₫)"
         name="cost"
-        rules={[{ pattern: /^\d+(\.\d{1,2})?$/, message: 'Please enter a valid number!' }]}
+        rules={[
+          {
+            pattern: /^\d+(\.\d{1,2})?$/,
+            message: "Please enter a valid number!",
+          },
+        ]}
       >
         <Input type="number" />
       </Form.Item>
@@ -118,7 +124,6 @@ const FormModal: React.FC<FormModalProps> = ({
   editingMaintain,
   availableRooms,
 }) => {
-
   return (
     <Modal
       title={editingMaintain ? "Edit Maintenance" : "Add New Maintenance"}

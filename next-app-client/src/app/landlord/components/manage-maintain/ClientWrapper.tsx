@@ -5,9 +5,9 @@ import { Table, Tag, Button, Popconfirm, message, Space, Input } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { AiOutlineDelete, AiOutlineEdit } from "react-icons/ai";
 import FormModal from "./FormModal";
-import { Room, MaintainData, FormValues } from "@/types/types";
+import { MaintainData, FormValues } from "@/types/types";
 
-const availableRooms: Room[] = [
+const availableRooms = [
   { name: "Mr. Nam's Room 1", address: "Ngu Hanh Son, Da Nang" },
   { name: "Mr. Nam's Room 2", address: "Ngu Hanh Son, Da Nang" },
   { name: "Mr. Nam's Room 3", address: "Ngu Hanh Son, Da Nang" },

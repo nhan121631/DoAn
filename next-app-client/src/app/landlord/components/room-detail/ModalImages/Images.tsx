@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
+import { URL_IMAGE } from "@/services/Constant";
 import Image from "next/image";
 import React from "react";
 import { FaAngleLeft } from "react-icons/fa";
@@ -47,7 +48,7 @@ export default function Images({ images, indexImg, onClose }: any) {
               src={
                 images[currentIndex].url.startsWith("http")
                   ? images[currentIndex].url
-                  : `http://localhost:3333${images[currentIndex].url}`
+                  : `${URL_IMAGE}${images[currentIndex].url}`
               }
               alt="room image"
               width={800}
@@ -92,7 +93,7 @@ export default function Images({ images, indexImg, onClose }: any) {
               src={
                 item.url.startsWith("http")
                   ? item.url
-                  : `http://localhost:3333${item.url}`
+                  : `${URL_IMAGE}${item.url}`
               }
               alt={`Thumbnail for image ${item.id}`}
               width={100}
