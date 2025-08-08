@@ -400,7 +400,7 @@ public class RoomService {
         }
 
         public RoomShowHideProjectionDto updateHidden(UUID roomId, RoomShowHideProjectionDto hidden) {
-                Room room = roomJpaRepository.findById(roomId)
+                Room room = roomJpaRepository.findForExtendById(roomId)
                                 .orElseThrow(() -> new IllegalArgumentException("Room not found"));
 
                 room.setHidden(hidden.getIsHidden());
