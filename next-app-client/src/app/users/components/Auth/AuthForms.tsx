@@ -38,7 +38,7 @@ const schema = yup
 
 export default function AuthForms({ csrfToken }: { csrfToken?: string }) {
   const [showLoginPassword, setShowLoginPassword] = useState(false);
-  const [loginGeneralErrorMessage, setLoginGeneralErrorMessage] = useState("");
+  // const [loginGeneralErrorMessage, setLoginGeneralErrorMessage] = useState("");
 
   const [messageApi, contextHolder] = message.useMessage();
 
@@ -217,11 +217,11 @@ export default function AuthForms({ csrfToken }: { csrfToken?: string }) {
           </div>
 
           {/* API Error */}
-          {loginGeneralErrorMessage && (
+          {/* {loginGeneralErrorMessage && (
             <div className="px-4 py-3 mb-4 text-sm text-red-700 bg-red-100 border border-red-400 rounded">
               {loginGeneralErrorMessage}
             </div>
-          )}
+          )} */}
 
           {/* Button */}
           <button

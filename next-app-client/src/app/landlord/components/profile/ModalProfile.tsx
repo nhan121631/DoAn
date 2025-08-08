@@ -58,7 +58,7 @@ export default function ModalProfile({
   form,
   userProfile,
 }: ModalProfileProps) {
-  const [fileList, setFileList] = useState<UploadFile[]>([]);
+  // const [fileList, setFileList] = useState<UploadFile[]>([]);
   const [previewUrl, setPreviewUrl] = useState<string>();
   const [provinces, setProvinces] = useState<SelectOption[]>([]);
   const [districts, setDistricts] = useState<SelectOption[]>([]);
@@ -122,7 +122,7 @@ export default function ModalProfile({
   };
 
   const handleAvatarChange = (info: UploadChangeParam<UploadFile<unknown>>) => {
-    setFileList(info.fileList);
+    // setFileList(info.fileList);
     const file = info.fileList?.[0]?.originFileObj;
     if (file) {
       const url = URL.createObjectURL(file);

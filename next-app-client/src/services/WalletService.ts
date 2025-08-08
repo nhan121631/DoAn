@@ -1,6 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { authOptions } from "@/lib/auth";
-import { getServerSession } from "next-auth";
 import { API_URL } from "./Constant";
 
 export async function getUserWallet(session: any) {
@@ -34,7 +32,10 @@ if (!response.ok) {
       // Xử lý riêng, ví dụ: return { passwordNull: true }
       return { passwordNull: true };
     }
-  } catch (e) {}
+  } catch (e) {
+    // Nếu không parse được JSON, giữ nguyên errorMsg mặc định
+    console.error("Error parsing response:", e);
+  }
   throw new Error(errorMsg);
 }
 

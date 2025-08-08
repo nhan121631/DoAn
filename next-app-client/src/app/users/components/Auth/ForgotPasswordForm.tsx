@@ -1,7 +1,8 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // src/app/users/components/Auth/ForgotPassword.tsx
 "use client";
 
-import React, { use, useState } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { MdErrorOutline } from "react-icons/md";
 import { useForm, SubmitHandler } from "react-hook-form";
@@ -14,7 +15,6 @@ import {
 } from "@/services/ResetPassService";
 import { useRouter } from "next/navigation";
 import { message } from "antd";
-import { redirect } from "next/navigation";
 
 interface IForgotPasswordInputs {
   email: string;
