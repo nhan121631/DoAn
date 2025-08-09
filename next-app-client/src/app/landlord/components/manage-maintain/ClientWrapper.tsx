@@ -1,191 +1,186 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
+import {
+  getMaintenances,
+  createMaintenance,
+  updateMaintenance,
+  deleteMaintenance,
+  getAvailableRooms
+} from "@/services/MaintenanceService";
+import { Button, message, Popconfirm, Space, Table, Tag } from "antd";
+import type { ColumnsType, TablePaginationConfig } from "antd/es/table";
+import { useEffect, useState, useCallback } from "react";
+import { AiOutlineDelete, AiOutlinePlus } from "react-icons/ai";
+import { FaRegEdit } from "react-icons/fa";
+import { Maintenance, RequestStatus, Room } from "@/types/types";
+import { FormModal } from "./FormModal"; 
+import dayjs from "dayjs";
 
-import React, { useState } from "react";
-import { Table, Tag, Button, Popconfirm, message, Space, Input } from "antd";
-import type { ColumnsType } from "antd/es/table";
-import { AiOutlineDelete, AiOutlineEdit } from "react-icons/ai";
-import FormModal from "./FormModal";
-import { Room, MaintainData, FormValues } from "@/types/types";
+const getStatusTag = (status: RequestStatus) => {
+  switch (status) {
+    case RequestStatus.PENDING:
+      return <Tag color="orange">Pending</Tag>;
+    case RequestStatus.IN_PROGRESS:
+      return <Tag color="blue">In Progress</Tag>;
+    case RequestStatus.COMPLETED:
+      return <Tag color="green">Completed</Tag>;
+  }
+};
 
-const availableRooms: Room[] = [
-  { name: "Mr. Nam's Room 1", address: "Ngu Hanh Son, Da Nang" },
-  { name: "Mr. Nam's Room 2", address: "Ngu Hanh Son, Da Nang" },
-  { name: "Mr. Nam's Room 3", address: "Ngu Hanh Son, Da Nang" },
-  { name: "Ms. Nam's Room 4", address: "Ngu Hanh Son, Da Nang" },
-  { name: "Ms. Nam's Room 5", address: "Ngu Hanh Son, Da Nang" },
-];
+function ClientWrapper() {
+  const [data, setData] = useState<Maintenance[]>([]);
+  const [rooms, setRooms] = useState<Room[]>([]);
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 7,
+    total: 0,
+  });
+  const [loading, setLoading] = useState(false);
+  const [modalLoading, setModalLoading] = useState(false);
+  const [messageApi, contextHolder] = message.useMessage();
 
-const initialMaintainData: MaintainData[] = [
-  {
-    key: "1",
-    roomName: "Mr. Nam's Room 1",
-    address: "Ngu Hanh Son, Da Nang",
-    issue: "Sửa vòi nước bị rò rỉ",
-    cost: 200000,
-    date: "08/07/2023",
-    status: 2, // Completed
-  },
-  {
-    key: "2",
-    roomName: "Mr. Nam's Room 2",
-    address: "Ngu Hanh Son, Da Nang",
-    issue: "Bảo trì điều hòa",
-    cost: 9000000,
-    date: "08/10/2023",
-    status: 0, // Pending
-  },
-  {
-    key: "3",
-    roomName: "Mr. Nam's Room 3",
-    address: "Ngu Hanh Son, Da Nang",
-    issue: "Thay bóng đèn hỏng",
-    cost: 100000,
-    date: "08/15/2023",
-    status: 1, // In Progress
-  },
-  {
-    key: "4",
-    roomName: "Ms. Nam's Room 1",
-    address: "Ngu Hanh Son, Da Nang",
-    issue: "Kiểm tra hệ thống sưởi ấm",
-    cost: 500000,
-    date: "08/20/2023",
-    status: 0, // Pending
-  },
-  {
-    key: "5",
-    roomName: "Ms. Nam's Room 2",
-    address: "Ngu Hanh Son, Da Nang",
-    issue: "Sửa chữa cửa sổ",
-    cost: 300000,
-    date: "08/25/2023",
-    status: 2, // Completed
-  },
-];
+  // State cho modal
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [currentMaintenance, setCurrentMaintenance] = useState<Maintenance | null>(null);
 
-const ClientWrapper: React.FC = () => {
-  const [data, setData] = useState<MaintainData[]>(initialMaintainData);
-  const [isFormModalOpen, setIsFormModalOpen] = useState(false);
+  const fetchData = useCallback(async (page = 0, size = 7) => {
+    setLoading(true);
+    try {
+      const [maintenancesRes, roomsRes] = await Promise.all([
+        getMaintenances(page, size, null),
+        getAvailableRooms(), 
+      ]);
 
-  const [editingMaintain, setEditingMaintain] = useState<MaintainData | null>(
-    null
-  );
+      setData(maintenancesRes.data || []);
+      setRooms(roomsRes || []);
+      setPagination({
+        current: (maintenancesRes.page ?? 0) + 1,
+        pageSize: maintenancesRes.size ?? size,
+        total: maintenancesRes.totalElements ?? 0,
+      });
+    } catch (error: any) {
+      messageApi.error({
+        content: error.message || "Failed to fetch data",
+        duration: 3,
+      });
+      console.error("Error fetching data:", error.message);
+    } finally {
+      setLoading(false);
+    }
+  }, [messageApi]);
 
-  const handleFormSubmit = (values: FormValues) => {
-    const submittedStatus =
-      values.status !== undefined ? Number(values.status) : undefined;
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
-    if (editingMaintain) {
-      const updatedData = data.map((item) =>
-        item.key === editingMaintain.key
-          ? ({
-              ...item,
-              ...values,
-              status: submittedStatus as 0 | 1 | 2,
-            } as MaintainData)
-          : item
-      );
-      setData(updatedData);
-      message.success("Maintenance request updated successfully!");
-    } else {
-      const newKey = (data.length + 1).toString();
-      const newMaintain: MaintainData = {
-        key: newKey,
-        roomName: values.roomName,
-        address: values.address,
-        issue: values.issue,
-        cost: Number(values.cost),
-        date: new Date().toLocaleDateString("en-US"),
-        status: 0, // Mặc định là 0 (Pending) khi thêm mới
+  const handleTableChange = (pag: TablePaginationConfig) => {
+    fetchData(pag.current! - 1, pag.pageSize!);
+  };
+
+  const handleOpenModal = (record: Maintenance | null = null) => {
+    setCurrentMaintenance(record);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setCurrentMaintenance(null);
+  };
+
+  const handleModalSubmit = async (values: any) => {
+    setModalLoading(true);
+    try {
+      const { requestDate, ...rest } = values;
+      const formattedValues = {
+        ...rest,
+        requestDate: dayjs(requestDate).format("YYYY-MM-DDTHH:mm:ss.SSS[Z]"), 
       };
-      setData([...data, newMaintain]);
-      message.success("Maintenance request added successfully!");
-    }
-    setIsFormModalOpen(false);
-    setEditingMaintain(null);
-  };
 
-  const handleDeleteMaintain = (recordKey: string) => {
-    const updatedData = data.filter((item) => item.key !== recordKey);
-    setData(updatedData);
-    message.success("Maintenance request deleted successfully!");
-  };
-
-  const handleEditMaintain = (record: MaintainData) => {
-    setEditingMaintain(record);
-    setIsFormModalOpen(true);
-  };
-
-  const getStatusDisplay = (status: 0 | 1 | 2) => {
-    switch (status) {
-      case 0:
-        return { text: "Pending", color: "volcano" };
-      case 1:
-        return { text: "In Progress", color: "blue" };
-      case 2:
-        return { text: "Completed", color: "green" };
-      default:
-        return { text: "Unknown", color: "default" };
+      if (currentMaintenance) {
+        // Cập nhật yêu cầu bảo trì
+        await updateMaintenance(currentMaintenance.id!, formattedValues);
+        messageApi.success("Update request successfully!");
+      } else {
+        // Thêm yêu cầu bảo trì mới
+        await createMaintenance(formattedValues);
+        messageApi.success("Add request successfully!");
+      }
+      handleCloseModal();
+      fetchData(pagination.current - 1, pagination.pageSize); // Reload data
+    } catch (error: any) {
+      messageApi.error("Failed: " + (error.message || "An error occurred"));
+    } finally {
+      setModalLoading(false);
     }
   };
 
-  const columns: ColumnsType<MaintainData> = [
+  const handleDeleteClick = async (record: Maintenance) => {
+    setLoading(true);
+    try {
+      await deleteMaintenance(record.id!);
+      messageApi.success("Delete request successfully!");
+      fetchData(pagination.current - 1, pagination.pageSize); // Reload data
+    } catch (error: any) {
+      messageApi.error("Failed: " + (error.message || "An error occurred"));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const columns: ColumnsType<Maintenance> = [
     {
       title: "Room Name",
-      dataIndex: "roomName",
-      key: "roomName",
-      sorter: (a, b) => a.roomName.localeCompare(b.roomName),
-    },
-    {
-      title: "Address",
-      dataIndex: "address",
-      key: "address",
+      dataIndex: ["room", "title"],
+      key: "room",
     },
     {
       title: "Problem",
-      dataIndex: "issue",
-      key: "issue",
+      dataIndex: "problem",
+      key: "problem",
     },
     {
       title: "Cost",
       dataIndex: "cost",
       key: "cost",
-      sorter: (a, b) => a.cost - b.cost,
-      render: (cost) => cost.toLocaleString("en-US") + " ₫",
+      render: (cost) => cost.toLocaleString("vi-VN") + " ₫",
     },
     {
       title: "Date",
-      dataIndex: "date",
-      key: "date",
-      sorter: (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+      dataIndex: "requestDate",
+      key: "requestDate",
+      render: (date) =>
+        date
+          ? new Date(date).toLocaleDateString("vi-VN", {
+              year: "numeric",
+              month: "2-digit",
+              day: "2-digit",
+            })
+          : "-",
     },
     {
       title: "Status",
       dataIndex: "status",
       key: "status",
-      render: (status: 0 | 1 | 2) => {
-        const { text, color } = getStatusDisplay(status);
-        return <Tag color={color}>{text}</Tag>;
-      },
-      sorter: (a, b) => a.status - b.status,
+      render: getStatusTag,
     },
     {
       title: "Actions",
       key: "actions",
       render: (_, record) => (
-        <Space size="middle">
+        <Space>
           <Button
             type="text"
-            icon={<AiOutlineEdit size={18} />}
-            onClick={() => handleEditMaintain(record)}
+            icon={<FaRegEdit size={18} />}
+            onClick={() => handleOpenModal(record)}
           />
           <Popconfirm
-            title="Are you sure you want to delete this maintenance request?"
-            onConfirm={() => handleDeleteMaintain(record.key)}
+            title="Are you sure you want to delete this request?"
+            onConfirm={() => handleDeleteClick(record)}
             okText="Yes"
             cancelText="No"
           >
             <Button type="text" danger icon={<AiOutlineDelete size={18} />} />
+
           </Popconfirm>
         </Space>
       ),
@@ -193,41 +188,41 @@ const ClientWrapper: React.FC = () => {
   ];
 
   return (
-    <div className="flex flex-col flex-1">
-      <div className="flex items-center justify-between mt-2 mb-2">
-        <Button
-          type="primary"
-          className="mr-4"
-          onClick={() => {
-            setEditingMaintain(null);
-            setIsFormModalOpen(true);
-          }}
-        >
-          Add Maintenance
-        </Button>
-        <Input.Search placeholder="Search:" style={{ width: 200 }} />
+    <>
+      {contextHolder}
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <Button
+            type="primary"
+            icon={<AiOutlinePlus size={18} />}
+            onClick={() => handleOpenModal()}
+          >
+            Add Maintenance
+          </Button>
+        </div>
       </div>
-
       <Table
         columns={columns}
         dataSource={data}
-        rowKey="key"
-        pagination={{ pageSize: 7 }}
-        className="mt-8 mb-8"
-      />
-
-      <FormModal
-        open={isFormModalOpen}
-        onCancel={() => {
-          setIsFormModalOpen(false);
-          setEditingMaintain(null);
+        rowKey="id"
+        loading={loading}
+        pagination={{
+          current: pagination.current,
+          pageSize: pagination.pageSize,
+          total: pagination.total,
         }}
-        onSubmit={handleFormSubmit}
-        editingMaintain={editingMaintain}
-        availableRooms={availableRooms}
+        onChange={handleTableChange}
       />
-    </div>
+      <FormModal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        initialData={currentMaintenance}
+        availableRooms={rooms}
+        onSubmit={handleModalSubmit}
+        loading={modalLoading}
+      />
+    </>
   );
-};
+}
 
 export default ClientWrapper;

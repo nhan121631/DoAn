@@ -14,12 +14,6 @@ public interface MaintenanceProjection {
 
     Date getCreatedDate();
 
-    RoomInfoProjection getRoom();
+    RoomNameProjection getRoom();
 
-    interface RoomInfoProjection {
-        UUID getId();
-
-        String getTitle();
-
-    }
 }

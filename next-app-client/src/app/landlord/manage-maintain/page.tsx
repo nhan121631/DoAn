@@ -7,7 +7,7 @@ export default function ManageMaintainPage() {
       
       <div className="mb-4">
         <h2 className="text-4xl font-semibold dark:!text-white">Manage Maintain</h2>
-        <p className="text-gray-500 text-xl">Room Maintenance Management.</p>
+        <p className="text-xl text-gray-500">Room Maintenance Management.</p>
       </div>
       <ClientWrapper />
     </div>

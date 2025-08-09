@@ -1,141 +1,131 @@
-"use client";
+'use client';
 
-import React, { useEffect, useCallback } from "react";
-import { Modal, Button, Input, Select, Form } from "antd";
-import { Room, MaintainData, FormValues } from "@/types/types"; 
+import React, { useEffect } from 'react';
+import { Modal, Form, Input, Button, Select, Row, Col } from 'antd';
+import {
+  CreateMaintenanceFormValues,
+  UpdateMaintenanceFormValues,
+  Maintenance,
+  Room,
+  RequestStatus,
+} from '@/types/types';
 
 const { Option } = Select;
 
 interface FormModalProps {
-  open: boolean;
-  onCancel: () => void;
-  onSubmit: (values: FormValues) => void;
-  editingMaintain: MaintainData | null;
-  availableRooms: Room[]; 
+  isOpen: boolean;
+  onClose: () => void;
+  initialData: Maintenance | null;
+  availableRooms: Room[];
+  onSubmit: (values: CreateMaintenanceFormValues | UpdateMaintenanceFormValues) => void;
+  loading: boolean;
 }
 
-const FormContent: React.FC<{
-  editingMaintain: MaintainData | null;
-  onSubmit: (values: FormValues) => void;
-  availableRooms: Room[];
-}> = ({ editingMaintain, onSubmit, availableRooms }) => {
+export const FormModal: React.FC<FormModalProps> = ({
+  isOpen,
+  onClose,
+  initialData,
+  availableRooms,
+  onSubmit,
+  loading,
+}) => {
   const [form] = Form.useForm();
 
   useEffect(() => {
-    if (editingMaintain) {
-      form.setFieldsValue(editingMaintain);
-    } else {
-      form.resetFields();
+    if (isOpen) {
+      if (initialData) {
+        form.setFieldsValue({
+          ...initialData,
+          roomId: initialData.room.id,
+        });
+      } else {
+        form.resetFields();
+      }
     }
-  }, [editingMaintain, form]);
+  }, [isOpen, initialData, form]);
 
-  const handleRoomNameChange = useCallback((value: string) => {
-    const selectedRoom = availableRooms.find(room => room.name === value);
-    if (selectedRoom) {
-      form.setFieldsValue({ address: selectedRoom.address });
-    } else {
-      form.setFieldsValue({ address: "" });
-    }
-  }, [form, availableRooms]);
-
-  return (
-    <Form
-      form={form}
-      layout="vertical"
-      onFinish={onSubmit}
-    >
-      <Form.Item
-        label="Room Name"
-        name="roomName"
-        rules={[{ required: true, message: "Please select a room name!" }]}
-      >
-        <Select
-          placeholder="Select a room"
-          onChange={handleRoomNameChange}
-          showSearch
-          optionFilterProp="children"
-          filterOption={(input, option) =>
-            String(option?.children).toLowerCase().indexOf(input.toLowerCase()) >= 0
-          }
-        >
-          {availableRooms.map((room) => (
-            <Option key={room.name} value={room.name}>
-              {room.name}
-            </Option>
-          ))}
-        </Select>
-      </Form.Item>
-      <Form.Item
-        label="Address"
-        name="address"
-        rules={[{ required: true, message: "Please enter address!" }]}
-      >
-        <Input
-          value={form.getFieldValue('address')}
-          onChange={(e) => form.setFieldsValue({ address: e.target.value })}
-        />
-      </Form.Item>
-      <Form.Item
-        label="Description"
-        name="issue"
-        rules={[{ required: true, message: "Please describe the issue!" }]}
-      >
-        <Input.TextArea rows={3} />
-      </Form.Item>
-      <Form.Item
-        label="Estimated costs (₫)"
-        name="cost"
-        rules={[{ pattern: /^\d+(\.\d{1,2})?$/, message: 'Please enter a valid number!' }]}
-      >
-        <Input type="number" />
-      </Form.Item>
-      {editingMaintain && (
-        <Form.Item
-          label="Status"
-          name="status"
-          rules={[{ required: true, message: "Please select a status!" }]}
-        >
-          <Select>
-            <Option value={0}>Pending</Option>
-            <Option value={1}>In Progress</Option>
-            <Option value={2}>Completed</Option>
-          </Select>
-        </Form.Item>
-      )}
-      <Form.Item>
-        <Button type="primary" htmlType="submit" className="w-full">
-          {editingMaintain ? "Update" : "Add"}
-        </Button>
-      </Form.Item>
-    </Form>
-  );
-};
-
-const FormModal: React.FC<FormModalProps> = ({
-  open,
-  onCancel,
-  onSubmit,
-  editingMaintain,
-  availableRooms,
-}) => {
+  const handleFinish = (values: any) => {
+    onSubmit(values);
+  };
 
   return (
     <Modal
-      title={editingMaintain ? "Edit Maintenance" : "Add New Maintenance"}
-      open={open}
-      onCancel={onCancel}
+      title={initialData ? 'Edit Maintenance' : 'Add New Maintenance'}
+      open={isOpen}
+      onCancel={onClose}
       footer={null}
-      destroyOnHidden={true}
+      destroyOnHidden
+      width={600}
     >
-      {open && (
-        <FormContent
-          editingMaintain={editingMaintain}
-          onSubmit={onSubmit}
-          availableRooms={availableRooms}
-        />
-      )}
+      <Form
+        form={form}
+        layout="vertical"
+        onFinish={handleFinish}
+        initialValues={initialData ? { ...initialData, roomId: initialData.room.id } : {}}
+      >
+        <div className="max-h-[400px] overflow-y-auto pr-4">
+          <Form.Item
+            label="Room Name"
+            name="roomId"
+            rules={[{ required: true, message: 'Please select a room!' }]}
+          >
+            <Select
+              placeholder="Select a room"
+              showSearch
+              optionFilterProp="children"
+              filterOption={(input, option) =>
+                String(option?.children).toLowerCase().indexOf(input.toLowerCase()) >= 0
+              }
+              disabled={!!initialData}
+            >
+              {availableRooms.map((room) => (
+                <Option key={room.id} value={room.id}>
+                  {room.title}
+                </Option>
+              ))}
+            </Select>
+          </Form.Item>
+
+          <Form.Item
+            label="Problem"
+            name="problem"
+            rules={[{ required: true, message: 'Please enter a problem description!' }]}
+          >
+            <Input.TextArea rows={4} placeholder="For example: Broken faucet, power outage..." />
+          </Form.Item>
+
+          <Form.Item
+            label="Cost"
+            name="cost"
+            rules={[{ required: true, message: 'Please enter a cost!' }]}
+          >
+            <Input type="number" placeholder="For example: 150000" />
+          </Form.Item>
+
+          {initialData && (
+            <Form.Item
+              label="Status"
+              name="status"
+              rules={[{ required: true, message: 'Please select a status!' }]}
+            >
+              <Select placeholder="Select a status">
+                <Option value={RequestStatus.PENDING}>Pending</Option>
+                <Option value={RequestStatus.IN_PROGRESS}>In Progress</Option>
+                <Option value={RequestStatus.COMPLETED}>Completed</Option>
+              </Select>
+            </Form.Item>
+          )}
+        </div>
+
+        <Form.Item>
+          <div className="flex justify-end gap-2 mt-4">
+            <Button onClick={onClose} disabled={loading}>Cancel</Button>
+            <Button type="primary" htmlType="submit" loading={loading}>
+              {initialData ? 'Update' : 'Create'}
+            </Button>
+          </div>
+        </Form.Item>
+      </Form>
     </Modal>
   );
 };
-
-export default FormModal;

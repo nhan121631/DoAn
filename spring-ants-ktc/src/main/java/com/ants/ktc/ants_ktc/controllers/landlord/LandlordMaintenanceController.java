@@ -3,6 +3,7 @@ package com.ants.ktc.ants_ktc.controllers.landlord;
 
 import com.ants.ktc.ants_ktc.dtos.manage_maintain.MaintenanceRequestDto;
 import com.ants.ktc.ants_ktc.dtos.manage_maintain.MaintenanceResponseDto;
+import com.ants.ktc.ants_ktc.dtos.manage_maintain.PaginatedMaintenanceResponseDto;
 import com.ants.ktc.ants_ktc.dtos.manage_maintain.UpdateMaintenanceRequestDto;
 import com.ants.ktc.ants_ktc.repositories.RoomNameProjection;
 import com.ants.ktc.ants_ktc.services.MaintenanceService;
@@ -43,13 +44,27 @@ public class LandlordMaintenanceController {
         return ResponseEntity.status(201).body(newMaintenance);
     }
 
+    // @GetMapping
+    // public ResponseEntity<List<MaintenanceResponseDto>> getLandlordMaintenances(
+    // @RequestParam(required = false) Integer status,
+    // @RequestParam(required = false) UUID roomId) {
+    // UUID currentUserId = userService.getAuthenticatedUserId();
+    // List<MaintenanceResponseDto> maintenances =
+    // maintenanceService.getLandlordMaintenances(currentUserId, status,
+    // roomId);
+    // return ResponseEntity.ok(maintenances);
+    // }
+
     @GetMapping
-    public ResponseEntity<List<MaintenanceResponseDto>> getLandlordMaintenances(
+    public ResponseEntity<PaginatedMaintenanceResponseDto<MaintenanceResponseDto>> getLandlordMaintenances(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "7") int size,
             @RequestParam(required = false) Integer status,
             @RequestParam(required = false) UUID roomId) {
         UUID currentUserId = userService.getAuthenticatedUserId();
-        List<MaintenanceResponseDto> maintenances = maintenanceService.getLandlordMaintenances(currentUserId, status,
-                roomId);
+        PaginatedMaintenanceResponseDto<MaintenanceResponseDto> maintenances = maintenanceService
+                .getLandlordMaintenances(
+                        currentUserId, status, roomId, page, size);
         return ResponseEntity.ok(maintenances);
     }
 
