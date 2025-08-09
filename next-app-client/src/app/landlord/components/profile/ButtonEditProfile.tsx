@@ -5,6 +5,7 @@ import { Form, message } from "antd";
 import { useEffect, useState } from "react";
 import ModalProfile from "./ModalProfile";
 import { UploadChangeParam, UploadFile } from "antd/es/upload";
+import { URL_IMAGE } from "@/services/Constant";
 
 export default function ButtonEditProfile({
   userProfile,
@@ -27,7 +28,7 @@ export default function ButtonEditProfile({
     }
     const image = userProfile.avatar.startsWith("http")
       ? userProfile.avatar
-      : "http://localhost:3333" + userProfile.avatar;
+      : `${URL_IMAGE}${userProfile.avatar}`;
     if (image) {
       setAvatarUrl(image);
     }

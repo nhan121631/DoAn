@@ -11,7 +11,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { AiOutlineInfoCircle, AiOutlinePlus } from "react-icons/ai";
 import { FaRegEdit } from "react-icons/fa";
-import EditPostModal from "../components/manage-rooms/EditPostModal";
+// import EditPostModal from "../components/manage-rooms/EditPostModal";
 import RoomInfoModal from "../components/manage-rooms/RoomInfoModal";
 import { TypePost } from "@/types/types";
 import { getPostTypes } from "@/services/TypePostService";
@@ -25,7 +25,7 @@ function TableManageRoom() {
   });
   const [loading, setLoading] = useState(false);
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
-  const [isModalOpen, setModalOpen] = useState(false);
+  // const [isModalOpen, setModalOpen] = useState(false);
   const [isInfoModalOpen, setInfoModalOpen] = useState(false);
 
   const [extendingKey, setExtendingKey] = useState<string | null>(null);
@@ -100,7 +100,7 @@ function TableManageRoom() {
   // Hàm xử lý khi nhấn nút edit
   const handleEditClick = (record: any) => {
     setSelectedRoomId(record.id);
-    setModalOpen(true);
+    // setModalOpen(true);
   };
 
   // Hàm xử lý khi nhấn nút info

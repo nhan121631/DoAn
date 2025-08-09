@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect, useCallback } from "react";
 import { Table, Select, Tag, Button, Popconfirm, message, Space } from "antd";
 import type { TableColumnsType, TablePaginationConfig } from "antd";
@@ -61,8 +62,8 @@ const TableManageAccount: React.FC = () => {
     try {
       await updateAccountStatus(record.id, newStatusNumber);
 
-      setAccountsData(prev =>
-        prev.map(acc =>
+      setAccountsData((prev) =>
+        prev.map((acc) =>
           acc.id === record.id ? { ...acc, status: newStatusText } : acc
         )
       );
@@ -84,8 +85,8 @@ const TableManageAccount: React.FC = () => {
       await updateAccountRoles(record.id, [tempAuth]);
 
       // ✅ Update local state, no need to refetch
-      setAccountsData(prev =>
-        prev.map(acc =>
+      setAccountsData((prev) =>
+        prev.map((acc) =>
           acc.id === record.id ? { ...acc, roles: [tempAuth] } : acc
         )
       );
@@ -159,11 +160,8 @@ const TableManageAccount: React.FC = () => {
             }}
             style={{ cursor: "pointer" }}
           >
-            {roles.map((r) => (
-              <Tag
-                key={r}
-                color={r === "Landlords" ? "blue" : "default"}
-              >
+            {roles.map((r: any) => (
+              <Tag key={r} color={r === "Landlords" ? "blue" : "default"}>
                 {r}
               </Tag>
             ))}

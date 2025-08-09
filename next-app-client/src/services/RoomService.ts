@@ -53,7 +53,7 @@ export async function updateRoomPostExtend(
   postEndDate: string,
   typepostId: string
 ) {
-  const response = await fetch("/api/landlord/room/update-post-extend", {
+  const response = await fetch("/api/landlord/room/extend/update-post-extend", {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",

@@ -14,7 +14,7 @@ import jakarta.validation.constraints.Min;
 @NoArgsConstructor
 @AllArgsConstructor
 public class RoomShowHideProjectionDto {
-    private UUID id;
+    // private UUID id;
 
     @Min(value = 0, message = "isHidden must be 0 or 1")
     @Max(value = 1, message = "isHidden must be 0 or 1")

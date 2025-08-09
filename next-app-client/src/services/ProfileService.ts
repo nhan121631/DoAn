@@ -59,6 +59,7 @@ export async function getUserProfile(session: any) {
         : error.message || error.error || errorMsg;
     } catch (e) {
       // Nếu không parse được JSON, giữ nguyên errorMsg mặc định
+      console.error("Error parsing response:", e);
     }
     throw new Error(errorMsg);
   }

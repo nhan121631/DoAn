@@ -27,15 +27,24 @@ const defaultColumns: ColumnsType<any> = [
     dataIndex: "transactionCode",
     key: "transactionCode",
     width: 180,
-    render: (text: string) => <span style={{ fontFamily: "monospace" }}>{text}</span>,
+    render: (text: string) => (
+      <span style={{ fontFamily: "monospace" }}>{text}</span>
+    ),
   },
   {
     title: "Amount",
     dataIndex: "amount",
     key: "amount",
     width: 140,
-    render: (amount: number) => (
-      <span style={{ color: "#2563eb", fontWeight: 600 }}>{amount.toLocaleString()}₫</span>
+    render: (amount: number, record: any) => (
+      <span
+        style={{
+          color: record.transactionType === 0 ? "#ef4444" : "#2563eb",
+          fontWeight: 600,
+        }}
+      >
+        {amount.toLocaleString()}₫
+      </span>
     ),
   },
   {
@@ -71,25 +80,28 @@ const defaultColumns: ColumnsType<any> = [
   },
 ];
 
-const PaymentTable: React.FC<PaymentTableProps> = ({ payments, columns }) => (
-  <Table
-    columns={columns || defaultColumns}
-    dataSource={payments}
-    pagination={false}
-    rowKey="transactionCode"
-    size="small"
-    locale={{
-      emptyText: (
-        <div className="text-center py-12">
-          <div className="text-gray-400 text-6xl mb-4">💳</div>
-          <h3 className="text-xl font-semibold text-gray-600 mb-2">
-            No transactions yet
-          </h3>
-          <p className="text-gray-500">Payment history will be displayed here</p>
-        </div>
-      ),
-    }}
-  />
-);
-
+function PaymentTable({ payments, columns }: PaymentTableProps) {
+  return (
+    <Table
+      columns={columns || defaultColumns}
+      dataSource={payments}
+      pagination={false}
+      rowKey="transactionCode"
+      size="small"
+      locale={{
+        emptyText: (
+          <div className="text-center py-12">
+            <div className="text-gray-400 text-6xl mb-4">💳</div>
+            <h3 className="text-xl font-semibold text-gray-600 mb-2">
+              No transactions yet
+            </h3>
+            <p className="text-gray-500">
+              Payment history will be displayed here
+            </p>
+          </div>
+        ),
+      }}
+    />
+  );
+}
 export default PaymentTable;

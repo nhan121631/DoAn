@@ -144,7 +144,7 @@ public class RoomService {
 
                 // transaction
                 Transaction transaction = new Transaction();
-                transaction.setAmount(-totalPrice);
+                transaction.setAmount(totalPrice);
                 transaction.setDescription("Create a New Room Post " + room.getTitle());
                 transaction.setTransactionDate(transactionDate);
 
@@ -375,7 +375,7 @@ public class RoomService {
                 userJpaRepository.save(user);
 
                 Transaction transaction = new Transaction();
-                transaction.setAmount(-totalPrice);
+                transaction.setAmount(totalPrice);
                 transaction.setDescription("Extend room post: " + room.getTitle());
                 transaction.setTransactionDate(new Date());
                 LocalDateTime now = LocalDateTime.now(ZoneId.systemDefault());
@@ -401,7 +401,7 @@ public class RoomService {
         }
 
         public RoomShowHideProjectionDto updateHidden(UUID roomId, RoomShowHideProjectionDto hidden) {
-                Room room = roomJpaRepository.findById(roomId)
+                Room room = roomJpaRepository.findForExtendById(roomId)
                                 .orElseThrow(() -> new IllegalArgumentException("Room not found"));
 
                 room.setHidden(hidden.getIsHidden());
@@ -409,7 +409,7 @@ public class RoomService {
 
                 return RoomShowHideProjectionDto.builder()
                                 // .id(room.getId())
-                                // .isHidden(room.getHidden())
+                                .isHidden(room.getHidden())
                                 .message("Room visibility updated successfully"
                                                 + (room.getHidden() == 1 ? " (hidden)" : " (visible)"))
                                 .build();

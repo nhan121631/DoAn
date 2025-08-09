@@ -13,7 +13,7 @@ import { Avatar, Dropdown } from "antd";
 import { IoIosLogOut } from "react-icons/io";
 
 export default function HeaderUserDashboard() {
-  const { data: session, status } = useSession();
+  const { data: session } = useSession();
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const router = useRouter();

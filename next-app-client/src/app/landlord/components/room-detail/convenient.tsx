@@ -20,11 +20,11 @@ interface Feature {
   name: string;
 }
 
-const Props = {
-  features: [] as Feature[],
-};
+interface ConvenientProps {
+  features: Feature[];
+}
 
-export default function Convenient({ features = [] }: { features: Feature[] }) {
+export default function Convenient({ features }: ConvenientProps) {
   const featureMap = new Map(features.map((f) => [f.name, f]));
   const convenientFeatures = convenients.map((feature) => ({
     label: feature.label,

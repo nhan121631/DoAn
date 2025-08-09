@@ -3,7 +3,7 @@ import { API_URL } from "@/services/Constant";
 import { getServerSession } from "next-auth";
 
 
-export async function GET(request: Request) {
+export async function GET() {
     const session = await getServerSession(authOptions);
     if (!session) {
         return new Response("Unauthorized", { status: 401 });

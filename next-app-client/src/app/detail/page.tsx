@@ -1,23 +1,22 @@
-import Convenient from "../landlord/components/room-detail/convenient";
+// import Convenient from "../landlord/components/room-detail/convenient";
 import MapSection from "../landlord/components/room-detail/map";
-import { Slide } from "../landlord/components/room-detail/Slide";
-
+// import { Slide } from "../landlord/components/room-detail/Slide";
 
 export default function DetailPage() {
-  const images = [
-    { id: 1, url: "/images/anh1.jpg" },
-    { id: 2, url: "/images/anh2.jpg" },
-    { id: 3, url: "/images/anh3.jpg" },
-    { id: 4, url: "/images/anh4.jpg" },
-    { id: 5, url: "/images/anh5.jpg" },
-  ];
+  // const images = [
+  //   { id: 1, url: "/images/anh1.jpg" },
+  //   { id: 2, url: "/images/anh2.jpg" },
+  //   { id: 3, url: "/images/anh3.jpg" },
+  //   { id: 4, url: "/images/anh4.jpg" },
+  //   { id: 5, url: "/images/anh5.jpg" },
+  // ];
 
   return (
     <div className="max-w-[900px] mx-auto my-8 bg-white rounded-xl shadow-lg p-6">
       {/* Image slider */}
-      <div className="p-4 bg-white rounded-lg">
+      {/* <div className="p-4 bg-white rounded-lg">
         <Slide images={images} />
-      </div>
+      </div> */}
 
       {/* Room Info Card */}
       <div className="mt-6 p-5 rounded-lg bg-[#f9f9f9] shadow-sm flex flex-col gap-4">
@@ -90,9 +89,9 @@ export default function DetailPage() {
           <li>Contact: 0906.646.585 (Thao)</li>
         </ul>
 
-        <Convenient />
+        {/* <Convenient /> */}
         <hr className="my-5 text-gray-300" />
-        <MapSection address = "90 Nguyen Thuc Tu, Hoa Hai, Ngu Hanh Son, Da Nang"/>
+        <MapSection address="90 Nguyen Thuc Tu, Hoa Hai, Ngu Hanh Son, Da Nang" />
       </div>
     </div>
   );
