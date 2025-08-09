@@ -1,4 +1,5 @@
-const API_URL = "http://localhost:3333/api";
+import { API_URL } from "./Constant";
+
 // const API_URL = "https://e930f8f40a31.ngrok-free.app/api";
 export async function getProvinces()  {
     const response = await fetch(`${API_URL}/provinces`);

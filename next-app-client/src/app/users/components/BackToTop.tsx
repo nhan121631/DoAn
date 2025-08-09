@@ -35,7 +35,7 @@ export default function BackToTop() {
       {isVisible && (
         <button
           onClick={scrollToTop}
-          className="fixed z-50 p-3 text-white transition-all duration-300 transform rounded-full shadow-lg bottom-6 right-6 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-stone-500 focus:ring-offset-2 bg-stone-900 hover:bg-stone-700"
+          className="fixed z-50 p-3 text-white transition-all duration-300 transform rounded-full shadow-lg bottom-28 right-8 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-stone-500 focus:ring-offset-2 bg-stone-900 hover:bg-stone-700"
           aria-label="Back to home"
         >
           <HiHome className="w-6 h-6" />

@@ -2,6 +2,7 @@
 import type { NextAuthOptions, Session, User } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { JWT } from "next-auth/jwt";
+import { API_URL } from "@/services/Constant";
 
 interface UserType {
   id: string;
@@ -64,7 +65,7 @@ export const authOptions: NextAuthOptions = {
       authorize: async (credentials) => {
         // Đăng nhập thường
         if (credentials?.username && credentials.password) {
-          const res = await fetch('http://localhost:3333/api/auth/login', {
+          const res = await fetch(`${API_URL}/auth/login`, {
             method: 'POST',
             body: JSON.stringify({
               username: credentials.username,
@@ -96,7 +97,7 @@ export const authOptions: NextAuthOptions = {
         }
         // Đăng nhập Google
         if (credentials?.credential) {
-          const res = await fetch('http://localhost:3333/api/auth/google-login', {
+          const res = await fetch(`${API_URL}/auth/google-login`, {
             method: 'POST',
             body: JSON.stringify({ credential: credentials.credential }),
             headers: {

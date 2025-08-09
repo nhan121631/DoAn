@@ -1,0 +1,123 @@
+# Tên của workflow - sẽ hiển thị trong tab Actions của GitHub
+name: Build and Push Docker Image
+
+# Điều kiện kích hoạt workflow
+on:
+  push:
+    # branches:
+    #   - main
+    # paths:
+    #   - 'spring-ants-ktc/**'
+    tags:
+      # Chỉ chạy khi tạo tag bắt đầu bằng 'deployment'
+      # Ví dụ: deployment-v1.0.0, deployment-prod, deployment-staging
+      - "deployment*"
+
+# Biến môi trường dùng chung cho toàn bộ workflow
+env:
+  # Tên Docker image sẽ được push lên Docker Hub
+  DOCKER_IMAGE: nhan12163/rentalroom
+  # Phiên bản Java sử dụng trong project
+  JAVA_VERSION: "21"
+
+# Định nghĩa các job (công việc) cần thực hiện
+jobs:
+  # Tên job: build-and-push
+  build-and-push:
+    # Chạy trên máy ảo Ubuntu phiên bản mới nhất
+    runs-on: ubuntu-latest
+
+    # Các bước thực hiện trong job
+    steps:
+      # Bước 1: Tải source code từ repository về máy ảo
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Bước 2: Cài đặt Java Development Kit (JDK) phiên bản 21
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          # Sử dụng Amazon Corretto distribution của OpenJDK
+          distribution: "corretto"
+
+      # Bước 3: Cache (lưu trữ tạm) các gói Gradle để tăng tốc build
+      - name: Cache Gradle packages
+        uses: actions/cache@v4
+        with:
+          # Đường dẫn các thư mục cần cache
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          # Key để định danh cache dựa trên OS và hash của file gradle
+          key: ${{ runner.os }}-gradle-${{ hashFiles('spring-ants-ktc/**/*.gradle*', 'spring-ants-ktc/**/gradle-wrapper.properties') }}
+          # Fallback keys nếu không tìm thấy cache chính xác
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      # Bước 4: Cấp quyền thực thi cho file gradlew (Gradle Wrapper)
+      - name: Make gradlew executable
+        run: chmod +x ./spring-ants-ktc/gradlew
+
+      # Bước 5: Chạy unit tests (hiện tại đang bị comment)
+      # Nên bỏ comment để đảm bảo code quality trước khi deploy
+      # - name: Run tests
+      #   run: cd spring-ants-ktc && ./gradlew test
+      # Bước 6: Build ứng dụng Spring Boot thành file JAR
+      - name: Build with Gradle
+        run: cd spring-ants-ktc && ./gradlew clean bootJar --no-daemon
+        # clean: xóa thư mục build cũ
+        # bootJar: tạo file JAR có thể chạy độc lập (executable JAR)
+        # --no-daemon: không sử dụng Gradle daemon để tránh memory leak
+
+      # Bước 7: Thiết lập Docker Buildx (công cụ build Docker nâng cao)
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        # Buildx hỗ trợ build multi-platform và các tính năng nâng cao
+
+      # Bước 8: Đăng nhập vào Docker Hub
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          # Sử dụng secrets được cấu hình trong GitHub repository settings
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # Bước 9: Tạo metadata cho Docker image (tags và labels)
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.DOCKER_IMAGE }}
+          # Quy tắc tạo tags cho Docker image:
+          tags: |
+            # Tag theo tên branch (nếu push từ branch)
+            type=ref,event=branch
+            # Tag theo tên tag (nếu push từ tag)
+            type=ref,event=tag
+            # Tag 'latest' nếu là branch mặc định (main)
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      # Bước 10: Build và push Docker image lên Docker Hub
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          # Thư mục chứa Dockerfile và source code
+          context: ./spring-ants-ktc
+          # Đường dẫn đến Dockerfile
+          file: ./spring-ants-ktc/Dockerfile
+          # Có push image lên registry hay không
+          push: true
+          # Sử dụng tags được tạo ở bước trước
+          tags: ${{ steps.meta.outputs.tags }}
+          # Sử dụng labels được tạo ở bước trước
+          labels: ${{ steps.meta.outputs.labels }}
+          # Cache từ GitHub Actions cache
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          # Build cho cả 2 kiến trúc CPU (Intel/AMD và ARM)
+          platforms: linux/amd64,linux/arm64
+
+      # Bước 11: In ra digest của image vừa build (để tracking)
+      - name: Image digest
+        run: echo ${{ steps.build.outputs.digest }}

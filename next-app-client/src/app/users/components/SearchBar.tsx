@@ -1,9 +1,10 @@
 "use client";
+import { URL_PPYTHON } from "@/services/Constant";
 import { useEffect, useState, useRef } from "react";
 import { HiOutlineSearch } from "react-icons/hi";
 import { VscSettings } from "react-icons/vsc";
 
-const API_URL = "http://localhost:5000/ai_search";
+const API_URL = `${URL_PPYTHON}/ai_search`;
 
 export default function SearchBar() {
   const [textSearchs, setTextSearchs] = useState<string[]>([]);
