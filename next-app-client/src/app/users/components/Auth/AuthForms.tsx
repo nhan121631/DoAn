@@ -10,7 +10,7 @@ import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { signIn, useSession } from "next-auth/react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
-import { jwtDecode } from "jwt-decode";
+// import { jwtDecode } from "jwt-decode";
 
 import {
   GoogleLogin,
@@ -58,6 +58,7 @@ export default function AuthForms({ csrfToken }: { csrfToken?: string }) {
   useEffect(() => {
     if (session) {
       const roles = session.user.roles || [];
+      console.log("User roles:", roles);
       // Điều hướng theo role
       if (roles.includes("Users")) {
         router.push("/users");
@@ -75,7 +76,7 @@ export default function AuthForms({ csrfToken }: { csrfToken?: string }) {
         username: data.username,
         password: data.password,
         redirect: false,
-        // callbackUrl,
+        callbackUrl,
       });
 
       if (!res?.error) {
@@ -103,14 +104,14 @@ export default function AuthForms({ csrfToken }: { csrfToken?: string }) {
     try {
       const { credential } = credentialResponse;
 
-      console.log("Credential token:", credential);
-      const decoded = jwtDecode(credential);
-      console.log("User Info:", decoded);
+      // console.log("Credential token:", credential);
+      // const decoded = jwtDecode(credential);
+      // console.log("User Info:", decoded);
 
       const res = await signIn("credentials", {
         credential: credential,
         redirect: false,
-        // callbackUrl,
+        callbackUrl,
       });
       if (!res?.error) {
         messageApi.success({
