@@ -1,10 +1,11 @@
 "use client";
+import { URL_PPYTHON } from "@/services/Constant";
 import Image from "next/image";
 import React, { useState, useRef, useEffect } from "react";
 import { IoMdChatboxes } from "react-icons/io";
 import { MdDeleteForever } from "react-icons/md";
 
-const API_URL = "http://localhost:5000/ai_chatbot";
+const API_URL = `${URL_PPYTHON}/ai_chatbot`;
 
 function useSessionChatHistory(initialHistory: any) {
   const [history, setHistory] = useState(() => {
