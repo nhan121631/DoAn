@@ -17,11 +17,11 @@ const TableManageAccount: React.FC = () => {
   const [tempAuth, setTempAuth] = useState<string | null>(null);
   const [pagination, setPagination] = useState<TablePaginationConfig>({
     current: 1,
-    pageSize: 10,
+    pageSize: 5,
     total: 0,
   });
 
-  const loadAccounts = useCallback(async (page = 0, pageSize = 10) => {
+  const loadAccounts = useCallback(async (page = 0, pageSize = 5) => {
     setLoading(true);
     try {
       const response = await fetchAccounts(page, pageSize);
