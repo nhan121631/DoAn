@@ -13,6 +13,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import com.ants.ktc.ants_ktc.entities.Room;
+import com.ants.ktc.ants_ktc.repositories.projection.RoomByAdminPagingProjection;
 import com.ants.ktc.ants_ktc.repositories.projection.RoomByLandlordPagingProjection;
 
 @Repository
@@ -31,6 +32,10 @@ public interface RoomJpaRepository extends JpaRepository<Room, UUID> {
 
     @Query("SELECT r FROM Room r WHERE r.user.id = :userId")
     Page<RoomByLandlordPagingProjection> findAllByLandlord(@Param("userId") UUID userId, Pageable pageable);
+
+    // @Query get all rooms for admin with pagination
+    @Query("SELECT r FROM Room r JOIN FETCH r.user u")
+    Page<RoomByAdminPagingProjection> findAllByAdmin(Pageable pageable);
 
     @Query("SELECT r FROM Room r JOIN FETCH r.user u JOIN FETCH u.wallet w JOIN FETCH r.postType pt WHERE r.id = :roomId")
     Optional<Room> findForExtendById(@Param("roomId") UUID roomId);

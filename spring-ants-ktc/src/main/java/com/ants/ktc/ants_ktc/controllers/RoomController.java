@@ -18,7 +18,9 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.ants.ktc.ants_ktc.dtos.room.PaginationRoomAdminResponseDto;
 import com.ants.ktc.ants_ktc.dtos.room.PaginationRoomResponseDto;
+import com.ants.ktc.ants_ktc.dtos.room.RoomAdminResponseProjectionDto;
 import com.ants.ktc.ants_ktc.dtos.room.RoomRequestCreateDto;
 import com.ants.ktc.ants_ktc.dtos.room.RoomRequestUpdateDto;
 import com.ants.ktc.ants_ktc.dtos.room.RoomResponseDto;
@@ -114,6 +116,14 @@ public class RoomController {
             @RequestParam(value = "page", defaultValue = "0") int page,
             @RequestParam(value = "size", defaultValue = "5") int size) {
         PaginationRoomResponseDto rooms = roomService.getAllRoomByLandlordIdPaginated(id, page, size);
+        return ResponseEntity.ok(rooms);
+    }
+
+    @GetMapping("/by-admin/paging")
+    public ResponseEntity<PaginationRoomAdminResponseDto> getAllRoomByAdminPaginated(
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "5") int size) {
+        PaginationRoomAdminResponseDto rooms = roomService.getAllRoomByAdminPaginated(page, size);
         return ResponseEntity.ok(rooms);
     }
 
