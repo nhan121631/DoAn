@@ -7,6 +7,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -28,6 +29,7 @@ import com.ants.ktc.ants_ktc.dtos.convenient.ConvenientResponseDto;
 import com.ants.ktc.ants_ktc.dtos.image.ImageResponseDto;
 import com.ants.ktc.ants_ktc.dtos.room.PaginationRoomResponseDto;
 import com.ants.ktc.ants_ktc.dtos.room.RoomRequestCreateDto;
+import com.ants.ktc.ants_ktc.dtos.room.RoomRequestUpdateDto;
 import com.ants.ktc.ants_ktc.dtos.room.RoomResponseDto;
 import com.ants.ktc.ants_ktc.dtos.room.RoomResponseProjectionDto;
 import com.ants.ktc.ants_ktc.dtos.room.RoomShowHideProjectionDto;
@@ -42,6 +44,7 @@ import com.ants.ktc.ants_ktc.entities.User;
 import com.ants.ktc.ants_ktc.entities.address.Address;
 import com.ants.ktc.ants_ktc.entities.address.Ward;
 import com.ants.ktc.ants_ktc.repositories.ConvenientsRepository;
+import com.ants.ktc.ants_ktc.repositories.ImageJpaRepository;
 import com.ants.ktc.ants_ktc.repositories.PostTypeJpaRepository;
 import com.ants.ktc.ants_ktc.repositories.RoomJpaRepository;
 import com.ants.ktc.ants_ktc.repositories.TransactionsJpaRepository;
@@ -68,6 +71,9 @@ public class RoomService {
 
         @Autowired
         private TransactionsJpaRepository transactionsJpaRepository;
+
+        @Autowired
+        private ImageJpaRepository imageJpaRepository;
 
         @Transactional
         public RoomResponseDto createRoom(List<MultipartFile> files, RoomRequestCreateDto requestDto) {
@@ -258,6 +264,131 @@ public class RoomService {
                                 .build();
         }
 
+        // update room
+        @Transactional
+        public RoomResponseDto updateRoom(UUID id, List<MultipartFile> images, RoomRequestUpdateDto request)
+                        throws Exception {
+                Room room = roomJpaRepository.findById(id)
+                                .orElseThrow(() -> new IllegalArgumentException("Room not found"));
+
+                // 1. Cập nhật thông tin cơ bản
+                room.setTitle(request.getTitle());
+                room.setDescription(request.getDescription());
+                room.setPrice_month(request.getPriceMonth());
+                room.setPrice_deposit(request.getPriceDeposit());
+                room.setArea(request.getArea());
+
+                // Set địa chỉ
+                Address address = room.getAddress();
+                if (address == null) {
+                        address = new Address();
+                }
+                address.setStreet(request.getAddress().getStreet());
+                Ward ward = wardRepository.findById(request.getAddress().getWardId())
+                                .orElseThrow(() -> new IllegalArgumentException("Ward Not Found"));
+                address.setWard(ward);
+                room.setAddress(address);
+
+                // Set tiện ích (convenients)
+                List<Convenient> convenients = convenientJpaRepository.findAllById(request.getConvenientIds());
+                if (convenients.size() != request.getConvenientIds().size()) {
+                        throw new IllegalArgumentException("Convenients not found");
+                }
+                room.setConvenients(convenients);
+
+                // Xử lý cập nhật ảnh
+                // 1. Lấy danh sách ảnh cũ
+                List<Image> oldImages = imageJpaRepository.findByRoomId(id);
+                List<Image> imagesToKeep = new ArrayList<>();
+
+                if (request.getExistingImages() != null) {
+                        // Xóa các ảnh nằm trong existingImages, giữ lại phần còn lại
+                        List<String> existingImageUrls = request.getExistingImages();
+                        for (Image img : oldImages) {
+                                if (existingImageUrls.contains(img.getUrl())) {
+                                        imageJpaRepository.delete(img);
+                                        deleteFileFromStorage(img.getUrl());
+                                } else {
+                                        imagesToKeep.add(img);
+                                }
+                        }
+                } else {
+                        // Nếu null => giữ nguyên toàn bộ ảnh cũ
+                        imagesToKeep.addAll(oldImages);
+                }
+
+                // Thêm ảnh mới
+                if (images != null && !images.isEmpty()) {
+                        for (MultipartFile file : images) {
+                                if (!file.isEmpty()) {
+                                        String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+                                        Path filePath = Paths.get("public/uploads/" + fileName);
+                                        Files.createDirectories(filePath.getParent());
+                                        Files.write(filePath, file.getBytes());
+                                        String fileUrl = "/uploads/" + fileName;
+
+                                        Image image = new Image();
+                                        image.setRoom(room);
+                                        image.setUrl(fileUrl);
+                                        imageJpaRepository.save(image);
+                                        imagesToKeep.add(image);
+                                }
+                        }
+                }
+
+                // Cập nhật danh sách ảnh vào room
+                room.setImages(imagesToKeep);
+
+                List<Image> updatedImages = imagesToKeep;
+
+                // 4. Lưu room
+                roomJpaRepository.save(room);
+                return RoomResponseDto.builder()
+                                .id(room.getId())
+                                .title(room.getTitle())
+                                .description(room.getDescription())
+                                .priceMonth(room.getPrice_month())
+                                .priceDeposit(room.getPrice_deposit())
+                                .postStartDate(room.getPost_start_date())
+                                .postEndDate(room.getPost_end_date())
+                                .area(room.getArea())
+                                .typepost(room.getPostType().getName())
+                                .userId(room.getUser().getId())
+                                .convenients(convenients.stream()
+                                                .map(c -> ConvenientResponseDto.builder()
+                                                                .id(c.getId())
+                                                                .name(c.getName())
+                                                                .build())
+                                                .toList())
+                                .images(updatedImages.stream()
+                                                .map(img -> ImageResponseDto.builder()
+                                                                .id(img.getId())
+                                                                .url(img.getUrl())
+                                                                .build())
+                                                .toList())
+                                .address(AddressResponseDto.builder()
+                                                .id(address.getId())
+                                                .street(address.getStreet())
+                                                .ward(WardResponseDto.builder()
+                                                                .id(ward.getId())
+                                                                .name(ward.getName())
+                                                                .district(DistrictResponseDto.builder()
+                                                                                .id(ward.getDistrict().getId())
+                                                                                .name(ward.getDistrict().getName())
+                                                                                .province(ProvinceResponseDto.builder()
+                                                                                                .id(ward.getDistrict()
+                                                                                                                .getProvince()
+                                                                                                                .getId())
+                                                                                                .name(ward.getDistrict()
+                                                                                                                .getProvince()
+                                                                                                                .getName())
+                                                                                                .build())
+                                                                                .build())
+                                                                .build())
+                                                .build())
+                                .build();
+        }
+
         public List<RoomResponseDto> getAllRooms() {
                 List<Room> rooms = roomJpaRepository.findAll(); // Lấy tất cả các phòng
                 return rooms.stream()
@@ -394,9 +525,9 @@ public class RoomService {
 
                 // Trả về DTO
                 return RoomUpdateExpireDateResponseDto.builder()
-                        .postStartDate(newStartDate)
-                        .postEndDate(newEndDate)
-                        .message("Room post updated successfully").build();
+                                .postStartDate(newStartDate)
+                                .postEndDate(newEndDate)
+                                .message("Room post updated successfully").build();
         }
 
         public RoomShowHideProjectionDto updateHidden(UUID roomId, RoomShowHideProjectionDto hidden) {
@@ -602,6 +733,58 @@ public class RoomService {
                                                                                                                                                 .build())
                                                                                                 .build())
                                                                 .build())
-                                .build(); // <-- thêm dòng này
+                                .build();
         }
+
+        // private void deleteFileFromStorage(String fileUrl) {
+        // try {
+        // // Chỉ xóa file trong public/uploads nếu url đúng định dạng /uploads/xxx
+        // if (fileUrl != null && fileUrl.startsWith("/uploads/")) {
+        // String fileName = fileUrl.substring("/uploads/".length());
+        // // Nếu fileName chứa ký tự '\', chỉ lấy phần sau cùng (tên file)
+        // if (fileName.contains("\\")) {
+        // fileName = fileName.substring(fileName.lastIndexOf("\\") + 1);
+        // }
+        // // Nếu fileName chứa ký tự '/', chỉ lấy phần sau cùng (tên file)
+        // if (fileName.contains("/")) {
+        // fileName = fileName.substring(fileName.lastIndexOf("/") + 1);
+        // }
+        // Path projectRoot = Paths.get("").toAbsolutePath();
+        // Path filePath =
+        // projectRoot.resolve("public").resolve("uploads").resolve(fileName);
+        // Files.deleteIfExists(filePath);
+        // }
+        // } catch (java.io.IOException e) {
+        // e.printStackTrace();
+        // }
+        // }
+
+        private void deleteFileFromStorage(String fileUrl) {
+                try {
+                        // Chỉ xóa file trong public/uploads nếu url đúng định dạng /uploads/xxx
+                        if (fileUrl != null && fileUrl.startsWith("/uploads/")) {
+                                // Kiểm tra còn image nào dùng url này không, nếu không còn thì mới xóa file
+                                long count = imageJpaRepository.countByUrl(fileUrl);
+                                if (count == 0) {
+                                        String fileName = fileUrl.substring("/uploads/".length());
+                                        // Nếu fileName chứa ký tự '\', chỉ lấy phần sau cùng (tên file)
+                                        if (fileName.contains("\\")) {
+                                                fileName = fileName.substring(fileName.lastIndexOf("\\") + 1);
+                                        }
+                                        // Nếu fileName chứa ký tự '/', chỉ lấy phần sau cùng (tên file)
+                                        if (fileName.contains("/")) {
+                                                fileName = fileName.substring(fileName.lastIndexOf("/") + 1);
+                                        }
+                                        Path projectRoot = Paths.get("").toAbsolutePath();
+                                        Path filePath = projectRoot.resolve("public").resolve("uploads")
+                                                        .resolve(fileName);
+                                        Files.deleteIfExists(filePath);
+                                }
+                        }
+                } catch (java.io.IOException e) {
+                        e.printStackTrace();
+                }
+
+        }
+
 }

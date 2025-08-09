@@ -25,4 +25,13 @@ public class RoomRequestUpdateDto {
     private UUID userId;
     private List<Long> convenientIds;
     private List<ImageCreateRequestDto> imageUrls;
+    private List<String> existingImages; // URLs to keep
+
+    public List<String> getExistingImages() {
+        return existingImages;
+    }
+
+    public void setExistingImages(List<String> existingImages) {
+        this.existingImages = existingImages;
+    }
 }

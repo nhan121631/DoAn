@@ -20,8 +20,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.ants.ktc.ants_ktc.dtos.room.PaginationRoomResponseDto;
 import com.ants.ktc.ants_ktc.dtos.room.RoomRequestCreateDto;
+import com.ants.ktc.ants_ktc.dtos.room.RoomRequestUpdateDto;
 import com.ants.ktc.ants_ktc.dtos.room.RoomResponseDto;
-import com.ants.ktc.ants_ktc.dtos.room.RoomResponseProjectionDto;
 import com.ants.ktc.ants_ktc.dtos.room.RoomShowHideProjectionDto;
 import com.ants.ktc.ants_ktc.dtos.room.RoomUpdateExpireDateRequestDto;
 import com.ants.ktc.ants_ktc.dtos.room.RoomUpdateExpireDateResponseDto;
@@ -81,6 +81,27 @@ public class RoomController {
         return ResponseEntity.ok(roomResponse);
     }
 
+    @PatchMapping("/{id}")
+    public ResponseEntity<RoomResponseDto> updateRoom(
+            @PathVariable UUID id,
+            @RequestPart("room") String roomJson,
+            @RequestPart(value = "images", required = false) List<MultipartFile> images) throws Exception {
+        RoomRequestUpdateDto request = new ObjectMapper().readValue(roomJson, RoomRequestUpdateDto.class);
+
+        // Validate input nếu cần
+        Set<ConstraintViolation<RoomRequestUpdateDto>> violations = validator.validate(request);
+        if (!violations.isEmpty()) {
+            String errorMsg = violations.stream()
+                    .map(v -> v.getPropertyPath() + ": " + v.getMessage())
+                    .reduce((a, b) -> a + ", " + b)
+                    .orElse("Validation error");
+            throw new IllegalArgumentException(errorMsg);
+        }
+
+        RoomResponseDto updatedRoom = roomService.updateRoom(id, images, request);
+        return ResponseEntity.ok(updatedRoom);
+    }
+
     // @GetMapping("/by-landlord/{id}")
     // public ResponseEntity<List<RoomResponseDto>>
     // getAllRoomByLandlordId(@PathVariable("id") UUID id) {
@@ -109,6 +130,7 @@ public class RoomController {
         RoomUpdateExpireDateResponseDto roomResponse = roomService.updateExpirePostDate(request);
         return ResponseEntity.ok(roomResponse);
     }
+
     @GetMapping("/{id}")
     public ResponseEntity<RoomResponseDto> getRoomById(@PathVariable("id") UUID id) {
         RoomResponseDto room = roomService.getRoomById(id);
