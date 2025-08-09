@@ -20,6 +20,17 @@
 //       authorized: ({ token }) => !!token, // Yêu cầu đăng nhập cho các route được bảo vệ
 //     },
 //   }
+
+// import withAuth from "next-auth/middleware";
+
+// // );
+
+// export default withAuth(
+//   function middleware(req) {
+//     console.log("Middleware token:", req.nextauth.token);
+//     // ...existing code...
+//   },
+//   // ...existing code...
 // );
 export { default } from "next-auth/middleware";
 
