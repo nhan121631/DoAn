@@ -1,6 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import { getRoomsByLandlord } from "@/services/RoomService";
+import {
+  getRoomsByLandlord,
+  hideShowRoom,
+  updateRoomPostExtend,
+} from "@/services/RoomService";
 import { Button, message, Popconfirm, Popover, Space, Table, Tag } from "antd";
 import type { ColumnsType, TablePaginationConfig } from "antd/es/table";
 import { useRouter } from "next/navigation";
@@ -9,6 +13,8 @@ import { AiOutlineInfoCircle, AiOutlinePlus } from "react-icons/ai";
 import { FaRegEdit } from "react-icons/fa";
 import EditPostModal from "../components/manage-rooms/EditPostModal";
 import RoomInfoModal from "../components/manage-rooms/RoomInfoModal";
+import { TypePost } from "@/types/types";
+import { getPostTypes } from "@/services/TypePostService";
 
 function TableManageRoom() {
   const [data, setData] = useState<any[]>([]);
@@ -18,12 +24,16 @@ function TableManageRoom() {
     total: 0,
   });
   const [loading, setLoading] = useState(false);
-  const [selectedRoom, setSelectedRoom] = useState<any | null>(null);
+  const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
   const [isModalOpen, setModalOpen] = useState(false);
   const [isInfoModalOpen, setInfoModalOpen] = useState(false);
 
   const [extendingKey, setExtendingKey] = useState<string | null>(null);
   const [extendDates, setExtendDates] = useState<{ [id: string]: string }>({});
+  const [selectedTypePostId, setSelectedTypePostId] = useState<
+    string | undefined
+  >(undefined);
+  const [typeposts, setTypeposts] = useState<TypePost[]>([]);
 
   const [messageApi, contextHolder] = message.useMessage();
 
@@ -50,6 +60,17 @@ function TableManageRoom() {
       setLoading(false);
     }
   };
+  useEffect(() => {
+    const fetchTypePosts = async () => {
+      try {
+        const data = await getPostTypes();
+        setTypeposts(data);
+      } catch (error) {
+        console.error("Failed to fetch type posts:", error);
+      }
+    };
+    fetchTypePosts();
+  }, []);
 
   useEffect(() => {
     fetchRooms(pagination.current, pagination.pageSize);
@@ -60,20 +81,31 @@ function TableManageRoom() {
     fetchRooms(pag.current!, pag.pageSize!);
   };
 
-  const toggleHidden = (record: any) => {
-    // TODO: Gọi API cập nhật trạng thái ẩn/hiện và fetch lại danh sách phòng
-    console.log("Toggle hidden for:", record);
+  const toggleHidden = async (record: any) => {
+    try {
+      await hideShowRoom(record.id, record.hidden === 1 ? 0 : 1);
+      messageApi.success({
+        content: `Room is now ${record.hidden === 1 ? "visible" : "hidden"}`,
+        duration: 3,
+      });
+      fetchRooms(pagination.current, pagination.pageSize);
+    } catch (error: any) {
+      messageApi.error({
+        content: error.message || "Failed to update room visibility",
+        duration: 3,
+      });
+    }
   };
 
   // Hàm xử lý khi nhấn nút edit
   const handleEditClick = (record: any) => {
-    setSelectedRoom(record);
+    setSelectedRoomId(record.id);
     setModalOpen(true);
   };
 
   // Hàm xử lý khi nhấn nút info
   const handleInfoClick = (record: any) => {
-    setSelectedRoom(record);
+    setSelectedRoomId(record.id);
     setInfoModalOpen(true);
   };
 
@@ -109,6 +141,7 @@ function TableManageRoom() {
       dataIndex: "priceDeposit",
       key: "priceDeposit",
       render: (priceDeposit) => priceDeposit.toLocaleString("vi-VN") + " ₫",
+      sorter: (a, b) => a.priceDeposit - b.priceDeposit,
     },
     {
       title: "Post Start",
@@ -122,6 +155,11 @@ function TableManageRoom() {
               day: "2-digit",
             })
           : "-",
+      sorter: (a, b) => {
+        const dateA = new Date(a.postStartDate);
+        const dateB = new Date(b.postStartDate);
+        return dateA.getTime() - dateB.getTime();
+      },
     },
     {
       title: "Post End",
@@ -135,9 +173,14 @@ function TableManageRoom() {
               day: "2-digit",
             })
           : "-",
+      sorter: (a, b) => {
+        const dateA = new Date(a.postEndDate);
+        const dateB = new Date(b.postEndDate);
+        return dateA.getTime() - dateB.getTime();
+      },
     },
     {
-      title: "Gia hạn",
+      title: "Extend",
       key: "extend",
       render: (_, record) => {
         const now = new Date();
@@ -145,14 +188,32 @@ function TableManageRoom() {
         const end = new Date(record.postEndDate);
         const isStillValid = start <= now && now <= end;
 
+        const isExpired = now > end;
+
         if (isStillValid) {
-          return <Tag color="green">Còn hạn</Tag>;
+          return <Tag color="green">Still valid</Tag>;
         }
 
         // Format min date as yyyy-MM-dd (ngày sau postEndDate)
         const minDate = new Date(end.getTime() + 24 * 60 * 60 * 1000)
           .toISOString()
           .slice(0, 10);
+
+        // Tính tổng phí gia hạn
+        let totalFee = 0;
+        if (extendDates[record.id] && selectedTypePostId) {
+          const selectedType = typeposts.find(
+            (tp) => tp.id === selectedTypePostId
+          );
+          if (selectedType) {
+            const newDate = new Date(extendDates[record.id]);
+            // Số ngày = ngày mới - ngày kết thúc hiện tại
+            const diffMs = newDate.getTime() - end.getTime();
+            let diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+            if (diffDays <= 1) diffDays = 1;
+            totalFee = diffDays * selectedType.pricePerDay;
+          }
+        }
 
         const popoverContent = (
           <Space direction="vertical">
@@ -172,17 +233,84 @@ function TableManageRoom() {
                 border: "1px solid #ccc",
               }}
             />
+            <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead className="bg-gray-100 dark:bg-[#232b3b]">
+                  <tr>
+                    <th className="px-4 py-2 text-left font-semibold">
+                      Post Type
+                    </th>
+                    <th className="px-4 py-2 text-left font-semibold">
+                      Price/Day (₫)
+                    </th>
+                    <th className="px-4 py-2 text-center font-semibold">
+                      Select
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white dark:bg-[#232b3b]">
+                  {typeposts.map((typepost) => (
+                    <tr
+                      key={typepost.id}
+                      className="hover:bg-gray-50 dark:hover:bg-[#1a2233] transition"
+                    >
+                      <td className="px-4 py-2 border-b border-gray-200 dark:border-gray-700">
+                        {typepost.name}
+                      </td>
+                      <td className="px-4 py-2 border-b border-gray-200 dark:border-gray-700">
+                        {typepost.pricePerDay.toLocaleString("vi-VN")}
+                      </td>
+                      <td className="px-4 py-2 border-b border-gray-200 dark:border-gray-700 text-center">
+                        <input
+                          type="radio"
+                          name={`typepostId-${record.id}`}
+                          value={typepost.id}
+                          checked={selectedTypePostId === typepost.id}
+                          onChange={() => setSelectedTypePostId(typepost.id)}
+                          className="accent-blue-600 scale-125 cursor-pointer"
+                          style={{ margin: 0 }}
+                        />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            {/* Hiển thị tổng phí gia hạn */}
+            {totalFee > 0 && (
+              <div style={{ fontWeight: 600, color: "#1677ff", marginTop: 8 }}>
+                Tổng phí gia hạn: {totalFee.toLocaleString("vi-VN")} ₫
+              </div>
+            )}
             <Button
               type="primary"
               size="small"
-              disabled={!extendDates[record.id]}
-              onClick={() => {
-                messageApi.success({
-                  content: `Gia hạn đến ngày ${extendDates[record.id]} cho "${
-                    record.title
-                  }"`,
-                  duration: 3,
-                });
+              disabled={!extendDates[record.id] || !selectedTypePostId}
+              onClick={async () => {
+                const formatDate = (date: Date | string) => {
+                  const d = typeof date === "string" ? new Date(date) : date;
+                  return d.toISOString();
+                };
+                try {
+                  await updateRoomPostExtend(
+                    record.id,
+                    formatDate(new Date()),
+                    formatDate(extendDates[record.id]),
+                    selectedTypePostId as string
+                  );
+                  messageApi.success({
+                    content: `Extend until ${extendDates[record.id]} for "${
+                      record.title
+                    }", waiting for approval`,
+                    duration: 3,
+                  });
+                  fetchRooms(pagination.current, pagination.pageSize);
+                } catch (error: any) {
+                  messageApi.error({
+                    content: error.message || "Failed to extend post",
+                    duration: 3,
+                  });
+                }
                 setExtendingKey(null);
               }}
             >
@@ -194,7 +322,7 @@ function TableManageRoom() {
         return (
           <Popover
             content={popoverContent}
-            title="Chọn ngày gia hạn"
+            title="Select new end date"
             trigger="click"
             open={extendingKey === record.id}
             onOpenChange={(visible) => {
@@ -209,11 +337,20 @@ function TableManageRoom() {
               }
             }}
           >
-            <Button size="small" type="primary">
-              Gia hạn
+            <Button
+              size="small"
+              type="primary"
+              disabled={record.isRemoved === 1 || isExpired}
+            >
+              Extend
             </Button>
           </Popover>
         );
+      },
+      sorter: (a, b) => {
+        const dateA = new Date(a.postEndDate);
+        const dateB = new Date(b.postEndDate);
+        return dateA.getTime() - dateB.getTime();
       },
     },
     {
@@ -247,20 +384,31 @@ function TableManageRoom() {
       title: "Hide/Show",
       dataIndex: "hidden",
       key: "hidden",
-      render: (hidden, record) => (
-        <Popconfirm
-          title={
-            hidden === 1
-              ? "Do you want to show this post again?"
-              : "Are you sure to remove this post?"
-          }
-          onConfirm={() => toggleHidden(record)}
-        >
-          <Button size="small" type={hidden === 1 ? "default" : "primary"}>
-            {hidden === 1 ? "Show" : "Hide"}
-          </Button>
-        </Popconfirm>
-      ),
+      render: (hidden, record) => {
+        const now = new Date();
+        const end = new Date(record.postEndDate);
+        const isExpired = now > end;
+        return (
+          <Popconfirm
+            title={
+              hidden === 1
+                ? "Do you want to show this post again?"
+                : "Are you sure you want to hide this post?"
+            }
+            onConfirm={() => toggleHidden(record)}
+          >
+            <Button
+              size="small"
+              type={hidden === 1 ? "default" : "primary"}
+              disabled={record.isRemoved === 1 || isExpired}
+            >
+              {hidden === 1 ? "Show" : "Hide"}
+            </Button>
+          </Popconfirm>
+        );
+      },
+      sorter: (a, b) => a.hidden - b.hidden,
+      defaultSortOrder: "ascend",
     },
     {
       title: "Actions",
@@ -274,7 +422,7 @@ function TableManageRoom() {
         if (!isStillValid) {
           return (
             <span style={{ color: "gray", fontWeight: 600 }}>
-              Bài đăng đã hết hạn
+              This post has expired
             </span>
           );
         }
@@ -282,7 +430,7 @@ function TableManageRoom() {
         if (record.isRemoved === 1) {
           return (
             <span style={{ color: "red", fontWeight: 600 }}>
-              Admin đã gỡ bài
+              Removed by admin
             </span>
           );
         }
@@ -339,15 +487,15 @@ function TableManageRoom() {
         onChange={handleTableChange}
       />
 
-      <EditPostModal
+      {/* <EditPostModal
         open={isModalOpen}
         onClose={() => setModalOpen(false)}
-        selectedRoom={selectedRoom}
-      />
+        roomId={selectedRoomId}
+      /> */}
       <RoomInfoModal
         open={isInfoModalOpen}
         onClose={() => setInfoModalOpen(false)}
-        selectedRoom={selectedRoom}
+        roomId={selectedRoomId}
       />
     </div>
   );

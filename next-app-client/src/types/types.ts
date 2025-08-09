@@ -37,6 +37,49 @@ export type Convenient = {
   id: string;
   name: string;
 };
+//--------------------------------------//
+//Room
+export type RoomDetail = {
+  id: string;
+  title: string;
+  description: string;
+  address: {
+    id: string;
+    street: string;
+    ward: {
+        id: number;
+        name: string;
+        district: {
+          id: number;
+          name: string;
+          province: {
+            id: number;
+            name: string;
+          };
+        };
+      };
+    };
+    priceMonth: number;
+    priceDeposit: number;
+    area: number;
+    postStartDate: string;
+    postEndDate: string;
+    images: Image[];
+    typepost: string;
+    convenients: Convenient[];
+    
+};
+//--------------------------------------//
+export type Image = {
+  id: number;
+  url: string;
+}
+//--------------------------------------//
+// export type Room = {
+//   name: string;
+//   address: string;
+//   // approval?: 0 | 1 | 2; // 0 = pending, 1 = approved, 2 = rejected
+// };
 
 
 

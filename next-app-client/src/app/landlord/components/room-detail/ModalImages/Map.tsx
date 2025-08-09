@@ -1,5 +1,8 @@
-export default function Map() {
-  const address = "90 Nguyễn Thức Tự Hòa Hải Ngũ Hành Sơn Đà Nẵng";
+interface Props {
+  address: string;
+}
+
+export default function Map({ address }: Props) {
   const encodedAddress = encodeURIComponent(address);
   return (
     <div className="w-full h-full flex-1">

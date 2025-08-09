@@ -64,3 +64,30 @@ export async function GET(request: Request) {
   const data = await response.json();
   return new Response(JSON.stringify(data), { status: 200, headers: { "Content-Type": "application/json" } });
 }
+
+export async function PATCH(request: Request) {
+  const session = await getServerSession(authOptions);
+  if (!session) {
+    return new Response("Unauthorized", { status: 401 });
+  }
+
+  const body = await request.json();
+
+  const response = await fetch(`${API_URL}/rooms/update-post-extend`, {
+    method: "PATCH",
+    headers: {
+      "Authorization": `Bearer ${session.user.accessToken}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(body),
+  });
+
+  if (!response.ok) {
+    const errorJson = await response.json();
+    console.error("Backend error:", errorJson);
+    return new Response(JSON.stringify(errorJson), { status: response.status, headers: { "Content-Type": "application/json" } });
+  }
+
+  const data = await response.json();
+  return new Response(JSON.stringify(data), { status: 200, headers: { "Content-Type": "application/json" } });
+}

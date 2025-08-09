@@ -30,6 +30,9 @@ import com.ants.ktc.ants_ktc.dtos.room.PaginationRoomResponseDto;
 import com.ants.ktc.ants_ktc.dtos.room.RoomRequestCreateDto;
 import com.ants.ktc.ants_ktc.dtos.room.RoomResponseDto;
 import com.ants.ktc.ants_ktc.dtos.room.RoomResponseProjectionDto;
+import com.ants.ktc.ants_ktc.dtos.room.RoomShowHideProjectionDto;
+import com.ants.ktc.ants_ktc.dtos.room.RoomUpdateExpireDateRequestDto;
+import com.ants.ktc.ants_ktc.dtos.room.RoomUpdateExpireDateResponseDto;
 import com.ants.ktc.ants_ktc.entities.Convenient;
 import com.ants.ktc.ants_ktc.entities.Image;
 import com.ants.ktc.ants_ktc.entities.PostType;
@@ -77,6 +80,7 @@ public class RoomService {
                 room.setPrice_deposit(requestDto.getPriceDeposit());
                 room.setPost_start_date(requestDto.getPostStartDate());
                 room.setPost_end_date(requestDto.getPostEndDate());
+                room.setArea(requestDto.getArea());
 
                 // Lấy PostType và User
                 PostType postType = postTypeJpaRepository.findById(requestDto.getTypepostId())
@@ -160,7 +164,8 @@ public class RoomService {
                 transactionsJpaRepository.save(transaction);
 
                 // if (diffDays * postType.getPricePerDay() > user.getWallet().getBalance()) {
-                //         throw new IllegalArgumentException("User does not have enough balance to create this room");
+                // throw new IllegalArgumentException("User does not have enough balance to
+                // create this room");
                 // }
                 room.setUser(user);
 
@@ -215,6 +220,7 @@ public class RoomService {
                                 .priceDeposit(room.getPrice_deposit())
                                 .postStartDate(room.getPost_start_date())
                                 .postEndDate(room.getPost_end_date())
+                                .area(room.getArea())
                                 .typepost(postType.getName())
                                 .userId(user.getId())
                                 .convenients(convenients.stream()
@@ -268,6 +274,7 @@ public class RoomService {
                                 .priceDeposit(room.getPrice_deposit())
                                 .postStartDate(room.getPost_start_date())
                                 .postEndDate(room.getPost_end_date())
+                                .area(room.getArea())
                                 .typepost(room.getPostType().getName())
                                 .userId(room.getUser().getId())
                                 .convenients(room.getConvenients().stream()
@@ -330,6 +337,80 @@ public class RoomService {
                                 .totalPages(roomPage.getTotalPages())
                                 .hasNext(roomPage.hasNext())
                                 .hasPrevious(roomPage.hasPrevious())
+                                .build();
+        }
+
+        @Transactional
+        public RoomUpdateExpireDateResponseDto updateExpirePostDate(RoomUpdateExpireDateRequestDto request) {
+                Room room = roomJpaRepository.findForExtendById(request.getRoomId())
+                                .orElseThrow(() -> new IllegalArgumentException("Room not found"));
+
+                PostType postType = postTypeJpaRepository.findById(request.getTypepostId())
+                                .orElseThrow(() -> new IllegalArgumentException("PostType not found"));
+                room.setPostType(postType);
+
+                // Parse ngày từ request (ISO string -> Date)
+                Date newStartDate = request.getPostStartDate();
+                Date newEndDate = request.getPostEndDate();
+
+                LocalDate reqStartDate = newStartDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+                LocalDate reqEndDate = newEndDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+                long diffDays = ChronoUnit.DAYS.between(reqStartDate, reqEndDate);
+                if (diffDays <= 0) {
+                        throw new IllegalArgumentException("End date must be after start date");
+                }
+
+                // Tính tổng phí gia hạn
+                Double pricePerDay = postType.getPricePerDay();
+                Double totalPrice = diffDays * pricePerDay;
+
+                // Trừ tiền ví
+                User user = room.getUser();
+                Double balance = user.getWallet().getBalance();
+                if (totalPrice > balance) {
+                        throw new IllegalArgumentException("User does not have enough balance to extend this room");
+                }
+                user.getWallet().setBalance(balance - totalPrice);
+                userJpaRepository.save(user);
+
+                Transaction transaction = new Transaction();
+                transaction.setAmount(-totalPrice);
+                transaction.setDescription("Extend room post: " + room.getTitle());
+                transaction.setTransactionDate(new Date());
+                LocalDateTime now = LocalDateTime.now(ZoneId.systemDefault());
+                String day = String.format("%02d", now.getDayOfMonth());
+                String hour = String.format("%02d", now.getHour());
+                String random = String.format("%04d", (int) (Math.random() * 10000));
+                String transactionCode = day + hour + random;
+                transaction.setTransactionCode(transactionCode);
+                transaction.setBankTransactionName("Ants Wallet");
+                transaction.setStatus(1); // 1: thành công
+                transaction.setWallet(user.getWallet());
+                transactionsJpaRepository.save(transaction);
+
+                room.setPost_start_date(newStartDate);
+                room.setPost_end_date(newEndDate);
+                roomJpaRepository.save(room);
+
+                // Trả về DTO
+                return RoomUpdateExpireDateResponseDto.builder()
+                        .postStartDate(newStartDate)
+                        .postEndDate(newEndDate)
+                        .message("Room post updated successfully").build();
+        }
+
+        public RoomShowHideProjectionDto updateHidden(UUID roomId, RoomShowHideProjectionDto hidden) {
+                Room room = roomJpaRepository.findById(roomId)
+                                .orElseThrow(() -> new IllegalArgumentException("Room not found"));
+
+                room.setHidden(hidden.getIsHidden());
+                roomJpaRepository.save(room);
+
+                return RoomShowHideProjectionDto.builder()
+                                // .id(room.getId())
+                                // .isHidden(room.getHidden())
+                                .message("Room visibility updated successfully"
+                                                + (room.getHidden() == 1 ? " (hidden)" : " (visible)"))
                                 .build();
         }
 
@@ -397,6 +478,67 @@ public class RoomService {
         // .build())
         // .toList();
         // }
+
+        public RoomResponseDto getRoomById(UUID id) {
+                Room room = roomJpaRepository.findDetailedById(id)
+                                .orElseThrow(() -> new IllegalArgumentException("Room not found"));
+
+                return RoomResponseDto.builder()
+                                .id(room.getId())
+                                .title(room.getTitle())
+                                .description(room.getDescription())
+                                .priceMonth(room.getPrice_month())
+                                .priceDeposit(room.getPrice_deposit())
+                                .postStartDate(room.getPost_start_date())
+                                .area(room.getArea())
+                                .postEndDate(room.getPost_end_date())
+                                .typepost(room.getPostType().getName())
+                                .userId(room.getUser().getId())
+                                .convenients(room.getConvenients().stream()
+                                                .map(c -> ConvenientResponseDto.builder()
+                                                                .id(c.getId())
+                                                                .name(c.getName())
+                                                                .build())
+                                                .toList())
+                                .images(room.getImages().stream()
+                                                .map(img -> ImageResponseDto.builder()
+                                                                .id(img.getId())
+                                                                .url(img.getUrl())
+                                                                .build())
+                                                .toList())
+                                .address(AddressResponseDto.builder()
+                                                .id(room.getAddress().getId())
+                                                .street(room.getAddress().getStreet())
+                                                .ward(WardResponseDto.builder()
+                                                                .id(room.getAddress().getWard().getId())
+                                                                .name(room.getAddress().getWard().getName())
+                                                                .district(DistrictResponseDto.builder()
+                                                                                .id(room.getAddress().getWard()
+                                                                                                .getDistrict().getId())
+                                                                                .name(room.getAddress().getWard()
+                                                                                                .getDistrict()
+                                                                                                .getName())
+                                                                                .province(ProvinceResponseDto.builder()
+                                                                                                .id(room.getAddress()
+                                                                                                                .getWard()
+                                                                                                                .getDistrict()
+                                                                                                                .getProvince()
+                                                                                                                .getId())
+                                                                                                .name(room.getAddress()
+                                                                                                                .getWard()
+                                                                                                                .getDistrict()
+                                                                                                                .getProvince()
+                                                                                                                .getName())
+                                                                                                .build())
+                                                                                .build())
+                                                                .build())
+                                                .build())
+
+                                .build();
+        }
+        // Thêm dòng này để trả về đối tượng Address
+        // nếu không có thì sẽ trả về null
+        // nếu có thì sẽ trả về đối tượng Address
 
         // converter room pagin find by user id
         public RoomResponseProjectionDto convertToDto(RoomByLandlordPagingProjection room) {

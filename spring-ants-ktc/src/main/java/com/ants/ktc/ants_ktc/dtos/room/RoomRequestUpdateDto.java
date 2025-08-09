@@ -20,6 +20,7 @@ public class RoomRequestUpdateDto {
     private String description;
     private Double priceMonth;
     private Double priceDeposit;
+    private Double area;
     private AddressCreateRequestDto address;
     private UUID userId;
     private List<Long> convenientIds;

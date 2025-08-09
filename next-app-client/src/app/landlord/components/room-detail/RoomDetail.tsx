@@ -1,110 +1,156 @@
+"use client";
+import React, { useEffect, useState } from "react";
 import Convenient from "./convenient";
 import MapSection from "./map";
 import { Slide } from "./Slide";
+import { getRoomById } from "@/services/RoomService";
+import type { RoomDetail } from "@/types/types";
 
-export default function RoomDetail() {
-  const images = [
-    { id: 1, url: "/images/anh1.jpg" },
-    { id: 2, url: "/images/anh2.jpg" },
-    { id: 3, url: "/images/anh3.jpg" },
-    { id: 4, url: "/images/anh4.jpg" },
-    { id: 5, url: "/images/anh5.jpg" },
-  ];
+type RoomDetailProps = {
+  id: string | null;
+};
+
+const RoomDetail: React.FC<RoomDetailProps> = ({ id }) => {
+  const [room, setRoom] = useState<RoomDetail | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!id) return;
+    setLoading(true);
+    setError(null);
+    getRoomById(id)
+      .then((data) => {
+        setRoom(data as RoomDetail);
+        console.log("Room data:", data);
+      })
+      .catch(() => {
+        setError("Room not found");
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, [id]);
+
+  if (!id) return null;
+  if (loading) return <div>Loading...</div>;
+  if (error || !room) return <div>{error || "Room not found"}</div>;
 
   return (
     <div className="max-w-[900px] mx-auto my-8 bg-white dark:bg-[#181f2b] rounded-xl shadow-lg p-6 dark:text-white">
       {/* Image slider */}
       <div className="p-4 bg-white dark:bg-[#232b3b] rounded-lg">
-        <Slide images={images} />
+        <Slide
+          images={
+            Array.isArray(room.images)
+              ? room.images.filter((img) => img && typeof img.url === "string")
+              : []
+          }
+          address={
+            room.address.street +
+              ", " +
+              room.address.ward.name +
+              ", " +
+              room.address.ward.district.name +
+              ", " +
+              room.address.ward.district.province.name || ""
+          }
+        />
       </div>
 
       {/* Room Info Card */}
       <div className="mt-6 p-5 rounded-lg bg-[#f9f9f9] dark:bg-[#232b3b] shadow-sm flex flex-col gap-4">
         <div className="flex items-center mb-2">
-          <span className="text-[#e53935] font-bold text-xl mr-2 dark:text-[#ff6b6b]">
-            Newly built, clean, airy room for rent, only 3.6M/month
+          <span className="text-white font-bold text-xl mr-2 bg-red-500 px-2 rounded">
+            {room.typepost
+              ? room.typepost.charAt(0).toUpperCase() + room.typepost.slice(1)
+              : ""}
+          </span>
+          <span className="text-[#e53935] font-semibold text-xl mr-2 dark:text-[#ff6b6b]">
+            {room.title || "Room for rent"}
           </span>
         </div>
         <div className="flex items-center gap-4 mb-2">
           <span className="text-lg font-bold text-green-700 dark:text-green-400">
-            3.8 million/month
+            {room.priceMonth
+              ? `${room.priceMonth.toLocaleString("vi-VN")} VND/month`
+              : ""}
           </span>
           <span className="text-base text-gray-500 dark:text-gray-300">
-            · 20 m²
+            · {room.area ? `${room.area} m²` : ""}
           </span>
         </div>
         <div className="text-gray-700 dark:text-gray-200 text-[15px] mb-1 flex justify-start">
           <span className="w-1/5">Ward</span>
-          <a
-            href="#"
-            className="w-4/5 ml-1 text-blue-600 underline dark:text-blue-400"
-          >
-            Go Vap District
-          </a>
+          <span className="w-4/5 ml-1">{room.address?.ward?.name || ""}</span>
         </div>
         <div className="text-gray-700 dark:text-gray-200 text-[15px] mb-1 flex justify-start">
-          <span className="w-1/5">City/Province:</span>
-          <a
-            href="#"
-            className="w-4/5 ml-1 text-blue-600 underline dark:text-blue-400"
-          >
-            Ho Chi Minh City
-          </a>
-        </div>
-        <div className="text-gray-700 dark:text-gray-200 text-[15px] mb-1 flex justify-start">
-          <span className="w-1/5">Address:</span>
+          <span className="w-1/5">District:</span>
           <span className="w-4/5 ml-1">
-            171/14/18 Duong Nguyen Tu Gian, Ward 12, Go Vap District
+            {room.address?.ward?.district?.name || ""}
           </span>
         </div>
         <div className="text-gray-700 dark:text-gray-200 text-[15px] mb-1 flex justify-start">
-          <span className="w-1/5">Ngày đăng:</span>
-          <span className="ml-1">Sunday, 13:42 20/07/2025</span>
+          <span className="w-1/5">City/Province:</span>
+          <span className="w-4/5 ml-1">
+            {room.address?.ward?.district?.province?.name || ""}
+          </span>
         </div>
         <div className="text-gray-700 dark:text-gray-200 text-[15px] mb-1 flex justify-start">
-          <span className="w-1/5">Hết hạn:</span>
-          <span className="ml-1">Wednesday, 13:42 30/07/2025</span>
+          <span className="w-1/5">Address:</span>
+          <span className="w-4/5 ml-1">{room.address?.street || ""}</span>
         </div>
-        <div className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-          Updated: 1 hour ago
+        <div className="text-gray-700 dark:text-gray-200 text-[15px] mb-1 flex justify-start">
+          <span className="w-1/5">Post Start Date:</span>
+          <span className="ml-1">
+            {room.postStartDate
+              ? new Date(room.postStartDate).toLocaleString()
+              : ""}
+          </span>
         </div>
+        <div className="text-gray-700 dark:text-gray-200 text-[15px] mb-1 flex justify-start">
+          <span className="w-1/5">Post End Date:</span>
+          <span className="ml-1">
+            {room.postEndDate
+              ? new Date(room.postEndDate).toLocaleString()
+              : ""}
+          </span>
+        </div>
+        {/* <div className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+          Updated:{" "}
+          {room.updatedAt ? new Date(room.updatedAt).toLocaleString() : ""}
+        </div> */}
 
         <hr className="my-5 text-gray-300 dark:text-gray-600" />
 
         <h2 className="mb-2 text-lg font-bold text-gray-800 dark:text-white">
           Description
         </h2>
-        <ul className="list-disc pl-5 space-y-1 text-gray-700 dark:text-gray-200 text-[15px]">
-          <li>
-            Brand new, clean room with full furniture, balcony, and window.
-          </li>
-          <li>Only 3.5M/room (2-3 people).</li>
-          <li>
-            Electricity: 3,800 VND/kWh, Water: 100,000 VND/person/month, Service
-            fee: 200,000 VND/room (3rd person +50,000 VND).
-          </li>
-          <li>
-            Great location near Emart, market, all amenities, wide alley for
-            trucks, absolutely secure area.
-          </li>
-          <li>
-            Fully furnished: balcony, window, mezzanine, fan, air conditioner,
-            fridge, sofa, desk, shoe rack, bookshelf, wardrobe, shared washing
-            machine, drying yard, kitchen, parking.
-          </li>
-          <li>Clean, airy space – free cleaning service included.</li>
-          <li>
-            24/7 camera, fingerprint lock, flexible hours, no landlord living on
-            site, absolute security.
-          </li>
-          <li>Address: 171/14/18 Nguyen Tu Gian, Ward 12, Go Vap</li>
-          <li>Contact: 0906.646.585 (Thao)</li>
-        </ul>
-
-        <Convenient />
+        <div className="list-disc pl-5 space-y-1 text-gray-700 dark:text-gray-200 text-[15px]">
+          {room.description ? (
+            room.description
+              .split("\n")
+              .map((line, idx) => <p key={idx}>{line}</p>)
+          ) : (
+            <p>No description</p>
+          )}
+        </div>
+        <Convenient features={room.convenients} />
         <hr className="my-5 text-gray-300" />
-        <MapSection address="171/14/18 Nguyen Tu Gian, Ward 12, Go Vap" />
+        <MapSection
+          address={
+            room.address.street +
+              ", " +
+              room.address.ward.name +
+              ", " +
+              room.address.ward.district.name +
+              ", " +
+              room.address.ward.district.province.name || ""
+          }
+        />
       </div>
     </div>
   );
-}
+};
+
+export default RoomDetail;
