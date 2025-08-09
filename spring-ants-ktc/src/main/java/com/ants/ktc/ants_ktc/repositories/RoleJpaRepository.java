@@ -5,10 +5,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
-import java.util.UUID; // Bổ sung import UUID
+import java.util.UUID;
 
 @Repository
-public interface RoleJpaRepository extends JpaRepository<Role, UUID> { // THAY LONG BẰNG UUID Ở ĐÂY
-    // Phương thức để tìm kiếm Role theo tên
+public interface RoleJpaRepository extends JpaRepository<Role, UUID> {
     Optional<Role> findByName(String name);
+
 }

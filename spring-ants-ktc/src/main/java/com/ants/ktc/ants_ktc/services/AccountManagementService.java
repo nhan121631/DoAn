@@ -1,13 +1,34 @@
 package com.ants.ktc.ants_ktc.services;
 
+// import java.util.ArrayList;
+// import java.util.List;
+// import java.util.UUID;
+// import java.util.stream.Collectors;
+
+// import org.springframework.data.domain.PageRequest;
+// import org.springframework.stereotype.Service;
+// import org.springframework.transaction.annotation.Transactional;
+
+// import com.ants.ktc.ants_ktc.dtos.manage_account.UserResponseDto;
+// import com.ants.ktc.ants_ktc.entities.Role;
+// import com.ants.ktc.ants_ktc.entities.User;
+// import com.ants.ktc.ants_ktc.repositories.RoleJpaRepository;
+// import com.ants.ktc.ants_ktc.repositories.UserJpaRepository;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.ants.ktc.ants_ktc.dtos.manage_account.PaginationAccountResponseDto;
 import com.ants.ktc.ants_ktc.dtos.manage_account.UserResponseDto;
 import com.ants.ktc.ants_ktc.entities.Role;
 import com.ants.ktc.ants_ktc.entities.User;
@@ -23,17 +44,35 @@ public class AccountManagementService {
         public AccountManagementService(UserJpaRepository userJpaRepository, RoleJpaRepository roleJpaRepository) {
                 this.userJpaRepository = userJpaRepository;
                 this.roleJpaRepository = roleJpaRepository;
-
         }
 
+        // @Transactional(readOnly = true)
+        // public List<UserResponseDto> getAllUsers() {
+
+        // List<User> users = userJpaRepository.findAllExcludingAdmins();
+
+        // return users.stream()
+        // .map(this::convertToUserResponseDto)
+        // .collect(Collectors.toList());
+        // }
+        // @Transactional(readOnly = true)
+        // public PaginationAccountResponseDto<UserResponseDto> getAllUsers(int page,
+        // int size) {
+        // Pageable pageable = PageRequest.of(page, size, Sort.by("id"));
+
+        // // Gọi phương thức DTO Projection đã được tối ưu
+        // Page<UserResponseDto> userResponsePage =
+        // userJpaRepository.findAllUserDtosExcludingAdmins(pageable);
+
+        // return new PaginationAccountResponseDto<>(userResponsePage);
+        // }
         @Transactional(readOnly = true)
-        public List<UserResponseDto> getAllUsers() {
-
-                List<User> users = userJpaRepository.findAllExcludingAdmins();
-
-                return users.stream()
-                                .map(this::convertToUserResponseDto)
-                                .collect(Collectors.toList());
+        public PaginationAccountResponseDto<UserResponseDto> getAllUsers(int page,
+                        int size) {
+                Pageable pageable = PageRequest.of(page, size, Sort.by("id"));
+                // Gọi phương thức DTO Projection đã được tối ưu
+                Page<UserResponseDto> userResponsePage = userJpaRepository.findAllUserDtosExcludingAdmins(pageable);
+                return new PaginationAccountResponseDto<>(userResponsePage);
         }
 
         @Transactional(readOnly = true)
@@ -43,7 +82,6 @@ public class AccountManagementService {
                                 .map(this::convertToUserResponseDto)
                                 .orElseThrow(() -> new IllegalArgumentException(
                                                 "User with ID " + userId + " not found"));
-
         }
 
         @Transactional
@@ -51,7 +89,6 @@ public class AccountManagementService {
                 User user = userJpaRepository.findById(userId)
                                 .orElseThrow(() -> new IllegalArgumentException(
                                                 "User with ID " + userId + " not found."));
-
                 if (newStatus != 0 && newStatus != 1) {
                         throw new IllegalArgumentException(
                                         "Invalid status value. Must be 0 (Active) or 1 (Disabled).");
