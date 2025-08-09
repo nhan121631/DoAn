@@ -10,14 +10,7 @@ import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { signIn, useSession } from "next-auth/react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
-// import { jwtDecode } from "jwt-decode";
-
-import {
-  GoogleLogin,
-  GoogleOAuthProvider,
-  // useGoogleLogin,
-} from "@react-oauth/google";
-
+import { GoogleLogin, GoogleOAuthProvider } from "@react-oauth/google";
 import RegisterForm from "./RegisterForm";
 import { message } from "antd";
 
@@ -38,8 +31,6 @@ const schema = yup
 
 export default function AuthForms({ csrfToken }: { csrfToken?: string }) {
   const [showLoginPassword, setShowLoginPassword] = useState(false);
-  // const [loginGeneralErrorMessage, setLoginGeneralErrorMessage] = useState("");
-
   const [messageApi, contextHolder] = message.useMessage();
 
   const {
@@ -54,24 +45,33 @@ export default function AuthForms({ csrfToken }: { csrfToken?: string }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl");
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
 
   // Hàm xác định route dựa trên role
   const getRouteByRole = (roles: string[]) => {
     if (roles.includes("Landlords")) {
       return "/landlord";
     } else if (roles.includes("Users")) {
-      return "/users";
+      return "/user-dashboard";
     }
-    return "/users"; // default
+    return "/user-dashboard"; // default
   };
 
   useEffect(() => {
+    if (status === "loading") return;
+
     if (session?.user?.roles) {
       const roles = session.user.roles;
-      const targetRoute = getRouteByRole(roles);
+      console.log(
+        "AuthForms - User roles:",
+        roles,
+        "CallbackUrl:",
+        callbackUrl
+      );
 
-      // Nếu có callbackUrl và user có quyền truy cập
+      let targetRoute = getRouteByRole(roles);
+
+      // Nếu có callbackUrl, kiểm tra xem user có quyền truy cập không
       if (callbackUrl) {
         const isAuthorizedForCallback =
           (callbackUrl.startsWith("/user-dashboard") &&
@@ -79,15 +79,15 @@ export default function AuthForms({ csrfToken }: { csrfToken?: string }) {
           (callbackUrl.startsWith("/landlord") && roles.includes("Landlords"));
 
         if (isAuthorizedForCallback) {
-          router.push(callbackUrl);
-          return;
+          targetRoute = callbackUrl;
         }
+        // Nếu không có quyền, sẽ redirect đến route phù hợp với role
       }
 
-      // Điều hướng đến route phù hợp với role
-      router.push(targetRoute);
+      console.log("Redirecting to:", targetRoute);
+      router.replace(targetRoute);
     }
-  }, [session, router, callbackUrl]);
+  }, [session, status, router, callbackUrl]);
 
   const onLoginSubmit: SubmitHandler<ILoginInputs> = async (data) => {
     try {
@@ -102,9 +102,7 @@ export default function AuthForms({ csrfToken }: { csrfToken?: string }) {
           content: "Login successful!",
           duration: 2,
         });
-
-        // Không cần điều hướng ở đây, để useEffect xử lý
-        // router.push sẽ được gọi trong useEffect khi session được cập nhật
+        // useEffect sẽ xử lý redirect khi session được cập nhật
       } else {
         messageApi.error({
           content: res.error,
@@ -133,7 +131,7 @@ export default function AuthForms({ csrfToken }: { csrfToken?: string }) {
           content: "Google login successful!",
           duration: 2,
         });
-        // Để useEffect xử lý điều hướng
+        // useEffect sẽ xử lý redirect
       } else {
         messageApi.error({
           content: res.error,
@@ -151,8 +149,10 @@ export default function AuthForms({ csrfToken }: { csrfToken?: string }) {
   const handleError = () => {
     console.log("Login Failed");
   };
+
   const isLoginPage = pathname === "/auth/login";
   const isRegisterPage = pathname === "/auth/register";
+
   return (
     <div className="relative w-full max-w-md p-8 shadow-xl bg-white/20 backdrop-blur-md rounded-xl">
       {contextHolder}
@@ -229,13 +229,6 @@ export default function AuthForms({ csrfToken }: { csrfToken?: string }) {
             )}
           </div>
 
-          {/* API Error */}
-          {/* {loginGeneralErrorMessage && (
-            <div className="px-4 py-3 mb-4 text-sm text-red-700 bg-red-100 border border-red-400 rounded">
-              {loginGeneralErrorMessage}
-            </div>
-          )} */}
-
           {/* Button */}
           <button
             type="submit"
@@ -254,10 +247,6 @@ export default function AuthForms({ csrfToken }: { csrfToken?: string }) {
                 onError={handleError}
                 useOneTap
               />
-
-              {/* <div>
-            <GoogleLoginButton />
-          </div> */}
             </div>
           </GoogleOAuthProvider>
         </form>
