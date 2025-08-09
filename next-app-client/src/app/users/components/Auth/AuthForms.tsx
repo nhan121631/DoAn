@@ -32,6 +32,20 @@ const schema = yup
 export default function AuthForms({ csrfToken }: { csrfToken?: string }) {
   const [showLoginPassword, setShowLoginPassword] = useState(false);
   const [messageApi, contextHolder] = message.useMessage();
+  const [messageState, setMessageState] = useState<{
+    type: "success" | "error";
+    content: string;
+  } | null>(null);
+  useEffect(() => {
+    if (messageState) {
+      if (messageState.type === "success") {
+        messageApi.success({ content: messageState.content, duration: 2 });
+      } else {
+        messageApi.error({ content: messageState.content, duration: 3 });
+      }
+      setMessageState(null);
+    }
+  }, [messageState, messageApi]);
 
   const {
     register,
@@ -98,21 +112,15 @@ export default function AuthForms({ csrfToken }: { csrfToken?: string }) {
       });
 
       if (!res?.error) {
-        messageApi.success({
-          content: "Login successful!",
-          duration: 2,
-        });
+        setMessageState({ type: "success", content: "Login successful!" });
         // useEffect sẽ xử lý redirect khi session được cập nhật
       } else {
-        messageApi.error({
-          content: res.error,
-          duration: 3,
-        });
+        setMessageState({ type: "error", content: res.error });
       }
     } catch (error: any) {
-      messageApi.error({
+      setMessageState({
+        type: "error",
         content: error?.message || "Login failed. Please try again.",
-        duration: 3,
       });
     }
   };
@@ -127,21 +135,18 @@ export default function AuthForms({ csrfToken }: { csrfToken?: string }) {
       });
 
       if (!res?.error) {
-        messageApi.success({
+        setMessageState({
+          type: "success",
           content: "Google login successful!",
-          duration: 2,
         });
         // useEffect sẽ xử lý redirect
       } else {
-        messageApi.error({
-          content: res.error,
-          duration: 3,
-        });
+        setMessageState({ type: "error", content: res.error });
       }
     } catch (error: any) {
-      messageApi.error({
+      setMessageState({
+        type: "error",
         content: error?.message || "Google login failed. Please try again.",
-        duration: 3,
       });
     }
   };

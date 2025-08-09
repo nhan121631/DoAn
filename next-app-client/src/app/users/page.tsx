@@ -1,4 +1,5 @@
 import BackToTop from "./components/BackToTop";
+import Chatbot from "./components/Chatbot";
 import CompareRoom from "./components/CompareRoom";
 import ContactPage from "./components/contact";
 import LandlordListCard from "./components/landlord";
@@ -14,6 +15,7 @@ export default function UsersPage() {
       <ContactPage />
       <BackToTop />
       <CompareRoom />
+      <Chatbot />
     </div>
   );
 }
