@@ -51,24 +51,43 @@ export default function AuthForms({ csrfToken }: { csrfToken?: string }) {
   });
 
   const router = useRouter();
-  const pathname = usePathname(); // lấy URL hiện tại
+  const pathname = usePathname();
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("callbackUrl") || "/user-dashboard";
+  const callbackUrl = searchParams.get("callbackUrl");
   const { data: session } = useSession();
-  useEffect(() => {
-    if (session) {
-      const roles = session.user.roles || [];
-      console.log("User roles:", roles);
-      // Điều hướng theo role
-      if (roles.includes("Users")) {
-        router.push("/users");
-      } else if (roles.includes("Landlords")) {
-        router.push("/landlord");
-      } else {
-        router.push("/users");
-      }
+
+  // Hàm xác định route dựa trên role
+  const getRouteByRole = (roles: string[]) => {
+    if (roles.includes("Landlords")) {
+      return "/landlord";
+    } else if (roles.includes("Users")) {
+      return "/users";
     }
-  }, [session, router]);
+    return "/users"; // default
+  };
+
+  useEffect(() => {
+    if (session?.user?.roles) {
+      const roles = session.user.roles;
+      const targetRoute = getRouteByRole(roles);
+
+      // Nếu có callbackUrl và user có quyền truy cập
+      if (callbackUrl) {
+        const isAuthorizedForCallback =
+          (callbackUrl.startsWith("/user-dashboard") &&
+            roles.includes("Users")) ||
+          (callbackUrl.startsWith("/landlord") && roles.includes("Landlords"));
+
+        if (isAuthorizedForCallback) {
+          router.push(callbackUrl);
+          return;
+        }
+      }
+
+      // Điều hướng đến route phù hợp với role
+      router.push(targetRoute);
+    }
+  }, [session, router, callbackUrl]);
 
   const onLoginSubmit: SubmitHandler<ILoginInputs> = async (data) => {
     try {
@@ -76,16 +95,16 @@ export default function AuthForms({ csrfToken }: { csrfToken?: string }) {
         username: data.username,
         password: data.password,
         redirect: false,
-        callbackUrl,
       });
 
       if (!res?.error) {
-        // Đăng nhập thành công, điều hướng đến callbackUrl
         messageApi.success({
           content: "Login successful!",
           duration: 2,
         });
-        router.push(callbackUrl);
+
+        // Không cần điều hướng ở đây, để useEffect xử lý
+        // router.push sẽ được gọi trong useEffect khi session được cập nhật
       } else {
         messageApi.error({
           content: res.error,
@@ -104,21 +123,17 @@ export default function AuthForms({ csrfToken }: { csrfToken?: string }) {
     try {
       const { credential } = credentialResponse;
 
-      // console.log("Credential token:", credential);
-      // const decoded = jwtDecode(credential);
-      // console.log("User Info:", decoded);
-
       const res = await signIn("credentials", {
         credential: credential,
         redirect: false,
-        callbackUrl,
       });
+
       if (!res?.error) {
         messageApi.success({
           content: "Google login successful!",
           duration: 2,
         });
-        router.push(callbackUrl);
+        // Để useEffect xử lý điều hướng
       } else {
         messageApi.error({
           content: res.error,
@@ -131,9 +146,6 @@ export default function AuthForms({ csrfToken }: { csrfToken?: string }) {
         duration: 3,
       });
     }
-
-    // save the token to localStorage or state management
-    // localStorage.setItem("google_user", JSON.stringify(decoded));
   };
 
   const handleError = () => {
