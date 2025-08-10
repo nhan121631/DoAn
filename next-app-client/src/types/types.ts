@@ -81,22 +81,49 @@ export type Room = {
   // approval?: 0 | 1 | 2; // 0 = pending, 1 = approved, 2 = rejected
 };
 
-export type MaintainData = {
-  key: string;
-  roomName: string;
-  address: string;
-  issue: string;
-  cost: number;
-  date: string;
-  status: 0 | 1 | 2; // 0 = Pending, 1 = In Progress, 2 = Completed
+
+
+
+//Manage-Maintain
+//---------------------------------------//
+export enum RequestStatus {
+  PENDING = 0,
+  IN_PROGRESS = 1,
+  COMPLETED = 2,
+}
+
+export type Room = {
+  id: string; // UUID của phòng
+  title: string;
 };
 
-export type FormValues = {
-  roomName: string;
-  address: string;
-  issue: string;
+export type Maintenance = {
+  id: string;
+  problem: string;
   cost: number;
-  status?: 0 | 1 | 2; // 0 = Pending, 1 = In Progress, 2 = Completed
+  status: RequestStatus;
+  requestDate: string;
+  room: Room;
+};
+
+export type PaginatedResponse<T> = {
+  data: T[];
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+};
+
+export type CreateMaintenanceFormValues = {
+  roomId: string;
+  problem: string;
+  cost: number;
+};
+
+export type UpdateMaintenanceFormValues = {
+  problem: string;
+  cost: number;
+  status: RequestStatus;
 };
 
 //--------------------------------------//

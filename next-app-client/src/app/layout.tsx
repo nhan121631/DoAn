@@ -26,7 +26,7 @@ export default function RootLayout({
 }>) {
   return (
         <NextAuthProvider>
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} ${robotoMono.variable} antialiased`}>
         {children}
       </body>

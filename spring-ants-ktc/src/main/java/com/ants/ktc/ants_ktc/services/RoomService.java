@@ -267,191 +267,67 @@ public class RoomService {
                                 .build();
         }
 
-        // update room
-        @Transactional
-        public RoomResponseDto updateRoom(UUID id, List<MultipartFile> images, RoomRequestUpdateDto request)
-                        throws Exception {
-                Room room = roomJpaRepository.findById(id)
-                                .orElseThrow(() -> new IllegalArgumentException("Room not found"));
+        // public List<RoomResponseDto> getAllRooms() {
+        // List<Room> rooms = roomJpaRepository.findAll(); // Lấy tất cả các phòng
+        // return rooms.stream()
+        // .map(this::convertToRoomResponseDto) // Chuyển đổi từng Room sang
+        // RoomResponseDto
+        // .collect(Collectors.toList());
+        // }
 
-                // 1. Cập nhật thông tin cơ bản
-                room.setTitle(request.getTitle());
-                room.setDescription(request.getDescription());
-                room.setPrice_month(request.getPriceMonth());
-                room.setPrice_deposit(request.getPriceDeposit());
-                room.setArea(request.getArea());
-
-                // Set địa chỉ
-                Address address = room.getAddress();
-                if (address == null) {
-                        address = new Address();
-                }
-                address.setStreet(request.getAddress().getStreet());
-                Ward ward = wardRepository.findById(request.getAddress().getWardId())
-                                .orElseThrow(() -> new IllegalArgumentException("Ward Not Found"));
-                address.setWard(ward);
-                room.setAddress(address);
-
-                // Set tiện ích (convenients)
-                List<Convenient> convenients = convenientJpaRepository.findAllById(request.getConvenientIds());
-                if (convenients.size() != request.getConvenientIds().size()) {
-                        throw new IllegalArgumentException("Convenients not found");
-                }
-                room.setConvenients(convenients);
-
-                // Xử lý cập nhật ảnh
-                // 1. Lấy danh sách ảnh cũ
-                List<Image> oldImages = imageJpaRepository.findByRoomId(id);
-                List<Image> imagesToKeep = new ArrayList<>();
-
-                if (request.getExistingImages() != null) {
-                        // Xóa các ảnh nằm trong existingImages, giữ lại phần còn lại
-                        List<String> existingImageUrls = request.getExistingImages();
-                        for (Image img : oldImages) {
-                                if (existingImageUrls.contains(img.getUrl())) {
-                                        imageJpaRepository.delete(img);
-                                        deleteFileFromStorage(img.getUrl());
-                                } else {
-                                        imagesToKeep.add(img);
-                                }
-                        }
-                } else {
-                        // Nếu null => giữ nguyên toàn bộ ảnh cũ
-                        imagesToKeep.addAll(oldImages);
-                }
-
-                // Thêm ảnh mới
-                if (images != null && !images.isEmpty()) {
-                        for (MultipartFile file : images) {
-                                if (!file.isEmpty()) {
-                                        String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
-                                        Path filePath = Paths.get("public/uploads/" + fileName);
-                                        Files.createDirectories(filePath.getParent());
-                                        Files.write(filePath, file.getBytes());
-                                        String fileUrl = "/uploads/" + fileName;
-
-                                        Image image = new Image();
-                                        image.setRoom(room);
-                                        image.setUrl(fileUrl);
-                                        imageJpaRepository.save(image);
-                                        imagesToKeep.add(image);
-                                }
-                        }
-                }
-
-                // Cập nhật danh sách ảnh vào room
-                room.setImages(imagesToKeep);
-
-                List<Image> updatedImages = imagesToKeep;
-
-                // 4. Lưu room
-                roomJpaRepository.save(room);
-                return RoomResponseDto.builder()
-                                .id(room.getId())
-                                .title(room.getTitle())
-                                .description(room.getDescription())
-                                .priceMonth(room.getPrice_month())
-                                .priceDeposit(room.getPrice_deposit())
-                                .postStartDate(room.getPost_start_date())
-                                .postEndDate(room.getPost_end_date())
-                                .area(room.getArea())
-                                .typepost(room.getPostType().getName())
-                                .userId(room.getUser().getId())
-                                .convenients(convenients.stream()
-                                                .map(c -> ConvenientResponseDto.builder()
-                                                                .id(c.getId())
-                                                                .name(c.getName())
-                                                                .build())
-                                                .toList())
-                                .images(updatedImages.stream()
-                                                .map(img -> ImageResponseDto.builder()
-                                                                .id(img.getId())
-                                                                .url(img.getUrl())
-                                                                .build())
-                                                .toList())
-                                .address(AddressResponseDto.builder()
-                                                .id(address.getId())
-                                                .street(address.getStreet())
-                                                .ward(WardResponseDto.builder()
-                                                                .id(ward.getId())
-                                                                .name(ward.getName())
-                                                                .district(DistrictResponseDto.builder()
-                                                                                .id(ward.getDistrict().getId())
-                                                                                .name(ward.getDistrict().getName())
-                                                                                .province(ProvinceResponseDto.builder()
-                                                                                                .id(ward.getDistrict()
-                                                                                                                .getProvince()
-                                                                                                                .getId())
-                                                                                                .name(ward.getDistrict()
-                                                                                                                .getProvince()
-                                                                                                                .getName())
-                                                                                                .build())
-                                                                                .build())
-                                                                .build())
-                                                .build())
-                                .build();
-        }
-
-        public List<RoomResponseDto> getAllRooms() {
-                List<Room> rooms = roomJpaRepository.findAll(); // Lấy tất cả các phòng
-                return rooms.stream()
-                                .map(this::convertToRoomResponseDto) // Chuyển đổi từng Room sang RoomResponseDto
-                                .collect(Collectors.toList());
-        }
-
-        private RoomResponseDto convertToRoomResponseDto(Room room) {
-                return RoomResponseDto.builder()
-                                .id(room.getId())
-                                .title(room.getTitle())
-                                .description(room.getDescription())
-                                .priceMonth(room.getPrice_month())
-                                .priceDeposit(room.getPrice_deposit())
-                                .postStartDate(room.getPost_start_date())
-                                .postEndDate(room.getPost_end_date())
-                                .area(room.getArea())
-                                .typepost(room.getPostType().getName())
-                                .userId(room.getUser().getId())
-                                .convenients(room.getConvenients().stream()
-                                                .map(convenient -> ConvenientResponseDto.builder()
-                                                                .id(convenient.getId())
-                                                                .name(convenient.getName())
-                                                                .build())
-                                                .collect(Collectors.toList()))
-                                .images(room.getImages().stream()
-                                                .map(image -> ImageResponseDto.builder()
-                                                                .id(image.getId())
-                                                                .url(image.getUrl())
-                                                                .build())
-                                                .collect(Collectors.toList()))
-                                .address(AddressResponseDto.builder()
-                                                .id(room.getAddress().getId())
-                                                .street(room.getAddress().getStreet())
-                                                .ward(WardResponseDto.builder()
-                                                                .id(room.getAddress().getWard().getId())
-                                                                .name(room.getAddress().getWard().getName())
-                                                                .district(DistrictResponseDto.builder()
-                                                                                .id(room.getAddress().getWard()
-                                                                                                .getDistrict().getId())
-                                                                                .name(room.getAddress().getWard()
-                                                                                                .getDistrict()
-                                                                                                .getName())
-                                                                                .province(ProvinceResponseDto.builder()
-                                                                                                .id(room.getAddress()
-                                                                                                                .getWard()
-                                                                                                                .getDistrict()
-                                                                                                                .getProvince()
-                                                                                                                .getId())
-                                                                                                .name(room.getAddress()
-                                                                                                                .getWard()
-                                                                                                                .getDistrict()
-                                                                                                                .getProvince()
-                                                                                                                .getName())
-                                                                                                .build())
-                                                                                .build())
-                                                                .build())
-                                                .build())
-                                .build();
-        }
+        // private RoomResponseDto convertToRoomResponseDto(Room room) {
+        // return RoomResponseDto.builder()
+        // .id(room.getId())
+        // .title(room.getTitle())
+        // .description(room.getDescription())
+        // .priceMonth(room.getPrice_month())
+        // .priceDeposit(room.getPrice_deposit())
+        // .postStartDate(room.getPost_start_date())
+        // .postEndDate(room.getPost_end_date())
+        // .area(room.getArea())
+        // .typepost(room.getPostType().getName())
+        // .userId(room.getUser().getId())
+        // .convenients(room.getConvenients().stream()
+        // .map(convenient -> ConvenientResponseDto.builder()
+        // .id(convenient.getId())
+        // .name(convenient.getName())
+        // .build())
+        // .collect(Collectors.toList()))
+        // .images(room.getImages().stream()
+        // .map(image -> ImageResponseDto.builder()
+        // .id(image.getId())
+        // .url(image.getUrl())
+        // .build())
+        // .collect(Collectors.toList()))
+        // .address(AddressResponseDto.builder()
+        // .id(room.getAddress().getId())
+        // .street(room.getAddress().getStreet())
+        // .ward(WardResponseDto.builder()
+        // .id(room.getAddress().getWard().getId())
+        // .name(room.getAddress().getWard().getName())
+        // .district(DistrictResponseDto.builder()
+        // .id(room.getAddress().getWard()
+        // .getDistrict().getId())
+        // .name(room.getAddress().getWard()
+        // .getDistrict()
+        // .getName())
+        // .province(ProvinceResponseDto.builder()
+        // .id(room.getAddress()
+        // .getWard()
+        // .getDistrict()
+        // .getProvince()
+        // .getId())
+        // .name(room.getAddress()
+        // .getWard()
+        // .getDistrict()
+        // .getProvince()
+        // .getName())
+        // .build())
+        // .build())
+        // .build())
+        // .build())
+        // .build();
+        // }
 
         @Transactional(readOnly = true)
         public PaginationRoomResponseDto getAllRoomByLandlordIdPaginated(UUID userId, int page, int size) {
