@@ -44,11 +44,11 @@ public class RoomController {
     @Autowired
     private Validator validator;
 
-    @GetMapping
-    public ResponseEntity<List<RoomResponseDto>> getAllRooms() {
-        List<RoomResponseDto> rooms = roomService.getAllRooms();
-        return ResponseEntity.ok(rooms);
-    }
+    // @GetMapping
+    // public ResponseEntity<List<RoomResponseDto>> getAllRooms() {
+    //     List<RoomResponseDto> rooms = roomService.getAllRooms();
+    //     return ResponseEntity.ok(rooms);
+    // }
 
     // @GetMapping("/{roomId}")
     // public ResponseEntity<RoomResponseDto> getRoom(@PathVariable UUID roomId) {

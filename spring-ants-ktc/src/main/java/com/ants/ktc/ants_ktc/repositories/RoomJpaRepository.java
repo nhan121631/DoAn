@@ -39,4 +39,12 @@ public interface RoomJpaRepository extends JpaRepository<Room, UUID> {
 
     @Query("SELECT r FROM Room r JOIN FETCH r.user u JOIN FETCH u.wallet w JOIN FETCH r.postType pt WHERE r.id = :roomId")
     Optional<Room> findForExtendById(@Param("roomId") UUID roomId);
+
+    @Query("SELECT r FROM Room r WHERE r.user.id = :userId")
+    Page<Room> findAllByUser(UUID userId, Pageable pageable);
+
+    List<RoomNameProjection> findByUserIdAndIsRemovedFalse(UUID userId);
+
+    Optional<Room> findByIdAndUserIdAndIsRemovedFalse(UUID id, UUID userId);
+
 }

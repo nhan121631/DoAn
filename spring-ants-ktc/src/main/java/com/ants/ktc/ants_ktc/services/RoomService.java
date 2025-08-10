@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -272,6 +271,68 @@ public class RoomService {
                                 .build();
         }
 
+        // public List<RoomResponseDto> getAllRooms() {
+        // List<Room> rooms = roomJpaRepository.findAll(); // Lấy tất cả các phòng
+        // return rooms.stream()
+        // .map(this::convertToRoomResponseDto) // Chuyển đổi từng Room sang
+        // RoomResponseDto
+        // .collect(Collectors.toList());
+        // }
+
+        // private RoomResponseDto convertToRoomResponseDto(Room room) {
+        // return RoomResponseDto.builder()
+        // .id(room.getId())
+        // .title(room.getTitle())
+        // .description(room.getDescription())
+        // .priceMonth(room.getPrice_month())
+        // .priceDeposit(room.getPrice_deposit())
+        // .postStartDate(room.getPost_start_date())
+        // .postEndDate(room.getPost_end_date())
+        // .area(room.getArea())
+        // .typepost(room.getPostType().getName())
+        // .userId(room.getUser().getId())
+        // .convenients(room.getConvenients().stream()
+        // .map(convenient -> ConvenientResponseDto.builder()
+        // .id(convenient.getId())
+        // .name(convenient.getName())
+        // .build())
+        // .collect(Collectors.toList()))
+        // .images(room.getImages().stream()
+        // .map(image -> ImageResponseDto.builder()
+        // .id(image.getId())
+        // .url(image.getUrl())
+        // .build())
+        // .collect(Collectors.toList()))
+        // .address(AddressResponseDto.builder()
+        // .id(room.getAddress().getId())
+        // .street(room.getAddress().getStreet())
+        // .ward(WardResponseDto.builder()
+        // .id(room.getAddress().getWard().getId())
+        // .name(room.getAddress().getWard().getName())
+        // .district(DistrictResponseDto.builder()
+        // .id(room.getAddress().getWard()
+        // .getDistrict().getId())
+        // .name(room.getAddress().getWard()
+        // .getDistrict()
+        // .getName())
+        // .province(ProvinceResponseDto.builder()
+        // .id(room.getAddress()
+        // .getWard()
+        // .getDistrict()
+        // .getProvince()
+        // .getId())
+        // .name(room.getAddress()
+        // .getWard()
+        // .getDistrict()
+        // .getProvince()
+        // .getName())
+        // .build())
+        // .build())
+        // .build())
+        // .build())
+        // .build();
+        // }
+
         // update room
         @Transactional
         public RoomResponseDto updateRoom(UUID id, List<MultipartFile> images, RoomRequestUpdateDto request)
@@ -388,67 +449,6 @@ public class RoomService {
                                                                                                                 .getProvince()
                                                                                                                 .getId())
                                                                                                 .name(ward.getDistrict()
-                                                                                                                .getProvince()
-                                                                                                                .getName())
-                                                                                                .build())
-                                                                                .build())
-                                                                .build())
-                                                .build())
-                                .build();
-        }
-
-        public List<RoomResponseDto> getAllRooms() {
-                List<Room> rooms = roomJpaRepository.findAll(); // Lấy tất cả các phòng
-                return rooms.stream()
-                                .map(this::convertToRoomResponseDto) // Chuyển đổi từng Room sang RoomResponseDto
-                                .collect(Collectors.toList());
-        }
-
-        private RoomResponseDto convertToRoomResponseDto(Room room) {
-                return RoomResponseDto.builder()
-                                .id(room.getId())
-                                .title(room.getTitle())
-                                .description(room.getDescription())
-                                .priceMonth(room.getPrice_month())
-                                .priceDeposit(room.getPrice_deposit())
-                                .postStartDate(room.getPost_start_date())
-                                .postEndDate(room.getPost_end_date())
-                                .area(room.getArea())
-                                .typepost(room.getPostType().getName())
-                                .userId(room.getUser().getId())
-                                .convenients(room.getConvenients().stream()
-                                                .map(convenient -> ConvenientResponseDto.builder()
-                                                                .id(convenient.getId())
-                                                                .name(convenient.getName())
-                                                                .build())
-                                                .collect(Collectors.toList()))
-                                .images(room.getImages().stream()
-                                                .map(image -> ImageResponseDto.builder()
-                                                                .id(image.getId())
-                                                                .url(image.getUrl())
-                                                                .build())
-                                                .collect(Collectors.toList()))
-                                .address(AddressResponseDto.builder()
-                                                .id(room.getAddress().getId())
-                                                .street(room.getAddress().getStreet())
-                                                .ward(WardResponseDto.builder()
-                                                                .id(room.getAddress().getWard().getId())
-                                                                .name(room.getAddress().getWard().getName())
-                                                                .district(DistrictResponseDto.builder()
-                                                                                .id(room.getAddress().getWard()
-                                                                                                .getDistrict().getId())
-                                                                                .name(room.getAddress().getWard()
-                                                                                                .getDistrict()
-                                                                                                .getName())
-                                                                                .province(ProvinceResponseDto.builder()
-                                                                                                .id(room.getAddress()
-                                                                                                                .getWard()
-                                                                                                                .getDistrict()
-                                                                                                                .getProvince()
-                                                                                                                .getId())
-                                                                                                .name(room.getAddress()
-                                                                                                                .getWard()
-                                                                                                                .getDistrict()
                                                                                                                 .getProvince()
                                                                                                                 .getName())
                                                                                                 .build())

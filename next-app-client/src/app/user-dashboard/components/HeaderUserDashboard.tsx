@@ -131,18 +131,20 @@ export default function HeaderUserDashboard() {
 
       <div className="flex items-center gap-2 md:gap-6">
         {session ? (
-          <Dropdown
-            menu={{ items }}
-            trigger={["click"]}
-            placement="bottomRight"
-          >
-            <div className="flex items-center gap-2 cursor-pointer">
-              <Avatar src="https://i.pravatar.cc/40" />
-              <span className="font-semibold text-white">
-                Hi, {session.user?.username || "User"}
-              </span>
-            </div>
-          </Dropdown>
+          <>
+            <Dropdown
+              menu={{ items }}
+              trigger={["click"]}
+              placement="bottomRight"
+            >
+              <div className="flex items-center gap-2 cursor-pointer">
+                <Avatar src="https://i.pravatar.cc/40" />
+                <span className="font-semibold text-white">
+                  Hi, {session.user?.userProfile?.fullName || "User"}
+                </span>
+              </div>
+            </Dropdown>
+          </>
         ) : (
           <>
             <Link

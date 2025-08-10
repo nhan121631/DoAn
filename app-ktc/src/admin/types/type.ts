@@ -48,12 +48,22 @@ export interface UserResponseDto {
   roles: string[];
 }
 
+// // Kiểu dữ liệu trả về khi phân trang
+// export interface UserPageResponseDto {
+//   data: UserResponseDto[];
+//   pageNumber: number;
+//   pageSize: number;
+//   totalRecords: number;
+//   totalPages: number;
+//   hasNext: boolean;
+//   hasPrevious: boolean;
+// }
 // Kiểu dữ liệu trả về khi phân trang
-export interface UserPageResponseDto {
-  data: UserResponseDto[];
-  pageNumber: number;
-  pageSize: number;
-  totalRecords: number;
+export interface PaginatedResponse<T> {
+  content: T[];
+  page: number;
+  size: number;
+  totalElements: number;
   totalPages: number;
   hasNext: boolean;
   hasPrevious: boolean;
