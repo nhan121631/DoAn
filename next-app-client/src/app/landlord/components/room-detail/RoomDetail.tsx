@@ -22,7 +22,10 @@ const RoomDetail: React.FC<RoomDetailProps> = ({ id }) => {
     getRoomById(id)
       .then((data) => {
         setRoom(data as RoomDetail);
-        console.log("Room data:", data);
+        console.log("=== RoomDetail getRoomById payload ===");
+        console.log("Room ID:", id);
+        console.log("Complete Response Data:", JSON.stringify(data, null, 2));
+        console.log("======================================");
       })
       .catch(() => {
         setError("Room not found");

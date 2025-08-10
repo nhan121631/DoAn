@@ -14,9 +14,6 @@ function Admin() {
     setIsDarkMode(theme === "dark");
   }, [isDarkMode]);
 
- 
-
-
   const toggleCollapsed = () => {
     setCollapsed(!collapsed);
   };

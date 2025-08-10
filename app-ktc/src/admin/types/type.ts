@@ -37,7 +37,6 @@ export interface UserProfile {
   address: Address;
 }
 
-
 //-----------------------------------//
 // User DTO
 export interface UserResponseDto {
@@ -70,3 +69,32 @@ export interface UpdateUserStatusRequestDto {
   status: number;
 }
 
+//-----------------------------------//
+// Room DTO
+export interface RoomResponseDto {
+  id: string;
+  title: string;
+  landlordFullName: string | null;
+  description: string;
+  priceMonth: number;
+  priceDeposit: number;
+  available: number;
+  approval: number;
+  hidden: number;
+  isRemoved: number;
+  postStartDate: string;
+  postEndDate: string;
+  address: Address;
+  typepost: string;
+}
+
+// Kiểu dữ liệu trả về khi phân trang phòng
+export interface RoomPageResponseDto {
+  rooms: RoomResponseDto[];
+  pageNumber: number;
+  pageSize: number;
+  totalRecords: number;
+  totalPages: number;
+  hasNext: boolean;
+  hasPrevious: boolean;
+}
