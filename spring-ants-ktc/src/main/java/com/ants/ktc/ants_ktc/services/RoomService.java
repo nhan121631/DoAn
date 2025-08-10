@@ -30,6 +30,8 @@ import com.ants.ktc.ants_ktc.dtos.image.ImageResponseDto;
 import com.ants.ktc.ants_ktc.dtos.room.PaginationRoomAdminResponseDto;
 import com.ants.ktc.ants_ktc.dtos.room.PaginationRoomResponseDto;
 import com.ants.ktc.ants_ktc.dtos.room.RoomAdminResponseProjectionDto;
+import com.ants.ktc.ants_ktc.dtos.room.RoomApprovalProjectionDto;
+import com.ants.ktc.ants_ktc.dtos.room.RoomDeleteRequestDto;
 import com.ants.ktc.ants_ktc.dtos.room.RoomRequestCreateDto;
 import com.ants.ktc.ants_ktc.dtos.room.RoomRequestUpdateDto;
 import com.ants.ktc.ants_ktc.dtos.room.RoomResponseDto;
@@ -77,6 +79,9 @@ public class RoomService {
 
         @Autowired
         private ImageJpaRepository imageJpaRepository;
+
+        @Autowired
+        private MailService mailService;
 
         @Transactional
         public RoomResponseDto createRoom(List<MultipartFile> files, RoomRequestCreateDto requestDto) {
@@ -553,7 +558,7 @@ public class RoomService {
         }
 
         public RoomShowHideProjectionDto updateHidden(UUID roomId, RoomShowHideProjectionDto hidden) {
-                Room room = roomJpaRepository.findForExtendById(roomId)
+                Room room = roomJpaRepository.findById(roomId)
                                 .orElseThrow(() -> new IllegalArgumentException("Room not found"));
 
                 room.setHidden(hidden.getIsHidden());
@@ -564,6 +569,67 @@ public class RoomService {
                                 .isHidden(room.getHidden())
                                 .message("Room visibility updated successfully"
                                                 + (room.getHidden() == 1 ? " (hidden)" : " (visible)"))
+                                .build();
+        }
+
+        public RoomDeleteRequestDto deleteRoom(UUID roomId, RoomDeleteRequestDto request) {
+                Room room = roomJpaRepository.findById(roomId)
+                                .orElseThrow(() -> new IllegalArgumentException("Room not found"));
+
+                room.setIsRemoved(request.getIsRemoved());
+                roomJpaRepository.save(room);
+
+                return RoomDeleteRequestDto.builder()
+                                .isRemoved(request.getIsRemoved())
+                                .message("Room deleted successfully")
+                                .build();
+        }
+
+        @Transactional
+        public RoomApprovalProjectionDto updateApproval(UUID roomId, RoomApprovalProjectionDto approval) {
+                Room room = roomJpaRepository.findForExtendById(roomId)
+                                .orElseThrow(() -> new IllegalArgumentException("Room not found"));
+
+                int oldApproval = room.getApproval();
+                int newApproval = approval.getApproval();
+                User user = room.getUser();
+
+                // Hoàn tiền khi oldApproval == 0 && newApproval == 2
+                if (oldApproval == 0 && newApproval == 2) {
+                        // Tìm transaction type = 0 (gia hạn hoặc tạo mới) của phòng này
+                        Transaction lastTransaction = transactionsJpaRepository
+                                        .findLatestTransactionByWalletAndType(user.getWallet(), 0);
+                        if (lastTransaction != null) {
+                                Double refundAmount = lastTransaction.getAmount();
+                                Double balance = user.getWallet().getBalance();
+                                user.getWallet().setBalance(balance + refundAmount);
+                                userJpaRepository.save(user);
+
+                                Transaction refundTransaction = new Transaction();
+                                refundTransaction.setAmount(refundAmount);
+                                refundTransaction.setDescription("Refund for rejected room post: " + room.getTitle());
+                                refundTransaction.setTransactionDate(new Date());
+                                LocalDateTime now = LocalDateTime.now(ZoneId.systemDefault());
+                                String day = String.format("%02d", now.getDayOfMonth());
+                                String hour = String.format("%02d", now.getHour());
+                                String random = String.format("%04d", (int) (Math.random() * 10000));
+                                String transactionCode = day + hour + random;
+                                refundTransaction.setTransactionCode(transactionCode);
+                                refundTransaction.setBankTransactionName("Ants Wallet");
+                                refundTransaction.setStatus(1);
+                                refundTransaction.setWallet(user.getWallet());
+                                refundTransaction.setTransactionType(3);// type 3: hoàn tiền
+                                transactionsJpaRepository.save(refundTransaction);
+                                room.setApproval(newApproval);
+                        }
+                }
+
+                roomJpaRepository.save(room);
+
+                return RoomApprovalProjectionDto.builder()
+                                .approval(room.getApproval())
+                                .message("Room approval status updated successfully"
+                                                + (room.getApproval() == 1 ? " approved" : " rejected"))
                                 .build();
         }
 
@@ -770,6 +836,13 @@ public class RoomService {
                                                                                                 .getUser().getProfile())
                                                                                                 .getFullName()
                                                                                 : null)
+                                .landlordEmail(
+                                                room.getUser() != null && room.getUser()
+                                                                .getProfile() instanceof RoomByAdminPagingProjection.UserInfo.ProfileInfo
+                                                                                ? ((RoomByAdminPagingProjection.UserInfo.ProfileInfo) room
+                                                                                                .getUser().getProfile())
+                                                                                                .getEmail()
+                                                                                : null)
                                 .description(room.getDescription())
                                 .available(room.getAvailable())
                                 .approval(room.getApproval())
@@ -879,6 +952,10 @@ public class RoomService {
                         e.printStackTrace();
                 }
 
+        }
+
+        public void sendAdminMailToLandlord(String email, String subject, String message, MultipartFile file) {
+                mailService.sendMail(email, subject, message, file);
         }
 
 }

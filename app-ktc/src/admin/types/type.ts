@@ -75,6 +75,7 @@ export interface RoomResponseDto {
   id: string;
   title: string;
   landlordFullName: string | null;
+  landlordEmail: string | null;
   description: string;
   priceMonth: number;
   priceDeposit: number;

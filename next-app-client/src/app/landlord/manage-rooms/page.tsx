@@ -187,62 +187,46 @@ function TableManageRoom() {
         const start = new Date(record.postStartDate);
         const end = new Date(record.postEndDate);
         const isStillValid = start <= now && now <= end;
+        const isRemoved = record.isRemoved === 1;
 
+        // Nếu bài đã bị xóa hoặc vẫn còn hiệu lực thì không hiển thị nút Extend, thay vào đó hiển thị trạng thái phù hợp
+        if (isRemoved) {
+          return <Tag color="red">Removed</Tag>;
+        }
         if (isStillValid) {
           return <Tag color="green">Still valid</Tag>;
         }
 
-        // Format min date as yyyy-MM-dd (ngày hôm nay hoặc ngày sau postEndDate, whichever is later)
-        const todayDate = new Date(
+        // Format min date là ngày hiện tại + 1 ngày nữa
+        const tomorrowDate = new Date(
           now.getFullYear(),
           now.getMonth(),
-          now.getDate()
+          now.getDate() + 1
         );
-        const minDateObj = new Date(
-          Math.max(todayDate.getTime(), end.getTime() + 24 * 60 * 60 * 1000)
-        );
-        // Disable luôn ngày hiện tại, minDate là ngày hôm sau
-        const minDate = new Date(minDateObj.getTime() + 24 * 60 * 60 * 1000)
-          .toISOString()
-          .slice(0, 10);
+        const minDate = tomorrowDate.toISOString().slice(0, 10);
 
-        // Tính tổng phí gia hạn dựa vào typepost và ngày chọn
+        // Tính tổng phí gia hạn và số ngày dựa vào ngày hiện tại (client) và ngày kết thúc chọn từ input
         let totalFee = 0;
+        let diffDays = 0;
         if (extendDates[record.id] && selectedTypePostId) {
           const selectedType = typeposts.find(
             (tp) => tp.id === selectedTypePostId
           );
           if (selectedType) {
-            // Nếu ngày kết thúc hiện tại (end) lớn hơn hôm nay thì tính từ end, còn nếu đã hết hạn thì tính từ hôm nay
-            const selectedDate = new Date(extendDates[record.id]);
-            const today = new Date();
-            const todayDate = new Date(
-              today.getFullYear(),
-              today.getMonth(),
-              today.getDate()
-            );
-            // endDate phải là ngày chọn từ input type date
-            const endDate = new Date(
-              selectedDate.getFullYear(),
-              selectedDate.getMonth(),
-              selectedDate.getDate()
-            );
-            // Sử dụng biến todayDate đã có ở trên
-            const startDate =
-              end > todayDate
-                ? new Date(end.getFullYear(), end.getMonth(), end.getDate())
-                : todayDate;
-            // Tính số ngày: bao gồm cả ngày bắt đầu và ngày chọn (tức là từ startDate đến endDate, cả 2 đều tính)
-            let diffDays =
-              Math.floor(
+            // Ngày bắt đầu là ngày hiện tại
+            const startDate = new Date();
+            startDate.setHours(0, 0, 0, 0);
+            // Ngày kết thúc là ngày chọn từ input
+            const endDate = new Date(extendDates[record.id]);
+            endDate.setHours(0, 0, 0, 0);
+            // Tính số ngày: bao gồm cả ngày bắt đầu và ngày kết thúc
+            diffDays = Math.max(
+              1,
+              Math.ceil(
                 (endDate.getTime() - startDate.getTime()) /
                   (1000 * 60 * 60 * 24)
-              ) + 1;
-            if (diffDays < 1) diffDays = 1;
-            // Log ra để kiểm tra
-            console.log("startDate:", startDate.toISOString());
-            console.log("endDate:", endDate.toISOString());
-            console.log("Số ngày gia hạn:", diffDays);
+              ) + 1
+            );
             totalFee = diffDays * selectedType.pricePerDay;
           }
         }
@@ -255,7 +239,6 @@ function TableManageRoom() {
               value={extendDates[record.id] || ""}
               onChange={(e) => {
                 const selected = e.target.value;
-                // Chỉ cho phép chọn ngày hôm nay hoặc sau đó
                 if (selected >= minDate) {
                   setExtendDates((prev) => ({
                     ...prev,
@@ -312,9 +295,10 @@ function TableManageRoom() {
                 </tbody>
               </table>
             </div>
-            {/* Hiển thị tổng phí gia hạn */}
-            {totalFee > 0 && (
+            {/* Hiển thị số ngày gia hạn và tổng phí */}
+            {diffDays > 0 && (
               <div style={{ fontWeight: 600, color: "#1677ff", marginTop: 8 }}>
+                Số ngày gia hạn: {diffDays} <br />
                 Tổng phí gia hạn: {totalFee.toLocaleString("vi-VN")} ₫
               </div>
             )}
@@ -358,6 +342,7 @@ function TableManageRoom() {
           </Space>
         );
 
+        // Nếu không bị xóa và đã hết hạn thì hiển thị nút Extend
         return (
           <Popover
             content={popoverContent}
@@ -379,7 +364,6 @@ function TableManageRoom() {
             <Button
               size="small"
               type="primary"
-              disabled={record.isRemoved === 1}
             >
               Extend
             </Button>
@@ -427,6 +411,18 @@ function TableManageRoom() {
         const now = new Date();
         const end = new Date(record.postEndDate);
         const isExpired = now > end;
+        const isRemoved = record.isRemoved === 1;
+
+        // Nếu bài đã bị xóa thì hiển thị trạng thái
+        if (isRemoved) {
+          return <Tag color="red">Removed</Tag>;
+        }
+        // Nếu bài đã hết hạn thì hiển thị trạng thái
+        if (isExpired) {
+          return <Tag color="gray">Post expired</Tag>;
+        }
+
+        // Nếu không bị xóa và chưa hết hạn thì hiển thị nút Hide/Show
         return (
           <Popconfirm
             title={
@@ -439,7 +435,6 @@ function TableManageRoom() {
             <Button
               size="small"
               type={hidden === 1 ? "default" : "primary"}
-              disabled={record.isRemoved === 1 || isExpired}
             >
               {hidden === 1 ? "Show" : "Hide"}
             </Button>
@@ -473,7 +468,7 @@ function TableManageRoom() {
             </span>
           );
         }
-        
+
         return (
           <Space>
             <Button

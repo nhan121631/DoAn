@@ -1,5 +1,6 @@
 package com.ants.ktc.ants_ktc.controllers;
 
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -44,6 +45,19 @@ public class TransactionController {
             @RequestParam(value = "size", defaultValue = "8") int size) {
         PaginationTransactionResponseDto responseDto = transactionService.getTransactionsByUserIdPaginated(userId, page,
                 size);
+        return new ResponseEntity<>(responseDto, HttpStatus.OK);
+    }
+
+    // Controller
+    @GetMapping("/by-user/{userId}/date-range")
+    public ResponseEntity<PaginationTransactionResponseDto> getTransactionsByUserIdAndDateRange(
+            @PathVariable("userId") UUID userId,
+            @RequestParam("startDate") String startDate,
+            @RequestParam("endDate") String endDate,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "8") int size) {
+        PaginationTransactionResponseDto responseDto = transactionService.getTransactionsByUserIdAndDateRange(
+                userId, page, size, startDate, endDate);
         return new ResponseEntity<>(responseDto, HttpStatus.OK);
     }
 

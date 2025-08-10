@@ -1,22 +1,33 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import {
   Button,
-  Form,
-  Input,
+  // Form,
+  // Input,
   message,
   Modal,
   Popconfirm,
   Space,
   Table,
   Tag,
+  // Upload,
 } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import React, { useContext, useEffect, useState } from "react";
 import { AiOutlineInfoCircle, AiOutlineMail } from "react-icons/ai";
 import { ThemeContext } from "../context/ThemeContext";
-import { fetchAllRoomPaging } from "../service/RoomService";
-import type { RoomResponseDto } from "../types/type";
+import {
+  fetchAllRoomPaging,
+  updateRoomApproval,
+  sendAdminEmailToLandlordWithFile,
+  deleteRoom,
+} from "../service/RoomService";
+import type { RoomResponseDto as OriginalRoomResponseDto } from "../types/type";
+// import type { UploadFile } from "antd/es/upload";
+import SendMailModal from "./SendMailModal";
 
-// Dữ liệu sẽ lấy từ API, không dùng mock data
+type RoomResponseDto = OriginalRoomResponseDto & {
+  addressText?: string;
+};
 
 const TableManageRoom: React.FC = () => {
   const [data, setData] = useState<RoomResponseDto[]>([]);
@@ -29,6 +40,8 @@ const TableManageRoom: React.FC = () => {
   const [page, setPage] = useState(0);
   const [total, setTotal] = useState(0);
   const pageSize = 5;
+  const [messageApi, contextHolder] = message.useMessage();
+  // const [form] = Form.useForm();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -52,33 +65,61 @@ const TableManageRoom: React.FC = () => {
         }));
         setData(rooms);
         setTotal(res.totalRecords ?? 0);
-      } catch (_) {
-        message.error("Lỗi khi tải danh sách phòng!");
+      } catch {
+        messageApi.error({
+          content: "Error loading room list!",
+          duration: 2,
+        });
       }
     };
     fetchData();
   }, [page]);
 
-  const updateApproval = (record: RoomResponseDto, value: 1 | 2) => {
-    const updated = data.map((item) =>
-      item.id === record.id ? { ...item, approval: value } : item
-    );
-    setData(updated);
-    message.success(
-      value === 1 ? "Approved successfully" : "Rejected successfully"
-    );
+  const updateApproval = async (record: RoomResponseDto, value: 1 | 2) => {
+    try {
+      await updateRoomApproval(record.id, value);
+      const updated = data.map((item) =>
+        item.id === record.id ? { ...item, approval: value } : item
+      );
+      setData(updated);
+      messageApi.success({
+        content:
+          value === 1 ? "Approved successfully" : "Rejected successfully",
+        duration: 2,
+      });
+    } catch (error) {
+      console.error("Error updating approval:", error);
+      messageApi.error({
+        content: "Failed to update approval status",
+        duration: 2,
+      });
+    }
   };
 
-  const toggleHidden = (record: RoomResponseDto) => {
-    const updated = data.map((item) =>
-      item.id === record.id
-        ? { ...item, isRemoved: (item.isRemoved === 1 ? 0 : 1) as 0 | 1 }
-        : item
-    );
-    setData(updated);
-    message.success(
-      record.isRemoved === 1 ? "Post is now visible." : "Post has been hidden."
-    );
+  const toggleRemove = async (record: RoomResponseDto) => {
+    try {
+      // Call backend API to update isRemoved status in DB
+      await deleteRoom(record.id, record.isRemoved === 1 ? 0 : 1);
+      // Update local state after successful DB update
+      const updated = data.map((item) =>
+        item.id === record.id
+          ? { ...item, isRemoved: (item.isRemoved === 1 ? 0 : 1) as 0 | 1 }
+          : item
+      );
+      setData(updated);
+      messageApi.success({
+        content:
+          record.isRemoved === 1
+            ? "Post is now recovered."
+            : "Post has been deleted.",
+        duration: 2,
+      });
+    } catch {
+      messageApi.error({
+        content: "Failed to update post status!",
+        duration: 2,
+      });
+    }
   };
 
   const handleMailClick = (record: RoomResponseDto) => {
@@ -102,6 +143,10 @@ const TableManageRoom: React.FC = () => {
       title: "Description",
       dataIndex: "description",
       key: "description",
+      width: 250,
+      render: (text: string) => (
+        <div className="line-clamp-5 break-words">{text}</div>
+      ),
     },
     {
       title: "Owner Name",
@@ -179,7 +224,7 @@ const TableManageRoom: React.FC = () => {
               ? "Do you want to show this post again?"
               : "Are you sure to remove this post?"
           }
-          onConfirm={() => toggleHidden(record)}
+          onConfirm={() => toggleRemove(record)}
           okText="Yes"
           cancelText="No"
         >
@@ -215,6 +260,7 @@ const TableManageRoom: React.FC = () => {
 
   return (
     <>
+      {contextHolder}
       <Table
         columns={columns}
         dataSource={data}
@@ -227,83 +273,63 @@ const TableManageRoom: React.FC = () => {
         }}
       />
       {/* ...existing code for modals... */}
-      <Modal
-        title="Send Email"
+      <SendMailModal
         open={isModalOpen}
         onCancel={() => setModalOpen(false)}
-        footer={null}
-        className={isDark ? "dark" : ""}
-      >
-        <Form
-          layout="vertical"
-          onFinish={(values) => {
-            console.log("Email values:", values);
-            message.success("Email sent successfully!");
-            setModalOpen(false);
-          }}
-        >
-          <Form.Item label="To">
-            <Input value={selectedRoom?.title} disabled />
-          </Form.Item>
-          <Form.Item
-            label="Subject"
-            name="subject"
-            rules={[{ required: true, message: "Please enter email subject" }]}
-          >
-            <Input placeholder="Enter email subject" />
-          </Form.Item>
-          <Form.Item
-            label="Message"
-            name="message"
-            rules={[
-              { required: true, message: "Please enter your message" },
-              { min: 10, message: "Message should be at least 10 characters" },
-            ]}
-          >
-            <Input.TextArea
-              rows={4}
-              placeholder="Enter your message"
-              maxLength={500}
-              showCount
-            />
-          </Form.Item>
-          <Form.Item>
-            <Button type="primary" htmlType="submit" className="w-full">
-              Send
-            </Button>
-          </Form.Item>
-        </Form>
-      </Modal>
+        landlordEmail={selectedRoom?.landlordEmail ?? ""}
+        onSend={async (formData) => {
+          await sendAdminEmailToLandlordWithFile(formData);
+        }}
+        isDark={isDark}
+      />
       <Modal
-        title="Room Details"
+        title={<span className={isDark ? "text-white" : "text-gray-800"}>Room Details</span>}
         open={isInfoModalOpen}
         onCancel={() => setInfoModalOpen(false)}
         footer={null}
         width={700}
         className={isDark ? "dark" : ""}
       >
-        <p>
-          <b>Name:</b> {selectedRoom?.title}
-        </p>
-        <p>
-          <b>Description:</b> {selectedRoom?.description}
-        </p>
-        <p>
-          <b>Address:</b>{" "}
-          {selectedRoom?.address ? String(selectedRoom.address) : ""}
-        </p>
-        <p>
-          <b>Price:</b> {selectedRoom?.priceMonth?.toLocaleString()} ₫
-        </p>
-        <p>
-          <b>Status:</b> {selectedRoom?.available}
-        </p>
-        <p>
-          <b>Approval:</b> {selectedRoom?.approval}
-        </p>
-        <p>
-          <b>Removed:</b> {selectedRoom?.isRemoved === 1 ? "Yes" : "No"}
-        </p>
+        <div className="space-y-3 p-2">
+          <div>
+            <span className="font-semibold text-gray-700">Owner Name:</span>
+            <span className="ml-2 text-gray-900">{selectedRoom?.landlordFullName}</span>
+          </div>
+          <div>
+            <span className="font-semibold text-gray-700">Owner Email:</span>
+            <span className="ml-2 text-blue-700">{selectedRoom?.landlordEmail}</span>
+          </div>
+          <div>
+            <span className="font-semibold text-gray-700">Name:</span>
+            <span className="ml-2 text-gray-900">{selectedRoom?.title}</span>
+          </div>
+          <div>
+            <span className="font-semibold text-gray-700">Description:</span>
+            <div className="mt-1 ml-2 text-gray-900">
+              {selectedRoom?.description}
+            </div>
+          </div>
+          <div>
+            <span className="font-semibold text-gray-700">Address:</span>
+            <span className="ml-2 text-gray-900">{selectedRoom?.addressText ?? ""}</span>
+          </div>
+          <div>
+            <span className="font-semibold text-gray-700">Price:</span>
+            <span className="ml-2 text-green-700">{selectedRoom?.priceMonth?.toLocaleString()} ₫</span>
+          </div>
+          <div>
+            <span className="font-semibold text-gray-700">Status:</span>
+            <span className={"ml-2 px-2 py-1 rounded " + (selectedRoom?.available === 1 ? "bg-green-100 text-green-700" : "bg-blue-100 text-blue-700")}>{selectedRoom?.available === 1 ? "Rented" : "Available"}</span>
+          </div>
+          <div>
+            <span className="font-semibold text-gray-700">Approval:</span>
+            <span className={"ml-2 px-2 py-1 rounded " + (selectedRoom?.approval === 1 ? "bg-green-100 text-green-700" : selectedRoom?.approval === 2 ? "bg-red-100 text-red-700" : "bg-yellow-100 text-yellow-700")}>{selectedRoom?.approval === 1 ? "Applied" : selectedRoom?.approval === 2 ? "Rejected" : "Pending"}</span>
+          </div>
+          <div>
+            <span className="font-semibold text-gray-700">Removed:</span>
+            <span className={"ml-2 px-2 py-1 rounded " + (selectedRoom?.isRemoved === 1 ? "bg-red-100 text-red-700" : "bg-gray-100 text-gray-700")}>{selectedRoom?.isRemoved === 1 ? "Yes" : "No"}</span>
+          </div>
+        </div>
       </Modal>
     </>
   );

@@ -1,11 +1,13 @@
 package com.ants.ktc.ants_ktc.services;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import jakarta.mail.internet.MimeMessage;
 
@@ -44,6 +46,43 @@ public class MailService {
       message.setTo(to);
       message.setSubject("Password Reset Code");
       message.setText("Your code is: " + code);
+      emailSender.send(message);
+    }
+  }
+
+  @SuppressWarnings("null")
+  // @Async
+  public void sendMail(String to, String subject, String messageBody, MultipartFile file) {
+    try {
+      System.out.println("[MailService] sendMail called");
+      if (file != null) {
+        System.out.println("[MailService] File info:");
+        System.out.println("  Name: " + file.getOriginalFilename());
+        System.out.println("  Size: " + file.getSize());
+        System.out.println("  ContentType: " + file.getContentType());
+      } else {
+        System.out.println("[MailService] No file received (file == null)");
+      }
+      MimeMessage mimeMessage = emailSender.createMimeMessage();
+      MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+      helper.setTo(to);
+      helper.setSubject(subject);
+      helper.setText(messageBody, true);
+      if (file != null) {
+        System.out.println("[MailService] Attaching file: " + file.getOriginalFilename());
+        helper.addAttachment(file.getOriginalFilename(), new ByteArrayResource(file.getBytes()));
+      } else {
+        System.out.println("[MailService] No file to attach (file == null).");
+      }
+      emailSender.send(mimeMessage);
+      System.out.println("[MailService] Email sent (with/without attachment)");
+    } catch (Exception e) {
+      System.out.println("[MailService] Exception: " + e.getMessage());
+      e.printStackTrace();
+      SimpleMailMessage message = new SimpleMailMessage();
+      message.setTo(to);
+      message.setSubject(subject);
+      message.setText(messageBody);
       emailSender.send(message);
     }
   }

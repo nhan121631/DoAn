@@ -2,6 +2,7 @@ package com.ants.ktc.ants_ktc.controllers;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -20,7 +21,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.ants.ktc.ants_ktc.dtos.room.PaginationRoomAdminResponseDto;
 import com.ants.ktc.ants_ktc.dtos.room.PaginationRoomResponseDto;
-import com.ants.ktc.ants_ktc.dtos.room.RoomAdminResponseProjectionDto;
+import com.ants.ktc.ants_ktc.dtos.room.RoomApprovalProjectionDto;
+import com.ants.ktc.ants_ktc.dtos.room.RoomDeleteRequestDto;
 import com.ants.ktc.ants_ktc.dtos.room.RoomRequestCreateDto;
 import com.ants.ktc.ants_ktc.dtos.room.RoomRequestUpdateDto;
 import com.ants.ktc.ants_ktc.dtos.room.RoomResponseDto;
@@ -134,11 +136,25 @@ public class RoomController {
         return ResponseEntity.ok(result);
     }
 
+    @PatchMapping("/{id}/delete")
+    public ResponseEntity<RoomDeleteRequestDto> deleteRoom(@PathVariable UUID id,
+            @Valid @RequestBody RoomDeleteRequestDto request) {
+        RoomDeleteRequestDto result = roomService.deleteRoom(id, request);
+        return ResponseEntity.ok(result);
+    }
+
     @PatchMapping("/update-post-extend")
     public ResponseEntity<RoomUpdateExpireDateResponseDto> extendPostDate(
             @RequestBody RoomUpdateExpireDateRequestDto request) {
         RoomUpdateExpireDateResponseDto roomResponse = roomService.updateExpirePostDate(request);
         return ResponseEntity.ok(roomResponse);
+    }
+
+    @PatchMapping("/{id}/approval")
+    public ResponseEntity<RoomApprovalProjectionDto> updateApproval(@PathVariable("id") UUID id,
+            @Valid @RequestBody RoomApprovalProjectionDto body) {
+        RoomApprovalProjectionDto result = roomService.updateApproval(id, body);
+        return ResponseEntity.ok(result);
     }
 
     @GetMapping("/{id}")
@@ -147,4 +163,31 @@ public class RoomController {
         return ResponseEntity.ok(room);
     }
 
+    @PostMapping("/admin-send-email")
+    public ResponseEntity<String> sendEmailToLandlord(
+            @RequestPart("data") String dataJson,
+            @RequestPart(value = "file", required = false) MultipartFile file) {
+
+        ObjectMapper mapper = new ObjectMapper();
+        Map<String, String> data;
+        try {
+            data = mapper.readValue(dataJson, new com.fasterxml.jackson.core.type.TypeReference<Map<String, String>>() {
+            });
+        } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
+            return ResponseEntity.badRequest().body("Invalid JSON data: " + e.getMessage());
+        }
+
+        String email = data.get("email");
+        String subject = data.get("subject");
+        String message = data.get("message");
+
+        try {
+            System.out.println("Controller: Gọi sendAdminMailToLandlord");
+            roomService.sendAdminMailToLandlord(email, subject, message, file);
+            return ResponseEntity.ok("Email sent successfully");
+        } catch (Exception e) {
+            e.printStackTrace(); // Log to console
+            return ResponseEntity.status(500).body("Failed to send email: " + e.getMessage());
+        }
+    }
 }

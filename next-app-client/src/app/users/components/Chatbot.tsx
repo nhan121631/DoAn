@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import { URL_PPYTHON } from "@/services/Constant";
 import Image from "next/image";

@@ -2,3 +2,5 @@
 /dockers
 
 .fake
+
+/.venv
