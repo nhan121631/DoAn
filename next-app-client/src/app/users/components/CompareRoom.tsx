@@ -59,7 +59,7 @@ export default function CompareRoom() {
                 return;
               }
               setOpen(false);
-              router.push("/users/compare");
+              router.push("/compare");
             }}
           >
             Compare

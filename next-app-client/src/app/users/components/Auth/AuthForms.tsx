@@ -66,9 +66,9 @@ export default function AuthForms({ csrfToken }: { csrfToken?: string }) {
     if (roles.includes("Landlords")) {
       return "/landlord";
     } else if (roles.includes("Users")) {
-      return "/user-dashboard";
+      return "/users";
     }
-    return "/user-dashboard"; // default
+    return "/users"; // default
   };
 
   useEffect(() => {
