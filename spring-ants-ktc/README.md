@@ -123,3 +123,13 @@
 |--------|----------|------|--------|
 | POST | `/ai_search` | ai_search | ✅ Done |
 | POST | `/ai_chatbot` | ai_chatbot | ✅ Done |
+
+## **API Chưa hoàn thành**
+Rental room
+Rating
+Save room
+Request room 
+Fillter 
+Search 
+....
+
