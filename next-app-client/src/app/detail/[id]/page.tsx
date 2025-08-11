@@ -20,7 +20,9 @@ export async function generateStaticParams() {
 }
 
 export default async function Page({ params }: { params: { id: string } }) {
-  const room = await getRoomById(params.id);
+  // Await params before accessing its properties
+  const { id } = await params;
+  const room = await getRoomById(id);
   if (!room) {
     return <div>Room not found</div>;
   }
