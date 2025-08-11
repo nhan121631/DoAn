@@ -13,6 +13,7 @@ export default async function RentalRooms({
   searchParams?: Promise<{ page?: string; pageNormal?: string }>;
 }) {
   const params = searchParams ? await searchParams : {};
+  // ...existing code...
   const size = 4;
   const page = Number(params?.page ?? 0);
   const roomVips = (await getRoomVipUser(

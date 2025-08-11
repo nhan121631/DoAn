@@ -9,7 +9,7 @@ import WhyChooseUsSection from "./components/WhyChooseUsSection";
 export default function UsersPage({
   searchParams,
 }: {
-  searchParams?: { page?: string; pageNormal?: string };
+  searchParams?: Promise<{ page?: string; pageNormal?: string }>;
 }) {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
