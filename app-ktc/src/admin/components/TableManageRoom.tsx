@@ -1,15 +1,11 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import {
   Button,
-  // Form,
-  // Input,
   message,
-  Modal,
   Popconfirm,
   Space,
   Table,
   Tag,
-  // Upload,
 } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import React, { useContext, useEffect, useState } from "react";
@@ -24,6 +20,7 @@ import {
 import type { RoomResponseDto as OriginalRoomResponseDto } from "../types/type";
 // import type { UploadFile } from "antd/es/upload";
 import SendMailModal from "./SendMailModal";
+import RoomDetailModal from "./RoomDetailModal";
 
 type RoomResponseDto = OriginalRoomResponseDto & {
   addressText?: string;
@@ -282,55 +279,11 @@ const TableManageRoom: React.FC = () => {
         }}
         isDark={isDark}
       />
-      <Modal
-        title={<span className={isDark ? "text-white" : "text-gray-800"}>Room Details</span>}
+      <RoomDetailModal
+        roomId={selectedRoom?.id ?? null}
         open={isInfoModalOpen}
         onCancel={() => setInfoModalOpen(false)}
-        footer={null}
-        width={700}
-        className={isDark ? "dark" : ""}
-      >
-        <div className="space-y-3 p-2">
-          <div>
-            <span className="font-semibold text-gray-700">Owner Name:</span>
-            <span className="ml-2 text-gray-900">{selectedRoom?.landlordFullName}</span>
-          </div>
-          <div>
-            <span className="font-semibold text-gray-700">Owner Email:</span>
-            <span className="ml-2 text-blue-700">{selectedRoom?.landlordEmail}</span>
-          </div>
-          <div>
-            <span className="font-semibold text-gray-700">Name:</span>
-            <span className="ml-2 text-gray-900">{selectedRoom?.title}</span>
-          </div>
-          <div>
-            <span className="font-semibold text-gray-700">Description:</span>
-            <div className="mt-1 ml-2 text-gray-900">
-              {selectedRoom?.description}
-            </div>
-          </div>
-          <div>
-            <span className="font-semibold text-gray-700">Address:</span>
-            <span className="ml-2 text-gray-900">{selectedRoom?.addressText ?? ""}</span>
-          </div>
-          <div>
-            <span className="font-semibold text-gray-700">Price:</span>
-            <span className="ml-2 text-green-700">{selectedRoom?.priceMonth?.toLocaleString()} ₫</span>
-          </div>
-          <div>
-            <span className="font-semibold text-gray-700">Status:</span>
-            <span className={"ml-2 px-2 py-1 rounded " + (selectedRoom?.available === 1 ? "bg-green-100 text-green-700" : "bg-blue-100 text-blue-700")}>{selectedRoom?.available === 1 ? "Rented" : "Available"}</span>
-          </div>
-          <div>
-            <span className="font-semibold text-gray-700">Approval:</span>
-            <span className={"ml-2 px-2 py-1 rounded " + (selectedRoom?.approval === 1 ? "bg-green-100 text-green-700" : selectedRoom?.approval === 2 ? "bg-red-100 text-red-700" : "bg-yellow-100 text-yellow-700")}>{selectedRoom?.approval === 1 ? "Applied" : selectedRoom?.approval === 2 ? "Rejected" : "Pending"}</span>
-          </div>
-          <div>
-            <span className="font-semibold text-gray-700">Removed:</span>
-            <span className={"ml-2 px-2 py-1 rounded " + (selectedRoom?.isRemoved === 1 ? "bg-red-100 text-red-700" : "bg-gray-100 text-gray-700")}>{selectedRoom?.isRemoved === 1 ? "Yes" : "No"}</span>
-          </div>
-        </div>
-      </Modal>
+      />
     </>
   );
 };

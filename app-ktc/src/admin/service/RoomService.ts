@@ -44,9 +44,13 @@ export async function sendAdminEmailToLandlord(
     const formData = new FormData();
     formData.append("subject", subject);
     formData.append("message", message);
-    const response = await apiClient.post(`/rooms/admin-send-email/${email}`, formData, {
-      headers: { "Content-Type": "multipart/form-data" }
-    });
+    const response = await apiClient.post(
+      `/rooms/admin-send-email/${email}`,
+      formData,
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+      }
+    );
     console.log("✅ Email API response:", response);
     return response.data;
   } catch (error: any) {
@@ -55,7 +59,10 @@ export async function sendAdminEmailToLandlord(
   }
 }
 
-export async function deleteRoom(roomId: string, isRemoved: number): Promise<any> {
+export async function deleteRoom(
+  roomId: string,
+  isRemoved: number
+): Promise<any> {
   try {
     const response = await apiClient.patch(`/rooms/${roomId}/delete`, {
       isRemoved: isRemoved,
@@ -68,16 +75,27 @@ export async function deleteRoom(roomId: string, isRemoved: number): Promise<any
   }
 }
 
-export async function sendAdminEmailToLandlordWithFile(formData: FormData): Promise<any> {
+export async function sendAdminEmailToLandlordWithFile(
+  formData: FormData
+): Promise<any> {
   try {
-    const response = await apiClient.post(
-      `/rooms/admin-send-email`,
-      formData,
-      { headers: { "Content-Type": "multipart/form-data" } }
-    );
+    const response = await apiClient.post(`/rooms/admin-send-email`, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
     return response.data;
   } catch (error: any) {
     console.error("❌ Lỗi khi gửi email:", error);
+    throw error;
+  }
+}
+
+export async function getRoomById(roomId: string): Promise<any> {
+  try {
+    const response = await apiClient.get(`/rooms/${roomId}`);
+    console.log("✅ Room raw response:", response);
+    return response;
+  } catch (error: any) {
+    console.error("❌ Lỗi khi lấy thông tin phòng:", error);
     throw error;
   }
 }

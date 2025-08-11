@@ -86,6 +86,7 @@ public class RoomService {
 
         @Autowired
         private MailService mailService;
+
         private List<ImageResponseDto> convertImages(List<Image> images) {
                 if (images == null)
                         return new ArrayList<>();
@@ -620,53 +621,77 @@ public class RoomService {
                                 .postStartDate(room.getPost_start_date())
                                 .postEndDate(room.getPost_end_date())
                                 .typepost(room.getPostType() == null ? null : room.getPostType().getName())
-                                .address(room.getAddress() == null ? null
-                                                : AddressResponseDto.builder()
-                                                                .id(room.getAddress().getId())
-                                                                .street(room.getAddress().getStreet())
-                                                                .ward(room.getAddress().getWard() == null ? null
-                                                                                : WardResponseDto.builder()
-                                                                                                .id(room.getAddress()
-                                                                                                                .getWard()
-                                                                                                                .getId())
-                                                                                                .name(room.getAddress()
-                                                                                                                .getWard()
-                                                                                                                .getName())
-                                                                                                .district(room.getAddress()
-                                                                                                                .getWard()
-                                                                                                                .getDistrict() == null
-                                                                                                                                ? null
-                                                                                                                                : DistrictResponseDto
-                                                                                                                                                .builder()
-                                                                                                                                                .id(room.getAddress()
-                                                                                                                                                                .getWard()
-                                                                                                                                                                .getDistrict()
-                                                                                                                                                                .getId())
-                                                                                                                                                .name(room.getAddress()
-                                                                                                                                                                .getWard()
-                                                                                                                                                                .getDistrict()
-                                                                                                                                                                .getName())
-                                                                                                                                                .province(room.getAddress()
-                                                                                                                                                                .getWard()
-                                                                                                                                                                .getDistrict()
-                                                                                                                                                                .getProvince() == null
-                                                                                                                                                                                ? null
-                                                                                                                                                                                : ProvinceResponseDto
-                                                                                                                                                                                                .builder()
-                                                                                                                                                                                                .id(room.getAddress()
-                                                                                                                                                                                                                .getWard()
-                                                                                                                                                                                                                .getDistrict()
-                                                                                                                                                                                                                .getProvince()
-                                                                                                                                                                                                                .getId())
-                                                                                                                                                                                                .name(room.getAddress()
-                                                                                                                                                                                                                .getWard()
-                                                                                                                                                                                                                .getDistrict()
-                                                                                                                                                                                                                .getProvince()
-                                                                                                                                                                                                                .getName())
-                                                                                                                                                                                                .build())
-                                                                                                                                                .build())
-                                                                                                .build())
-                                                                .build())
+                                .address(convertAddress(room.getAddress()))
+                                .build();
+        }
+
+        // Overloaded convertAddress for RoomByLandlordPagingProjection.AddressInfo
+        private AddressResponseDto convertAddress(RoomByLandlordPagingProjection.AddressInfo addressInfo) {
+                if (addressInfo == null)
+                        return null;
+                var wardInfo = addressInfo.getWard();
+                DistrictResponseDto districtDto = null;
+                ProvinceResponseDto provinceDto = null;
+                if (wardInfo != null && wardInfo.getDistrict() != null) {
+                        var provinceInfo = wardInfo.getDistrict().getProvince();
+                        if (provinceInfo != null) {
+                                provinceDto = ProvinceResponseDto.builder()
+                                                .id(provinceInfo.getId())
+                                                .name(provinceInfo.getName())
+                                                .build();
+                        }
+                        districtDto = DistrictResponseDto.builder()
+                                        .id(wardInfo.getDistrict().getId())
+                                        .name(wardInfo.getDistrict().getName())
+                                        .province(provinceDto)
+                                        .build();
+                }
+                WardResponseDto wardDto = wardInfo == null ? null
+                                : WardResponseDto.builder()
+                                                .id(wardInfo.getId())
+                                                .name(wardInfo.getName())
+                                                .district(districtDto)
+                                                .build();
+
+                return AddressResponseDto.builder()
+                                .id(addressInfo.getId())
+                                .street(addressInfo.getStreet())
+                                .ward(wardDto)
+                                .build();
+        }
+
+        // Overloaded convertAddress for RoomByAdminPagingProjection.AddressInfo
+        private AddressResponseDto convertAddress(RoomByAdminPagingProjection.AddressInfo addressInfo) {
+                if (addressInfo == null)
+                        return null;
+                var wardInfo = addressInfo.getWard();
+                DistrictResponseDto districtDto = null;
+                ProvinceResponseDto provinceDto = null;
+                if (wardInfo != null && wardInfo.getDistrict() != null) {
+                        var provinceInfo = wardInfo.getDistrict().getProvince();
+                        if (provinceInfo != null) {
+                                provinceDto = ProvinceResponseDto.builder()
+                                                .id(provinceInfo.getId())
+                                                .name(provinceInfo.getName())
+                                                .build();
+                        }
+                        districtDto = DistrictResponseDto.builder()
+                                        .id(wardInfo.getDistrict().getId())
+                                        .name(wardInfo.getDistrict().getName())
+                                        .province(provinceDto)
+                                        .build();
+                }
+                WardResponseDto wardDto = wardInfo == null ? null
+                                : WardResponseDto.builder()
+                                                .id(wardInfo.getId())
+                                                .name(wardInfo.getName())
+                                                .district(districtDto)
+                                                .build();
+
+                return AddressResponseDto.builder()
+                                .id(addressInfo.getId())
+                                .street(addressInfo.getStreet())
+                                .ward(wardDto)
                                 .build();
         }
 
@@ -699,53 +724,7 @@ public class RoomService {
                                 .postStartDate(room.getPost_start_date())
                                 .postEndDate(room.getPost_end_date())
                                 .typepost(room.getPostType() == null ? null : room.getPostType().getName())
-                                .address(room.getAddress() == null ? null
-                                                : AddressResponseDto.builder()
-                                                                .id(room.getAddress().getId())
-                                                                .street(room.getAddress().getStreet())
-                                                                .ward(room.getAddress().getWard() == null ? null
-                                                                                : WardResponseDto.builder()
-                                                                                                .id(room.getAddress()
-                                                                                                                .getWard()
-                                                                                                                .getId())
-                                                                                                .name(room.getAddress()
-                                                                                                                .getWard()
-                                                                                                                .getName())
-                                                                                                .district(room.getAddress()
-                                                                                                                .getWard()
-                                                                                                                .getDistrict() == null
-                                                                                                                                ? null
-                                                                                                                                : DistrictResponseDto
-                                                                                                                                                .builder()
-                                                                                                                                                .id(room.getAddress()
-                                                                                                                                                                .getWard()
-                                                                                                                                                                .getDistrict()
-                                                                                                                                                                .getId())
-                                                                                                                                                .name(room.getAddress()
-                                                                                                                                                                .getWard()
-                                                                                                                                                                .getDistrict()
-                                                                                                                                                                .getName())
-                                                                                                                                                .province(room.getAddress()
-                                                                                                                                                                .getWard()
-                                                                                                                                                                .getDistrict()
-                                                                                                                                                                .getProvince() == null
-                                                                                                                                                                                ? null
-                                                                                                                                                                                : ProvinceResponseDto
-                                                                                                                                                                                                .builder()
-                                                                                                                                                                                                .id(room.getAddress()
-                                                                                                                                                                                                                .getWard()
-                                                                                                                                                                                                                .getDistrict()
-                                                                                                                                                                                                                .getProvince()
-                                                                                                                                                                                                                .getId())
-                                                                                                                                                                                                .name(room.getAddress()
-                                                                                                                                                                                                                .getWard()
-                                                                                                                                                                                                                .getDistrict()
-                                                                                                                                                                                                                .getProvince()
-                                                                                                                                                                                                                .getName())
-                                                                                                                                                                                                .build())
-                                                                                                                                                .build())
-                                                                                                .build())
-                                                                .build())
+                                .address(convertAddress(room.getAddress()))
                                 .build();
         }
 
