@@ -1,18 +1,29 @@
+
+
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { DownOutlined, UserOutlined } from "@ant-design/icons";
+import { DownOutlined } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
-import type { MenuProps, TableColumnsType } from "antd";
+import type {  TableColumnsType } from "antd";
 import { Button, Dropdown, message, Popconfirm, Table, Tag } from "antd";
-import React from "react";
+import React, { useState } from "react";
 import {
-  getAccountsQueryOptions,
+  getPaginatedAccountsQueryOptions,
   useUpdateAccountRoles,
   useUpdateAccountStatus,
 } from "../service/ReactQueryAccount";
 import type { UserResponseDto } from "../types/type";
 
 const TableManageAccount: React.FC = () => {
-  const { data = [], isLoading } = useQuery(getAccountsQueryOptions());
+  // State để quản lý phân trang
+  const [pagination, setPagination] = useState({
+    page: 0,
+    pageSize: 5,
+  });
+
+  const { data, isLoading } = useQuery(getPaginatedAccountsQueryOptions(pagination.page, pagination.pageSize));
+  const accountsData = data?.data || [];
+  const totalRecords = data?.totalRecords || 0;
 
   const [messageApi, contextHolder] = message.useMessage();
   const updateRoleMutation = useUpdateAccountRoles({
@@ -34,20 +45,6 @@ const TableManageAccount: React.FC = () => {
     },
   });
 
-  // const toggleStatus = useCallback(
-  //   async (record: UserResponseDto) => {
-  //     try {
-  //       const newStatus = record.status === "Active" ? 1 : 0;
-  //       await updateAccountStatus(record.id, newStatus);
-  //       message.success("Cập nhật trạng thái thành công!");
-  //       await loadAccounts();
-  //     } catch (error: any) {
-  //       console.error("Lỗi khi cập nhật trạng thái:", error);
-  //       message.error(error?.message || "Cập nhật trạng thái thất bại!");
-  //     }
-  //   },
-  // );
-
   const updateStatusMutation = useUpdateAccountStatus({
     mutationConfig: {
       onSuccess: () => {
@@ -67,12 +64,17 @@ const TableManageAccount: React.FC = () => {
     },
   });
 
+  
+
   const toggleStatus = (record: UserResponseDto) => {
     const newStatus = record.status === "Active" ? 1 : 0;
-    console.log("Toggling status for user:", record.id, "to", newStatus);
     updateStatusMutation.mutate({ id: record.id, status: newStatus });
   };
 
+  const updateRoleHandler = (record: UserResponseDto, roleName: string) => {
+    updateRoleMutation.mutate({ id: record.id, roleNames: [roleName] });
+  };
+  
   const columns: TableColumnsType<UserResponseDto> = [
     {
       title: "Username",
@@ -89,40 +91,33 @@ const TableManageAccount: React.FC = () => {
       dataIndex: "phoneNumber",
       key: "phoneNumber",
     },
-
     {
       title: "Roles",
       dataIndex: "roles",
       key: "roles",
       render: (roles, record) => {
-        const currentRole = roles[0];
-
-        const items: MenuProps["items"] = [
+        const items = [
           {
             label: "Landlords",
             key: "Landlords",
-            icon: <UserOutlined />,
           },
           {
             label: "Users",
             key: "Users",
-            icon: <UserOutlined />,
           },
         ];
 
-        const handleMenuClick: MenuProps["onClick"] = async (e) => {
-          console.log("Updating role for user:", record.id, "to", e.key);
-          updateRoleMutation.mutate({ id: record.id, roleNames: [e.key] });
-        };
-
+        const currentRole = roles?.[0] || "";
         return (
           <Dropdown.Button
-            menu={{ items, onClick: handleMenuClick }}
+            menu={{
+              items,
+              onClick: (e) => updateRoleHandler(record, e.key),
+            }}
             placement="bottom"
             icon={<DownOutlined />}
             onClick={(e) => e.preventDefault()}
-            disabled={isLoading}
-            // type="primary"
+            disabled={updateRoleMutation.isPending || isLoading}
           >
             <span>{currentRole}</span>
           </Dropdown.Button>
@@ -149,7 +144,12 @@ const TableManageAccount: React.FC = () => {
             okText="Yes"
             cancelText="No"
           >
-            <Button danger type="primary" size="small">
+            <Button
+              danger
+              type="primary"
+              size="small"
+              disabled={updateStatusMutation.isPending || isLoading}
+            >
               Disable
             </Button>
           </Popconfirm>
@@ -158,6 +158,7 @@ const TableManageAccount: React.FC = () => {
             type="primary"
             size="small"
             onClick={() => toggleStatus(record)}
+            disabled={updateStatusMutation.isPending || isLoading}
           >
             Activate
           </Button>
@@ -170,9 +171,19 @@ const TableManageAccount: React.FC = () => {
       {contextHolder}
       <Table
         columns={columns}
-        dataSource={data}
+        dataSource={accountsData}
         loading={isLoading}
-        pagination={{ pageSize: 5 }}
+        pagination={{
+          pageSize: pagination.pageSize,
+          current: pagination.page + 1,
+          total: totalRecords,
+          onChange: (page, pageSize) => {
+            setPagination({
+              page: page - 1, // ant design page starts from 1, so we minus 1 to match backend
+              pageSize: pageSize,
+            });
+          },
+        }}
         rowKey="id"
       />
     </div>
