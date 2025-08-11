@@ -448,9 +448,9 @@ function TableManageRoom() {
       title: "Actions",
       key: "actions",
       render: (_, record) => {
-        const now = new Date();
-        // const start = new Date(record.postStartDate);
-        const end = new Date(record.postEndDate);
+        const now = new Date().setHours(0, 0, 0, 0);
+        // const start = new Date(record.postStartDate).setHours(0, 0, 0, 0);
+        const end = new Date(record.postEndDate).setHours(0, 0, 0, 0);
         const isStillValid = now <= end;
 
         if (record.isRemoved === 1) {

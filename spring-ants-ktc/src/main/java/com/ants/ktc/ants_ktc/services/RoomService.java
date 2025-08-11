@@ -27,7 +27,6 @@ import com.ants.ktc.ants_ktc.dtos.address.ProvinceResponseDto;
 import com.ants.ktc.ants_ktc.dtos.address.WardResponseDto;
 import com.ants.ktc.ants_ktc.dtos.convenient.ConvenientResponseDto;
 import com.ants.ktc.ants_ktc.dtos.image.ImageResponseDto;
-import com.ants.ktc.ants_ktc.dtos.manage_account.UserResponseDto;
 import com.ants.ktc.ants_ktc.dtos.room.PaginationRoomAdminResponseDto;
 import com.ants.ktc.ants_ktc.dtos.room.PaginationRoomInUserResponseDto;
 import com.ants.ktc.ants_ktc.dtos.room.PaginationRoomResponseDto;
@@ -312,7 +311,7 @@ public class RoomService {
                 Room room = roomJpaRepository.findById(id)
                                 .orElseThrow(() -> new IllegalArgumentException("Room not found"));
 
-                // 1. Cập nhật thông tin cơ bản
+                // Cập nhật thông tin cơ bản
                 room.setTitle(request.getTitle());
                 room.setDescription(request.getDescription());
                 room.setPrice_month(request.getPriceMonth());
@@ -777,7 +776,7 @@ public class RoomService {
         public void sendAdminMailToLandlord(String email, String subject, String message, MultipartFile file) {
                 mailService.sendMail(email, subject, message, file);
         }
-        
+
         private LandlordResponseDto convertLandlord(User user) {
                 if (user == null || user.getProfile() == null)
                         return null;

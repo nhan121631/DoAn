@@ -50,10 +50,7 @@ export default function PaymentFilter({
               key={filterType}
               onClick={() => {
                 setFilter(filterType);
-                if (filterType === "all") {
-                  setStartDate("");
-                  setEndDate("");
-                }
+                onFilter();
               }}
               className={`px-4 py-2 rounded font-semibold transition-all duration-150 shadow-sm border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-400 ${
                 filter === filterType
@@ -76,7 +73,6 @@ export default function PaymentFilter({
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
             className="border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white text-gray-700"
-            disabled={filter === "all"}
           />
           <label className="text-sm font-medium text-gray-700">End date</label>
           <input
@@ -84,8 +80,17 @@ export default function PaymentFilter({
             value={endDate}
             onChange={(e) => setEndDate(e.target.value)}
             className="border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white text-gray-700"
-            disabled={filter === "all"}
           />
+          <button
+            type="button"
+            onClick={() => {
+              setStartDate("");
+              setEndDate("");
+            }}  
+            className="ml-2 px-3 py-2 rounded bg-gray-200 text-gray-700 hover:bg-gray-300 font-medium border border-gray-300"
+          >
+            Reset
+          </button>
         </div>
       </div>
     </>
