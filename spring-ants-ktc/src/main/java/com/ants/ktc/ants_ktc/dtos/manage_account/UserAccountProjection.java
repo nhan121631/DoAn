@@ -2,6 +2,9 @@ package com.ants.ktc.ants_ktc.dtos.manage_account;
 
 import java.util.UUID;
 
+import lombok.Data;
+
+@Data
 public class UserAccountProjection {
     private UUID id;
     private String username;
@@ -17,24 +20,4 @@ public class UserAccountProjection {
         this.phoneNumber = phoneNumber;
     }
 
-    // Getters cho các trường
-    public UUID getId() {
-        return id;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public int getIsActive() {
-        return isActive;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public String getPhoneNumber() {
-        return phoneNumber;
-    }
 }

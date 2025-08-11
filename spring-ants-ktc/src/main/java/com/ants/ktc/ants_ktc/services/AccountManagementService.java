@@ -1,6 +1,5 @@
 package com.ants.ktc.ants_ktc.services;
 
-import com.ants.ktc.ants_ktc.dtos.manage_account.UserAccountProjection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -39,7 +38,6 @@ public class AccountManagementService {
                 .collect(Collectors.toList());
     }
 
-    // --- Thêm phương thức mới để xử lý phân trang ---
     @Transactional(readOnly = true)
     public UserPageResponseDto getPaginatedUsers(Pageable pageable) {
         Page<User> usersPage = userJpaRepository.findAllExcludingAdmins(pageable);

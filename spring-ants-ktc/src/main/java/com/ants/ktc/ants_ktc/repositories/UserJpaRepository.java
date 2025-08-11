@@ -62,10 +62,6 @@ public interface UserJpaRepository extends JpaRepository<User, UUID> {
 
     boolean existsByUsername(String username);
 
-    // --- Đã sửa: Sử dụng LEFT JOIN FETCH để tải Profile và Roles ngay lập tức ---
-    // Điều này sẽ giải quyết vấn đề N+1 query
-    // Thêm điều kiện `OR r IS NULL` để bao gồm cả những user không có role nào được
-    // gán
     @Query(value = """
             SELECT DISTINCT u FROM User u
             LEFT JOIN FETCH u.profile p
@@ -74,7 +70,6 @@ public interface UserJpaRepository extends JpaRepository<User, UUID> {
             """)
     List<User> findAllExcludingAdmins();
 
-    // --- Cần sửa tương tự cho phiên bản có phân trang nếu cần ---
     @Query(value = """
             SELECT DISTINCT u FROM User u
             LEFT JOIN FETCH u.profile p

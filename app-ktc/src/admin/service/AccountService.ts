@@ -6,15 +6,11 @@ import type {
   UpdateUserStatusRequestDto,
 } from "../types/type";
 
-/**
- * Lấy danh sách toàn bộ tài khoản từ API (không phân trang).
- * @returns Promise<UserResponseDto[]> - Một mảng các tài khoản.
- */
+
 export async function fetchAccounts(): Promise<UserResponseDto[]> {
   try {
     const data: UserResponseDto[] = await apiClient.get(`/admin/accounts`);
 
-    // Kiểm tra xem dữ liệu trả về có phải là một mảng không
     if (!Array.isArray(data)) {
       console.error("❌ API did not return a valid array:", data);
       return [];
