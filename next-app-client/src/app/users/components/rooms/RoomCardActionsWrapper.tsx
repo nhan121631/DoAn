@@ -1,10 +1,10 @@
 "use client";
-import { RoomData } from "@/app/landlord/types";
+import { RoomInUser } from "@/types/types";
 import { useRouter } from "next/navigation";
 import React from "react";
 
 interface RoomCartActionsWrapperProps {
-  room: RoomData;
+  room: RoomInUser;
   children: React.ReactNode;
 }
 
@@ -14,12 +14,13 @@ interface RoomCartActionsWrapperProps {
 // }: RoomCartActionsWrapperProps) {
 export default function RoomCartActionsWrapper({
   children,
+  room,
 }: RoomCartActionsWrapperProps) {
   const router = useRouter();
 
   const handleClick = () => {
     // router.push(`/detail/${room.key}`);
-    router.push("/detail");
+    router.push(`/detail/${room.id}`);
   };
 
   return (

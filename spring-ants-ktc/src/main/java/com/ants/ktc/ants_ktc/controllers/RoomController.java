@@ -19,8 +19,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.ants.ktc.ants_ktc.dtos.room.PaginationRoomAdminResponseDto;
+import com.ants.ktc.ants_ktc.dtos.room.PaginationRoomInUserResponseDto;
 import com.ants.ktc.ants_ktc.dtos.room.PaginationRoomResponseDto;
-import com.ants.ktc.ants_ktc.dtos.room.RoomAdminResponseProjectionDto;
 import com.ants.ktc.ants_ktc.dtos.room.RoomRequestCreateDto;
 import com.ants.ktc.ants_ktc.dtos.room.RoomRequestUpdateDto;
 import com.ants.ktc.ants_ktc.dtos.room.RoomResponseDto;
@@ -44,8 +44,8 @@ public class RoomController {
 
     // @GetMapping
     // public ResponseEntity<List<RoomResponseDto>> getAllRooms() {
-    //     List<RoomResponseDto> rooms = roomService.getAllRooms();
-    //     return ResponseEntity.ok(rooms);
+    // List<RoomResponseDto> rooms = roomService.getAllRooms();
+    // return ResponseEntity.ok(rooms);
     // }
 
     // @GetMapping("/{roomId}")
@@ -104,13 +104,6 @@ public class RoomController {
         return ResponseEntity.ok(updatedRoom);
     }
 
-    // @GetMapping("/by-landlord/{id}")
-    // public ResponseEntity<List<RoomResponseDto>>
-    // getAllRoomByLandlordId(@PathVariable("id") UUID id) {
-    // List<RoomResponseDto> rooms = roomService.getAllRoomByLandlordId(id);
-    // return ResponseEntity.ok(rooms);
-    // }
-
     @GetMapping("/by-landlord/{id}/paging")
     public ResponseEntity<PaginationRoomResponseDto> getAllRoomByLandlordIdPaginated(@PathVariable("id") UUID id,
             @RequestParam(value = "page", defaultValue = "0") int page,
@@ -147,4 +140,21 @@ public class RoomController {
         return ResponseEntity.ok(room);
     }
 
+    @GetMapping("allroom-vip")
+    public ResponseEntity<PaginationRoomInUserResponseDto> getRoomVipPaginated(
+            @RequestParam(name = "page", defaultValue = "0") int pageNumber,
+            @RequestParam(name = "size", defaultValue = "5") int pageSize) {
+        String code = "VIP";
+        PaginationRoomInUserResponseDto response = roomService.getAllRoomInUser(pageNumber, pageSize, code);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("allroom-normal")
+    public ResponseEntity<PaginationRoomInUserResponseDto> getRoomNormalPaginated(
+            @RequestParam(name = "page", defaultValue = "0") int pageNumber,
+            @RequestParam(name = "size", defaultValue = "5") int pageSize) {
+        String code = "NORMAL";
+        PaginationRoomInUserResponseDto response = roomService.getAllRoomInUser(pageNumber, pageSize, code);
+        return ResponseEntity.ok(response);
+    }
 }

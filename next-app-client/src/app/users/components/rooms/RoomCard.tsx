@@ -1,15 +1,14 @@
-import React from "react";
 import Image from "next/image";
+import React from "react";
 
+import { URL_IMAGE } from "@/services/Constant";
+import { RoomInUser } from "@/types/types";
 import { FaMapMarkerAlt } from "react-icons/fa";
 import { PiRuler } from "react-icons/pi";
-import { RoomData } from "@/app/landlord/types";
-import { MdElectricBolt } from "react-icons/md";
-import { IoWater } from "react-icons/io5";
 import RoomCartActions from "./RoomCardActions";
 
 export interface RoomCardProps {
-  room: RoomData;
+  room: RoomInUser;
   isForSale?: boolean;
   isFeatured?: boolean;
 }
@@ -30,8 +29,8 @@ const RoomCard: React.FC<RoomCardProps> = ({
       {/* Ảnh nền */}
       <div className="relative w-full h-full pointer-events-none select-none">
         <Image
-          src={room.img?.[0]?.url || "/placeholder.jpg"}
-          alt={room.name}
+          src={URL_IMAGE + room.images?.[0]?.url || "/placeholder.jpg"}
+          alt={room.title}
           fill
           className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-105"
           sizes="(max-width: 640px) 100vw, 447px"
@@ -53,30 +52,30 @@ const RoomCard: React.FC<RoomCardProps> = ({
         {/* Nội dung bottom */}
         <div className="absolute bottom-0 left-0 z-30 flex flex-col w-full gap-2 p-4 transition-all duration-300 pointer-events-auto bg-gradient-to-t from-black/80 to-transparent group-hover:opacity-40">
           <div className="mb-1 text-lg font-semibold text-white truncate transition-colors duration-300 group-hover:font-bold">
-            {room.name}
+            {room.title || "No Title"}
           </div>
-          <div className="flex items-center gap-2 mb-2 text-sm text-white truncate transition-colors duration-300 group-hover:font-semibold">
+          <div className="flex items-center gap-2 mb-2 text-sm text-white transition-colors duration-300 group-hover:font-semibold">
             <FaMapMarkerAlt className="transition-transform duration-300 text-amber-400 group-hover:scale-110" />
-            <span>{room.address}</span>
+            <span className="break-words whitespace-normal">
+              {room.address.street +
+                ", " +
+                room.address.ward.name +
+                ", " +
+                room.address.ward.district.name +
+                ", " +
+                room.address.ward.district.province.name}
+            </span>
           </div>
           <div className="flex items-center gap-4 mt-2 mb-2">
-            <div className="flex items-center gap-1 text-sm text-white transition-transform duration-300 group-hover:scale-105">
-              <MdElectricBolt className="text-lg" />
-              <span>{room.electricityRate}/kWh</span>
-            </div>
-            <div className="flex items-center gap-1 text-sm text-white transition-transform duration-300 group-hover:scale-105">
-              <IoWater className="text-lg" />
-              <span>{room.waterRate}/m³</span>
-            </div>
             <div className="flex items-center gap-1 text-sm text-white transition-transform duration-300 group-hover:scale-105">
               <PiRuler className="text-lg" />
               <span>{room.area} m²</span>
             </div>
           </div>
           <div className="mt-auto text-xl font-bold text-white">
-            {typeof room.price === "number"
-              ? room.price.toLocaleString("en-US") + " VND"
-              : room.price}
+            {typeof room.priceMonth === "number"
+              ? room.priceMonth.toLocaleString("en-US") + " VND"
+              : room.priceMonth}
           </div>
         </div>
       </div>

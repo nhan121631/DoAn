@@ -1,9 +1,9 @@
+import { RoomInUser } from '@/types/types';
 import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
-import { RoomData } from '../landlord/types';
 
 export interface ItemRoom {
-    room: RoomData;
+    room: RoomInUser;
 }
 
 interface CompareStore {
@@ -19,7 +19,7 @@ export const useCompareStore = create<CompareStore>()(
             (set) => ({
                 items: [],
                 addItem: (item) => set((state) => ({ items: [...state.items, item] })),
-                removeItem: (key) => set((state) => ({ items: state.items.filter(item => item.room.key !== key) })),
+                removeItem: (key) => set((state) => ({ items: state.items.filter(item => item.room.id !== key) })),
                 clearItems: () => set({ items: [] }),
             }),
             { name: 'compare-store' }

@@ -34,6 +34,7 @@ import com.ants.ktc.ants_ktc.dtos.userprofile.UserProfileResponseDto;
 import com.ants.ktc.ants_ktc.entities.Role;
 import com.ants.ktc.ants_ktc.entities.User;
 import com.ants.ktc.ants_ktc.entities.UserProfile;
+import com.ants.ktc.ants_ktc.entities.address.Address;
 import com.ants.ktc.ants_ktc.entities.address.District;
 import com.ants.ktc.ants_ktc.entities.address.Province;
 import com.ants.ktc.ants_ktc.entities.address.Ward;
@@ -67,6 +68,40 @@ public class UserService {
 
         private final RestTemplate restTemplate = new RestTemplate();
 
+        // ...existing code...
+
+        private AddressResponseDto convertAddressDto(Address address) {
+                if (address == null || address.getWard() == null)
+                        return null;
+
+                Ward ward = address.getWard();
+                District district = ward.getDistrict();
+                Province province = district.getProvince();
+
+                ProvinceResponseDto provinceDto = ProvinceResponseDto.builder()
+                                .id(province.getId())
+                                .name(province.getName())
+                                .build();
+
+                DistrictResponseDto districtDto = DistrictResponseDto.builder()
+                                .id(district.getId())
+                                .name(district.getName())
+                                .province(provinceDto)
+                                .build();
+
+                WardResponseDto wardDto = WardResponseDto.builder()
+                                .id(ward.getId())
+                                .name(ward.getName())
+                                .district(districtDto)
+                                .build();
+
+                return AddressResponseDto.builder()
+                                .id(address.getId())
+                                .street(address.getStreet())
+                                .ward(wardDto)
+                                .build();
+        }
+
         public LoginResponseDto login(LoginRequestDto request) throws Exception {
                 User user = this.userJpaRepository.findByUsername(request.getUsername())
                                 .orElseThrow(() -> new HttpException("Invalid username or password",
@@ -90,28 +125,7 @@ public class UserService {
                 if (user.getProfile() != null) {
                         if (user.getProfile().getAddress() != null
                                         && user.getProfile().getAddress().getWard() != null) {
-                                Ward ward = user.getProfile().getAddress().getWard();
-                                District district = ward.getDistrict();
-                                Province province = district.getProvince();
-
-                                WardResponseDto wardDto = WardResponseDto.builder()
-                                                .id(ward.getId())
-                                                .name(ward.getName())
-                                                .district(DistrictResponseDto.builder()
-                                                                .id(district.getId())
-                                                                .name(district.getName())
-                                                                .province(ProvinceResponseDto.builder()
-                                                                                .id(province.getId())
-                                                                                .name(province.getName())
-                                                                                .build())
-                                                                .build())
-                                                .build();
-
-                                addressDto = AddressResponseDto.builder()
-                                                .id(user.getProfile().getAddress().getId())
-                                                .street(user.getProfile().getAddress().getStreet()) // Thêm dòng này!
-                                                .ward(wardDto)
-                                                .build();
+                                addressDto = convertAddressDto(user.getProfile().getAddress());
                         }
 
                         userProfileDto = UserProfileResponseDto.builder()
@@ -217,28 +231,7 @@ public class UserService {
                 if (user.getProfile() != null) {
                         if (user.getProfile().getAddress() != null
                                         && user.getProfile().getAddress().getWard() != null) {
-                                Ward ward = user.getProfile().getAddress().getWard();
-                                District district = ward.getDistrict();
-                                Province province = district.getProvince();
-
-                                WardResponseDto wardDto = WardResponseDto.builder()
-                                                .id(ward.getId())
-                                                .name(ward.getName())
-                                                .district(DistrictResponseDto.builder()
-                                                                .id(district.getId())
-                                                                .name(district.getName())
-                                                                .province(ProvinceResponseDto.builder()
-                                                                                .id(province.getId())
-                                                                                .name(province.getName())
-                                                                                .build())
-                                                                .build())
-                                                .build();
-
-                                addressDto = AddressResponseDto.builder()
-                                                .id(user.getProfile().getAddress().getId())
-                                                .street(user.getProfile().getAddress().getStreet()) // Thêm dòng này!
-                                                .ward(wardDto)
-                                                .build();
+                                addressDto = convertAddressDto(user.getProfile().getAddress());
                         }
 
                         userProfileDto = UserProfileResponseDto.builder()
