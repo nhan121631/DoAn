@@ -5,7 +5,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import java.util.UUID;
-import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -19,20 +18,5 @@ public class UserResponseDto {
     private String phoneNumber;
     private String status;
     private List<String> roles;
-
-    // mới thêm đoạn này
-    public UserResponseDto(UUID id, String username, String email, String phoneNumber, String status, String roleName) {
-        this.id = id;
-        this.username = username;
-        this.email = email;
-        this.phoneNumber = phoneNumber;
-        this.status = status;
-
-        // Khởi tạo List<String> cho roles
-        this.roles = new ArrayList<>();
-        if (roleName != null) {
-            this.roles.add(roleName);
-        }
-    }
 
 }

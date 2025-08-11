@@ -1,37 +1,20 @@
-
 package com.ants.ktc.ants_ktc.controllers.admin;
 
-// import java.util.List;
-// import java.util.UUID;
-
-// import org.springframework.http.ResponseEntity;
-// import org.springframework.web.bind.annotation.GetMapping;
-// import org.springframework.web.bind.annotation.PatchMapping;
-// import org.springframework.web.bind.annotation.PathVariable;
-// import org.springframework.web.bind.annotation.RequestBody;
-// import org.springframework.web.bind.annotation.RequestMapping;
-// import org.springframework.web.bind.annotation.RequestParam;
-// import org.springframework.web.bind.annotation.RestController;
-
-// import com.ants.ktc.ants_ktc.dtos.manage_account.RoleUpdateRequestDto;
-// import com.ants.ktc.ants_ktc.dtos.manage_account.UpdateUserStatusRequestDto;
-// import com.ants.ktc.ants_ktc.dtos.manage_account.UserResponseDto;
-// import com.ants.ktc.ants_ktc.services.AccountManagementService;
-
+import java.util.List;
 import java.util.UUID;
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.ants.ktc.ants_ktc.dtos.manage_account.PaginationAccountResponseDto;
 import com.ants.ktc.ants_ktc.dtos.manage_account.RoleUpdateRequestDto;
 import com.ants.ktc.ants_ktc.dtos.manage_account.UpdateUserStatusRequestDto;
+import com.ants.ktc.ants_ktc.dtos.manage_account.UserPageResponseDto;
 import com.ants.ktc.ants_ktc.dtos.manage_account.UserResponseDto;
 import com.ants.ktc.ants_ktc.services.AccountManagementService;
 
@@ -46,17 +29,17 @@ public class AccountManagementController {
         this.accountManagementService = accountManagementService;
     }
 
-    // --- Đã sửa: API này sẽ trả về toàn bộ danh sách, không có phân trang ---
-    // @GetMapping
-    // public ResponseEntity<List<UserResponseDto>> getAllUsers() {
-    // List<UserResponseDto> response = accountManagementService.getAllUsers();
-    // return ResponseEntity.ok(response);
-    // }
+    // --- API này sẽ trả về toàn bộ danh sách, không có phân trang ---
     @GetMapping
-    public ResponseEntity<PaginationAccountResponseDto<UserResponseDto>> getAllUsers(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
-        PaginationAccountResponseDto<UserResponseDto> response = accountManagementService.getAllUsers(page, size);
+    public ResponseEntity<List<UserResponseDto>> getAllUsers() {
+        List<UserResponseDto> response = accountManagementService.getAllUsers();
+        return ResponseEntity.ok(response);
+    }
+
+    // --- Thêm API mới này để xử lý phân trang ---
+    @GetMapping("/paginated")
+    public ResponseEntity<UserPageResponseDto> getPaginatedUsers(Pageable pageable) {
+        UserPageResponseDto response = accountManagementService.getPaginatedUsers(pageable);
         return ResponseEntity.ok(response);
     }
 
