@@ -1,86 +1,83 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useState, useEffect, useCallback } from "react";
-import { Table, Select, Tag, Button, Popconfirm, message, Space } from "antd";
+import { useQuery } from "@tanstack/react-query";
 import type { TableColumnsType } from "antd";
+import { Button, Popconfirm, Select, Space, Table, Tag } from "antd";
+import React, { useState } from "react";
+import { getAccountsQueryOptions } from "../service/ReactQueryAccount";
 import type { UserResponseDto } from "../types/type";
-import {
-  fetchAccounts,
-  updateAccountStatus,
-  updateAccountRoles,
-} from "../service/AccountService";
 
 const { Option } = Select;
 
 const TableManageAccount: React.FC = () => {
-  const [loading, setLoading] = useState(false);
-  const [accountsData, setAccountsData] = useState<UserResponseDto[]>([]);
   const [editingKey, setEditingKey] = useState<string | null>(null);
   const [tempAuth, setTempAuth] = useState<string | null>(null);
 
-  const loadAccounts = useCallback(async () => {
-    setLoading(true);
-    try {
-      const responseData = await fetchAccounts();
+  const { data = [], isLoading } = useQuery(getAccountsQueryOptions());
 
-      if (responseData && Array.isArray(responseData)) {
-        setAccountsData(responseData);
-        message.success(`Tìm thấy ${responseData.length} tài khoản.`);
-      } else {
-        message.error("❌ Nhận dữ liệu không hợp lệ.");
-        setAccountsData([]);
-      }
-    } catch (error: any) {
-      console.error("❌ Lỗi khi tải tài khoản:", error);
-      message.error(error?.message || "Lỗi khi tải tài khoản");
-      setAccountsData([]);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  // const loadAccounts = useCallback(async () => {
+  //   setLoading(true);
+  //   try {
+  //     const responseData = await fetchAccounts();
 
-  useEffect(() => {
-    loadAccounts();
-  }, [loadAccounts]);
+  //     if (responseData && Array.isArray(responseData)) {
+  //       setAccountsData(responseData);
+  //       message.success(`Tìm thấy ${responseData.length} tài khoản.`);
+  //     } else {
+  //       message.error("❌ Nhận dữ liệu không hợp lệ.");
+  //       setAccountsData([]);
+  //     }
+  //   } catch (error: any) {
+  //     console.error("❌ Lỗi khi tải tài khoản:", error);
+  //     message.error(error?.message || "Lỗi khi tải tài khoản");
+  //     setAccountsData([]);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // }, []);
 
-  const updateAuthorization = useCallback(
-    async (record: UserResponseDto) => {
-      if (!tempAuth) {
-        message.error("Vui lòng chọn một vai trò.");
-        return;
-      }
-      setLoading(true);
-      try {
-        await updateAccountRoles(record.id, [tempAuth]);
-        message.success("Cập nhật vai trò thành công!");
-        setEditingKey(null);
-        await loadAccounts();
-      } catch (error: any) {
-        console.error("Lỗi khi cập nhật vai trò:", error);
-        message.error(error?.message || "Cập nhật vai trò thất bại!");
-      } finally {
-        setLoading(false);
-      }
-    },
-    [tempAuth, loadAccounts]
-  );
+  // useEffect(() => {
+  //   loadAccounts();
+  // }, [loadAccounts]);
 
-  const toggleStatus = useCallback(
-    async (record: UserResponseDto) => {
-      setLoading(true);
-      try {
-        const newStatus = record.status === "Active" ? 1 : 0;
-        await updateAccountStatus(record.id, newStatus);
-        message.success("Cập nhật trạng thái thành công!");
-        await loadAccounts();
-      } catch (error: any) {
-        console.error("Lỗi khi cập nhật trạng thái:", error);
-        message.error(error?.message || "Cập nhật trạng thái thất bại!");
-      } finally {
-        setLoading(false);
-      }
-    },
-    [loadAccounts]
-  );
+  // const updateAuthorization = useCallback(
+  //   async (record: UserResponseDto) => {
+  //     if (!tempAuth) {
+  //       message.error("Vui lòng chọn một vai trò.");
+  //       return;
+  //     }
+  //     setLoading(true);
+  //     try {
+  //       await updateAccountRoles(record.id, [tempAuth]);
+  //       message.success("Cập nhật vai trò thành công!");
+  //       setEditingKey(null);
+  //       await loadAccounts();
+  //     } catch (error: any) {
+  //       console.error("Lỗi khi cập nhật vai trò:", error);
+  //       message.error(error?.message || "Cập nhật vai trò thất bại!");
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   },
+  //   [tempAuth, loadAccounts]
+  // );
+
+  // const toggleStatus = useCallback(
+  //   async (record: UserResponseDto) => {
+  //     setLoading(true);
+  //     try {
+  //       const newStatus = record.status === "Active" ? 1 : 0;
+  //       await updateAccountStatus(record.id, newStatus);
+  //       message.success("Cập nhật trạng thái thành công!");
+  //       await loadAccounts();
+  //     } catch (error: any) {
+  //       console.error("Lỗi khi cập nhật trạng thái:", error);
+  //       message.error(error?.message || "Cập nhật trạng thái thất bại!");
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   },
+  //   [loadAccounts]
+  // );
 
   const columns: TableColumnsType<UserResponseDto> = [
     {
@@ -125,7 +122,7 @@ const TableManageAccount: React.FC = () => {
             <Button
               size="small"
               type="primary"
-              onClick={() => updateAuthorization(record)}
+              // onClick={() => updateAuthorization(record)}
             >
               Save
             </Button>
@@ -137,7 +134,7 @@ const TableManageAccount: React.FC = () => {
           <span
             onClick={() => {
               setEditingKey(record.id);
-              setTempAuth(currentRole);
+              // setTempAuth(currentRole);
             }}
             style={{ cursor: "pointer" }}
           >
@@ -158,7 +155,7 @@ const TableManageAccount: React.FC = () => {
         record.status === "Active" ? (
           <Popconfirm
             title="Vô hiệu hóa tài khoản này?"
-            onConfirm={() => toggleStatus(record)}
+            // onConfirm={() => toggleStatus(record)}
             okText="Có"
             cancelText="Không"
           >
@@ -170,7 +167,7 @@ const TableManageAccount: React.FC = () => {
           <Button
             type="primary"
             size="small"
-            onClick={() => toggleStatus(record)}
+            // onClick={() => toggleStatus(record)}
           >
             Mở khóa
           </Button>
@@ -182,8 +179,8 @@ const TableManageAccount: React.FC = () => {
     <div style={{ padding: "20px" }}>
       <Table
         columns={columns}
-        dataSource={accountsData}
-        loading={loading}
+        dataSource={data}
+        loading={isLoading}
         pagination={{ pageSize: 5 }} // Giới hạn 5 bản ghi mỗi trang ở frontend
         rowKey="id"
       />
