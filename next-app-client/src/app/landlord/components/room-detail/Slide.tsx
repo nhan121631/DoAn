@@ -60,7 +60,7 @@ export const Slide = ({ images, address }: Props) => {
             images[indexImg] &&
             typeof images[indexImg].url === "string" ? (
               <Image
-                className="object-cover rounded-lg"
+                className="object-cover"
                 src={
                   images[indexImg].url.startsWith("http")
                     ? images[indexImg].url

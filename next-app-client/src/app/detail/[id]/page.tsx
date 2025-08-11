@@ -14,12 +14,13 @@ export async function generateStaticParams() {
   if (!response || !response.data || response.data.length === 0) {
     return [];
   }
-  return response.data.slice(0, 2).map((room: RoomInUser) => ({
+  return response.data.slice(0, 10).map((room: RoomInUser) => ({
     id: room.id.toString(),
   }));
 }
 
-export default async function Page({ params }: { params: Promise<{ id: string }> }) {
+export default async function Page({ params }: { params: { id: string } }) {
+  // Await params before accessing its properties
   const { id } = await params;
   const room = await getRoomById(id);
   if (!room) {

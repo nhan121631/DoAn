@@ -1,173 +1,141 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useState, useEffect, useCallback } from "react";
-import { Table, Select, Tag, Button, Popconfirm, message, Space } from "antd";
-import type { TableColumnsType, TablePaginationConfig } from "antd";
-import type { UserResponseDto } from "../types/type";
+import { DownOutlined, UserOutlined } from "@ant-design/icons";
+import { useQuery } from "@tanstack/react-query";
+import type { MenuProps, TableColumnsType } from "antd";
+import { Button, Dropdown, message, Popconfirm, Table, Tag } from "antd";
+import React from "react";
 import {
-  fetchAccounts,
-  updateAccountStatus,
-  updateAccountRoles,
-} from "../service/AccountService";
-
-const { Option } = Select;
+  getAccountsQueryOptions,
+  useUpdateAccountRoles,
+  useUpdateAccountStatus,
+} from "../service/ReactQueryAccount";
+import type { UserResponseDto } from "../types/type";
 
 const TableManageAccount: React.FC = () => {
-  const [loading, setLoading] = useState(false);
-  const [accountsData, setAccountsData] = useState<UserResponseDto[]>([]);
-  const [editingKey, setEditingKey] = useState<string | null>(null);
-  const [tempAuth, setTempAuth] = useState<string | null>(null);
-  const [pagination, setPagination] = useState<TablePaginationConfig>({
-    current: 1,
-    pageSize: 5,
-    total: 0,
+  const { data = [], isLoading } = useQuery(getAccountsQueryOptions());
+
+  const [messageApi, contextHolder] = message.useMessage();
+  const updateRoleMutation = useUpdateAccountRoles({
+    mutationConfig: {
+      onSuccess: () => {
+        messageApi.success({
+          content: "You updated the account roles successfully!",
+          duration: 3,
+        });
+      },
+      onError: (error: any) => {
+        messageApi.error({
+          content:
+            error?.response?.data?.message?.join(", ") ||
+            "An error has occurred!",
+          duration: 3,
+        });
+      },
+    },
   });
 
-  const loadAccounts = useCallback(async (page = 0, pageSize = 5) => {
-    setLoading(true);
-    try {
-      const response = await fetchAccounts(page, pageSize);
-      
-      setAccountsData(response.content);
-      setPagination({
-        current: response.page + 1, // Backend starts from 0, Ant Design from 1
-        pageSize: response.size,
-        total: response.totalElements,
-      });
-      
-      message.success(`Loaded ${response.content.length} of ${response.totalElements} accounts.`);
-    } catch (error: any) {
-      console.error("❌ Error loading accounts:", error);
-      message.error(error?.message || "Error loading accounts");
-      setAccountsData([]);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  // const toggleStatus = useCallback(
+  //   async (record: UserResponseDto) => {
+  //     try {
+  //       const newStatus = record.status === "Active" ? 1 : 0;
+  //       await updateAccountStatus(record.id, newStatus);
+  //       message.success("Cập nhật trạng thái thành công!");
+  //       await loadAccounts();
+  //     } catch (error: any) {
+  //       console.error("Lỗi khi cập nhật trạng thái:", error);
+  //       message.error(error?.message || "Cập nhật trạng thái thất bại!");
+  //     }
+  //   },
+  // );
 
-  useEffect(() => {
-    loadAccounts();
-  }, [loadAccounts]);
+  const updateStatusMutation = useUpdateAccountStatus({
+    mutationConfig: {
+      onSuccess: () => {
+        messageApi.success({
+          content: "You updated the account status successfully!",
+          duration: 3,
+        });
+      },
+      onError: (error: any) => {
+        messageApi.error({
+          content:
+            error?.response?.data?.message?.join(", ") ||
+            "An error has occurred!",
+          duration: 3,
+        });
+      },
+    },
+  });
 
-  const handleTableChange = (newPagination: TablePaginationConfig) => {
-    // Convert to 0-based for backend
-    const backendPage = (newPagination.current || 1) - 1;
-    loadAccounts(backendPage, newPagination.pageSize);
-  };
-
-  const toggleStatus = async (record: UserResponseDto) => {
-    // Correct mapping with backend
-    const newStatusNumber = record.status === "Active" ? 1 : 0;
-    const newStatusText = newStatusNumber === 1 ? "Disabled" : "Active"; // toggle text
-
-    try {
-      await updateAccountStatus(record.id, newStatusNumber);
-
-      setAccountsData((prev) =>
-        prev.map((acc) =>
-          acc.id === record.id ? { ...acc, status: newStatusText } : acc
-        )
-      );
-
-      message.success(
-        `Account has been ${newStatusNumber === 0 ? "unlocked" : "disabled"}`
-      );
-    } catch (error: any) {
-      message.error(error?.message || "Failed to update status");
-    }
-  };
-
-  const saveAuthorization = async (record: UserResponseDto) => {
-    if (!tempAuth) {
-      message.warning("Please select a role.");
-      return;
-    }
-    try {
-      await updateAccountRoles(record.id, [tempAuth]);
-
-      // ✅ Update local state, no need to refetch
-      setAccountsData((prev) =>
-        prev.map((acc) =>
-          acc.id === record.id ? { ...acc, roles: [tempAuth] } : acc
-        )
-      );
-
-      message.success("Authorization updated successfully!");
-      setEditingKey(null);
-      setTempAuth(null);
-    } catch (error: any) {
-      message.error(error?.message || "Failed to update authorization");
-    }
+  const toggleStatus = (record: UserResponseDto) => {
+    const newStatus = record.status === "Active" ? 1 : 0;
+    console.log("Toggling status for user:", record.id, "to", newStatus);
+    updateStatusMutation.mutate({ id: record.id, status: newStatus });
   };
 
   const columns: TableColumnsType<UserResponseDto> = [
     {
       title: "Username",
       dataIndex: "username",
-      width: "15%",
-      sorter: (a, b) => a.username.localeCompare(b.username),
+      key: "username",
     },
     {
       title: "Email",
       dataIndex: "email",
-      width: "20%",
-      sorter: (a, b) => a.email.localeCompare(b.email),
+      key: "email",
     },
-    { title: "Phone Number", dataIndex: "phoneNumber", width: "15%" },
+    {
+      title: "Phone Number",
+      dataIndex: "phoneNumber",
+      key: "phoneNumber",
+    },
+
+    {
+      title: "Roles",
+      dataIndex: "roles",
+      key: "roles",
+      render: (roles, record) => {
+        const currentRole = roles[0];
+
+        const items: MenuProps["items"] = [
+          {
+            label: "Landlords",
+            key: "Landlords",
+            icon: <UserOutlined />,
+          },
+          {
+            label: "Users",
+            key: "Users",
+            icon: <UserOutlined />,
+          },
+        ];
+
+        const handleMenuClick: MenuProps["onClick"] = async (e) => {
+          console.log("Updating role for user:", record.id, "to", e.key);
+          updateRoleMutation.mutate({ id: record.id, roleNames: [e.key] });
+        };
+
+        return (
+          <Dropdown.Button
+            menu={{ items, onClick: handleMenuClick }}
+            placement="bottom"
+            icon={<DownOutlined />}
+            onClick={(e) => e.preventDefault()}
+            disabled={isLoading}
+            // type="primary"
+          >
+            <span>{currentRole}</span>
+          </Dropdown.Button>
+        );
+      },
+    },
     {
       title: "Status",
       dataIndex: "status",
-      width: "10%",
-      render: (val: string) =>
-        val === "Active" ? (
-          <Tag color="green">Active</Tag>
-        ) : (
-          <Tag color="red">Disabled</Tag>
-        ),
-    },
-    {
-      title: "Authorization",
-      dataIndex: "roles",
-      width: "20%",
-      render: (roles, record) => {
-        const isEditing = editingKey === record.id;
-        const currentRole = roles?.[0] || "Users";
-        return isEditing ? (
-          <Space>
-            <Select
-              value={tempAuth || currentRole}
-              onChange={setTempAuth}
-              style={{ width: 120 }}
-            >
-              <Option value="Users">User</Option>
-              <Option value="Landlords">Landlord</Option>
-            </Select>
-            <Button
-              type="primary"
-              size="small"
-              onClick={() => saveAuthorization(record)}
-            >
-              Save
-            </Button>
-            <Button size="small" onClick={() => setEditingKey(null)}>
-              Cancel
-            </Button>
-          </Space>
-        ) : (
-          <span
-            onClick={() => {
-              setEditingKey(record.id);
-              setTempAuth(currentRole);
-            }}
-            style={{ cursor: "pointer" }}
-          >
-            {roles.map((r: any) => (
-              <Tag key={r} color={r === "Landlords" ? "blue" : "default"}>
-                {r}
-              </Tag>
-            ))}
-          </span>
-        );
-      },
+      key: "status",
+      render: (status) => (
+        <Tag color={status === "Active" ? "green" : "red"}>{status}</Tag>
+      ),
     },
     {
       title: "Action",
@@ -178,6 +146,8 @@ const TableManageAccount: React.FC = () => {
           <Popconfirm
             title="Disable this account?"
             onConfirm={() => toggleStatus(record)}
+            okText="Yes"
+            cancelText="No"
           >
             <Button danger type="primary" size="small">
               Disable
@@ -189,7 +159,7 @@ const TableManageAccount: React.FC = () => {
             size="small"
             onClick={() => toggleStatus(record)}
           >
-            Unlock
+            Activate
           </Button>
         ),
     },
@@ -197,12 +167,12 @@ const TableManageAccount: React.FC = () => {
 
   return (
     <div style={{ padding: "20px" }}>
+      {contextHolder}
       <Table
         columns={columns}
-        dataSource={accountsData}
-        loading={loading}
-        pagination={pagination}
-        onChange={handleTableChange}
+        dataSource={data}
+        loading={isLoading}
+        pagination={{ pageSize: 5 }}
         rowKey="id"
       />
     </div>

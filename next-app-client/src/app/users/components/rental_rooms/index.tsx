@@ -10,17 +10,18 @@ import { BiChevronLeft, BiChevronRight } from "react-icons/bi";
 export default async function RentalRooms({
   searchParams,
 }: {
-  searchParams?: { page?: string; pageNormal?: string };
+  searchParams?: Promise<{ page?: string; pageNormal?: string }>;
 }) {
+  const params = searchParams ? await searchParams : {};
   const size = 4;
-  const page = Number(searchParams?.page ?? 0);
+  const page = Number(params?.page ?? 0);
   const roomVips = (await getRoomVipUser(
     page,
     size
   )) as PaginatedResponse<RoomInUser>;
 
-  const size_normal = 6;
-  const page_normal = Number(searchParams?.pageNormal ?? 0);
+  const size_normal = 2;
+  const page_normal = Number(params?.pageNormal ?? 0);
   const roomNormals = (await getRoomNormalUser(
     page_normal,
     size_normal

@@ -36,12 +36,15 @@ const TableManageRoom: React.FC = () => {
   const { isDark } = useContext(ThemeContext);
   const [page, setPage] = useState(0);
   const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(false);
+  
   const pageSize = 5;
   const [messageApi, contextHolder] = message.useMessage();
   // const [form] = Form.useForm();
 
   useEffect(() => {
     const fetchData = async () => {
+      setLoading(true); 
       try {
         const res = await fetchAllRoomPaging(page, pageSize);
         const rooms: RoomResponseDto[] = (res.rooms ?? []).map((room) => ({
@@ -262,6 +265,7 @@ const TableManageRoom: React.FC = () => {
         columns={columns}
         dataSource={data}
         rowKey="key"
+        loading={loading}
         pagination={{
           pageSize,
           current: page + 1,

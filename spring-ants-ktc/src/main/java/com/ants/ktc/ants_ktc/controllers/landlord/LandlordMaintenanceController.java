@@ -44,17 +44,6 @@ public class LandlordMaintenanceController {
         return ResponseEntity.status(201).body(newMaintenance);
     }
 
-    // @GetMapping
-    // public ResponseEntity<List<MaintenanceResponseDto>> getLandlordMaintenances(
-    // @RequestParam(required = false) Integer status,
-    // @RequestParam(required = false) UUID roomId) {
-    // UUID currentUserId = userService.getAuthenticatedUserId();
-    // List<MaintenanceResponseDto> maintenances =
-    // maintenanceService.getLandlordMaintenances(currentUserId, status,
-    // roomId);
-    // return ResponseEntity.ok(maintenances);
-    // }
-
     @GetMapping
     public ResponseEntity<PaginatedMaintenanceResponseDto<MaintenanceResponseDto>> getLandlordMaintenances(
             @RequestParam(defaultValue = "0") int page,

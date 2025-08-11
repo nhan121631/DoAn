@@ -28,10 +28,10 @@ export default function ListingComparisonDisplay({
     return (
       <div className="flex flex-col items-center justify-center h-[300px] bg-white rounded-xl shadow-md">
         <div className="text-2xl font-bold text-red-500 mb-2">
-          Cần chọn đủ 2 phòng để so sánh!
+          You need to choose 2 rooms to compare!
         </div>
         <div className="text-gray-600">
-          Vui lòng thêm đủ 2 phòng vào danh sách so sánh để xem chi tiết.
+          Please add at least 2 rooms to the comparison list to view details.
         </div>
       </div>
     );
@@ -49,7 +49,7 @@ export default function ListingComparisonDisplay({
   console.log("Listing 2 Amenities:", listing2.conveniences);
 
   return (
-    <div className="p-6 mx-auto bg-white shadow-md w-250 rounded-xl">
+    <div className="p-6 mx-auto bg-white shadow-md w-350 rounded-xl">
       {/* Listing Titles */}
       <div className="grid grid-cols-1 gap-4 mb-6 md:grid-cols-2">
         <h2 className="text-xl font-semibold text-center text-red-500 md:text-left">
@@ -61,11 +61,11 @@ export default function ListingComparisonDisplay({
       </div>
       <div className="grid grid-cols-1 gap-4 mb-6 md:grid-cols-2">
         <div
-          className="overflow-hidden border rounded-lg"
+          className="overflow-hidden rounded-lg"
           style={{
-            maxHeight: "500px",
+            maxHeight: "800px",
             minHeight: "200px",
-            height: "500px",
+            height: "650px",
             overflowY: "auto",
             scrollbarWidth: "none",
           }}
@@ -90,11 +90,11 @@ export default function ListingComparisonDisplay({
           />
         </div>
         <div
-          className="overflow-hidden border rounded-lg"
+          className="overflow-hidden rounded-lg"
           style={{
-            maxHeight: "500px",
+            maxHeight: "800px",
             minHeight: "200px",
-            height: "500px",
+            height: "650px",
             overflowY: "auto",
             scrollbarWidth: "none",
           }}
