@@ -49,7 +49,6 @@ export interface UserResponseDto {
   roles: string[];
 }
 
-// Kiểu dữ liệu trả về khi phân trang
 export interface UserPageResponseDto {
   data: UserResponseDto[];
   pageNumber: number;
@@ -60,12 +59,10 @@ export interface UserPageResponseDto {
   hasPrevious: boolean;
 }
 
-// Request DTO khi update role
 export interface RoleUpdateRequestDto {
   roleNames: string[];
 }
 
-// Request DTO khi update status
 export interface UpdateUserStatusRequestDto {
   status: number;
 }

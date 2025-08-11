@@ -1,5 +1,133 @@
 package com.ants.ktc.ants_ktc.repositories;
 
+import com.ants.ktc.ants_ktc.dtos.manage_account.UserAccountProjection;
+
+// import java.util.List;
+// import java.util.Optional;
+// import java.util.UUID;
+
+// import org.springframework.data.domain.Page;
+// import org.springframework.data.domain.Pageable;
+// import org.springframework.data.jpa.repository.EntityGraph;
+// import org.springframework.data.jpa.repository.JpaRepository;
+// import org.springframework.data.jpa.repository.Query;
+// import org.springframework.data.repository.query.Param;
+// import org.springframework.stereotype.Repository;
+
+// import com.ants.ktc.ants_ktc.entities.User;
+
+// @Repository
+// public interface UserJpaRepository extends JpaRepository<User, UUID> {
+// @Query("""
+// SELECT u FROM User u
+// LEFT JOIN FETCH u.profile p
+// LEFT JOIN FETCH p.address a
+// LEFT JOIN FETCH a.ward w
+// LEFT JOIN FETCH w.district d
+// LEFT JOIN FETCH d.province pr
+// LEFT JOIN FETCH u.roles r
+// WHERE u.username = :username
+// """)
+// Optional<User> findByUsername(@Param("username") String username);
+
+// @Query("""
+// SELECT u FROM User u
+// LEFT JOIN FETCH u.profile p
+// LEFT JOIN FETCH p.address a
+// LEFT JOIN FETCH a.ward w
+// LEFT JOIN FETCH w.district d
+// LEFT JOIN FETCH d.province pr
+// LEFT JOIN FETCH u.roles r
+// WHERE u.username = :email
+// """)
+// User findByEmail(@Param("email") String email);
+
+// @EntityGraph(attributePaths = {
+// "profile",
+// "profile.address",
+// "profile.address.ward",
+// "profile.address.ward.district",
+// "profile.address.ward.district.province",
+// "roles"
+// })
+// Page<User> findAll(Pageable pageable);
+
+// @EntityGraph(attributePaths = {
+// "profile",
+// "profile.address",
+// "profile.address.ward",
+// "profile.address.ward.district",
+// "profile.address.ward.district.province",
+// "roles"
+// })
+// Optional<User> findByProfileEmail(String email);
+
+// boolean existsByUsername(String username);
+
+// @Query(value = """
+// SELECT DISTINCT u FROM User u
+// LEFT JOIN u.roles r
+// WHERE r.name != 'Administrators'
+// """)
+// List<User> findAllExcludingAdmins();
+
+// @Query(value = """
+// SELECT DISTINCT u FROM User u
+// LEFT JOIN u.roles r
+// LEFT JOIN FETCH u.profile p
+// LEFT JOIN FETCH p.address a
+// LEFT JOIN FETCH a.ward w
+// LEFT JOIN FETCH w.district d
+// LEFT JOIN FETCH d.province pr
+// WHERE r.name != 'Administrators' OR r IS NULL
+// """, countQuery = "SELECT count(DISTINCT u) FROM User u LEFT JOIN u.roles r
+// WHERE r.name != 'Administrators' OR r IS NULL")
+// Page<User> findAllExcludingAdmins(Pageable pageable);
+
+// }
+
+// -------------------------------------tạm//////
+// import com.ants.ktc.ants_ktc.entities.User;
+// import org.springframework.data.jpa.repository.JpaRepository;
+// import org.springframework.data.jpa.repository.Query;
+// import org.springframework.stereotype.Repository;
+
+// import java.util.List;
+// import java.util.Optional;
+// import java.util.UUID;
+
+// @Repository
+// public interface UserJpaRepository extends JpaRepository<User, UUID> {
+// Optional<User> findByUsername(String username);
+
+// // Truy vấn để lấy tất cả User, Profile, và Address dưới dạng Projection,
+// loại
+// // trừ admin
+// @Query("SELECT new com.ants.ktc.ants_ktc.dto.UserAccountProjection(u.id,
+// u.username, u.isActive, up.email, up.phoneNumber) "
+// +
+// "FROM User u LEFT JOIN u.profile up " +
+// "WHERE NOT EXISTS (SELECT r.name FROM u.roles r WHERE r.name =
+// 'Administrators')")
+// List<UserAccountProjection> findAllUserProjectionsExcludingAdmins();
+
+// // Truy vấn thứ hai để lấy roles cho một danh sách các user id.
+// // Kết quả trả về là một List các mảng Object, mỗi mảng chứa [userId,
+// roleName].
+// @Query("SELECT u.id, r.name FROM User u JOIN u.roles r WHERE u.id IN
+// :userIds")
+// List<Object[]> findRoleNamesByUserIds(List<UUID> userIds);
+
+// // Truy vấn để lấy một DTO tài khoản cụ thể theo ID.
+
+// @Query("SELECT new com.ants.ktc.ants_ktc.dto.UserAccountProjection(u.id,
+// u.username, u.isActive, u.profile.email, u.profile.phoneNumber) "
+// +
+// "FROM User u LEFT JOIN u.profile up WHERE u.id = :id")
+// Optional<UserAccountProjection> findAccountProjectionById(UUID id);
+// }
+//---------------------------------------//
+
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -16,69 +144,74 @@ import com.ants.ktc.ants_ktc.entities.User;
 
 @Repository
 public interface UserJpaRepository extends JpaRepository<User, UUID> {
-    @Query("""
-                SELECT u FROM User u
-                LEFT JOIN FETCH u.profile p
-                LEFT JOIN FETCH p.address a
-                LEFT JOIN FETCH a.ward w
-                LEFT JOIN FETCH w.district d
-                LEFT JOIN FETCH d.province pr
-                LEFT JOIN FETCH u.roles r
-                WHERE u.username = :username
-            """)
-    Optional<User> findByUsername(@Param("username") String username);
+        @Query("""
+                            SELECT u FROM User u
+                            LEFT JOIN FETCH u.profile p
+                            LEFT JOIN FETCH p.address a
+                            LEFT JOIN FETCH a.ward w
+                            LEFT JOIN FETCH w.district d
+                            LEFT JOIN FETCH d.province pr
+                            LEFT JOIN FETCH u.roles r
+                            WHERE u.username = :username
+                        """)
+        Optional<User> findByUsername(@Param("username") String username);
 
-    @Query("""
-                SELECT u FROM User u
-                LEFT JOIN FETCH u.profile p
-                LEFT JOIN FETCH p.address a
-                LEFT JOIN FETCH a.ward w
-                LEFT JOIN FETCH w.district d
-                LEFT JOIN FETCH d.province pr
-                LEFT JOIN FETCH u.roles r
-                WHERE u.username = :email
-            """)
-    User findByEmail(@Param("email") String email);
+        @Query("""
+                            SELECT u FROM User u
+                            LEFT JOIN FETCH u.profile p
+                            LEFT JOIN FETCH p.address a
+                            LEFT JOIN FETCH a.ward w
+                            LEFT JOIN FETCH w.district d
+                            LEFT JOIN FETCH d.province pr
+                            LEFT JOIN FETCH u.roles r
+                            WHERE u.username = :email
+                        """)
+        User findByEmail(@Param("email") String email);
 
-    @EntityGraph(attributePaths = {
-            "profile",
-            "profile.address",
-            "profile.address.ward",
-            "profile.address.ward.district",
-            "profile.address.ward.district.province",
-            "roles"
-    })
-    Page<User> findAll(Pageable pageable);
+        @EntityGraph(attributePaths = {
+                        "profile",
+                        "profile.address",
+                        "profile.address.ward",
+                        "profile.address.ward.district",
+                        "profile.address.ward.district.province",
+                        "roles"
+        })
+        Page<User> findAll(Pageable pageable);
 
-    @EntityGraph(attributePaths = {
-            "profile",
-            "profile.address",
-            "profile.address.ward",
-            "profile.address.ward.district",
-            "profile.address.ward.district.province",
-            "roles"
-    })
-    Optional<User> findByProfileEmail(String email);
+        @EntityGraph(attributePaths = {
+                        "profile",
+                        "profile.address",
+                        "profile.address.ward",
+                        "profile.address.ward.district",
+                        "profile.address.ward.district.province",
+                        "roles"
+        })
+        Optional<User> findByProfileEmail(String email);
 
-    boolean existsByUsername(String username);
+        boolean existsByUsername(String username);
 
-    @Query(value = """
-            SELECT DISTINCT u FROM User u
-            LEFT JOIN u.roles r
-            WHERE r.name != 'Administrators'
-            """)
-    List<User> findAllExcludingAdmins();
+        // --- Đã sửa: Sử dụng LEFT JOIN FETCH để tải Profile và Roles ngay lập tức ---
+        // Điều này sẽ giải quyết vấn đề N+1 query
+        // Thêm điều kiện `OR r IS NULL` để bao gồm cả những user không có role nào được
+        // gán
+        @Query(value = """
+                        SELECT DISTINCT u FROM User u
+                        LEFT JOIN FETCH u.profile p
+                        LEFT JOIN FETCH u.roles r
+                        WHERE r.name <> 'Administrators' OR r IS NULL
+                        """)
+        List<User> findAllExcludingAdmins();
 
-    @Query(value = """
-            SELECT DISTINCT u FROM User u
-            LEFT JOIN u.roles r
-            LEFT JOIN FETCH u.profile p
-            LEFT JOIN FETCH p.address a
-            LEFT JOIN FETCH a.ward w
-            LEFT JOIN FETCH w.district d
-            LEFT JOIN FETCH d.province pr
-            WHERE r.name != 'Administrators' OR r IS NULL
-            """, countQuery = "SELECT count(DISTINCT u) FROM User u LEFT JOIN u.roles r WHERE r.name != 'Administrators' OR r IS NULL")
-    Page<User> findAllExcludingAdmins(Pageable pageable);
-
+        // --- Cần sửa tương tự cho phiên bản có phân trang nếu cần ---
+        @Query(value = """
+                        SELECT DISTINCT u FROM User u
+                        LEFT JOIN FETCH u.profile p
+                        LEFT JOIN FETCH u.roles r
+                        LEFT JOIN FETCH p.address a
+                        LEFT JOIN FETCH a.ward w
+                        LEFT JOIN FETCH w.district d
+                        LEFT JOIN FETCH d.province pr
+                        WHERE r.name <> 'Administrators' OR r IS NULL
+                        """, countQuery = "SELECT count(DISTINCT u) FROM User u LEFT JOIN u.roles r WHERE r.name <> 'Administrators' OR r IS NULL")
+        Page<User> findAllExcludingAdmins(Pageable pageable);
 }
