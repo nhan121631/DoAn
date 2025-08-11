@@ -20,7 +20,6 @@ import com.ants.ktc.ants_ktc.services.AccountManagementService;
 
 @RestController
 @RequestMapping("/api/admin/accounts")
-// @PreAuthorize("hasAuthority('Administrators')")
 public class AccountManagementController {
 
     private final AccountManagementService accountManagementService;
@@ -29,14 +28,12 @@ public class AccountManagementController {
         this.accountManagementService = accountManagementService;
     }
 
-    // --- API này sẽ trả về toàn bộ danh sách, không có phân trang ---
     @GetMapping
     public ResponseEntity<List<UserResponseDto>> getAllUsers() {
         List<UserResponseDto> response = accountManagementService.getAllUsers();
         return ResponseEntity.ok(response);
     }
 
-    // --- Thêm API mới này để xử lý phân trang ---
     @GetMapping("/paginated")
     public ResponseEntity<UserPageResponseDto> getPaginatedUsers(Pageable pageable) {
         UserPageResponseDto response = accountManagementService.getPaginatedUsers(pageable);
