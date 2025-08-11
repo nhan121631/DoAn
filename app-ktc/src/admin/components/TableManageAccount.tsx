@@ -164,7 +164,7 @@ const TableManageAccount: React.FC = () => {
         columns={columns}
         dataSource={accountsData}
         loading={loading}
-        pagination={{ pageSize: 5 }}
+        pagination={{ pageSize: 2 }}
         rowKey="id"
       />
     </div>
