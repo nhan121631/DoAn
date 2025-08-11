@@ -45,26 +45,6 @@ public class AccountManagementService {
                 this.roleJpaRepository = roleJpaRepository;
         }
 
-        // @Transactional(readOnly = true)
-        // public List<UserResponseDto> getAllUsers() {
-
-        // List<User> users = userJpaRepository.findAllExcludingAdmins();
-
-        // return users.stream()
-        // .map(this::convertToUserResponseDto)
-        // .collect(Collectors.toList());
-        // }
-        // @Transactional(readOnly = true)
-        // public PaginationAccountResponseDto<UserResponseDto> getAllUsers(int page,
-        // int size) {
-        // Pageable pageable = PageRequest.of(page, size, Sort.by("id"));
-
-        // // Gọi phương thức DTO Projection đã được tối ưu
-        // Page<UserResponseDto> userResponsePage =
-        // userJpaRepository.findAllUserDtosExcludingAdmins(pageable);
-
-        // return new PaginationAccountResponseDto<>(userResponsePage);
-        // }
         @Transactional(readOnly = true)
         public PaginationAccountResponseDto<UserResponseDto> getAllUsers(int page,
                         int size) {
