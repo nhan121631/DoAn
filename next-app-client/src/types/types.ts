@@ -75,14 +75,11 @@ export type Image = {
   url: string;
 }
 //--------------------------------------//
-export type Room = {
-  name: string;
-  address: string;
-  // approval?: 0 | 1 | 2; // 0 = pending, 1 = approved, 2 = rejected
-};
-
-
-
+// export type Room = {
+//   name: string;
+//   address: string;
+//   // approval?: 0 | 1 | 2; // 0 = pending, 1 = approved, 2 = rejected
+// };
 
 //Manage-Maintain
 //---------------------------------------//
@@ -91,7 +88,6 @@ export enum RequestStatus {
   IN_PROGRESS = 1,
   COMPLETED = 2,
 }
-
 export type Room = {
   id: string; // UUID của phòng
   title: string;
@@ -127,6 +123,64 @@ export type UpdateMaintenanceFormValues = {
 };
 
 //--------------------------------------//
+
+//Rooms in user
+export type RoomInUser = {
+  id: string;
+  title: string;
+  description: string;
+  priceMonth: number;
+  area: number;
+  postStartDate: string;
+  address: {
+    id: string;
+    street: string;
+    ward: {
+      id: number;
+      name: string;
+      district: {
+        id: number;
+        name: string;
+        province: {
+          id: number;
+          name: string;
+        };
+      };
+    };
+  };
+  conveniences: Convenient[];
+  images: Image[];
+  landlord: Landlord;
+};
+export type LandlordProfile = {
+  id: string;
+  fullName: string;
+  email: string;
+  phoneNumber: string;
+  avatar: string;
+};
+
+export type Landlord = {
+  id: string;
+  landlordProfile: LandlordProfile;
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 export type Reply = {
   sender: 'admin' | 'user';

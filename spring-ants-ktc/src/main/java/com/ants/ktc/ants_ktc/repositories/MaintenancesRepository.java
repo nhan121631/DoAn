@@ -1,14 +1,15 @@
 package com.ants.ktc.ants_ktc.repositories;
 
-import com.ants.ktc.ants_ktc.entities.Maintenances;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import com.ants.ktc.ants_ktc.entities.Maintenances;
 
 @Repository
 public interface MaintenancesRepository extends JpaRepository<Maintenances, UUID> {

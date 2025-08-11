@@ -18,10 +18,12 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.ants.ktc.ants_ktc.dtos.room.PaginationRoomAdminResponseDto;
+import com.ants.ktc.ants_ktc.dtos.room.PaginationRoomInUserResponseDto;
 import com.ants.ktc.ants_ktc.dtos.room.PaginationRoomResponseDto;
 import com.ants.ktc.ants_ktc.dtos.room.RoomRequestCreateDto;
+import com.ants.ktc.ants_ktc.dtos.room.RoomRequestUpdateDto;
 import com.ants.ktc.ants_ktc.dtos.room.RoomResponseDto;
-import com.ants.ktc.ants_ktc.dtos.room.RoomResponseProjectionDto;
 import com.ants.ktc.ants_ktc.dtos.room.RoomShowHideProjectionDto;
 import com.ants.ktc.ants_ktc.dtos.room.RoomUpdateExpireDateRequestDto;
 import com.ants.ktc.ants_ktc.dtos.room.RoomUpdateExpireDateResponseDto;
@@ -81,18 +83,40 @@ public class RoomController {
         return ResponseEntity.ok(roomResponse);
     }
 
-    // @GetMapping("/by-landlord/{id}")
-    // public ResponseEntity<List<RoomResponseDto>>
-    // getAllRoomByLandlordId(@PathVariable("id") UUID id) {
-    // List<RoomResponseDto> rooms = roomService.getAllRoomByLandlordId(id);
-    // return ResponseEntity.ok(rooms);
-    // }
+    @PatchMapping("/{id}")
+    public ResponseEntity<RoomResponseDto> updateRoom(
+            @PathVariable UUID id,
+            @RequestPart("room") String roomJson,
+            @RequestPart(value = "images", required = false) List<MultipartFile> images) throws Exception {
+        RoomRequestUpdateDto request = new ObjectMapper().readValue(roomJson, RoomRequestUpdateDto.class);
+
+        // Validate input nếu cần
+        Set<ConstraintViolation<RoomRequestUpdateDto>> violations = validator.validate(request);
+        if (!violations.isEmpty()) {
+            String errorMsg = violations.stream()
+                    .map(v -> v.getPropertyPath() + ": " + v.getMessage())
+                    .reduce((a, b) -> a + ", " + b)
+                    .orElse("Validation error");
+            throw new IllegalArgumentException(errorMsg);
+        }
+
+        RoomResponseDto updatedRoom = roomService.updateRoom(id, images, request);
+        return ResponseEntity.ok(updatedRoom);
+    }
 
     @GetMapping("/by-landlord/{id}/paging")
     public ResponseEntity<PaginationRoomResponseDto> getAllRoomByLandlordIdPaginated(@PathVariable("id") UUID id,
             @RequestParam(value = "page", defaultValue = "0") int page,
             @RequestParam(value = "size", defaultValue = "5") int size) {
         PaginationRoomResponseDto rooms = roomService.getAllRoomByLandlordIdPaginated(id, page, size);
+        return ResponseEntity.ok(rooms);
+    }
+
+    @GetMapping("/by-admin/paging")
+    public ResponseEntity<PaginationRoomAdminResponseDto> getAllRoomByAdminPaginated(
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "5") int size) {
+        PaginationRoomAdminResponseDto rooms = roomService.getAllRoomByAdminPaginated(page, size);
         return ResponseEntity.ok(rooms);
     }
 
@@ -116,4 +140,21 @@ public class RoomController {
         return ResponseEntity.ok(room);
     }
 
+    @GetMapping("allroom-vip")
+    public ResponseEntity<PaginationRoomInUserResponseDto> getRoomVipPaginated(
+            @RequestParam(name = "page", defaultValue = "0") int pageNumber,
+            @RequestParam(name = "size", defaultValue = "5") int pageSize) {
+        String code = "VIP";
+        PaginationRoomInUserResponseDto response = roomService.getAllRoomInUser(pageNumber, pageSize, code);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("allroom-normal")
+    public ResponseEntity<PaginationRoomInUserResponseDto> getRoomNormalPaginated(
+            @RequestParam(name = "page", defaultValue = "0") int pageNumber,
+            @RequestParam(name = "size", defaultValue = "5") int pageSize) {
+        String code = "NORMAL";
+        PaginationRoomInUserResponseDto response = roomService.getAllRoomInUser(pageNumber, pageSize, code);
+        return ResponseEntity.ok(response);
+    }
 }

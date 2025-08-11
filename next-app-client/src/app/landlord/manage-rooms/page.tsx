@@ -11,7 +11,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { AiOutlineInfoCircle, AiOutlinePlus } from "react-icons/ai";
 import { FaRegEdit } from "react-icons/fa";
-// import EditPostModal from "../components/manage-rooms/EditPostModal";
+import EditPostModal from "../components/manage-rooms/EditPostModal";
 import RoomInfoModal from "../components/manage-rooms/RoomInfoModal";
 import { TypePost } from "@/types/types";
 import { getPostTypes } from "@/services/TypePostService";
@@ -25,7 +25,7 @@ function TableManageRoom() {
   });
   const [loading, setLoading] = useState(false);
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
-  // const [isModalOpen, setModalOpen] = useState(false);
+  const [isModalOpen, setModalOpen] = useState(false);
   const [isInfoModalOpen, setInfoModalOpen] = useState(false);
 
   const [extendingKey, setExtendingKey] = useState<string | null>(null);
@@ -100,7 +100,7 @@ function TableManageRoom() {
   // Hàm xử lý khi nhấn nút edit
   const handleEditClick = (record: any) => {
     setSelectedRoomId(record.id);
-    // setModalOpen(true);
+    setModalOpen(true);
   };
 
   // Hàm xử lý khi nhấn nút info
@@ -188,29 +188,61 @@ function TableManageRoom() {
         const end = new Date(record.postEndDate);
         const isStillValid = start <= now && now <= end;
 
-        const isExpired = now > end;
-
         if (isStillValid) {
           return <Tag color="green">Still valid</Tag>;
         }
 
-        // Format min date as yyyy-MM-dd (ngày sau postEndDate)
-        const minDate = new Date(end.getTime() + 24 * 60 * 60 * 1000)
+        // Format min date as yyyy-MM-dd (ngày hôm nay hoặc ngày sau postEndDate, whichever is later)
+        const todayDate = new Date(
+          now.getFullYear(),
+          now.getMonth(),
+          now.getDate()
+        );
+        const minDateObj = new Date(
+          Math.max(todayDate.getTime(), end.getTime() + 24 * 60 * 60 * 1000)
+        );
+        // Disable luôn ngày hiện tại, minDate là ngày hôm sau
+        const minDate = new Date(minDateObj.getTime() + 24 * 60 * 60 * 1000)
           .toISOString()
           .slice(0, 10);
 
-        // Tính tổng phí gia hạn
+        // Tính tổng phí gia hạn dựa vào typepost và ngày chọn
         let totalFee = 0;
         if (extendDates[record.id] && selectedTypePostId) {
           const selectedType = typeposts.find(
             (tp) => tp.id === selectedTypePostId
           );
           if (selectedType) {
-            const newDate = new Date(extendDates[record.id]);
-            // Số ngày = ngày mới - ngày kết thúc hiện tại
-            const diffMs = newDate.getTime() - end.getTime();
-            let diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
-            if (diffDays <= 1) diffDays = 1;
+            // Nếu ngày kết thúc hiện tại (end) lớn hơn hôm nay thì tính từ end, còn nếu đã hết hạn thì tính từ hôm nay
+            const selectedDate = new Date(extendDates[record.id]);
+            const today = new Date();
+            const todayDate = new Date(
+              today.getFullYear(),
+              today.getMonth(),
+              today.getDate()
+            );
+            // endDate phải là ngày chọn từ input type date
+            const endDate = new Date(
+              selectedDate.getFullYear(),
+              selectedDate.getMonth(),
+              selectedDate.getDate()
+            );
+            // Sử dụng biến todayDate đã có ở trên
+            const startDate =
+              end > todayDate
+                ? new Date(end.getFullYear(), end.getMonth(), end.getDate())
+                : todayDate;
+            // Tính số ngày: bao gồm cả ngày bắt đầu và ngày chọn (tức là từ startDate đến endDate, cả 2 đều tính)
+            let diffDays =
+              Math.floor(
+                (endDate.getTime() - startDate.getTime()) /
+                  (1000 * 60 * 60 * 24)
+              ) + 1;
+            if (diffDays < 1) diffDays = 1;
+            // Log ra để kiểm tra
+            console.log("startDate:", startDate.toISOString());
+            console.log("endDate:", endDate.toISOString());
+            console.log("Số ngày gia hạn:", diffDays);
             totalFee = diffDays * selectedType.pricePerDay;
           }
         }
@@ -221,12 +253,16 @@ function TableManageRoom() {
               type="date"
               min={minDate}
               value={extendDates[record.id] || ""}
-              onChange={(e) =>
-                setExtendDates((prev) => ({
-                  ...prev,
-                  [record.id]: e.target.value,
-                }))
-              }
+              onChange={(e) => {
+                const selected = e.target.value;
+                // Chỉ cho phép chọn ngày hôm nay hoặc sau đó
+                if (selected >= minDate) {
+                  setExtendDates((prev) => ({
+                    ...prev,
+                    [record.id]: selected,
+                  }));
+                }
+              }}
               style={{
                 padding: "4px 8px",
                 borderRadius: 4,
@@ -292,10 +328,13 @@ function TableManageRoom() {
                   return d.toISOString();
                 };
                 try {
+                  // postStartDate lấy ngày hiện tại, postEndDate lấy ngày từ input
+                  const postStartDate = formatDate(new Date());
+                  const postEndDate = formatDate(extendDates[record.id]);
                   await updateRoomPostExtend(
                     record.id,
-                    formatDate(new Date()),
-                    formatDate(extendDates[record.id]),
+                    postStartDate,
+                    postEndDate,
                     selectedTypePostId as string
                   );
                   messageApi.success({
@@ -340,7 +379,7 @@ function TableManageRoom() {
             <Button
               size="small"
               type="primary"
-              disabled={record.isRemoved === 1 || isExpired}
+              disabled={record.isRemoved === 1}
             >
               Extend
             </Button>
@@ -419,14 +458,6 @@ function TableManageRoom() {
         const end = new Date(record.postEndDate);
         const isStillValid = now <= end;
 
-        if (!isStillValid) {
-          return (
-            <span style={{ color: "gray", fontWeight: 600 }}>
-              This post has expired
-            </span>
-          );
-        }
-
         if (record.isRemoved === 1) {
           return (
             <span style={{ color: "red", fontWeight: 600 }}>
@@ -434,6 +465,15 @@ function TableManageRoom() {
             </span>
           );
         }
+
+        if (!isStillValid) {
+          return (
+            <span style={{ color: "gray", fontWeight: 600 }}>
+              This post has expired
+            </span>
+          );
+        }
+        
         return (
           <Space>
             <Button
@@ -487,11 +527,12 @@ function TableManageRoom() {
         onChange={handleTableChange}
       />
 
-      {/* <EditPostModal
+      <EditPostModal
         open={isModalOpen}
         onClose={() => setModalOpen(false)}
         roomId={selectedRoomId}
-      /> */}
+        onSuccess={() => fetchRooms(pagination.current, pagination.pageSize)}
+      />
       <RoomInfoModal
         open={isInfoModalOpen}
         onClose={() => setInfoModalOpen(false)}

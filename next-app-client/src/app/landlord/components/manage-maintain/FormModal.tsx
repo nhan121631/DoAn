@@ -1,14 +1,16 @@
-'use client';
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
-import React, { useEffect } from 'react';
-import { Modal, Form, Input, Button, Select, Row, Col } from 'antd';
+"use client";
+
 import {
   CreateMaintenanceFormValues,
-  UpdateMaintenanceFormValues,
   Maintenance,
-  Room,
   RequestStatus,
-} from '@/types/types';
+  Room,
+  UpdateMaintenanceFormValues,
+} from "@/types/types";
+import { Button, Form, Input, Modal, Select } from "antd";
+import React, { useEffect } from "react";
 
 const { Option } = Select;
 
@@ -17,7 +19,9 @@ interface FormModalProps {
   onClose: () => void;
   initialData: Maintenance | null;
   availableRooms: Room[];
-  onSubmit: (values: CreateMaintenanceFormValues | UpdateMaintenanceFormValues) => void;
+  onSubmit: (
+    values: CreateMaintenanceFormValues | UpdateMaintenanceFormValues
+  ) => void;
   loading: boolean;
 }
 
@@ -50,7 +54,7 @@ export const FormModal: React.FC<FormModalProps> = ({
 
   return (
     <Modal
-      title={initialData ? 'Edit Maintenance' : 'Add New Maintenance'}
+      title={initialData ? "Edit Maintenance" : "Add New Maintenance"}
       open={isOpen}
       onCancel={onClose}
       footer={null}
@@ -61,20 +65,24 @@ export const FormModal: React.FC<FormModalProps> = ({
         form={form}
         layout="vertical"
         onFinish={handleFinish}
-        initialValues={initialData ? { ...initialData, roomId: initialData.room.id } : {}}
+        initialValues={
+          initialData ? { ...initialData, roomId: initialData.room.id } : {}
+        }
       >
         <div className="max-h-[400px] overflow-y-auto pr-4">
           <Form.Item
             label="Room Name"
             name="roomId"
-            rules={[{ required: true, message: 'Please select a room!' }]}
+            rules={[{ required: true, message: "Please select a room!" }]}
           >
             <Select
               placeholder="Select a room"
               showSearch
               optionFilterProp="children"
               filterOption={(input, option) =>
-                String(option?.children).toLowerCase().indexOf(input.toLowerCase()) >= 0
+                String(option?.children)
+                  .toLowerCase()
+                  .indexOf(input.toLowerCase()) >= 0
               }
               disabled={!!initialData}
             >
@@ -89,15 +97,23 @@ export const FormModal: React.FC<FormModalProps> = ({
           <Form.Item
             label="Problem"
             name="problem"
-            rules={[{ required: true, message: 'Please enter a problem description!' }]}
+            rules={[
+              {
+                required: true,
+                message: "Please enter a problem description!",
+              },
+            ]}
           >
-            <Input.TextArea rows={4} placeholder="For example: Broken faucet, power outage..." />
+            <Input.TextArea
+              rows={4}
+              placeholder="For example: Broken faucet, power outage..."
+            />
           </Form.Item>
 
           <Form.Item
             label="Cost"
             name="cost"
-            rules={[{ required: true, message: 'Please enter a cost!' }]}
+            rules={[{ required: true, message: "Please enter a cost!" }]}
           >
             <Input type="number" placeholder="For example: 150000" />
           </Form.Item>
@@ -106,7 +122,7 @@ export const FormModal: React.FC<FormModalProps> = ({
             <Form.Item
               label="Status"
               name="status"
-              rules={[{ required: true, message: 'Please select a status!' }]}
+              rules={[{ required: true, message: "Please select a status!" }]}
             >
               <Select placeholder="Select a status">
                 <Option value={RequestStatus.PENDING}>Pending</Option>
@@ -119,9 +135,11 @@ export const FormModal: React.FC<FormModalProps> = ({
 
         <Form.Item>
           <div className="flex justify-end gap-2 mt-4">
-            <Button onClick={onClose} disabled={loading}>Cancel</Button>
+            <Button onClick={onClose} disabled={loading}>
+              Cancel
+            </Button>
             <Button type="primary" htmlType="submit" loading={loading}>
-              {initialData ? 'Update' : 'Create'}
+              {initialData ? "Update" : "Create"}
             </Button>
           </div>
         </Form.Item>

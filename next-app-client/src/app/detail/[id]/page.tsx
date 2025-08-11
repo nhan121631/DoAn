@@ -1,43 +1,29 @@
-"use client";
-import React, { useEffect, useState } from "react";
-import Convenient from "./convenient";
-import MapSection from "./map";
-import { Slide } from "./Slide";
-import { getRoomById } from "@/services/RoomService";
-import type { RoomDetail } from "@/types/types";
+import Convenient from "@/app/landlord/components/room-detail/convenient";
+import MapSection from "@/app/landlord/components/room-detail/map";
+import { Slide } from "@/app/landlord/components/room-detail/Slide";
+import { getRoomById, getRoomVipUser } from "@/services/RoomService";
+import { Image, RoomInUser } from "@/types/types";
 
-type RoomDetailProps = {
-  id: string | null;
-};
+export const dynamic = "force-static";
+export const dynamicParams = true;
 
-const RoomDetail: React.FC<RoomDetailProps> = ({ id }) => {
-  const [room, setRoom] = useState<RoomDetail | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+export async function generateStaticParams() {
+  const page = 0;
+  const size = 10;
+  const response = await getRoomVipUser(page, size);
+  if (!response || !response.data || response.data.length === 0) {
+    return [];
+  }
+  return response.data.slice(0, 10).map((room: RoomInUser) => ({
+    id: room.id.toString(),
+  }));
+}
 
-  useEffect(() => {
-    if (!id) return;
-    setLoading(true);
-    setError(null);
-    getRoomById(id)
-      .then((data) => {
-        setRoom(data as RoomDetail);
-        console.log("=== RoomDetail getRoomById payload ===");
-        console.log("Room ID:", id);
-        console.log("Complete Response Data:", JSON.stringify(data, null, 2));
-        console.log("======================================");
-      })
-      .catch(() => {
-        setError("Room not found");
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  }, [id]);
-
-  if (!id) return null;
-  if (loading) return <div>Loading...</div>;
-  if (error || !room) return <div>{error || "Room not found"}</div>;
+export default async function Page({ params }: { params: { id: string } }) {
+  const room = await getRoomById(params.id);
+  if (!room) {
+    return <div>Room not found</div>;
+  }
 
   return (
     <div className="max-w-[900px] mx-auto my-8 bg-white dark:bg-[#181f2b] rounded-xl shadow-lg p-6 dark:text-white">
@@ -46,7 +32,9 @@ const RoomDetail: React.FC<RoomDetailProps> = ({ id }) => {
         <Slide
           images={
             Array.isArray(room.images)
-              ? room.images.filter((img) => img && typeof img.url === "string")
+              ? room.images.filter(
+                  (img: Image) => img && typeof img.url === "string"
+                )
               : []
           }
           address={
@@ -120,9 +108,9 @@ const RoomDetail: React.FC<RoomDetailProps> = ({ id }) => {
           </span>
         </div>
         {/* <div className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-          Updated:{" "}
-          {room.updatedAt ? new Date(room.updatedAt).toLocaleString() : ""}
-        </div> */}
+             Updated:{" "}
+             {room.updatedAt ? new Date(room.updatedAt).toLocaleString() : ""}
+           </div> */}
 
         <hr className="my-5 text-gray-300 dark:text-gray-600" />
 
@@ -133,7 +121,7 @@ const RoomDetail: React.FC<RoomDetailProps> = ({ id }) => {
           {room.description ? (
             room.description
               .split("\n")
-              .map((line, idx) => <p key={idx}>{line}</p>)
+              .map((line: string, idx: number) => <p key={idx}>{line}</p>)
           ) : (
             <p>No description</p>
           )}
@@ -154,6 +142,4 @@ const RoomDetail: React.FC<RoomDetailProps> = ({ id }) => {
       </div>
     </div>
   );
-};
-
-export default RoomDetail;
+}

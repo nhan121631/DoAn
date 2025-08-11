@@ -1,84 +1,67 @@
-import React, { useContext, useState } from "react";
-import { Table, Tag, Button, Modal, Popconfirm, message, Space } from "antd";
-import { Form, Input } from "antd";
+import {
+  Button,
+  Form,
+  Input,
+  message,
+  Modal,
+  Popconfirm,
+  Space,
+  Table,
+  Tag,
+} from "antd";
 import type { ColumnsType } from "antd/es/table";
-import { AiOutlineMail, AiOutlineInfoCircle } from "react-icons/ai";
+import React, { useContext, useEffect, useState } from "react";
+import { AiOutlineInfoCircle, AiOutlineMail } from "react-icons/ai";
 import { ThemeContext } from "../context/ThemeContext";
+import { fetchAllRoomPaging } from "../service/RoomService";
+import type { RoomResponseDto } from "../types/type";
 
-type RoomData = {
-  key: string;
-  name: string;
-  description: string;
-  address: string;
-  price: number;
-  available: "Rented" | "Available";
-  approval: 0 | 1 | 2; // 0 = pending, 1 = approved, 2 = rejected
-  isRemove: 0 | 1; // 0 = hiện btn gỡ, 1 = đã gỡ (bị ẩn)
-};
-
-const initialData: RoomData[] = [
-  {
-    key: "1",
-    name: "Mr. Nam’s Room 1",
-    description: "Affordable and cozy – perfect for students!",
-    address: "Dong Da, Hanoi",
-    price: 3999999,
-    available: "Available",
-    approval: 0,
-    isRemove: 0,
-  },
-  {
-    key: "2",
-    name: "Mr. Nam’s Room 2",
-    description: "Clean and close to the center.",
-    address: "Thanh Xuan, Hanoi",
-    price: 3000000,
-    available: "Rented",
-    approval: 0,
-    isRemove: 0,
-  },
-  {
-    key: "3",
-    name: "Mr. Nam’s Room 3",
-    description: "Near schools, fully furnished.",
-    address: "Cau Giay, Hanoi",
-    price: 2000000,
-    available: "Available",
-    approval: 2,
-    isRemove: 1,
-  },
-  {
-    key: "4",
-    name: "Ms. Lan’s Room 1",
-    description: "Spacious and bright, perfect for families.",
-    address: "Hoan Kiem, Hanoi",
-    price: 5000000,
-    available: "Available",
-    approval: 1,
-    isRemove: 0,
-  },
-  {
-    key: "5",
-    name: "Ms. Lan’s Room 2",
-    description: "Modern amenities, great location.",
-    address: "Ba Dinh, Hanoi",
-    price: 4500000,
-    available: "Rented",
-    approval: 1,
-    isRemove: 0,
-  },
-];
+// Dữ liệu sẽ lấy từ API, không dùng mock data
 
 const TableManageRoom: React.FC = () => {
-  const [data, setData] = useState<RoomData[]>(initialData);
-  const [selectedRoom, setSelectedRoom] = useState<RoomData | null>(null);
+  const [data, setData] = useState<RoomResponseDto[]>([]);
+  const [selectedRoom, setSelectedRoom] = useState<RoomResponseDto | null>(
+    null
+  );
   const [isModalOpen, setModalOpen] = useState(false);
   const [isInfoModalOpen, setInfoModalOpen] = useState(false);
   const { isDark } = useContext(ThemeContext);
+  const [page, setPage] = useState(0);
+  const [total, setTotal] = useState(0);
+  const pageSize = 5;
 
-  const updateApproval = (record: RoomData, value: 1 | 2) => {
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const res = await fetchAllRoomPaging(page, pageSize);
+        const rooms: RoomResponseDto[] = (res.rooms ?? []).map((room) => ({
+          ...room,
+          key: room.id,
+          name: room.title,
+          addressText: [
+            room.address?.street,
+            room.address?.ward?.name,
+            room.address?.ward?.district?.name,
+            room.address?.ward?.district?.province?.name,
+          ]
+            .filter(Boolean)
+            .join(", "),
+          price: room.priceMonth,
+          approval: room.approval as 0 | 1 | 2,
+          isRemove: room.isRemoved as 0 | 1,
+        }));
+        setData(rooms);
+        setTotal(res.totalRecords ?? 0);
+      } catch (_) {
+        message.error("Lỗi khi tải danh sách phòng!");
+      }
+    };
+    fetchData();
+  }, [page]);
+
+  const updateApproval = (record: RoomResponseDto, value: 1 | 2) => {
     const updated = data.map((item) =>
-      item.key === record.key ? { ...item, approval: value } : item
+      item.id === record.id ? { ...item, approval: value } : item
     );
     setData(updated);
     message.success(
@@ -86,34 +69,34 @@ const TableManageRoom: React.FC = () => {
     );
   };
 
-  const toggleHidden = (record: RoomData) => {
+  const toggleHidden = (record: RoomResponseDto) => {
     const updated = data.map((item) =>
-      item.key === record.key
-        ? { ...item, isRemove: (item.isRemove === 1 ? 0 : 1) as 0 | 1 }
+      item.id === record.id
+        ? { ...item, isRemoved: (item.isRemoved === 1 ? 0 : 1) as 0 | 1 }
         : item
     );
     setData(updated);
     message.success(
-      record.isRemove === 1 ? "Post is now visible." : "Post has been hidden."
+      record.isRemoved === 1 ? "Post is now visible." : "Post has been hidden."
     );
   };
 
-  const handleMailClick = (record: RoomData) => {
+  const handleMailClick = (record: RoomResponseDto) => {
     setSelectedRoom(record);
     setModalOpen(true);
   };
 
-  const handleInfoClick = (record: RoomData) => {
+  const handleInfoClick = (record: RoomResponseDto) => {
     setSelectedRoom(record);
     setInfoModalOpen(true);
   };
 
-  const columns: ColumnsType<RoomData> = [
+  const columns: ColumnsType<RoomResponseDto> = [
     {
       title: "Room Name",
       dataIndex: "name",
       key: "name",
-      sorter: (a, b) => a.name.localeCompare(b.name),
+      sorter: (a, b) => a.title.localeCompare(b.title),
     },
     {
       title: "Description",
@@ -121,25 +104,33 @@ const TableManageRoom: React.FC = () => {
       key: "description",
     },
     {
+      title: "Owner Name",
+      dataIndex: "landlordFullName",
+      key: "landlordFullName",
+      render: (text) => <span>{text}</span>,
+    },
+    {
       title: "Address",
-      dataIndex: "address",
-      key: "address",
+      dataIndex: "addressText",
+      key: "addressText",
     },
     {
       title: "Price/month",
       dataIndex: "price",
       key: "price",
-      sorter: (a, b) => a.price - b.price,
+      sorter: (a, b) => a.priceMonth - b.priceMonth,
       render: (price) => price.toLocaleString() + " ₫",
     },
     {
       title: "Available",
       dataIndex: "available",
       key: "available",
-      render: (available) => (
-        <Tag color={available === "Rented" ? "green" : "blue"}>{available}</Tag>
-      ),
-      sorter: (a, b) => a.available.localeCompare(b.available),
+      render: (available: number) => {
+        const label = available === 1 ? "Rented" : "Available";
+        const color = available === 1 ? "green" : "blue";
+        return <Tag color={color}>{label}</Tag>;
+      },
+      sorter: (a, b) => a.available - b.available,
     },
     {
       title: "Approval",
@@ -184,7 +175,7 @@ const TableManageRoom: React.FC = () => {
       render: (_, record) => (
         <Popconfirm
           title={
-            record.isRemove === 1
+            record.isRemoved === 1
               ? "Do you want to show this post again?"
               : "Are you sure to remove this post?"
           }
@@ -194,10 +185,10 @@ const TableManageRoom: React.FC = () => {
         >
           <Button
             size="small"
-            danger={record.isRemove === 0}
-            type={record.isRemove === 1 ? "default" : "primary"}
+            danger={record.isRemoved === 0}
+            type={record.isRemoved === 1 ? "default" : "primary"}
           >
-            {record.isRemove === 1 ? "Removed" : "Remove"}
+            {record.isRemoved === 1 ? "Removed" : "Remove"}
           </Button>
         </Popconfirm>
       ),
@@ -228,10 +219,14 @@ const TableManageRoom: React.FC = () => {
         columns={columns}
         dataSource={data}
         rowKey="key"
-        pagination={{ pageSize: 7 }}
+        pagination={{
+          pageSize,
+          current: page + 1,
+          total,
+          onChange: (p) => setPage(p - 1),
+        }}
       />
-
-      {/* Send Mail Modal */}
+      {/* ...existing code for modals... */}
       <Modal
         title="Send Email"
         open={isModalOpen}
@@ -248,9 +243,8 @@ const TableManageRoom: React.FC = () => {
           }}
         >
           <Form.Item label="To">
-            <Input value={selectedRoom?.name} disabled />
+            <Input value={selectedRoom?.title} disabled />
           </Form.Item>
-
           <Form.Item
             label="Subject"
             name="subject"
@@ -258,7 +252,6 @@ const TableManageRoom: React.FC = () => {
           >
             <Input placeholder="Enter email subject" />
           </Form.Item>
-
           <Form.Item
             label="Message"
             name="message"
@@ -274,7 +267,6 @@ const TableManageRoom: React.FC = () => {
               showCount
             />
           </Form.Item>
-
           <Form.Item>
             <Button type="primary" htmlType="submit" className="w-full">
               Send
@@ -282,8 +274,6 @@ const TableManageRoom: React.FC = () => {
           </Form.Item>
         </Form>
       </Modal>
-
-      {/* Info Modal */}
       <Modal
         title="Room Details"
         open={isInfoModalOpen}
@@ -293,16 +283,17 @@ const TableManageRoom: React.FC = () => {
         className={isDark ? "dark" : ""}
       >
         <p>
-          <b>Name:</b> {selectedRoom?.name}
+          <b>Name:</b> {selectedRoom?.title}
         </p>
         <p>
           <b>Description:</b> {selectedRoom?.description}
         </p>
         <p>
-          <b>Address:</b> {selectedRoom?.address}
+          <b>Address:</b>{" "}
+          {selectedRoom?.address ? String(selectedRoom.address) : ""}
         </p>
         <p>
-          <b>Price:</b> {selectedRoom?.price?.toLocaleString()} ₫
+          <b>Price:</b> {selectedRoom?.priceMonth?.toLocaleString()} ₫
         </p>
         <p>
           <b>Status:</b> {selectedRoom?.available}
@@ -311,7 +302,7 @@ const TableManageRoom: React.FC = () => {
           <b>Approval:</b> {selectedRoom?.approval}
         </p>
         <p>
-          <b>Removed:</b> {selectedRoom?.isRemove === 1 ? "Yes" : "No"}
+          <b>Removed:</b> {selectedRoom?.isRemoved === 1 ? "Yes" : "No"}
         </p>
       </Modal>
     </>
