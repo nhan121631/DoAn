@@ -11,7 +11,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { AiOutlineInfoCircle, AiOutlinePlus } from "react-icons/ai";
 import { FaRegEdit } from "react-icons/fa";
-// import EditPostModal from "../components/manage-rooms/EditPostModal";
+import EditPostModal from "../components/manage-rooms/EditPostModal";
 import RoomInfoModal from "../components/manage-rooms/RoomInfoModal";
 import { TypePost } from "@/types/types";
 import { getPostTypes } from "@/services/TypePostService";
@@ -25,7 +25,7 @@ function TableManageRoom() {
   });
   const [loading, setLoading] = useState(false);
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
-  // const [isModalOpen, setModalOpen] = useState(false);
+  const [isModalOpen, setModalOpen] = useState(false);
   const [isInfoModalOpen, setInfoModalOpen] = useState(false);
 
   const [extendingKey, setExtendingKey] = useState<string | null>(null);
@@ -100,7 +100,7 @@ function TableManageRoom() {
   // Hàm xử lý khi nhấn nút edit
   const handleEditClick = (record: any) => {
     setSelectedRoomId(record.id);
-    // setModalOpen(true);
+    setModalOpen(true);
   };
 
   // Hàm xử lý khi nhấn nút info
@@ -187,30 +187,46 @@ function TableManageRoom() {
         const start = new Date(record.postStartDate);
         const end = new Date(record.postEndDate);
         const isStillValid = start <= now && now <= end;
+        const isRemoved = record.isRemoved === 1;
 
-        const isExpired = now > end;
-
+        // Nếu bài đã bị xóa hoặc vẫn còn hiệu lực thì không hiển thị nút Extend, thay vào đó hiển thị trạng thái phù hợp
+        if (isRemoved) {
+          return <Tag color="red">Removed</Tag>;
+        }
         if (isStillValid) {
           return <Tag color="green">Still valid</Tag>;
         }
 
-        // Format min date as yyyy-MM-dd (ngày sau postEndDate)
-        const minDate = new Date(end.getTime() + 24 * 60 * 60 * 1000)
-          .toISOString()
-          .slice(0, 10);
+        // Format min date là ngày hiện tại + 1 ngày nữa
+        const tomorrowDate = new Date(
+          now.getFullYear(),
+          now.getMonth(),
+          now.getDate() + 1
+        );
+        const minDate = tomorrowDate.toISOString().slice(0, 10);
 
-        // Tính tổng phí gia hạn
+        // Tính tổng phí gia hạn và số ngày dựa vào ngày hiện tại (client) và ngày kết thúc chọn từ input
         let totalFee = 0;
+        let diffDays = 0;
         if (extendDates[record.id] && selectedTypePostId) {
           const selectedType = typeposts.find(
             (tp) => tp.id === selectedTypePostId
           );
           if (selectedType) {
-            const newDate = new Date(extendDates[record.id]);
-            // Số ngày = ngày mới - ngày kết thúc hiện tại
-            const diffMs = newDate.getTime() - end.getTime();
-            let diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
-            if (diffDays <= 1) diffDays = 1;
+            // Ngày bắt đầu là ngày hiện tại
+            const startDate = new Date();
+            startDate.setHours(0, 0, 0, 0);
+            // Ngày kết thúc là ngày chọn từ input
+            const endDate = new Date(extendDates[record.id]);
+            endDate.setHours(0, 0, 0, 0);
+            // Tính số ngày: bao gồm cả ngày bắt đầu và ngày kết thúc
+            diffDays = Math.max(
+              1,
+              Math.ceil(
+                (endDate.getTime() - startDate.getTime()) /
+                  (1000 * 60 * 60 * 24)
+              ) + 1
+            );
             totalFee = diffDays * selectedType.pricePerDay;
           }
         }
@@ -221,12 +237,15 @@ function TableManageRoom() {
               type="date"
               min={minDate}
               value={extendDates[record.id] || ""}
-              onChange={(e) =>
-                setExtendDates((prev) => ({
-                  ...prev,
-                  [record.id]: e.target.value,
-                }))
-              }
+              onChange={(e) => {
+                const selected = e.target.value;
+                if (selected >= minDate) {
+                  setExtendDates((prev) => ({
+                    ...prev,
+                    [record.id]: selected,
+                  }));
+                }
+              }}
               style={{
                 padding: "4px 8px",
                 borderRadius: 4,
@@ -276,9 +295,10 @@ function TableManageRoom() {
                 </tbody>
               </table>
             </div>
-            {/* Hiển thị tổng phí gia hạn */}
-            {totalFee > 0 && (
+            {/* Hiển thị số ngày gia hạn và tổng phí */}
+            {diffDays > 0 && (
               <div style={{ fontWeight: 600, color: "#1677ff", marginTop: 8 }}>
+                Số ngày gia hạn: {diffDays} <br />
                 Tổng phí gia hạn: {totalFee.toLocaleString("vi-VN")} ₫
               </div>
             )}
@@ -292,10 +312,13 @@ function TableManageRoom() {
                   return d.toISOString();
                 };
                 try {
+                  // postStartDate lấy ngày hiện tại, postEndDate lấy ngày từ input
+                  const postStartDate = formatDate(new Date());
+                  const postEndDate = formatDate(extendDates[record.id]);
                   await updateRoomPostExtend(
                     record.id,
-                    formatDate(new Date()),
-                    formatDate(extendDates[record.id]),
+                    postStartDate,
+                    postEndDate,
                     selectedTypePostId as string
                   );
                   messageApi.success({
@@ -319,6 +342,7 @@ function TableManageRoom() {
           </Space>
         );
 
+        // Nếu không bị xóa và đã hết hạn thì hiển thị nút Extend
         return (
           <Popover
             content={popoverContent}
@@ -340,7 +364,6 @@ function TableManageRoom() {
             <Button
               size="small"
               type="primary"
-              disabled={record.isRemoved === 1 || isExpired}
             >
               Extend
             </Button>
@@ -388,6 +411,18 @@ function TableManageRoom() {
         const now = new Date();
         const end = new Date(record.postEndDate);
         const isExpired = now > end;
+        const isRemoved = record.isRemoved === 1;
+
+        // Nếu bài đã bị xóa thì hiển thị trạng thái
+        if (isRemoved) {
+          return <Tag color="red">Removed</Tag>;
+        }
+        // Nếu bài đã hết hạn thì hiển thị trạng thái
+        if (isExpired) {
+          return <Tag color="gray">Post expired</Tag>;
+        }
+
+        // Nếu không bị xóa và chưa hết hạn thì hiển thị nút Hide/Show
         return (
           <Popconfirm
             title={
@@ -400,7 +435,6 @@ function TableManageRoom() {
             <Button
               size="small"
               type={hidden === 1 ? "default" : "primary"}
-              disabled={record.isRemoved === 1 || isExpired}
             >
               {hidden === 1 ? "Show" : "Hide"}
             </Button>
@@ -414,10 +448,18 @@ function TableManageRoom() {
       title: "Actions",
       key: "actions",
       render: (_, record) => {
-        const now = new Date();
-        // const start = new Date(record.postStartDate);
-        const end = new Date(record.postEndDate);
+        const now = new Date().setHours(0, 0, 0, 0);
+        // const start = new Date(record.postStartDate).setHours(0, 0, 0, 0);
+        const end = new Date(record.postEndDate).setHours(0, 0, 0, 0);
         const isStillValid = now <= end;
+
+        if (record.isRemoved === 1) {
+          return (
+            <span style={{ color: "red", fontWeight: 600 }}>
+              Removed by admin
+            </span>
+          );
+        }
 
         if (!isStillValid) {
           return (
@@ -427,13 +469,6 @@ function TableManageRoom() {
           );
         }
 
-        if (record.isRemoved === 1) {
-          return (
-            <span style={{ color: "red", fontWeight: 600 }}>
-              Removed by admin
-            </span>
-          );
-        }
         return (
           <Space>
             <Button
@@ -487,11 +522,12 @@ function TableManageRoom() {
         onChange={handleTableChange}
       />
 
-      {/* <EditPostModal
+      <EditPostModal
         open={isModalOpen}
         onClose={() => setModalOpen(false)}
         roomId={selectedRoomId}
-      /> */}
+        onSuccess={() => fetchRooms(pagination.current, pagination.pageSize)}
+      />
       <RoomInfoModal
         open={isInfoModalOpen}
         onClose={() => setInfoModalOpen(false)}

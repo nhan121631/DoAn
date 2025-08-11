@@ -1,69 +1,55 @@
-"use client";
-
+import { Slide } from "@/app/landlord/components/room-detail/Slide";
+import { Convenient, RoomInUser } from "@/types/types";
 import React from "react";
 import { BsCheckCircleFill } from "react-icons/bs";
 import { FaTimesCircle } from "react-icons/fa";
-// import { Slide } from "@/app/landlord/components/room-detail/Slide";
-
-// Define types for Image and ListingData based on your RoomData structure
-type ImageType = {
-  id: number;
-  url: string;
-};
-
-// Define a type for each amenity item
-type Amenity = {
-  label: string;
-  enabled: boolean;
-};
-
-interface ListingData {
-  id: string;
-  title: string;
-  price: number;
-  area: number;
-  address: string;
-  description: string;
-  electricityRate?: number;
-  waterRate?: number;
-  images: ImageType[];
-  amenities: Amenity[]; // Added amenities array
-}
-
-interface ListingComparisonDisplayProps {
-  listing1: ListingData;
-  listing2: ListingData;
-}
-
-// Master list of all possible amenities for consistent comparison
-const allPossibleAmenities = [
-  { label: "Fully furnished" },
-  { label: "Washing machine" },
-  { label: "Flexible hours" },
-  { label: "Mezzanine" },
-  { label: "Refrigerator" },
-  { label: "Kitchen shelf" },
-  { label: "Air conditioner" },
-  { label: "No landlord living on site" },
-  { label: "Elevator" },
-  { label: "24/7 security" },
-  { label: "Underground parking" },
+const allPossibleConvenients = [
+  { key: "furnished", label: "furnished" },
+  { key: "washing_machine", label: "washing_machine" },
+  { key: "no_curfew", label: "no_curfew" },
+  { key: "mezzanine", label: "mezzanine" },
+  { key: "fridge", label: "fridge" },
+  { key: "kitchen_shelf", label: "kitchen_shelf" },
+  { key: "aircon", label: "aircon" },
+  { key: "private_entry", label: "private_entry" },
+  { key: "elevator", label: "elevator" },
+  { key: "security_24h", label: "security_24h" },
+  { key: "garage", label: "garage" },
 ];
-
 export default function ListingComparisonDisplay({
   listing1,
   listing2,
-}: ListingComparisonDisplayProps) {
-  // Helper function to check if an amenity is enabled for a given listing
+}: {
+  listing1?: RoomInUser;
+  listing2?: RoomInUser;
+}) {
+  // Nếu thiếu 1 trong 2 phòng thì hiển thị thông báo yêu cầu chọn đủ 2 phòng
+  if (!listing1 || !listing2) {
+    return (
+      <div className="flex flex-col items-center justify-center h-[300px] bg-white rounded-xl shadow-md">
+        <div className="text-2xl font-bold text-red-500 mb-2">
+          You need to choose 2 rooms to compare!
+        </div>
+        <div className="text-gray-600">
+          Please add at least 2 rooms to the comparison list to view details.
+        </div>
+      </div>
+    );
+  }
+  // Sửa lại: so sánh với name trong conveniences
   const isAmenityEnabled = (
-    listingAmenities: Amenity[],
-    amenityLabel: string
+    listingAmenities: Convenient[] | undefined,
+    amenityKey: string
   ) => {
-    return listingAmenities.some((a) => a.label === amenityLabel && a.enabled);
+    if (!Array.isArray(listingAmenities)) return false;
+    return listingAmenities.some((a) => a.name === amenityKey);
   };
 
+  console.log("Listing 1 Amenities:", listing1.conveniences);
+  console.log("Listing 2 Amenities:", listing2.conveniences);
+
   return (
-    <div className="p-6 mx-auto bg-white shadow-md w-250 rounded-xl">
+    <div className="p-6 mx-auto bg-white shadow-md w-350 rounded-xl">
       {/* Listing Titles */}
       <div className="grid grid-cols-1 gap-4 mb-6 md:grid-cols-2">
         <h2 className="text-xl font-semibold text-center text-red-500 md:text-left">
@@ -73,23 +59,77 @@ export default function ListingComparisonDisplay({
           {listing2.title || "Select another listing to compare"}
         </h2>
       </div>
-
-      {/* Image Sliders
       <div className="grid grid-cols-1 gap-4 mb-6 md:grid-cols-2">
-        <div className="overflow-hidden border rounded-lg">
-          <Slide images={listing1.images} />
+        <div
+          className="overflow-hidden rounded-lg"
+          style={{
+            maxHeight: "800px",
+            minHeight: "200px",
+            height: "650px",
+            overflowY: "auto",
+            scrollbarWidth: "none",
+          }}
+        >
+          <Slide
+            images={
+              Array.isArray(listing1.images)
+                ? listing1.images.filter(
+                    (img) => img && typeof img.url === "string"
+                  )
+                : []
+            }
+            address={
+              listing1.address.street +
+                ", " +
+                listing1.address.ward.name +
+                ", " +
+                listing1.address.ward.district.name +
+                ", " +
+                listing1.address.ward.district.province.name || ""
+            }
+          />
         </div>
-        <div className="overflow-hidden border rounded-lg">
+        <div
+          className="overflow-hidden rounded-lg"
+          style={{
+            maxHeight: "800px",
+            minHeight: "200px",
+            height: "650px",
+            overflowY: "auto",
+            scrollbarWidth: "none",
+          }}
+        >
           {listing2.images.length > 0 ? (
-            <Slide images={listing2.images} />
+            <Slide
+              images={
+                Array.isArray(listing2.images)
+                  ? listing2.images.filter(
+                      (img) => img && typeof img.url === "string"
+                    )
+                  : []
+              }
+              address={
+                listing2.address.street +
+                  ", " +
+                  listing2.address.ward.name +
+                  ", " +
+                  listing2.address.ward.district.name +
+                  ", " +
+                  listing2.address.ward.district.province.name || ""
+              }
+            />
           ) : (
             <div className="w-full h-[200px] md:h-[300px] bg-gray-200 flex items-center justify-center text-gray-500">
               No image available
             </div>
           )}
         </div>
-      </div> */}
-
+      </div>
+      <style jsx>{`
+        .overflow-hidden::-webkit-scrollbar {
+          display: none;
+        }
+      `}</style>
       {/* Comparison Details Table */}
       <div className="grid  text-gray-700 [grid-template-columns:150px_1fr_1fr] gap-y-4 gap-x-6">
         {/* Header Row for Comparison Table */}
@@ -107,13 +147,17 @@ export default function ListingComparisonDisplay({
         <div className="font-bold text-gray-900 md:col-span-1">Price</div>
         <div className="md:col-span-1">
           <span className="text-lg font-bold text-green-700">
-            {listing1.price.toLocaleString()} VND/month
+            {typeof listing1.priceMonth === "number" ? (
+              listing1.priceMonth.toLocaleString("vi-VN") + " VND/month"
+            ) : (
+              <span className="text-gray-500">N/A</span>
+            )}
           </span>
         </div>
         <div className="md:col-span-1">
-          {listing2.price ? (
+          {typeof listing2.priceMonth === "number" ? (
             <span className="text-lg font-bold text-green-700">
-              {listing2.price.toLocaleString()} VND/month
+              {listing2.priceMonth.toLocaleString("vi-VN")} VND/month
             </span>
           ) : (
             <span className="text-gray-500">N/A</span>
@@ -135,60 +179,44 @@ export default function ListingComparisonDisplay({
 
         {/* Row 3: Address */}
         <div className="font-bold text-gray-900 md:col-span-1">Address</div>
-        <div className="text-sm md:col-span-1">{listing1.address}</div>
         <div className="text-sm md:col-span-1">
-          {listing2.address || <span className="text-gray-500">N/A</span>}
-        </div>
-
-        {/* Row 4: Electricity Rate */}
-        <div className="font-bold text-gray-900 md:col-span-1">
-          Electricity Rate
-        </div>
-        <div className="text-sm md:col-span-1">
-          {listing1.electricityRate
-            ? `${listing1.electricityRate.toLocaleString()} VND/kWh`
-            : "Not specified"}
+          {listing1.address.street +
+            ", " +
+            listing1.address.ward.name +
+            ", " +
+            listing1.address.ward.district.name +
+            ", " +
+            listing1.address.ward.district.province.name}
         </div>
         <div className="text-sm md:col-span-1">
-          {listing2.electricityRate
-            ? `${listing2.electricityRate.toLocaleString()} VND/kWh`
-            : "Not specified"}
-        </div>
-
-        {/* Row 5: Water Rate */}
-        <div className="font-bold text-gray-900 md:col-span-1">Water Rate</div>
-        <div className="text-sm md:col-span-1">
-          {listing1.waterRate
-            ? `${listing1.waterRate.toLocaleString()} VND/person/month`
-            : "Not specified"}
-        </div>
-        <div className="text-sm md:col-span-1">
-          {listing2.waterRate
-            ? `${listing2.waterRate.toLocaleString()} VND/person/month`
-            : "Not specified"}
+          {listing2.address.street +
+            ", " +
+            listing2.address.ward.name +
+            ", " +
+            listing2.address.ward.district.name +
+            ", " +
+            listing2.address.ward.district.province.name}
         </div>
 
         {/* Row 6: Description Snippet */}
         <div className="font-bold text-gray-900 md:col-span-1">Description</div>
-        <div className="text-sm md:col-span-1 line-clamp-3">
-          {listing1.description}
-        </div>
-        <div className="text-sm md:col-span-1 line-clamp-3">
+        <div className="text-sm md:col-span-1 ">{listing1.description}</div>
+        <div className="text-sm md:col-span-1 ">
           {listing2.description || <span className="text-gray-500">N/A</span>}
         </div>
 
-        {/* Amenities Comparison Section */}
+        {/* Convenients Comparison Section */}
         <div className="pt-4 mt-4 text-lg font-bold text-gray-900 border-t md:col-span-3">
-          Amenities
+          Convenients
         </div>
 
-        {allPossibleAmenities.map((amenity, index) => (
+        {allPossibleConvenients.map((amenity, index) => (
           <React.Fragment key={index}>
             <div className="text-sm font-semibold text-gray-800 md:col-span-1">
               {amenity.label}
             </div>
             <div className="text-center md:col-span-1 md:text-left">
-              {isAmenityEnabled(listing1.amenities, amenity.label) ? (
+              {isAmenityEnabled(listing1.conveniences, amenity.key) ? (
                 <BsCheckCircleFill className="inline-block text-lg text-green-600" />
               ) : (
                 <FaTimesCircle className="inline-block text-lg text-red-500" />
@@ -196,7 +224,7 @@ export default function ListingComparisonDisplay({
             </div>
             <div className="text-center md:col-span-1 md:text-left">
               {listing2.id &&
-              isAmenityEnabled(listing2.amenities, amenity.label) ? (
+              isAmenityEnabled(listing2.conveniences, amenity.key) ? (
                 <BsCheckCircleFill className="inline-block text-lg text-green-600" />
               ) : listing2.id ? (
                 <FaTimesCircle className="inline-block text-lg text-red-500" />

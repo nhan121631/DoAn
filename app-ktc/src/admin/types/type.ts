@@ -37,7 +37,6 @@ export interface UserProfile {
   address: Address;
 }
 
-
 //-----------------------------------//
 // User DTO
 export interface UserResponseDto {
@@ -49,7 +48,6 @@ export interface UserResponseDto {
   roles: string[];
 }
 
-// Kiểu dữ liệu trả về khi phân trang
 export interface UserPageResponseDto {
   data: UserResponseDto[];
   pageNumber: number;
@@ -60,13 +58,76 @@ export interface UserPageResponseDto {
   hasPrevious: boolean;
 }
 
-// Request DTO khi update role
 export interface RoleUpdateRequestDto {
   roleNames: string[];
 }
 
-// Request DTO khi update status
 export interface UpdateUserStatusRequestDto {
   status: number;
 }
 
+//-----------------------------------//
+// Room DTO
+export interface RoomResponseDto {
+  id: string;
+  title: string;
+  landlordFullName: string | null;
+  landlordEmail: string | null;
+  description: string;
+  priceMonth: number;
+  priceDeposit: number;
+  available: number;
+  approval: number;
+  hidden: number;
+  isRemoved: number;
+  postStartDate: string;
+  postEndDate: string;
+  address: Address;
+  typepost: string;
+}
+
+// Kiểu dữ liệu trả về khi phân trang phòng
+export interface RoomPageResponseDto {
+  rooms: RoomResponseDto[];
+  pageNumber: number;
+  pageSize: number;
+  totalRecords: number;
+  totalPages: number;
+  hasNext: boolean;
+  hasPrevious: boolean;
+}
+
+export interface RoomDetail {
+  id: string;
+  title: string;
+  description: string;
+  priceMonth: number;
+  priceDeposit: number;
+  area: number;
+  available: number;
+  approval: number;
+  hidden: number;
+  isRemoved: number;
+  postStartDate: string;
+  postEndDate: string;
+  address: {
+    id: string;
+    street: string;
+    ward: {
+      id: number;
+      name: string;
+      district: {
+        id: number;
+        name: string;
+        province: {
+          id: number;
+          name: string;
+        };
+      };
+    };
+  };
+  images: { id: number; url: string }[];
+  convenients: { id: number; name: string }[];
+  typepost: string;
+  userId: string;
+}

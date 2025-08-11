@@ -1,5 +1,8 @@
 package com.ants.ktc.ants_ktc.services;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -106,6 +109,45 @@ public class TransactionService {
 
         // Lấy dữ liệu phân trang từ repository theo userId
         Page<Transaction> transactionPage = transactionsJpaRepository.findAllByUserId(userId, pageable);
+
+        List<TransactionResponseDto> transactionDtos = transactionPage.getContent().stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
+
+        return PaginationTransactionResponseDto.builder()
+                .transactions(transactionDtos)
+                .pageNumber(transactionPage.getNumber())
+                .pageSize(transactionPage.getSize())
+                .totalRecords(transactionPage.getTotalElements())
+                .totalPages(transactionPage.getTotalPages())
+                .hasNext(transactionPage.hasNext())
+                .hasPrevious(transactionPage.hasPrevious())
+                .build();
+    }
+
+    // Service
+    public PaginationTransactionResponseDto getTransactionsByUserIdAndDateRange(UUID userId, int page, int size, String startDateStr, String endDateStr) {
+        Date startDate = null;
+        Date endDate = null;
+        SimpleDateFormat sdfFull = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+        SimpleDateFormat sdfDate = new SimpleDateFormat("yyyy-MM-dd");
+        try {
+            try {
+                startDate = sdfFull.parse(startDateStr);
+            } catch (ParseException e) {
+                startDate = sdfDate.parse(startDateStr);
+            }
+            try {
+                endDate = sdfFull.parse(endDateStr);
+            } catch (ParseException e) {
+                endDate = sdfDate.parse(endDateStr);
+            }
+        } catch (ParseException e) {
+            throw new RuntimeException("Format date is not valid!", e);
+        }
+
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Transaction> transactionPage = transactionsJpaRepository.findAllByUserIdAndDateRange(userId, startDate, endDate, pageable);
 
         List<TransactionResponseDto> transactionDtos = transactionPage.getContent().stream()
                 .map(this::convertToDto)

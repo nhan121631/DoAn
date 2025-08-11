@@ -3,9 +3,12 @@ import { Button, Layout, theme, Form, message } from "antd";
 import TableManagePostType from "../components/TableManagePostType";
 import ModelCreatePostType from "../components/ModalAddPostType";
 import { useState } from "react";
-import { createTypePost, updateTypePost } from "../service/TypePostService";
 import ModelUpdatePostType from "../components/ModalUpdatePost";
 import type { IPostType } from "../types/type";
+import {
+  useCreateTypePost,
+  useUpdateTypePost,
+} from "../service/ReactQueryTypePost";
 
 const { Content } = Layout;
 
@@ -19,30 +22,54 @@ const ManagePostTypePage = () => {
   const [open, setOpen] = useState(false);
   const [opentUpdate, setOpenUpdate] = useState(false);
   const [form] = Form.useForm();
-  const [refreshKey, setRefreshKey] = useState(0);
 
   // Handle create post type
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const handleCreate = async () => {
-    form.validateFields().then(async (values) => {
-      try {
-        await createTypePost(values);
-        setRefreshKey((prev) => prev + 1);
-        setErrorMessage(null);
+  // const handleCreate = async () => {
+  //   form.validateFields().then(async (values) => {
+  //     try {
+  //       await createTypePost(values);
+  //       setRefreshKey((prev) => prev + 1);
+  //       setErrorMessage(null);
+  //       messageApi.success({
+  //         content: "You created a new post type successfully!",
+  //         duration: 1.5,
+  //       });
+  //       setOpen(false);
+  //       form.resetFields();
+  //     } catch (error: any) {
+  //       if (error?.response?.data?.message) {
+  //         setErrorMessage(error.response.data.message.join(", "));
+  //       } else {
+  //         setErrorMessage("An error has occurred!");
+  //       }
+  //     }
+  //   });
+  // };
+  const createMutation = useCreateTypePost({
+    mutationConfig: {
+      onSuccess: () => {
         messageApi.success({
-          content: "You created a new post type successfully!",
-          duration: 1.5,
+          content: "You created a post type successfully!",
+          duration: 3,
         });
-        setOpen(false);
         form.resetFields();
-      } catch (error: any) {
-        if (error?.response?.data?.message) {
-          setErrorMessage(error.response.data.message.join(", "));
-        } else {
-          setErrorMessage("An error has occurred!");
-        }
-      }
+        setOpen(false);
+      },
+      onError: (error: any) => {
+        messageApi.error({
+          content:
+            error?.response?.data?.message?.join(", ") ||
+            "An error has occurred!",
+          duration: 3,
+        });
+      },
+    },
+  });
+  const handleCreate = () => {
+    form.validateFields().then((values: IPostType) => {
+      createMutation.mutate({ data: values });
     });
   };
   // Handle update post type
@@ -62,32 +89,64 @@ const ManagePostTypePage = () => {
     setOpenUpdate(true);
   };
 
-  const handleUpdate = async () => {
-    form.validateFields().then(async (formValues) => {
-      try {
-        const updatedValues = {
-          ...formValues,
-          id: values?.id, // Lấy id từ state values
-        };
-        console.log("Update values:", updatedValues);
-        await updateTypePost(updatedValues);
-        setRefreshKey((prev) => prev + 1);
-        setErrorMessage(null);
+  const updateMutation = useUpdateTypePost({
+    mutationConfig: {
+      onSuccess: () => {
         messageApi.success({
-          content: "You updated the post type successfully!",
-          duration: 1.5,
+          content: "You updated a post type successfully!",
+          duration: 3,
         });
-        setOpenUpdate(false);
         form.resetFields();
-      } catch (error: any) {
-        if (error?.response?.data?.message) {
-          setErrorMessage(error.response.data.message.join(", "));
-        } else {
-          setErrorMessage("Đã có lỗi xảy ra!");
-        }
-      }
+        setOpenUpdate(false);
+      },
+      onError: (error: any) => {
+        messageApi.error({
+          content:
+            error?.response?.data?.message?.join(", ") ||
+            "An error has occurred!",
+          duration: 3,
+        });
+      },
+    },
+  });
+  const handleUpdate = () => {
+    form.validateFields().then((formValues: IPostType) => {
+      // Thêm id từ state values vào payload
+      const payload = {
+        ...formValues,
+        id: values?.id ?? "",
+      };
+      console.log("Update values:", payload);
+      updateMutation.mutate({ data: payload });
     });
   };
+
+  // const handleUpdate = async () => {
+  //   form.validateFields().then(async (formValues) => {
+  //     try {
+  //       const updatedValues = {
+  //         ...formValues,
+  //         id: values?.id, // Lấy id từ state values
+  //       };
+  //       console.log("Update values:", updatedValues);
+  //       await updateTypePost(updatedValues);
+  //       setRefreshKey((prev) => prev + 1);
+  //       setErrorMessage(null);
+  //       messageApi.success({
+  //         content: "You updated the post type successfully!",
+  //         duration: 1.5,
+  //       });
+  //       setOpenUpdate(false);
+  //       form.resetFields();
+  //     } catch (error: any) {
+  //       if (error?.response?.data?.message) {
+  //         setErrorMessage(error.response.data.message.join(", "));
+  //       } else {
+  //         setErrorMessage("Đã có lỗi xảy ra!");
+  //       }
+  //     }
+  //   });
+  // };
 
   return (
     <Content
@@ -105,11 +164,7 @@ const ManagePostTypePage = () => {
       <Button type="primary" className="mb-4" onClick={() => setOpen(true)}>
         Create Post Type
       </Button>
-      <TableManagePostType
-        refreshKey={refreshKey}
-        messageApi={messageApi}
-        handleUpdate={handleEdit}
-      />
+      <TableManagePostType messageApi={messageApi} handleUpdate={handleEdit} />
       <ModelCreatePostType
         open={open}
         setOpen={setOpen}

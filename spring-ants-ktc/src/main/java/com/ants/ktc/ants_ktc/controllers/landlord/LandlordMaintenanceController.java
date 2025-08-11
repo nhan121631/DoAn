@@ -1,12 +1,13 @@
+
 package com.ants.ktc.ants_ktc.controllers.landlord;
 
 import com.ants.ktc.ants_ktc.dtos.manage_maintain.MaintenanceRequestDto;
 import com.ants.ktc.ants_ktc.dtos.manage_maintain.MaintenanceResponseDto;
+import com.ants.ktc.ants_ktc.dtos.manage_maintain.PaginatedMaintenanceResponseDto;
 import com.ants.ktc.ants_ktc.dtos.manage_maintain.UpdateMaintenanceRequestDto;
-import com.ants.ktc.ants_ktc.dtos.room.RoomResponseDto;
+import com.ants.ktc.ants_ktc.repositories.RoomNameProjection;
 import com.ants.ktc.ants_ktc.services.MaintenanceService;
-
-import com.ants.ktc.ants_ktc.services.UserService; // <== ĐẢM BẢO CÓ DÒNG IMPORT NÀY
+import com.ants.ktc.ants_ktc.services.UserService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -24,38 +25,35 @@ public class LandlordMaintenanceController {
     @Autowired
     private MaintenanceService maintenanceService;
 
-    @Autowired // <== THAY THẾ @Autowired private UserJpaRepository userJpaRepository; bằng
-               // dòng này
-    private UserService userService; // <== Inject UserService vào đây
+    @Autowired
+    private UserService userService;
 
-    // Các API khác của bạn sẽ được chỉnh sửa để gọi
-    // userService.getAuthenticatedUserId()
-    // @GetMapping("/rooms")
-    // public ResponseEntity<List<RoomResponseDto>> getLandlordRoomsForMaintenance()
-    // {
-    // UUID currentUserId = userService.getAuthenticatedUserId(); // <== GỌI TỪ
-    // SERVICE
-    // List<RoomResponseDto> rooms =
-    // maintenanceService.getRoomsForLandlord(currentUserId);
-    // return ResponseEntity.ok(rooms);
-    // }
+    @GetMapping("/rooms")
+    public ResponseEntity<List<RoomNameProjection>> getLandlordRoomsForMaintenance() {
+        UUID currentUserId = userService.getAuthenticatedUserId();
+        List<RoomNameProjection> rooms = maintenanceService.getRoomsForLandlord(currentUserId);
+        return ResponseEntity.ok(rooms);
+    }
 
     @PostMapping
     public ResponseEntity<MaintenanceResponseDto> createMaintenance(
             @Valid @RequestBody MaintenanceRequestDto maintenanceRequestDto) {
-        UUID currentUserId = userService.getAuthenticatedUserId(); // <== GỌI TỪ SERVICE
+        UUID currentUserId = userService.getAuthenticatedUserId();
         MaintenanceResponseDto newMaintenance = maintenanceService.createMaintenance(currentUserId,
                 maintenanceRequestDto);
         return ResponseEntity.status(201).body(newMaintenance);
     }
 
     @GetMapping
-    public ResponseEntity<List<MaintenanceResponseDto>> getLandlordMaintenances(
+    public ResponseEntity<PaginatedMaintenanceResponseDto<MaintenanceResponseDto>> getLandlordMaintenances(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "7") int size,
             @RequestParam(required = false) Integer status,
             @RequestParam(required = false) UUID roomId) {
-        UUID currentUserId = userService.getAuthenticatedUserId(); // <== GỌI TỪ SERVICE
-        List<MaintenanceResponseDto> maintenances = maintenanceService.getLandlordMaintenances(currentUserId, status,
-                roomId);
+        UUID currentUserId = userService.getAuthenticatedUserId();
+        PaginatedMaintenanceResponseDto<MaintenanceResponseDto> maintenances = maintenanceService
+                .getLandlordMaintenances(
+                        currentUserId, status, roomId, page, size);
         return ResponseEntity.ok(maintenances);
     }
 
@@ -63,7 +61,7 @@ public class LandlordMaintenanceController {
     public ResponseEntity<MaintenanceResponseDto> updateMaintenance(
             @PathVariable UUID id,
             @Valid @RequestBody UpdateMaintenanceRequestDto updateDto) {
-        UUID currentUserId = userService.getAuthenticatedUserId(); // <== GỌI TỪ SERVICE
+        UUID currentUserId = userService.getAuthenticatedUserId();
         MaintenanceResponseDto updatedMaintenance = maintenanceService.updateMaintenance(currentUserId, id, updateDto);
         return ResponseEntity.ok(updatedMaintenance);
     }
@@ -72,6 +70,6 @@ public class LandlordMaintenanceController {
     public ResponseEntity<Void> deleteMaintenance(@PathVariable UUID id) {
         UUID currentUserId = userService.getAuthenticatedUserId();
         maintenanceService.deleteMaintenance(currentUserId, id);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT); // Trả về 204 No Content
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }

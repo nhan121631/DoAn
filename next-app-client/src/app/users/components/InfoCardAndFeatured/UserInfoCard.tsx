@@ -22,7 +22,7 @@ export default function UserInfoCard() {
   const handleSavePost = () => {
     setIsSaved(!isSaved); // Đảo ngược 
     if (!isSaved) {
-      console.log("Tin đã được lưu!");
+      console.log("Tin đã lưu thành công!"); // Thông báo lưu thành công
     } else {
       console.log("Tin đã được hủy lưu!");
     }

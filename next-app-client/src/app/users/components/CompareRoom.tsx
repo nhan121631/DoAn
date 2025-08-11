@@ -1,10 +1,11 @@
 "use client";
 
 import { useCompareStore } from "@/app/stores/CompareStore";
-import { Badge, Drawer, Button, List, Avatar, message } from "antd";
+import { URL_IMAGE } from "@/services/Constant";
 import { TableOutlined } from "@ant-design/icons";
-import { useState } from "react";
+import { Avatar, Badge, Button, Drawer, List, message } from "antd";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 export default function CompareRoom() {
   const { items, clearItems, removeItem } = useCompareStore((state) => state);
@@ -59,7 +60,7 @@ export default function CompareRoom() {
                 return;
               }
               setOpen(false);
-              router.push("/users/compare");
+              router.push("/compare");
             }}
           >
             Compare
@@ -74,7 +75,7 @@ export default function CompareRoom() {
                 <Button
                   size="small"
                   danger
-                  onClick={() => removeItem(item.room.key)}
+                  onClick={() => removeItem(item.room.id)}
                   key="remove"
                 >
                   Remove
@@ -84,12 +85,27 @@ export default function CompareRoom() {
               <List.Item.Meta
                 avatar={
                   <Avatar
-                    src={item.room.img?.[0]?.url || "/placeholder.jpg"}
-                    alt={item.room.name}
+                    src={
+                      URL_IMAGE +
+                      (item.room.images?.[0]?.url || "/placeholder.jpg")
+                    }
+                    alt={item.room.title}
                   />
                 }
-                title={item.room.name}
-                description={item.room.address}
+                title={item.room.title}
+                description={
+                  <span
+                    style={{
+                      display: "-webkit-box",
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: "vertical",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                    }}
+                  >
+                    {item.room.description}
+                  </span>
+                }
               />
             </List.Item>
           )}

@@ -6,4 +6,4 @@ export const config = {
     '/user-dashboard/:path*',
     '/landlord/:path*'
   ],
-}
+};

@@ -22,6 +22,27 @@ export async function createRoom(images: File[] | null, room: string) {
   return response.json();
 }
 
+export async function updateRoom(roomId: string, formData: FormData) {
+  // Log
+  console.log("--- UPDATE ROOM API ---");
+  console.log("roomId:", roomId);
+  for (const pair of formData.entries()) {
+    console.log(pair[0] + ":", pair[1]);
+  }
+  console.log("-----------------------");
+
+  const response = await fetch(`/api/landlord/room?roomId=${roomId}`, {
+    method: "PATCH",
+    body: formData,
+  });
+
+  if (!response.ok) {
+    const data = await response.json();
+    throw new Error(data.message || "Failed to update room");
+  }
+  return response.json();
+}
+
 export async function getRoomsByLandlord(page: number, size: number) {
   try {
     const response = await fetch(
@@ -35,15 +56,6 @@ export async function getRoomsByLandlord(page: number, size: number) {
   } catch (error) {
     console.error("Error fetching rooms:", error);
     return null;
-    // return {
-    //   rooms: [],
-    //   pageNumber: page,
-    //   pageSize: size,
-    //   totalRecords: 0,
-    //   totalPages: 0,
-    //   hasNext: false,
-    //   hasPrevious: false,
-    // };
   }
 }
 
@@ -53,7 +65,7 @@ export async function updateRoomPostExtend(
   postEndDate: string,
   typepostId: string
 ) {
-  const response = await fetch("/api/landlord/room/extend/update-post-extend", {
+  const response = await fetch("/api/landlord/room/extend", {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
@@ -100,6 +112,37 @@ export async function getRoomById(id: string) {
     return response.json();
   } catch (error) {
     console.error("Error fetching room:", error);
+    return null;
+  }
+}
+
+export async function getRoomVipUser(page: number, size: number) {
+  try {
+    const response = await fetch(
+      `${API_URL}/rooms/allroom-vip?page=${page}&size=${size}`
+    );
+    if (!response.ok) {
+      const data = await response.json();
+      throw new Error(data.message || "Failed to fetch room images");
+    }
+    return response.json();
+  } catch (error) {
+    console.error("Error fetching room images:", error);
+    return null;
+  }
+}
+export async function getRoomNormalUser(page: number, size: number) {
+  try {
+    const response = await fetch(
+      `${API_URL}/rooms/allroom-normal?page=${page}&size=${size}`
+    );
+    if (!response.ok) {
+      const data = await response.json();
+      throw new Error(data.message || "Failed to fetch room images");
+    }
+    return response.json();
+  } catch (error) {
+    console.error("Error fetching room images:", error);
     return null;
   }
 }

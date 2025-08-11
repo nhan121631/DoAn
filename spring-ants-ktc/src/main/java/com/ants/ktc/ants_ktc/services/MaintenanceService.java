@@ -2,22 +2,18 @@ package com.ants.ktc.ants_ktc.services;
 
 import com.ants.ktc.ants_ktc.dtos.manage_maintain.MaintenanceRequestDto;
 import com.ants.ktc.ants_ktc.dtos.manage_maintain.MaintenanceResponseDto;
+import com.ants.ktc.ants_ktc.dtos.manage_maintain.PaginatedMaintenanceResponseDto;
+import com.ants.ktc.ants_ktc.dtos.manage_maintain.RoomDetailForMaintenanceDto;
 import com.ants.ktc.ants_ktc.dtos.manage_maintain.UpdateMaintenanceRequestDto;
-import com.ants.ktc.ants_ktc.dtos.room.RoomResponseDto;
-import com.ants.ktc.ants_ktc.dtos.address.AddressResponseDto;
-import com.ants.ktc.ants_ktc.dtos.address.DistrictResponseDto;
-import com.ants.ktc.ants_ktc.dtos.address.ProvinceResponseDto;
-import com.ants.ktc.ants_ktc.dtos.address.WardResponseDto;
-import com.ants.ktc.ants_ktc.dtos.convenient.ConvenientResponseDto;
-import com.ants.ktc.ants_ktc.dtos.image.ImageResponseDto;
-
 import com.ants.ktc.ants_ktc.entities.Maintenances;
 import com.ants.ktc.ants_ktc.entities.Room;
+import com.ants.ktc.ants_ktc.repositories.MaintenanceProjection;
 import com.ants.ktc.ants_ktc.repositories.MaintenancesRepository;
 import com.ants.ktc.ants_ktc.repositories.RoomJpaRepository;
-import com.ants.ktc.ants_ktc.entities.User;
+import com.ants.ktc.ants_ktc.repositories.RoomNameProjection;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,166 +24,126 @@ import java.util.stream.Collectors;
 @Service
 public class MaintenanceService {
 
-    @Autowired
-    private MaintenancesRepository maintenancesRepository;
+        @Autowired
+        private MaintenancesRepository maintenancesRepository;
 
-    @Autowired
-    private RoomJpaRepository roomJpaRepository;
+        @Autowired
+        private RoomJpaRepository roomJpaRepository;
 
-    // ĐÃ SỬA: Thêm @Transactional
-    // @Transactional(readOnly = true)
-    // public List<RoomResponseDto> getRoomsForLandlord(UUID userId) {
-    // List<Room> rooms = roomJpaRepository.findByUserId(userId);
-    // return rooms.stream()
-    // .map(this::convertToRoomResponseDto)
-    // .collect(Collectors.toList());
-    // }
+        @Transactional
+        public MaintenanceResponseDto createMaintenance(UUID userId, MaintenanceRequestDto requestDto) {
+                Room room = roomJpaRepository.findByIdAndUserIdAndIsRemovedFalse(requestDto.getRoomId(), userId)
+                                .orElseThrow(() -> new IllegalArgumentException(
+                                                "Room not found or does not belong to the current landlord."));
 
-    private RoomResponseDto convertToRoomResponseDto(Room room) {
-        RoomResponseDto dto = RoomResponseDto.builder()
-                .id(room.getId())
-                .title(room.getTitle())
-                .description(room.getDescription())
-                .priceMonth(room.getPrice_month())
-                .priceDeposit(room.getPrice_deposit())
-                .postStartDate(room.getPost_start_date())
-                .postEndDate(room.getPost_end_date())
-                .userId(room.getUser() != null ? room.getUser().getId() : null)
-                .typepost(room.getPostType() != null ? room.getPostType().getName() : null)
-                .build();
+                Maintenances maintenance = new Maintenances();
+                maintenance.setProblem(requestDto.getProblem());
+                maintenance.setCost(requestDto.getCost());
+                maintenance.setStatus(0);
+                maintenance.setRoom(room);
 
-        if (room.getAddress() != null) {
-            AddressResponseDto addressDto = AddressResponseDto.builder()
-                    .id(room.getAddress().getId())
-                    .street(room.getAddress().getStreet())
-                    .build();
+                Maintenances savedMaintenance = maintenancesRepository.save(maintenance);
 
-            if (room.getAddress().getWard() != null) {
-                WardResponseDto wardDto = WardResponseDto.builder()
-                        .id(room.getAddress().getWard().getId())
-                        .name(room.getAddress().getWard().getName())
-                        .build();
+                return convertToMaintenanceResponseDto(savedMaintenance);
+        }
 
-                if (room.getAddress().getWard().getDistrict() != null) {
-                    DistrictResponseDto districtDto = DistrictResponseDto.builder()
-                            .id(room.getAddress().getWard().getDistrict().getId())
-                            .name(room.getAddress().getWard().getDistrict().getName())
-                            .build();
+        @Transactional(readOnly = true)
+        public List<RoomNameProjection> getRoomsForLandlord(UUID userId) {
+                return roomJpaRepository.findByUserIdAndIsRemovedFalse(userId);
+        }
 
-                    if (room.getAddress().getWard().getDistrict().getProvince() != null) {
-                        ProvinceResponseDto provinceDto = ProvinceResponseDto.builder()
-                                .id(room.getAddress().getWard().getDistrict().getProvince().getId())
-                                .name(room.getAddress().getWard().getDistrict().getProvince().getName())
-                                .build();
-                        districtDto.setProvince(provinceDto);
-                    }
-                    wardDto.setDistrict(districtDto);
+        @Transactional(readOnly = true)
+        public PaginatedMaintenanceResponseDto<MaintenanceResponseDto> getLandlordMaintenances(
+                        UUID userId, Integer status, UUID roomId, int page, int size) {
+
+                Pageable pageable = PageRequest.of(page, size, Sort.by("createdDate").descending());
+                Page<MaintenanceProjection> maintenances;
+
+                if (status != null && roomId != null) {
+                        maintenances = maintenancesRepository
+                                        .findByRoom_UserIdAndStatusAndRoom_IdAndIsRemovedFalse(userId, status, roomId,
+                                                        pageable);
+                } else if (status != null) {
+                        maintenances = maintenancesRepository
+                                        .findByRoom_UserIdAndStatusAndIsRemovedFalse(userId, status, pageable);
+                } else if (roomId != null) {
+                        maintenances = maintenancesRepository
+                                        .findByRoom_UserIdAndRoom_IdAndIsRemovedFalse(userId, roomId, pageable);
+                } else {
+                        maintenances = maintenancesRepository
+                                        .findByRoom_UserIdAndIsRemovedFalse(userId, pageable);
                 }
-                addressDto.setWard(wardDto);
-            }
-            dto.setAddress(addressDto);
+
+                List<MaintenanceResponseDto> dtoList = maintenances.getContent().stream()
+                                .map(this::convertToMaintenanceResponseDtoFromProjection)
+                                .collect(Collectors.toList());
+
+                return new PaginatedMaintenanceResponseDto<>(
+                                dtoList,
+                                page,
+                                size,
+                                maintenances.getTotalElements(),
+                                maintenances.getTotalPages(),
+                                maintenances.hasNext(),
+                                maintenances.hasPrevious());
         }
 
-        // Dữ liệu images sẽ được tải tại đây
-        if (room.getImages() != null && !room.getImages().isEmpty()) {
-            dto.setImages(room.getImages().stream()
-                    .map(image -> ImageResponseDto.builder()
-                            .id(image.getId())
-                            .url(image.getUrl())
-                            .build())
-                    .collect(Collectors.toList()));
+        @Transactional
+        public MaintenanceResponseDto updateMaintenance(UUID userId, UUID id, UpdateMaintenanceRequestDto requestDto) {
+                Maintenances existingMaintenance = maintenancesRepository
+                                .findByIdAndRoom_UserIdAndIsRemovedFalse(id, userId)
+                                .orElseThrow(() -> new IllegalArgumentException(
+                                                "Maintenance not found or does not belong to the current landlord."));
+
+                existingMaintenance.setProblem(requestDto.getProblem());
+                existingMaintenance.setCost(requestDto.getCost());
+                existingMaintenance.setStatus(requestDto.getStatus());
+
+                Maintenances updatedMaintenance = maintenancesRepository.save(existingMaintenance);
+
+                return convertToMaintenanceResponseDto(updatedMaintenance);
         }
 
-        // Dữ liệu convenients sẽ được tải tại đây
-        if (room.getConvenients() != null && !room.getConvenients().isEmpty()) {
-            dto.setConvenients(room.getConvenients().stream()
-                    .map(convenient -> ConvenientResponseDto.builder()
-                            .id(convenient.getId())
-                            .name(convenient.getName())
-                            .build())
-                    .collect(Collectors.toList()));
-        }
-        return dto;
-    }
+        @Transactional
+        public void deleteMaintenance(UUID userId, UUID maintenanceId) {
+                Maintenances maintenance = maintenancesRepository
+                                .findByIdAndRoom_UserIdAndIsRemovedFalse(maintenanceId, userId)
+                                .orElseThrow(() -> new IllegalArgumentException(
+                                                "Maintenance not found or not owned by this landlord."));
 
-    @Transactional
-    public MaintenanceResponseDto createMaintenance(UUID userId, MaintenanceRequestDto requestDto) {
-        Room room = roomJpaRepository.findById(requestDto.getRoomId())
-                .orElseThrow(() -> new IllegalArgumentException("Room not found with ID: " + requestDto.getRoomId()));
-
-        if (!room.getUser().getId().equals(userId)) {
-            throw new IllegalArgumentException("Room does not belong to the current landlord.");
+                maintenance.setRemoved(true);
+                maintenancesRepository.save(maintenance);
         }
 
-        Maintenances maintenance = new Maintenances();
-        maintenance.setProblem(requestDto.getProblem());
-        maintenance.setCost(requestDto.getCost());
-        maintenance.setStatus(0);
-        maintenance.setRoom(room);
+        private MaintenanceResponseDto convertToMaintenanceResponseDtoFromProjection(MaintenanceProjection projection) {
+                RoomDetailForMaintenanceDto roomDto = RoomDetailForMaintenanceDto.builder()
+                                .id(projection.getRoom().getId())
+                                .title(projection.getRoom().getTitle())
+                                .build();
 
-        Maintenances savedMaintenance = maintenancesRepository.save(maintenance);
-
-        return convertToMaintenanceResponseDto(savedMaintenance);
-    }
-
-    // ĐÃ SỬA: Thêm @Transactional
-    @Transactional(readOnly = true)
-    public List<MaintenanceResponseDto> getLandlordMaintenances(UUID userId, Integer status, UUID roomId) {
-        List<Maintenances> maintenances;
-
-        if (status != null && roomId != null) {
-            maintenances = maintenancesRepository.findByRoom_UserIdAndStatusAndRoom_IdAndIsRemovedFalse(userId, status,
-                    roomId);
-        } else if (status != null) {
-            maintenances = maintenancesRepository.findByRoom_UserIdAndStatusAndIsRemovedFalse(userId, status);
-        } else if (roomId != null) {
-            maintenances = maintenancesRepository.findByRoom_UserIdAndRoom_IdAndIsRemovedFalse(userId, roomId);
-        } else {
-            maintenances = maintenancesRepository.findByRoom_UserIdAndIsRemovedFalse(userId);
+                return MaintenanceResponseDto.builder()
+                                .id(projection.getId())
+                                .problem(projection.getProblem())
+                                .cost(projection.getCost())
+                                .status(projection.getStatus())
+                                .requestDate(new java.util.Date(projection.getCreatedDate().getTime()))
+                                .room(roomDto)
+                                .build();
         }
 
-        return maintenances.stream()
-                .map(this::convertToMaintenanceResponseDto)
-                .collect(Collectors.toList());
-    }
+        private MaintenanceResponseDto convertToMaintenanceResponseDto(Maintenances maintenance) {
+                RoomDetailForMaintenanceDto roomDto = RoomDetailForMaintenanceDto.builder()
+                                .id(maintenance.getRoom().getId())
+                                .title(maintenance.getRoom().getTitle())
+                                .build();
 
-    @Transactional
-    public MaintenanceResponseDto updateMaintenance(UUID userId, UUID id, UpdateMaintenanceRequestDto requestDto) {
-        Maintenances existingMaintenance = maintenancesRepository.findByIdAndRoom_UserId(id, userId)
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "Maintenance not found or does not belong to the current landlord."));
-
-        existingMaintenance.setProblem(requestDto.getProblem());
-        existingMaintenance.setCost(requestDto.getCost());
-        existingMaintenance.setStatus(requestDto.getStatus());
-
-        Maintenances updatedMaintenance = maintenancesRepository.save(existingMaintenance);
-
-        return convertToMaintenanceResponseDto(updatedMaintenance);
-    }
-
-    @Transactional
-    public void deleteMaintenance(UUID userId, UUID maintenanceId) {
-        // TÌM KIẾM bản ghi trước
-        Maintenances maintenance = maintenancesRepository.findByIdAndRoom_UserIdAndIsRemovedFalse(maintenanceId, userId)
-                .orElseThrow(
-                        () -> new IllegalArgumentException("Maintenance not found or not owned by this landlord."));
-
-        // CẬP NHẬT trường isRemoved
-        maintenance.setRemoved(true);
-
-        // LƯU lại bản ghi đã cập nhật
-        maintenancesRepository.save(maintenance);
-    }
-
-    private MaintenanceResponseDto convertToMaintenanceResponseDto(Maintenances maintenance) {
-        return MaintenanceResponseDto.builder()
-                .id(maintenance.getId())
-                .problem(maintenance.getProblem())
-                .cost(maintenance.getCost())
-                .status(maintenance.getStatus())
-                .requestDate(maintenance.getCreatedDate())
-                .room(convertToRoomResponseDto(maintenance.getRoom()))
-                .build();
-    }
+                return MaintenanceResponseDto.builder()
+                                .id(maintenance.getId())
+                                .problem(maintenance.getProblem())
+                                .cost(maintenance.getCost())
+                                .status(maintenance.getStatus())
+                                .requestDate(maintenance.getCreatedDate())
+                                .room(roomDto)
+                                .build();
+        }
 }

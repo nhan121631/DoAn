@@ -1,20 +1,20 @@
 "use client";
-import { RoomData } from "@/app/landlord/types";
 import { useCompareStore } from "@/app/stores/CompareStore";
+import { RoomInUser } from "@/types/types";
 import { message } from "antd";
 import { useRouter } from "next/navigation";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { FaHeart, FaRegCheckCircle } from "react-icons/fa";
 import { IoIosAddCircleOutline } from "react-icons/io";
 
 export interface RoomCardProps {
-  room: RoomData;
+  room: RoomInUser;
 }
 
 export default function RoomCartActions({ room }: RoomCardProps) {
   const router = useRouter();
   const handleClick = () => {
-    router.push(`/detail/${room.key}`);
+    router.push(`/detail/${room.id}`);
   };
 
   const { items, addItem } = useCompareStore((state) => state);
@@ -34,8 +34,8 @@ export default function RoomCartActions({ room }: RoomCardProps) {
   };
 
   useEffect(() => {
-    setIsCompared(items.some((item) => item.room.key === room.key));
-  }, [items, room.key]);
+    setIsCompared(items.some((item) => item.room.id === room.id));
+  }, [items, room.id]);
 
   return (
     <>
@@ -59,7 +59,8 @@ export default function RoomCartActions({ room }: RoomCardProps) {
           disabled={isCompared}
           type="button"
         >
-          {isCompared ? <FaRegCheckCircle /> : <IoIosAddCircleOutline />} Compare
+          {isCompared ? <FaRegCheckCircle /> : <IoIosAddCircleOutline />}{" "}
+          Compare
         </button>
         <button
           className="px-3 py-1.5 text-sm font-semibold text-white rounded-full shadow bg-amber-600 hover:bg-amber-700 focus:outline-none whitespace-nowrap"
