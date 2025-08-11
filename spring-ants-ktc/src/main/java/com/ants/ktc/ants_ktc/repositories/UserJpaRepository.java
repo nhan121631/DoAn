@@ -1,7 +1,5 @@
 package com.ants.ktc.ants_ktc.repositories;
 
-import com.ants.ktc.ants_ktc.dtos.manage_account.UserAccountProjection;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;

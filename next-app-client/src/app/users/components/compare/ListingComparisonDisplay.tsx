@@ -27,11 +27,11 @@ export default function ListingComparisonDisplay({
   if (!listing1 || !listing2) {
     return (
       <div className="flex flex-col items-center justify-center h-[300px] bg-white rounded-xl shadow-md">
-        <div className="mb-2 text-2xl font-bold text-red-500">
-          Cần chọn đủ 2 phòng để so sánh!
+        <div className="text-2xl font-bold text-red-500 mb-2">
+          You need to choose 2 rooms to compare!
         </div>
         <div className="text-gray-600">
-          Vui lòng thêm đủ 2 phòng vào danh sách so sánh để xem chi tiết.
+          Please add at least 2 rooms to the comparison list to view details.
         </div>
       </div>
     );

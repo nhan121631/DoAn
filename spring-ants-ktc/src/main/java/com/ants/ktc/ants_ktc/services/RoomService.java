@@ -27,7 +27,6 @@ import com.ants.ktc.ants_ktc.dtos.address.ProvinceResponseDto;
 import com.ants.ktc.ants_ktc.dtos.address.WardResponseDto;
 import com.ants.ktc.ants_ktc.dtos.convenient.ConvenientResponseDto;
 import com.ants.ktc.ants_ktc.dtos.image.ImageResponseDto;
-import com.ants.ktc.ants_ktc.dtos.manage_account.UserResponseDto;
 import com.ants.ktc.ants_ktc.dtos.room.PaginationRoomAdminResponseDto;
 import com.ants.ktc.ants_ktc.dtos.room.PaginationRoomInUserResponseDto;
 import com.ants.ktc.ants_ktc.dtos.room.PaginationRoomResponseDto;

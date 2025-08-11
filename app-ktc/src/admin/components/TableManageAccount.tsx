@@ -1,61 +1,77 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useState, useEffect, useCallback } from "react";
-import { Table, Tag, Button, Popconfirm, message, Dropdown } from "antd";
 import { DownOutlined, UserOutlined } from "@ant-design/icons";
+import { useQuery } from "@tanstack/react-query";
 import type { MenuProps, TableColumnsType } from "antd";
-import type { UserResponseDto } from "../types/type";
+import { Button, Dropdown, message, Popconfirm, Table, Tag } from "antd";
+import React from "react";
 import {
-  fetchAccounts,
-  updateAccountStatus,
-  updateAccountRoles,
-} from "../service/AccountService";
+  getAccountsQueryOptions,
+  useUpdateAccountRoles,
+  useUpdateAccountStatus,
+} from "../service/ReactQueryAccount";
+import type { UserResponseDto } from "../types/type";
 
 const TableManageAccount: React.FC = () => {
-  const [loading, setLoading] = useState(false);
-  const [accountsData, setAccountsData] = useState<UserResponseDto[]>([]);
-  // const [editingKey, setEditingKey] = useState<string | null>(null);
+  const { data = [], isLoading } = useQuery(getAccountsQueryOptions());
 
-  const loadAccounts = useCallback(async () => {
-    setLoading(true);
-    try {
-      const responseData = await fetchAccounts();
-      if (responseData && Array.isArray(responseData)) {
-        setAccountsData(responseData);
-        message.success(`Tìm thấy ${responseData.length} tài khoản.`);
-      } else {
-        message.error("❌ Nhận dữ liệu không hợp lệ.");
-        setAccountsData([]);
-      }
-    } catch (error: any) {
-      console.error("❌ Lỗi khi tải tài khoản:", error);
-      message.error(error?.message || "Lỗi khi tải tài khoản");
-      setAccountsData([]);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    loadAccounts();
-  }, [loadAccounts]);
-
-  const toggleStatus = useCallback(
-    async (record: UserResponseDto) => {
-      setLoading(true);
-      try {
-        const newStatus = record.status === "Active" ? 1 : 0;
-        await updateAccountStatus(record.id, newStatus);
-        message.success("Cập nhật trạng thái thành công!");
-        await loadAccounts();
-      } catch (error: any) {
-        console.error("Lỗi khi cập nhật trạng thái:", error);
-        message.error(error?.message || "Cập nhật trạng thái thất bại!");
-      } finally {
-        setLoading(false);
-      }
+  const [messageApi, contextHolder] = message.useMessage();
+  const updateRoleMutation = useUpdateAccountRoles({
+    mutationConfig: {
+      onSuccess: () => {
+        messageApi.success({
+          content: "You updated the account roles successfully!",
+          duration: 3,
+        });
+      },
+      onError: (error: any) => {
+        messageApi.error({
+          content:
+            error?.response?.data?.message?.join(", ") ||
+            "An error has occurred!",
+          duration: 3,
+        });
+      },
     },
-    [loadAccounts]
-  );
+  });
+
+  // const toggleStatus = useCallback(
+  //   async (record: UserResponseDto) => {
+  //     try {
+  //       const newStatus = record.status === "Active" ? 1 : 0;
+  //       await updateAccountStatus(record.id, newStatus);
+  //       message.success("Cập nhật trạng thái thành công!");
+  //       await loadAccounts();
+  //     } catch (error: any) {
+  //       console.error("Lỗi khi cập nhật trạng thái:", error);
+  //       message.error(error?.message || "Cập nhật trạng thái thất bại!");
+  //     }
+  //   },
+  // );
+
+  const updateStatusMutation = useUpdateAccountStatus({
+    mutationConfig: {
+      onSuccess: () => {
+        messageApi.success({
+          content: "You updated the account status successfully!",
+          duration: 3,
+        });
+      },
+      onError: (error: any) => {
+        messageApi.error({
+          content:
+            error?.response?.data?.message?.join(", ") ||
+            "An error has occurred!",
+          duration: 3,
+        });
+      },
+    },
+  });
+
+  const toggleStatus = (record: UserResponseDto) => {
+    const newStatus = record.status === "Active" ? 1 : 0;
+    console.log("Toggling status for user:", record.id, "to", newStatus);
+    updateStatusMutation.mutate({ id: record.id, status: newStatus });
+  };
 
   const columns: TableColumnsType<UserResponseDto> = [
     {
@@ -73,7 +89,7 @@ const TableManageAccount: React.FC = () => {
       dataIndex: "phoneNumber",
       key: "phoneNumber",
     },
-    
+
     {
       title: "Roles",
       dataIndex: "roles",
@@ -95,17 +111,8 @@ const TableManageAccount: React.FC = () => {
         ];
 
         const handleMenuClick: MenuProps["onClick"] = async (e) => {
-          setLoading(true);
-          try {
-            await updateAccountRoles(record.id, [e.key]);
-            message.success("Cập nhật vai trò thành công!");
-            // setEditingKey(null);
-            await loadAccounts();
-          } catch (error: any) {
-            message.error(error?.message || "Cập nhật vai trò thất bại!");
-          } finally {
-            setLoading(false);
-          }
+          console.log("Updating role for user:", record.id, "to", e.key);
+          updateRoleMutation.mutate({ id: record.id, roleNames: [e.key] });
         };
 
         return (
@@ -113,11 +120,11 @@ const TableManageAccount: React.FC = () => {
             menu={{ items, onClick: handleMenuClick }}
             placement="bottom"
             icon={<DownOutlined />}
-            onClick={e => e.preventDefault()}
-            disabled={loading}
+            onClick={(e) => e.preventDefault()}
+            disabled={isLoading}
             // type="primary"
           >
-            {currentRole}
+            <span>{currentRole}</span>
           </Dropdown.Button>
         );
       },
@@ -160,11 +167,12 @@ const TableManageAccount: React.FC = () => {
 
   return (
     <div style={{ padding: "20px" }}>
+      {contextHolder}
       <Table
         columns={columns}
-        dataSource={accountsData}
-        loading={loading}
-        pagination={{ pageSize: 2 }}
+        dataSource={data}
+        loading={isLoading}
+        pagination={{ pageSize: 5 }}
         rowKey="id"
       />
     </div>

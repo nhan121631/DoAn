@@ -42,28 +42,6 @@ public class RoomController {
     @Autowired
     private Validator validator;
 
-    // @GetMapping
-    // public ResponseEntity<List<RoomResponseDto>> getAllRooms() {
-    // List<RoomResponseDto> rooms = roomService.getAllRooms();
-    // return ResponseEntity.ok(rooms);
-    // }
-
-    // @GetMapping("/{roomId}")
-    // public ResponseEntity<RoomResponseDto> getRoom(@PathVariable UUID roomId) {
-    // RoomResponseDto dto = roomService.getRoom(roomId);
-    // return ResponseEntity.ok(dto);
-    // }
-
-    // @PostMapping("/create/by-user/{userId}")
-    // public ResponseEntity<RoomResponseDto> createRoomByUserId(
-    // @PathVariable UUID userId,
-    // @RequestPart("room") String roomJson,
-    // @RequestPart(value = "images", required = false) List<MultipartFile> images)
-    // throws IOException {
-    // return null;
-
-    // }
-
     @PostMapping
     public ResponseEntity<RoomResponseDto> createRoom(
             @RequestPart("room") String roomJson,

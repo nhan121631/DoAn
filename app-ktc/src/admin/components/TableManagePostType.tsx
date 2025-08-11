@@ -1,65 +1,50 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useEffect, useState } from "react";
-import { Popconfirm, Table } from "antd";
+import { useQuery } from "@tanstack/react-query";
 import type { TableColumnsType } from "antd";
+import { Popconfirm, Table } from "antd";
+import React from "react";
+import {
+  getTypePostsQueryOptions,
+  useDeleteTypePost,
+} from "../service/ReactQueryTypePost";
 import type { IPostType } from "../types/type";
-import { deleteTypePost, fetchTypePosts } from "../service/TypePostService";
 
 const TableManagePostType: React.FC<{
-  refreshKey: number;
   messageApi: any;
   handleUpdate: (record: IPostType) => void;
-}> = ({ refreshKey, messageApi, handleUpdate }) => {
-  // const [data] = useState<IPostType[]>([
-  //   {
-  //     id: "1",
-  //     code: "post_type_1",
-  //     name: "Post Type 1",
-  //     pricePerDay: 10,
-  //     description: "Description for Post Type 1",
-  //   },
-  //   {
-  //     id: "2",
-  //     code: "post_type_2",
-  //     name: "Post Type 2",
-  //     pricePerDay: 20,
-  //     description: "Description for Post Type 2",
-  //   },
-  // ]);
+}> = ({ messageApi, handleUpdate }) => {
+  const { data = [], isLoading } = useQuery(getTypePostsQueryOptions());
 
-  const [typePosts, setTypePost] = useState<IPostType[]>([]);
-  const [loading, setLoading] = useState(false);
-  
+  // useEffect(() => {
+  //   const getTypePosts = async () => {
+  //     setLoading(true);
+  //     try {
+  //       const res = (await fetchTypePosts()) as IPostType[];
+  //       setTypePost(res || []);
+  //     } catch (error) {
+  //       console.error("Error fetching type posts:", error);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
 
-  useEffect(() => {
-    const getTypePosts = async () => {
-      setLoading(true);
-      try {
-        const res = (await fetchTypePosts()) as IPostType[];
-        setTypePost(res || []);
-      } catch (error) {
-        console.error("Error fetching type posts:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  //   getTypePosts();
+  // }, [refreshKey]);
 
-    getTypePosts();
-  }, [refreshKey]);
+  const deleteMutation = useDeleteTypePost({
+    mutationConfig: {
+      onSuccess: () => {
+        messageApi.success({
+          content: "You deleted a post type successfully!",
+          duration: 3,
+        });
+      },
+    },
+  });
 
-  const handleDelete = async (id: string) => {
-    try {
-      await deleteTypePost(id);
-      setTypePost((prev) => prev.filter((post) => post.id !== id));
-      messageApi.success({
-        content: "You deleted a post type successfully!",
-        duration: 1.5,
-      });
-    } catch (error) {
-      console.error("Error deleting type post:", error);
-    }
+  const handleDelete = (id: string) => {
+    deleteMutation.mutate({ id });
   };
-
   const columns: TableColumnsType<IPostType> = [
     {
       title: "Name",
@@ -133,10 +118,10 @@ const TableManagePostType: React.FC<{
   return (
     <Table<IPostType>
       columns={columns}
-      dataSource={typePosts}
+      dataSource={data}
       pagination={{ pageSize: 5 }}
       rowKey="id"
-      loading={loading}
+      loading={isLoading}
     />
   );
 };
