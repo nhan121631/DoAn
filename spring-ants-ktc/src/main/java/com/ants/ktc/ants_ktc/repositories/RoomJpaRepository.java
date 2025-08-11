@@ -44,13 +44,27 @@ public interface RoomJpaRepository extends JpaRepository<Room, UUID> {
         Page<RoomByLandlordPagingProjection> findAllByLandlord(@Param("userId") UUID userId, Pageable pageable);
 
         // @Query get all rooms for admin with pagination
-        @Query("SELECT r FROM Room r JOIN FETCH r.user u")
+        @Query("SELECT r FROM Room r " +
+                        "JOIN FETCH r.user u " +
+                        "JOIN FETCH r.postType pt " +
+                        "LEFT JOIN FETCH r.address a " +
+                        "LEFT JOIN FETCH a.ward w " +
+                        "LEFT JOIN FETCH w.district d " +
+                        "LEFT JOIN FETCH d.province pr " +
+                        "WHERE r.isRemoved = 0")
         Page<RoomByAdminPagingProjection> findAllByAdmin(Pageable pageable);
 
         @Query("SELECT r FROM Room r JOIN FETCH r.user u JOIN FETCH u.wallet w JOIN FETCH r.postType pt WHERE r.id = :roomId")
         Optional<Room> findForExtendById(@Param("roomId") UUID roomId);
 
-        @Query("SELECT r FROM Room r WHERE r.user.id = :userId")
+        @Query("SELECT r FROM Room r " +
+                        "JOIN FETCH r.user u " +
+                        "JOIN FETCH r.postType pt " +
+                        "LEFT JOIN FETCH r.address a " +
+                        "LEFT JOIN FETCH a.ward w " +
+                        "LEFT JOIN FETCH w.district d " +
+                        "LEFT JOIN FETCH d.province pr " +
+                        "WHERE r.user.id = :userId")
         Page<Room> findAllByUser(UUID userId, Pageable pageable);
 
         List<RoomNameProjection> findByUserIdAndIsRemovedFalse(UUID userId);
