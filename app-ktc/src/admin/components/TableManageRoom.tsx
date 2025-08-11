@@ -1,33 +1,19 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import {
-  Button,
-  message,
-  Popconfirm,
-  Space,
-  Table,
-  Tag,
-} from "antd";
+import { Button, message, Popconfirm, Space, Table, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useState } from "react";
 import { AiOutlineInfoCircle, AiOutlineMail } from "react-icons/ai";
 import { ThemeContext } from "../context/ThemeContext";
-import {
-  fetchAllRoomPaging,
-  updateRoomApproval,
-  sendAdminEmailToLandlordWithFile,
-  deleteRoom,
-} from "../service/RoomService";
-import type { RoomResponseDto as OriginalRoomResponseDto } from "../types/type";
+import { sendAdminEmailToLandlordWithFile } from "../service/RoomService";
+import type { RoomResponseDto } from "../types/type";
 // import type { UploadFile } from "antd/es/upload";
-import SendMailModal from "./SendMailModal";
+import { useQuery } from "@tanstack/react-query";
+import { getRoomQueryOptions } from "../service/ReactQueryRoom";
 import RoomDetailModal from "./RoomDetailModal";
-
-type RoomResponseDto = OriginalRoomResponseDto & {
-  addressText?: string;
-};
+import SendMailModal from "./SendMailModal";
 
 const TableManageRoom: React.FC = () => {
-  const [data, setData] = useState<RoomResponseDto[]>([]);
+  // const [data, setData] = useState<RoomResponseDto[]>([]);
   const [selectedRoom, setSelectedRoom] = useState<RoomResponseDto | null>(
     null
   );
@@ -37,90 +23,61 @@ const TableManageRoom: React.FC = () => {
   const [page, setPage] = useState(0);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
-  
+
   const pageSize = 5;
   const [messageApi, contextHolder] = message.useMessage();
   // const [form] = Form.useForm();
 
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true); 
-      try {
-        const res = await fetchAllRoomPaging(page, pageSize);
-        const rooms: RoomResponseDto[] = (res.rooms ?? []).map((room) => ({
-          ...room,
-          key: room.id,
-          name: room.title,
-          addressText: [
-            room.address?.street,
-            room.address?.ward?.name,
-            room.address?.ward?.district?.name,
-            room.address?.ward?.district?.province?.name,
-          ]
-            .filter(Boolean)
-            .join(", "),
-          price: room.priceMonth,
-          approval: room.approval as 0 | 1 | 2,
-          isRemove: room.isRemoved as 0 | 1,
-        }));
-        setData(rooms);
-        setTotal(res.totalRecords ?? 0);
-      } catch {
-        messageApi.error({
-          content: "Error loading room list!",
-          duration: 2,
-        });
-      }
-    };
-    fetchData();
-  }, [page]);
+  const { data, isLoading, error } = useQuery(
+    getRoomQueryOptions(page, pageSize)
+  );
 
-  const updateApproval = async (record: RoomResponseDto, value: 1 | 2) => {
-    try {
-      await updateRoomApproval(record.id, value);
-      const updated = data.map((item) =>
-        item.id === record.id ? { ...item, approval: value } : item
-      );
-      setData(updated);
-      messageApi.success({
-        content:
-          value === 1 ? "Approved successfully" : "Rejected successfully",
-        duration: 2,
-      });
-    } catch (error) {
-      console.error("Error updating approval:", error);
-      messageApi.error({
-        content: "Failed to update approval status",
-        duration: 2,
-      });
-    }
-  };
+  // const updateApproval = async (record: RoomResponseDto, value: 1 | 2) => {
+  //   try {
+  //     await updateRoomApproval(record.id, value);
+  //     const updated = data.map((item) =>
+  //       item.id === record.id ? { ...item, approval: value } : item
+  //     );
+  //     setData(updated);
+  //     messageApi.success({
+  //       content:
+  //         value === 1 ? "Approved successfully" : "Rejected successfully",
+  //       duration: 2,
+  //     });
+  //   } catch (error) {
+  //     console.error("Error updating approval:", error);
+  //     messageApi.error({
+  //       content: "Failed to update approval status",
+  //       duration: 2,
+  //     });
+  //   }
+  // };
 
-  const toggleRemove = async (record: RoomResponseDto) => {
-    try {
-      // Call backend API to update isRemoved status in DB
-      await deleteRoom(record.id, record.isRemoved === 1 ? 0 : 1);
-      // Update local state after successful DB update
-      const updated = data.map((item) =>
-        item.id === record.id
-          ? { ...item, isRemoved: (item.isRemoved === 1 ? 0 : 1) as 0 | 1 }
-          : item
-      );
-      setData(updated);
-      messageApi.success({
-        content:
-          record.isRemoved === 1
-            ? "Post is now recovered."
-            : "Post has been deleted.",
-        duration: 2,
-      });
-    } catch {
-      messageApi.error({
-        content: "Failed to update post status!",
-        duration: 2,
-      });
-    }
-  };
+  // const toggleRemove = async (record: RoomResponseDto) => {
+  //   try {
+  //     // Call backend API to update isRemoved status in DB
+  //     await deleteRoom(record.id, record.isRemoved === 1 ? 0 : 1);
+  //     // Update local state after successful DB update
+  //     const updated = data.map((item) =>
+  //       item.id === record.id
+  //         ? { ...item, isRemoved: (item.isRemoved === 1 ? 0 : 1) as 0 | 1 }
+  //         : item
+  //     );
+  //     setData(updated);
+  //     messageApi.success({
+  //       content:
+  //         record.isRemoved === 1
+  //           ? "Post is now recovered."
+  //           : "Post has been deleted.",
+  //       duration: 2,
+  //     });
+  //   } catch {
+  //     messageApi.error({
+  //       content: "Failed to update post status!",
+  //       duration: 2,
+  //     });
+  //   }
+  // };
 
   const handleMailClick = (record: RoomResponseDto) => {
     setSelectedRoom(record);
@@ -135,8 +92,8 @@ const TableManageRoom: React.FC = () => {
   const columns: ColumnsType<RoomResponseDto> = [
     {
       title: "Room Name",
-      dataIndex: "name",
-      key: "name",
+      dataIndex: "title",
+      key: "title",
       sorter: (a, b) => a.title.localeCompare(b.title),
     },
     {
@@ -156,15 +113,24 @@ const TableManageRoom: React.FC = () => {
     },
     {
       title: "Address",
-      dataIndex: "addressText",
-      key: "addressText",
+      key: "address",
+      render: (_, record) => {
+        const addr = record.address;
+        if (!addr) return "";
+        const street = addr.street || "";
+        const ward = addr.ward?.name || "";
+        const district = addr.ward?.district?.name || "";
+        const province = addr.ward?.district?.province?.name || "";
+        return `${street}, ${ward}, ${district}, ${province}`;
+      },
     },
     {
       title: "Price/month",
-      dataIndex: "price",
-      key: "price",
+      dataIndex: "priceMonth",
+      key: "priceMonth",
       sorter: (a, b) => a.priceMonth - b.priceMonth,
-      render: (price) => price.toLocaleString() + " ₫",
+      render: (priceMonth) =>
+        priceMonth ? priceMonth.toLocaleString() + " ₫" : "N/A",
     },
     {
       title: "Available",
@@ -187,7 +153,7 @@ const TableManageRoom: React.FC = () => {
             <Space>
               <Popconfirm
                 title="Are you sure to approve this room?"
-                onConfirm={() => updateApproval(record, 1)}
+                // onConfirm={() => updateApproval(record, 1)}
                 okText="Yes"
                 cancelText="No"
               >
@@ -197,7 +163,7 @@ const TableManageRoom: React.FC = () => {
               </Popconfirm>
               <Popconfirm
                 title="Are you sure to reject this room?"
-                onConfirm={() => updateApproval(record, 2)}
+                // onConfirm={() => updateApproval(record, 2)}
                 okText="Yes"
                 cancelText="No"
               >
@@ -224,7 +190,7 @@ const TableManageRoom: React.FC = () => {
               ? "Do you want to show this post again?"
               : "Are you sure to remove this post?"
           }
-          onConfirm={() => toggleRemove(record)}
+          // onConfirm={() => toggleRemove(record)}
           okText="Yes"
           cancelText="No"
         >
@@ -257,19 +223,19 @@ const TableManageRoom: React.FC = () => {
       ),
     },
   ];
-
+  console.log(data);
   return (
     <>
       {contextHolder}
       <Table
         columns={columns}
-        dataSource={data}
-        rowKey="key"
-        loading={loading}
+        dataSource={data?.rooms}
+        rowKey="id"
+        loading={isLoading}
         pagination={{
           pageSize,
           current: page + 1,
-          total,
+          total: data?.totalRecords || 0,
           onChange: (p) => setPage(p - 1),
         }}
       />
