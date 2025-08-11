@@ -59,15 +59,6 @@ export async function getRoomsByLandlord(page: number, size: number) {
   } catch (error) {
     console.error("Error fetching rooms:", error);
     return null;
-    // return {
-    //   rooms: [],
-    //   pageNumber: page,
-    //   pageSize: size,
-    //   totalRecords: 0,
-    //   totalPages: 0,
-    //   hasNext: false,
-    //   hasPrevious: false,
-    // };
   }
 }
 
@@ -124,6 +115,33 @@ export async function getRoomById(id: string) {
     return response.json();
   } catch (error) {
     console.error("Error fetching room:", error);
+    return null;
+  }
+}
+
+export async function getRoomVipUser(page: number, size: number) {
+  try {
+    const response = await fetch(`${API_URL}/rooms/allroom-vip?page=${page}&size=${size}`);
+    if (!response.ok) {
+      const data = await response.json();
+      throw new Error(data.message || "Failed to fetch room images");
+    }
+    return response.json();
+  } catch (error) {
+    console.error("Error fetching room images:", error);
+    return null;
+  }
+}
+export async function getRoomNormalUser(page: number, size: number) {
+  try {
+    const response = await fetch(`${API_URL}/rooms/allroom-normal?page=${page}&size=${size}`);
+    if (!response.ok) {
+      const data = await response.json();
+      throw new Error(data.message || "Failed to fetch room images");
+    }
+    return response.json();
+  } catch (error) {
+    console.error("Error fetching room images:", error);
     return null;
   }
 }

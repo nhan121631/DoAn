@@ -1,10 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { authOptions } from '@/lib/auth';
+import { API_URL } from '@/services/Constant';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth'; 
-import { API_URL } from '@/services/Constant'; 
+import { NextResponse } from 'next/server';
 
 // Xử lý yêu cầu GET để lấy danh sách phòng
-export async function GET(request: NextRequest) {
+export async function GET() {
     try {
         const session = await getServerSession(authOptions);
         if (!session) {
