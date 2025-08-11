@@ -40,11 +40,11 @@ public class RoomController {
     @Autowired
     private Validator validator;
 
-    @GetMapping
-    public ResponseEntity<List<RoomResponseDto>> getAllRooms() {
-        List<RoomResponseDto> rooms = roomService.getAllRooms();
-        return ResponseEntity.ok(rooms);
-    }
+    // @GetMapping
+    // public ResponseEntity<List<RoomResponseDto>> getAllRooms() {
+    // List<RoomResponseDto> rooms = roomService.getAllRooms();
+    // return ResponseEntity.ok(rooms);
+    // }
 
     // @GetMapping("/{roomId}")
     // public ResponseEntity<RoomResponseDto> getRoom(@PathVariable UUID roomId) {
@@ -109,6 +109,7 @@ public class RoomController {
         RoomUpdateExpireDateResponseDto roomResponse = roomService.updateExpirePostDate(request);
         return ResponseEntity.ok(roomResponse);
     }
+
     @GetMapping("/{id}")
     public ResponseEntity<RoomResponseDto> getRoomById(@PathVariable("id") UUID id) {
         RoomResponseDto room = roomService.getRoomById(id);

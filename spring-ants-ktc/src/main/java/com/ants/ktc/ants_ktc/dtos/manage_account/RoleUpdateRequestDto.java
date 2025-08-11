@@ -6,9 +6,9 @@ import lombok.NoArgsConstructor;
 
 import java.util.List;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
+@Data // Tự động tạo getters, setters, toString, equals, hashCode
+@NoArgsConstructor // Constructor không tham số
+@AllArgsConstructor // Constructor với tất cả tham số
 public class RoleUpdateRequestDto {
-    private List<String> roleNames;
+    private List<String> roleNames; // Tên các vai trò mới
 }

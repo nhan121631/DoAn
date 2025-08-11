@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect, useCallback } from "react";
 import { Table, Select, Tag, Button, Popconfirm, message, Space } from "antd";
-import type { TableColumnsType, TablePaginationConfig } from "antd";
+import type { TableColumnsType } from "antd";
 import type { UserResponseDto } from "../types/type";
 import {
   fetchAccounts,
@@ -16,25 +16,20 @@ const TableManageAccount: React.FC = () => {
   const [accountsData, setAccountsData] = useState<UserResponseDto[]>([]);
   const [editingKey, setEditingKey] = useState<string | null>(null);
   const [tempAuth, setTempAuth] = useState<string | null>(null);
-  const [pagination, setPagination] = useState<TablePaginationConfig>({
-    current: 1,
-    pageSize: 5,
-    total: 0,
-  });
 
-  const loadAccounts = useCallback(async (page = 0, pageSize = 5) => {
+  const loadAccounts = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await fetchAccounts(page, pageSize);
-      
-      setAccountsData(response.content);
-      setPagination({
-        current: response.page + 1, // Backend starts from 0, Ant Design from 1
-        pageSize: response.size,
-        total: response.totalElements,
-      });
-      
-      message.success(`Loaded ${response.content.length} of ${response.totalElements} accounts.`);
+      const responseData = await fetchAccounts();
+      // console.log("🔍 Data from fetchAccounts:", responseData);
+
+      if (Array.isArray(responseData)) {
+        setAccountsData(responseData);
+        message.success(`Found ${responseData.length} accounts.`);
+      } else {
+        message.error("❌ Received invalid data.");
+        setAccountsData([]);
+      }
     } catch (error: any) {
       console.error("❌ Error loading accounts:", error);
       message.error(error?.message || "Error loading accounts");
@@ -48,11 +43,16 @@ const TableManageAccount: React.FC = () => {
     loadAccounts();
   }, [loadAccounts]);
 
-  const handleTableChange = (newPagination: TablePaginationConfig) => {
-    // Convert to 0-based for backend
-    const backendPage = (newPagination.current || 1) - 1;
-    loadAccounts(backendPage, newPagination.pageSize);
-  };
+  // const toggleStatus = async (record: UserResponseDto) => {
+  //   const newStatus = record.status === "Active" ? 1 : 0;
+  //   try {
+  //     await updateAccountStatus(record.id, newStatus);
+  //     message.success(`Status updated successfully`);
+  //     loadAccounts();
+  //   } catch (error: any) {
+  //     message.error(error?.message || "Failed to update status");
+  //   }
+  // };
 
   const toggleStatus = async (record: UserResponseDto) => {
     // Correct mapping with backend
@@ -76,6 +76,21 @@ const TableManageAccount: React.FC = () => {
     }
   };
 
+  // const saveAuthorization = async (record: UserResponseDto) => {
+  //   if (!tempAuth) {
+  //     message.warning("Please select a role.");
+  //     return;
+  //   }
+  //   try {
+  //     await updateAccountRoles(record.id, [tempAuth]);
+  //     message.success("Authorization updated successfully!");
+  //     setEditingKey(null);
+  //     setTempAuth(null);
+  //     loadAccounts();
+  //   } catch (error: any) {
+  //     message.error(error?.message || "Failed to update authorization");
+  //   }
+  // };
   const saveAuthorization = async (record: UserResponseDto) => {
     if (!tempAuth) {
       message.warning("Please select a role.");
@@ -201,8 +216,7 @@ const TableManageAccount: React.FC = () => {
         columns={columns}
         dataSource={accountsData}
         loading={loading}
-        pagination={pagination}
-        onChange={handleTableChange}
+        pagination={{ pageSize: 5 }}
         rowKey="id"
       />
     </div>
@@ -210,3 +224,5 @@ const TableManageAccount: React.FC = () => {
 };
 
 export default TableManageAccount;
+
+

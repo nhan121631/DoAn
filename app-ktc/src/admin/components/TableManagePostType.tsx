@@ -28,14 +28,19 @@ const TableManagePostType: React.FC<{
   // ]);
 
   const [typePosts, setTypePost] = useState<IPostType[]>([]);
+  const [loading, setLoading] = useState(false);
+  
 
   useEffect(() => {
     const getTypePosts = async () => {
+      setLoading(true);
       try {
         const res = (await fetchTypePosts()) as IPostType[];
         setTypePost(res || []);
       } catch (error) {
         console.error("Error fetching type posts:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -131,6 +136,7 @@ const TableManagePostType: React.FC<{
       dataSource={typePosts}
       pagination={{ pageSize: 5 }}
       rowKey="id"
+      loading={loading}
     />
   );
 };
