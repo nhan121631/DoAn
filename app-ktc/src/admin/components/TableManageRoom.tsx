@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable react-hooks/exhaustive-deps */
 import { Button, message, Popconfirm, Space, Table, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
@@ -8,7 +9,10 @@ import { sendAdminEmailToLandlordWithFile } from "../service/RoomService";
 import type { RoomResponseDto } from "../types/type";
 // import type { UploadFile } from "antd/es/upload";
 import { useQuery } from "@tanstack/react-query";
-import { getRoomQueryOptions } from "../service/ReactQueryRoom";
+import {
+  getRoomQueryOptions,
+  useUpdateApproval,
+} from "../service/ReactQueryRoom";
 import RoomDetailModal from "./RoomDetailModal";
 import SendMailModal from "./SendMailModal";
 
@@ -21,16 +25,43 @@ const TableManageRoom: React.FC = () => {
   const [isInfoModalOpen, setInfoModalOpen] = useState(false);
   const { isDark } = useContext(ThemeContext);
   const [page, setPage] = useState(0);
-  const [total, setTotal] = useState(0);
-  const [loading, setLoading] = useState(false);
 
   const pageSize = 5;
   const [messageApi, contextHolder] = message.useMessage();
   // const [form] = Form.useForm();
 
-  const { data, isLoading, error } = useQuery(
+  const { data, isLoading, refetch } = useQuery(
     getRoomQueryOptions(page, pageSize)
   );
+
+  const updateApprovalMutation = useUpdateApproval({
+    mutationConfig: {
+      onSuccess: () => {
+        refetch();
+        messageApi.success({
+          content: "You updated the room approval status successfully!",
+          duration: 3,
+        });
+      },
+      onError: (error: any) => {
+        messageApi.error({
+          content:
+            error?.response?.data?.message?.join(", ") ||
+            "An error has occurred!",
+          duration: 3,
+        });
+      },
+    },
+  });
+  const updateApproval = (record: RoomResponseDto, value: 1 | 2) => {
+    console.log("Updating approval for room:", record.id, "to status:", value);
+    updateApprovalMutation.mutate({
+      roomId: record.id,
+      status: value,
+      page,
+      pageSize,
+    });
+  };
 
   // const updateApproval = async (record: RoomResponseDto, value: 1 | 2) => {
   //   try {
@@ -153,7 +184,7 @@ const TableManageRoom: React.FC = () => {
             <Space>
               <Popconfirm
                 title="Are you sure to approve this room?"
-                // onConfirm={() => updateApproval(record, 1)}
+                onConfirm={() => updateApproval(record, 1)}
                 okText="Yes"
                 cancelText="No"
               >
@@ -163,7 +194,7 @@ const TableManageRoom: React.FC = () => {
               </Popconfirm>
               <Popconfirm
                 title="Are you sure to reject this room?"
-                // onConfirm={() => updateApproval(record, 2)}
+                onConfirm={() => updateApproval(record, 2)}
                 okText="Yes"
                 cancelText="No"
               >
