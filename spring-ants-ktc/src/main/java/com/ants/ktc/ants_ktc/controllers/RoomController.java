@@ -102,14 +102,14 @@ public class RoomController {
     }
 
     @PatchMapping("/{id}/hidden")
-    public ResponseEntity<RoomShowHideProjectionDto> updateHidden(@PathVariable UUID id,
+    public ResponseEntity<RoomShowHideProjectionDto> updateHidden(@PathVariable("id") UUID id,
             @Valid @RequestBody RoomShowHideProjectionDto body) {
         RoomShowHideProjectionDto result = roomService.updateHidden(id, body);
         return ResponseEntity.ok(result);
     }
 
     @PatchMapping("/{id}/delete")
-    public ResponseEntity<RoomDeleteRequestDto> deleteRoom(@PathVariable UUID id,
+    public ResponseEntity<RoomDeleteRequestDto> deleteRoom(@PathVariable("id") UUID id,
             @Valid @RequestBody RoomDeleteRequestDto request) {
         RoomDeleteRequestDto result = roomService.deleteRoom(id, request);
         return ResponseEntity.ok(result);

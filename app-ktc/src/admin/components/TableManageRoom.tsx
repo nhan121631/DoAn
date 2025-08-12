@@ -66,10 +66,13 @@ const TableManageRoom: React.FC = () => {
 
   const deleteMutation = useDeleteRoom({
     mutationConfig: {
-      onSuccess: () => {
+      onSuccess: (_, variables) => {
         refetch();
         messageApi.success({
-          content: "You removed the room successfully!",
+          content:
+            variables && variables.isRemoved === 0
+              ? "Post is now recovered."
+              : "You removed the room successfully!",
           duration: 3,
         });
       },
