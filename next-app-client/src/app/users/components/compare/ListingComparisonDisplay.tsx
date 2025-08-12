@@ -27,7 +27,7 @@ export default function ListingComparisonDisplay({
   if (!listing1 || !listing2) {
     return (
       <div className="flex flex-col items-center justify-center h-[300px] bg-white rounded-xl shadow-md">
-        <div className="text-2xl font-bold text-red-500 mb-2">
+        <div className="mb-2 text-2xl font-bold text-red-500">
           You need to choose 2 rooms to compare!
         </div>
         <div className="text-gray-600">

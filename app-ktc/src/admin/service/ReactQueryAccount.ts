@@ -1,17 +1,19 @@
 import { queryOptions, useMutation, useQueryClient } from "@tanstack/react-query";
 import apiClient from "../lib/api-client-ad";
-import type { UserResponseDto } from "../types/type";
+import type { UserPageResponseDto } from "../types/type";
 import type { MutationConfig } from "../lib/react-query";
 
-//=====get all account======//
-export const getAllAccounts = (): Promise<UserResponseDto[]> => {
-  return apiClient.get(`/admin/accounts`);
+//=====get all account with pagination======//
+export const getPaginatedAccounts = (page: number, pageSize: number): Promise<UserPageResponseDto> => {
+  return apiClient.get(`/admin/accounts/paginated`, {
+    params: { page, size: pageSize }
+  });
 };
 
-export const getAccountsQueryOptions = () => {
+export const getPaginatedAccountsQueryOptions = (page: number, pageSize: number) => {
   return queryOptions({
-    queryKey: ['getAccounts'] as const,
-    queryFn: getAllAccounts,
+    queryKey: ['getPaginatedAccounts', page, pageSize] as const,
+    queryFn: () => getPaginatedAccounts(page, pageSize),
   });
 };
 
@@ -31,8 +33,9 @@ export const useUpdateAccountRoles = ({ mutationConfig }: UseUpdateAccountRolesO
 
   return useMutation({
     onSuccess: (data, ...args) => {
-      queryClient.refetchQueries({
-        queryKey: getAccountsQueryOptions().queryKey,
+      // Invalidates and refetches the paginated accounts query after a successful update
+      queryClient.invalidateQueries({
+        queryKey: ['getPaginatedAccounts']
       });
       onSuccess?.(data, ...args);
     },
@@ -57,8 +60,9 @@ export const useUpdateAccountStatus = ({ mutationConfig }: UseUpdateAccountStatu
 
   return useMutation({
     onSuccess: (data, ...args) => {
-      queryClient.refetchQueries({
-        queryKey: getAccountsQueryOptions().queryKey,
+      // Invalidates and refetches the paginated accounts query after a successful update
+      queryClient.invalidateQueries({
+        queryKey: ['getPaginatedAccounts']
       });
       onSuccess?.(data, ...args);
     },
