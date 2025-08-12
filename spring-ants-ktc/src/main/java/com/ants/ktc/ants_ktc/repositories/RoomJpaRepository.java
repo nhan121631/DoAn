@@ -121,4 +121,13 @@ public interface RoomJpaRepository extends JpaRepository<Room, UUID> {
                         "AND r.hidden = 0 AND r.isRemoved = 0 AND r.approval = 1")
         Page<Room> findAllRoomInUser(@Param("code") String code, Pageable pageable);
 
+        @Query(" SELECT COUNT(r) FROM Room r WHERE approval = 1 and isRemoved = 0")
+        Long countAcceptedApprovalRooms();
+
+        @Query(" SELECT COUNT(r) FROM Room r WHERE approval = 0 and isRemoved = 0")
+        Long countPendingApprovalRooms();
+
+        @Query(" SELECT COUNT(r) FROM Room r WHERE isRemoved = 0 and approval != 2")
+        Long countTotalApprovalRooms();
+
 }

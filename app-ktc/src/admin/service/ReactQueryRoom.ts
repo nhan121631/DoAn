@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { queryOptions, useMutation, useQueryClient } from "@tanstack/react-query";
 import apiClient from "../lib/api-client-ad";
-import type { RoomPageResponseDto } from "../types/type";
+import type { RoomDetail, RoomPageResponseDto } from "../types/type";
 import type { MutationConfig } from "../lib/react-query";
 
 //======get all rooms======//
@@ -44,6 +44,9 @@ export const useUpdateApproval = ({ mutationConfig }: UseUpdateApprovalOptions =
         queryClient.invalidateQueries({
           queryKey: ['getRooms', page, pageSize]
         });
+        queryClient.invalidateQueries({ queryKey: ['getCountAcceptedRooms'] });
+        queryClient.invalidateQueries({ queryKey: ['getCountPendingRooms'] });
+        queryClient.invalidateQueries({ queryKey: ['getCountTotalRooms'] });
       } else {
         queryClient.invalidateQueries({ queryKey: ['getRooms'] });
       }
@@ -79,6 +82,9 @@ export const useDeleteRoom = ({ mutationConfig }: UseRemoveRoomOptions = {}) => 
         queryClient.invalidateQueries({
           queryKey: ['getRooms', page, pageSize]
         });
+        queryClient.invalidateQueries({ queryKey: ['getCountAcceptedRooms'] });
+        queryClient.invalidateQueries({ queryKey: ['getCountPendingRooms'] });
+        queryClient.invalidateQueries({ queryKey: ['getCountTotalRooms'] });
       } else {
         queryClient.invalidateQueries({ queryKey: ['getRooms'] });
       }
@@ -86,5 +92,53 @@ export const useDeleteRoom = ({ mutationConfig }: UseRemoveRoomOptions = {}) => 
     },
     ...restConfig,
     mutationFn: deleteRoom,
+  });
+};
+
+//=====get room by id=====//
+const getRoomById = (id: string): Promise<RoomDetail> => {
+  return apiClient.get(`/rooms/${id}`);
+};
+
+export const getRoomByIdQueryOptions = (id: string) => {
+  return queryOptions({
+    queryKey: ['getRoomById', id] as const,
+    queryFn: () => getRoomById(id),
+  });
+};
+
+//=====get count room accepted=====//
+const getCountAcceptedRooms = (): Promise<number> => {
+  return apiClient.get('/admin/statistics/rooms/accepted/count');
+};
+
+export const useCountAcceptedRoomsQueryOptions = () => {
+  return queryOptions({
+    queryKey: ['getCountAcceptedRooms'] as const,
+    queryFn: () => getCountAcceptedRooms(),
+  });
+};
+
+//=====get count room pending=====//
+const getCountPendingRooms = (): Promise<number> => {
+  return apiClient.get('/admin/statistics/rooms/pending/count');
+};
+
+export const useCountPendingRoomsQueryOptions = () => {
+  return queryOptions({
+    queryKey: ['getCountPendingRooms'] as const,
+    queryFn: () => getCountPendingRooms(),
+  });
+};
+
+//=====get count room rejected=====//
+const getCountTotalRooms = (): Promise<number> => {
+  return apiClient.get('/admin/statistics/rooms/total/count');
+};
+
+export const useCountTotalRoomsQueryOptions = () => {
+  return queryOptions({
+    queryKey: ['getCountTotalRooms'] as const,
+    queryFn: () => getCountTotalRooms(),
   });
 };

@@ -1,7 +1,7 @@
 import { queryOptions, useMutation, useQueryClient } from "@tanstack/react-query";
 import apiClient from "../lib/api-client-ad";
-import type { UserPageResponseDto } from "../types/type";
 import type { MutationConfig } from "../lib/react-query";
+import type { UserPageResponseDto } from "../types/type";
 
 //=====get all account with pagination======//
 export const getPaginatedAccounts = (page: number, pageSize: number): Promise<UserPageResponseDto> => {
@@ -60,13 +60,22 @@ export const useUpdateAccountStatus = ({ mutationConfig }: UseUpdateAccountStatu
 
   return useMutation({
     onSuccess: (data, ...args) => {
-      // Invalidates and refetches the paginated accounts query after a successful update
-      queryClient.invalidateQueries({
-        queryKey: ['getPaginatedAccounts']
-      });
+  queryClient.invalidateQueries({ queryKey: ['getPaginatedAccounts'] });
+  queryClient.invalidateQueries({ queryKey: ['countActiveUsers'] });
       onSuccess?.(data, ...args);
     },
     ...restConfig,
     mutationFn: updateAccountStatus,
+  });
+};
+//=====count account active=====//
+const countActiveUsers = () => {
+  return apiClient.get('/admin/statistics/inactive-users/count');
+};
+export const useCountActiveUsers = () => {
+
+   return queryOptions({
+    queryKey: ['countActiveUsers'],
+    queryFn: () => countActiveUsers(),
   });
 };
