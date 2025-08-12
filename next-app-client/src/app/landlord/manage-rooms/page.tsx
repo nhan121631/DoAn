@@ -201,7 +201,7 @@ function TableManageRoom() {
         const tomorrowDate = new Date(
           now.getFullYear(),
           now.getMonth(),
-          now.getDate() + 1
+          now.getDate() + 2
         );
         const minDate = tomorrowDate.toISOString().slice(0, 10);
 
@@ -225,7 +225,7 @@ function TableManageRoom() {
               Math.ceil(
                 (endDate.getTime() - startDate.getTime()) /
                   (1000 * 60 * 60 * 24)
-              ) + 1
+              )
             );
             totalFee = diffDays * selectedType.pricePerDay;
           }
@@ -361,10 +361,7 @@ function TableManageRoom() {
               }
             }}
           >
-            <Button
-              size="small"
-              type="primary"
-            >
+            <Button size="small" type="primary">
               Extend
             </Button>
           </Popover>
@@ -432,10 +429,7 @@ function TableManageRoom() {
             }
             onConfirm={() => toggleHidden(record)}
           >
-            <Button
-              size="small"
-              type={hidden === 1 ? "default" : "primary"}
-            >
+            <Button size="small" type={hidden === 1 ? "default" : "primary"}>
               {hidden === 1 ? "Show" : "Hide"}
             </Button>
           </Popconfirm>

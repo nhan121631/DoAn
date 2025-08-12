@@ -58,6 +58,7 @@ import com.ants.ktc.ants_ktc.repositories.RoomJpaRepository;
 import com.ants.ktc.ants_ktc.repositories.TransactionsJpaRepository;
 import com.ants.ktc.ants_ktc.repositories.UserJpaRepository;
 import com.ants.ktc.ants_ktc.repositories.address.WardJpaRepository;
+import com.ants.ktc.ants_ktc.repositories.projection.RoomApprovalProjection;
 import com.ants.ktc.ants_ktc.repositories.projection.RoomByAdminPagingProjection;
 import com.ants.ktc.ants_ktc.repositories.projection.RoomByLandlordPagingProjection;
 
@@ -505,27 +506,30 @@ public class RoomService {
                                 .message("Room post updated successfully").build();
         }
 
+        @Transactional
         public RoomShowHideProjectionDto updateHidden(UUID roomId, RoomShowHideProjectionDto hidden) {
-                Room room = roomJpaRepository.findById(roomId)
+                // Kiểm tra phòng tồn tại bằng projection
+                roomJpaRepository.findHiddenProjectionById(roomId)
                                 .orElseThrow(() -> new IllegalArgumentException("Room not found"));
 
-                room.setHidden(hidden.getIsHidden());
-                roomJpaRepository.save(room);
+                // Cập nhật trạng thái hidden bằng JPQL update
+                roomJpaRepository.updateHiddenById(roomId, hidden.getIsHidden());
 
                 return RoomShowHideProjectionDto.builder()
-                                // .id(room.getId())
-                                .isHidden(room.getHidden())
+                                .isHidden(hidden.getIsHidden())
                                 .message("Room visibility updated successfully"
-                                                + (room.getHidden() == 1 ? " (hidden)" : " (visible)"))
+                                                + (hidden.getIsHidden() == 1 ? " (hidden)" : " (visible)"))
                                 .build();
         }
 
+        @Transactional
         public RoomDeleteRequestDto deleteRoom(UUID roomId, RoomDeleteRequestDto request) {
-                Room room = roomJpaRepository.findById(roomId)
+                // Kiểm tra phòng tồn tại bằng projection
+                roomJpaRepository.findDeleteProjectionById(roomId)
                                 .orElseThrow(() -> new IllegalArgumentException("Room not found"));
 
-                room.setIsRemoved(request.getIsRemoved());
-                roomJpaRepository.save(room);
+                // Cập nhật trạng thái isRemoved bằng JPQL update
+                roomJpaRepository.updateIsRemovedById(roomId, request.getIsRemoved());
 
                 return RoomDeleteRequestDto.builder()
                                 .isRemoved(request.getIsRemoved())
@@ -535,16 +539,15 @@ public class RoomService {
 
         @Transactional
         public RoomApprovalProjectionDto updateApproval(UUID roomId, RoomApprovalProjectionDto approval) {
-                Room room = roomJpaRepository.findForExtendById(roomId)
+                RoomApprovalProjection roomProj = roomJpaRepository.findApprovalProjectionById(roomId)
                                 .orElseThrow(() -> new IllegalArgumentException("Room not found"));
 
-                int oldApproval = room.getApproval();
+                int oldApproval = roomProj.getApproval();
                 int newApproval = approval.getApproval();
-                User user = room.getUser();
+                User user = roomProj.getUser();
 
                 // Hoàn tiền khi oldApproval == 0 && newApproval == 2
                 if (oldApproval == 0 && newApproval == 2) {
-                        // Tìm transaction type = 0 (gia hạn hoặc tạo mới) của phòng này
                         Transaction lastTransaction = transactionsJpaRepository
                                         .findLatestTransactionByWalletAndType(user.getWallet(), 0);
                         if (lastTransaction != null) {
@@ -555,7 +558,8 @@ public class RoomService {
 
                                 Transaction refundTransaction = new Transaction();
                                 refundTransaction.setAmount(refundAmount);
-                                refundTransaction.setDescription("Refund for rejected room post: " + room.getTitle());
+                                refundTransaction.setDescription(
+                                                "Refund for rejected room post: " + roomProj.getTitle());
                                 refundTransaction.setTransactionDate(new Date());
                                 LocalDateTime now = LocalDateTime.now(ZoneId.systemDefault());
                                 String day = String.format("%02d", now.getDayOfMonth());
@@ -568,16 +572,17 @@ public class RoomService {
                                 refundTransaction.setWallet(user.getWallet());
                                 refundTransaction.setTransactionType(3);// type 3: hoàn tiền
                                 transactionsJpaRepository.save(refundTransaction);
-                                room.setApproval(newApproval);
+
+                                // Cập nhật approval
+                                roomJpaRepository.updateApprovalById(roomId, newApproval);
                         }
                 }
-
-                roomJpaRepository.save(room);
-
+                
+                roomJpaRepository.updateApprovalById(roomId, newApproval);
                 return RoomApprovalProjectionDto.builder()
-                                .approval(room.getApproval())
+                                .approval(newApproval)
                                 .message("Room approval status updated successfully"
-                                                + (room.getApproval() == 1 ? " approved" : " rejected"))
+                                                + (newApproval == 1 ? " approved" : " rejected"))
                                 .build();
         }
 
