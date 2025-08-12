@@ -53,3 +53,38 @@ export const useUpdateApproval = ({ mutationConfig }: UseUpdateApprovalOptions =
     mutationFn: updateApproval,
   });
 };
+
+//======delete room=======//
+
+const deleteRoom = ({ roomId, isRemoved }: { roomId: string; isRemoved: number; page?: number; pageSize?: number }): Promise<void> => {
+  return apiClient.patch(`/rooms/${roomId}/delete`, {
+      isRemoved: isRemoved,
+    });
+};
+
+type RemoveRoomPayload = { roomId: string; isRemoved: number; page?: number; pageSize?: number };
+type UseRemoveRoomOptions = {
+  mutationConfig?: MutationConfig<(payload: RemoveRoomPayload) => Promise<void>>;
+};
+export const useDeleteRoom = ({ mutationConfig }: UseRemoveRoomOptions = {}) => {
+  const queryClient = useQueryClient();
+
+  const { onSuccess, ...restConfig } = mutationConfig || {};
+
+ return useMutation({
+    onSuccess: (data, variables, ...args) => {
+      // Lấy page và pageSize từ biến truyền vào mutation
+      const { page, pageSize } = (variables as any) || {};
+      if (typeof page === 'number' && typeof pageSize === 'number') {
+        queryClient.invalidateQueries({
+          queryKey: ['getRooms', page, pageSize]
+        });
+      } else {
+        queryClient.invalidateQueries({ queryKey: ['getRooms'] });
+      }
+      onSuccess?.(data, variables, ...args);
+    },
+    ...restConfig,
+    mutationFn: deleteRoom,
+  });
+};

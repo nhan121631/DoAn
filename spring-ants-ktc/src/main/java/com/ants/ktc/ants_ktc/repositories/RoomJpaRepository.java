@@ -71,7 +71,7 @@ public interface RoomJpaRepository extends JpaRepository<Room, UUID> {
 
         // Projection for room approval status
         @Query("SELECT r.id AS id, r.approval AS approval, r.title AS title, r.user AS user FROM Room r WHERE r.id = :roomId")
-        Optional<RoomApprovalProjection> findApprovalProjectionById(UUID roomId);
+        Optional<RoomApprovalProjection> findApprovalProjectionById(@Param("roomId") UUID roomId);
 
         @Modifying
         @Query("UPDATE Room r SET r.approval = :approval WHERE r.id = :roomId")
@@ -101,7 +101,7 @@ public interface RoomJpaRepository extends JpaRepository<Room, UUID> {
                         "LEFT JOIN FETCH w.district d " +
                         "LEFT JOIN FETCH d.province pr " +
                         "WHERE r.user.id = :userId")
-        Page<Room> findAllByUser(UUID userId, Pageable pageable);
+        Page<Room> findAllByUser(@Param("userId") UUID userId, Pageable pageable);
 
         List<RoomNameProjection> findByUserIdAndIsRemovedFalse(UUID userId);
 

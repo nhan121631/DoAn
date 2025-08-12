@@ -11,6 +11,7 @@ import type { RoomResponseDto } from "../types/type";
 import { useQuery } from "@tanstack/react-query";
 import {
   getRoomQueryOptions,
+  useDeleteRoom,
   useUpdateApproval,
 } from "../service/ReactQueryRoom";
 import RoomDetailModal from "./RoomDetailModal";
@@ -63,27 +64,34 @@ const TableManageRoom: React.FC = () => {
     });
   };
 
-  // const updateApproval = async (record: RoomResponseDto, value: 1 | 2) => {
-  //   try {
-  //     await updateRoomApproval(record.id, value);
-  //     const updated = data.map((item) =>
-  //       item.id === record.id ? { ...item, approval: value } : item
-  //     );
-  //     setData(updated);
-  //     messageApi.success({
-  //       content:
-  //         value === 1 ? "Approved successfully" : "Rejected successfully",
-  //       duration: 2,
-  //     });
-  //   } catch (error) {
-  //     console.error("Error updating approval:", error);
-  //     messageApi.error({
-  //       content: "Failed to update approval status",
-  //       duration: 2,
-  //     });
-  //   }
-  // };
-
+  const deleteMutation = useDeleteRoom({
+    mutationConfig: {
+      onSuccess: () => {
+        refetch();
+        messageApi.success({
+          content: "You removed the room successfully!",
+          duration: 3,
+        });
+      },
+      onError: (error: any) => {
+        messageApi.error({
+          content:
+            error?.response?.data?.message?.join(", ") ||
+            "An error has occurred!",
+          duration: 3,
+        });
+      },
+    },
+  });
+  const toggleRemove = (record: RoomResponseDto) => {
+    console.log("Removing room:", record.id);
+    deleteMutation.mutate({
+      roomId: record.id,
+      isRemoved: record.isRemoved === 1 ? 0 : 1,
+      page,
+      pageSize,
+    });
+  };
   // const toggleRemove = async (record: RoomResponseDto) => {
   //   try {
   //     // Call backend API to update isRemoved status in DB
@@ -221,7 +229,7 @@ const TableManageRoom: React.FC = () => {
               ? "Do you want to show this post again?"
               : "Are you sure to remove this post?"
           }
-          // onConfirm={() => toggleRemove(record)}
+          onConfirm={() => toggleRemove(record)}
           okText="Yes"
           cancelText="No"
         >
