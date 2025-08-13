@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 export async function resetPassword(email: string) {
     const formData = new FormData();
     formData.append("email", email);
@@ -55,6 +57,26 @@ export async function changePassword(email: string, newPassword: string, code: s
     if (!response.ok) {
         // Trả về lỗi chi tiết từ backend nếu có
         const msg = data?.message?.[0] || data?.error || "Failed to change password";
+        throw new Error(msg);
+    }
+
+    return data;
+}
+
+export async function updatePassword(request:any) {
+    const response = await fetch("/api/update-pass", {
+        method: "PATCH",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(request),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+        // Trả về lỗi chi tiết từ backend nếu có
+        const msg = data?.message?.[0] || data?.error || "Failed to update password";
         throw new Error(msg);
     }
 
