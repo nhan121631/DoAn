@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.ants.ktc.ants_ktc.dtos.filters.FilterRoomRequestDto;
 import com.ants.ktc.ants_ktc.dtos.room.PaginationRoomAdminResponseDto;
 import com.ants.ktc.ants_ktc.dtos.room.PaginationRoomInUserResponseDto;
 import com.ants.ktc.ants_ktc.dtos.room.PaginationRoomResponseDto;
@@ -178,6 +179,15 @@ public class RoomController {
             @RequestParam(name = "size", defaultValue = "5") int pageSize) {
         String code = "NORMAL";
         PaginationRoomInUserResponseDto response = roomService.getAllRoomInUser(pageNumber, pageSize, code);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("filter-rooms")
+    public ResponseEntity<PaginationRoomInUserResponseDto> filterRooms(
+            @RequestParam(name = "page", defaultValue = "0") int pageNumber,
+            @RequestParam(name = "size", defaultValue = "5") int pageSize,
+            @RequestBody FilterRoomRequestDto filterDto) {
+        PaginationRoomInUserResponseDto response = roomService.filterRooms(pageNumber, pageSize, filterDto);
         return ResponseEntity.ok(response);
     }
 }

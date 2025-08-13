@@ -29,19 +29,22 @@ public class LandlordMaintenanceController {
     private UserService userService;
 
     @GetMapping("/rooms")
-    public ResponseEntity<List<RoomNameProjection>> getLandlordRoomsForMaintenance() {
-        UUID currentUserId = userService.getAuthenticatedUserId();
-        List<RoomNameProjection> rooms = maintenanceService.getRoomsForLandlord(currentUserId);
-        return ResponseEntity.ok(rooms);
+    public ResponseEntity<List<RoomNameProjection>>
+    getLandlordRoomsForMaintenance() {
+    UUID currentUserId = userService.getAuthenticatedUserId();
+    List<RoomNameProjection> rooms =
+    maintenanceService.getRoomsForLandlord(currentUserId);
+    return ResponseEntity.ok(rooms);
     }
 
     @PostMapping
     public ResponseEntity<MaintenanceResponseDto> createMaintenance(
-            @Valid @RequestBody MaintenanceRequestDto maintenanceRequestDto) {
-        UUID currentUserId = userService.getAuthenticatedUserId();
-        MaintenanceResponseDto newMaintenance = maintenanceService.createMaintenance(currentUserId,
-                maintenanceRequestDto);
-        return ResponseEntity.status(201).body(newMaintenance);
+    @Valid @RequestBody MaintenanceRequestDto maintenanceRequestDto) {
+    UUID currentUserId = userService.getAuthenticatedUserId();
+    MaintenanceResponseDto newMaintenance =
+    maintenanceService.createMaintenance(currentUserId,
+    maintenanceRequestDto);
+    return ResponseEntity.status(201).body(newMaintenance);
     }
 
     @GetMapping
