@@ -6,6 +6,7 @@ import java.util.UUID;
 
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -13,8 +14,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import com.ants.ktc.ants_ktc.entities.Room;
+import com.ants.ktc.ants_ktc.repositories.projection.RoomApprovalProjection;
 import com.ants.ktc.ants_ktc.repositories.projection.RoomByAdminPagingProjection;
 import com.ants.ktc.ants_ktc.repositories.projection.RoomByLandlordPagingProjection;
+import com.ants.ktc.ants_ktc.repositories.projection.RoomDeleteProjection;
+import com.ants.ktc.ants_ktc.repositories.projection.RoomHiddenProjection;
 
 @Repository
 public interface RoomJpaRepository extends JpaRepository<Room, UUID> {
@@ -40,18 +44,65 @@ public interface RoomJpaRepository extends JpaRepository<Room, UUID> {
         @Query("SELECT r FROM Room r WHERE r.user.id = :userId")
         List<Room> findAllByUser(UUID userId);
 
-        @Query("SELECT r FROM Room r WHERE r.user.id = :userId")
+        // @Query get all rooms for landlord with pagination
+        @Query("SELECT r FROM Room r " +
+                        "JOIN FETCH r.postType pt " +
+                        "LEFT JOIN FETCH r.address a " +
+                        "LEFT JOIN FETCH a.ward w " +
+                        "LEFT JOIN FETCH w.district d " +
+                        "LEFT JOIN FETCH d.province pr " +
+                        "WHERE r.user.id = :userId")
         Page<RoomByLandlordPagingProjection> findAllByLandlord(@Param("userId") UUID userId, Pageable pageable);
 
         // @Query get all rooms for admin with pagination
-        @Query("SELECT r FROM Room r JOIN FETCH r.user u")
+        @Query("SELECT r FROM Room r " +
+                        "JOIN FETCH r.user u " +
+                        "JOIN FETCH r.postType pt " +
+                        "LEFT JOIN FETCH r.address a " +
+                        "LEFT JOIN FETCH a.ward w " +
+                        "LEFT JOIN FETCH w.district d " +
+                        "LEFT JOIN FETCH d.province pr "
+        // +"WHERE r.isRemoved = 0"
+        )
         Page<RoomByAdminPagingProjection> findAllByAdmin(Pageable pageable);
 
+        // Fetch room details for extend functionality
         @Query("SELECT r FROM Room r JOIN FETCH r.user u JOIN FETCH u.wallet w JOIN FETCH r.postType pt WHERE r.id = :roomId")
         Optional<Room> findForExtendById(@Param("roomId") UUID roomId);
 
-        @Query("SELECT r FROM Room r WHERE r.user.id = :userId")
-        Page<Room> findAllByUser(UUID userId, Pageable pageable);
+        // Projection for room approval status
+        @Query("SELECT r.id AS id, r.approval AS approval, r.title AS title, r.user AS user FROM Room r WHERE r.id = :roomId")
+        Optional<RoomApprovalProjection> findApprovalProjectionById(@Param("roomId") UUID roomId);
+
+        @Modifying
+        @Query("UPDATE Room r SET r.approval = :approval WHERE r.id = :roomId")
+        void updateApprovalById(@Param("roomId") UUID roomId, @Param("approval") int approval);
+
+        // Projection for room hidden status
+        @Query("SELECT r.id AS id, r.hidden AS hidden FROM Room r WHERE r.id = :roomId")
+        Optional<RoomHiddenProjection> findHiddenProjectionById(@Param("roomId") UUID roomId);
+
+        @Modifying
+        @Query("UPDATE Room r SET r.hidden = :hidden WHERE r.id = :roomId")
+        void updateHiddenById(@Param("roomId") UUID roomId, @Param("hidden") int hidden);
+
+        // Projection for room delete status
+        @Query("SELECT r.id AS id, r.isRemoved AS isRemoved FROM Room r WHERE r.id = :roomId")
+        Optional<RoomDeleteProjection> findDeleteProjectionById(@Param("roomId") UUID roomId);
+
+        @Modifying
+        @Query("UPDATE Room r SET r.isRemoved = :isRemoved WHERE r.id = :roomId")
+        void updateIsRemovedById(@Param("roomId") UUID roomId, @Param("isRemoved") int isRemoved);
+
+        @Query("SELECT r FROM Room r " +
+                        "JOIN FETCH r.user u " +
+                        "JOIN FETCH r.postType pt " +
+                        "LEFT JOIN FETCH r.address a " +
+                        "LEFT JOIN FETCH a.ward w " +
+                        "LEFT JOIN FETCH w.district d " +
+                        "LEFT JOIN FETCH d.province pr " +
+                        "WHERE r.user.id = :userId")
+        Page<Room> findAllByUser(@Param("userId") UUID userId, Pageable pageable);
 
         List<RoomNameProjection> findByUserIdAndIsRemovedFalse(UUID userId);
 
@@ -69,5 +120,14 @@ public interface RoomJpaRepository extends JpaRepository<Room, UUID> {
                         "AND r.post_end_date > CURRENT_DATE " +
                         "AND r.hidden = 0 AND r.isRemoved = 0 AND r.approval = 1")
         Page<Room> findAllRoomInUser(@Param("code") String code, Pageable pageable);
+
+        @Query(" SELECT COUNT(r) FROM Room r WHERE approval = 1 and isRemoved = 0")
+        Long countAcceptedApprovalRooms();
+
+        @Query(" SELECT COUNT(r) FROM Room r WHERE approval = 0 and isRemoved = 0")
+        Long countPendingApprovalRooms();
+
+        @Query(" SELECT COUNT(r) FROM Room r WHERE isRemoved = 0 and approval != 2")
+        Long countTotalApprovalRooms();
 
 }

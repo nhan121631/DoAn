@@ -40,6 +40,7 @@ public interface RoomByAdminPagingProjection {
 
         interface ProfileInfo {
             String getFullName();
+            String getEmail();
         }
     }
 

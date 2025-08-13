@@ -7,7 +7,7 @@ import PaymentTable from "../components/payment-history/PaymentTable";
 import PaymentPagination from "../components/payment-history/PaymentPagination";
 import PaymentFilter from "../components/payment/PaymentFilter";
 import { redirect } from "next/navigation";
-import { getTransactionsByUserIdPaginated } from "@/services/PaymentServive";
+import { getTransactionsByUserIdPaginated, getTransactionsByUserIdAndDateRange } from "@/services/PaymentServive";
 
 export default function PaymentHistoryPage() {
   const [payments, setPayments] = useState<any[]>([]);
@@ -21,6 +21,8 @@ export default function PaymentHistoryPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalRecords, setTotalRecords] = useState(0);
   const pageSize = 5;
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
 
   useEffect(() => {
     const fetchAllStats = async () => {
@@ -70,10 +72,21 @@ export default function PaymentHistoryPage() {
 
   useEffect(() => {
     const fetchPayments = async () => {
-      const result = await getTransactionsByUserIdPaginated(
-        currentPage - 1,
-        pageSize
-      );
+      // Nếu có ngày lọc thì gọi API lọc, ngược lại gọi API phân trang bình thường
+      let result;
+      if (startDate && endDate) {
+        result = await getTransactionsByUserIdAndDateRange(
+          startDate,
+          endDate,
+          currentPage - 1,
+          pageSize
+        );
+      } else {
+        result = await getTransactionsByUserIdPaginated(
+          currentPage - 1,
+          pageSize
+        );
+      }
 
       if (result.status === "fail" || result.status === "error") {
         setPayments([]);
@@ -90,7 +103,7 @@ export default function PaymentHistoryPage() {
     };
 
     fetchPayments();
-  }, [currentPage, pageSize]);
+  }, [currentPage, pageSize, startDate, endDate]);
 
   const filteredPayments = payments.filter((p) =>
     filter === "success"
@@ -111,7 +124,15 @@ export default function PaymentHistoryPage() {
           </div>
 
           <PaymentStats stats={stats} totalRecords={totalRecords} />
-          <PaymentFilter filter={filter} setFilter={setFilter} />
+          <PaymentFilter
+            filter={filter}
+            setFilter={setFilter}
+            startDate={startDate}
+            endDate={endDate}
+            setStartDate={setStartDate}
+            setEndDate={setEndDate}
+            onFilter={() => setCurrentPage(1)}
+          />
           <PaymentTable payments={filteredPayments} />
           <PaymentPagination
             currentPage={currentPage}

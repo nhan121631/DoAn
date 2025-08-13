@@ -17,6 +17,7 @@ import lombok.NoArgsConstructor;
 public class RoomAdminResponseProjectionDto {
     UUID id;
     String landlordFullName;
+    String landlordEmail;
     String title;
     String description;
     Double priceMonth;

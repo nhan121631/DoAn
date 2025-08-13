@@ -47,6 +47,19 @@ public class TransactionController {
         return new ResponseEntity<>(responseDto, HttpStatus.OK);
     }
 
+    // Controller
+    @GetMapping("/by-user/{userId}/date-range")
+    public ResponseEntity<PaginationTransactionResponseDto> getTransactionsByUserIdAndDateRange(
+            @PathVariable("userId") UUID userId,
+            @RequestParam("startDate") String startDate,
+            @RequestParam("endDate") String endDate,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "8") int size) {
+        PaginationTransactionResponseDto responseDto = transactionService.getTransactionsByUserIdAndDateRange(
+                userId, page, size, startDate, endDate);
+        return new ResponseEntity<>(responseDto, HttpStatus.OK);
+    }
+
     @GetMapping("/{userId}")
     public ResponseEntity<List<TransactionResponseDto>> getAllTransactionByUserId(@PathVariable("userId") UUID userId) {
         List<TransactionResponseDto> transactions = transactionService.getAllTransactionsByUserId(userId);

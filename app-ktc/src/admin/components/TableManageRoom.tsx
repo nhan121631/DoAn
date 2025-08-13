@@ -1,25 +1,23 @@
-import {
-  Button,
-  Form,
-  Input,
-  message,
-  Modal,
-  Popconfirm,
-  Space,
-  Table,
-  Tag,
-} from "antd";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable react-hooks/exhaustive-deps */
+import { Button, message, Popconfirm, Space, Table, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useState } from "react";
 import { AiOutlineInfoCircle, AiOutlineMail } from "react-icons/ai";
 import { ThemeContext } from "../context/ThemeContext";
-import { fetchAllRoomPaging } from "../service/RoomService";
+import { sendAdminEmailToLandlordWithFile } from "../service/RoomService";
 import type { RoomResponseDto } from "../types/type";
-
-// Dữ liệu sẽ lấy từ API, không dùng mock data
+// import type { UploadFile } from "antd/es/upload";
+import { useQuery } from "@tanstack/react-query";
+import {
+  getRoomQueryOptions,
+  useDeleteRoom,
+  useUpdateApproval,
+} from "../service/ReactQueryRoom";
+import RoomDetailModal from "./RoomDetailModal";
+import SendMailModal from "./SendMailModal";
 
 const TableManageRoom: React.FC = () => {
-  const [data, setData] = useState<RoomResponseDto[]>([]);
   const [selectedRoom, setSelectedRoom] = useState<RoomResponseDto | null>(
     null
   );
@@ -27,63 +25,74 @@ const TableManageRoom: React.FC = () => {
   const [isInfoModalOpen, setInfoModalOpen] = useState(false);
   const { isDark } = useContext(ThemeContext);
   const [page, setPage] = useState(0);
-  const [total, setTotal] = useState(0);
-  const [loading, setLoading] = useState(false);
-  
+
   const pageSize = 5;
+  const [messageApi, contextHolder] = message.useMessage();
+  // const [form] = Form.useForm();
 
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true); 
-      try {
-        const res = await fetchAllRoomPaging(page, pageSize);
-        const rooms: RoomResponseDto[] = (res.rooms ?? []).map((room) => ({
-          ...room,
-          key: room.id,
-          name: room.title,
-          addressText: [
-            room.address?.street,
-            room.address?.ward?.name,
-            room.address?.ward?.district?.name,
-            room.address?.ward?.district?.province?.name,
-          ]
-            .filter(Boolean)
-            .join(", "),
-          price: room.priceMonth,
-          approval: room.approval as 0 | 1 | 2,
-          isRemove: room.isRemoved as 0 | 1,
-        }));
-        setData(rooms);
-        setTotal(res.totalRecords ?? 0);
-      } catch (_) {
-        message.error("Lỗi khi tải danh sách phòng!");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
-  }, [page]);
+  const { data, isLoading, refetch } = useQuery(
+    getRoomQueryOptions(page, pageSize)
+  );
 
+  const updateApprovalMutation = useUpdateApproval({
+    mutationConfig: {
+      onSuccess: () => {
+        refetch();
+        messageApi.success({
+          content: "You updated the room approval status successfully!",
+          duration: 3,
+        });
+      },
+      onError: (error: any) => {
+        messageApi.error({
+          content:
+            error?.response?.data?.message?.join(", ") ||
+            "An error has occurred!",
+          duration: 3,
+        });
+      },
+    },
+  });
   const updateApproval = (record: RoomResponseDto, value: 1 | 2) => {
-    const updated = data.map((item) =>
-      item.id === record.id ? { ...item, approval: value } : item
-    );
-    setData(updated);
-    message.success(
-      value === 1 ? "Approved successfully" : "Rejected successfully"
-    );
+    console.log("Updating approval for room:", record.id, "to status:", value);
+    updateApprovalMutation.mutate({
+      roomId: record.id,
+      status: value,
+      page,
+      pageSize,
+    });
   };
 
-  const toggleHidden = (record: RoomResponseDto) => {
-    const updated = data.map((item) =>
-      item.id === record.id
-        ? { ...item, isRemoved: (item.isRemoved === 1 ? 0 : 1) as 0 | 1 }
-        : item
-    );
-    setData(updated);
-    message.success(
-      record.isRemoved === 1 ? "Post is now visible." : "Post has been hidden."
-    );
+  const deleteMutation = useDeleteRoom({
+    mutationConfig: {
+      onSuccess: (_, variables) => {
+        refetch();
+        messageApi.success({
+          content:
+            variables && variables.isRemoved === 0
+              ? "Post is now recovered."
+              : "You removed the room successfully!",
+          duration: 3,
+        });
+      },
+      onError: (error: any) => {
+        messageApi.error({
+          content:
+            error?.response?.data?.message?.join(", ") ||
+            "An error has occurred!",
+          duration: 3,
+        });
+      },
+    },
+  });
+  const toggleRemove = (record: RoomResponseDto) => {
+    console.log("Removing room:", record.id);
+    deleteMutation.mutate({
+      roomId: record.id,
+      isRemoved: record.isRemoved === 1 ? 0 : 1,
+      page,
+      pageSize,
+    });
   };
 
   const handleMailClick = (record: RoomResponseDto) => {
@@ -99,14 +108,18 @@ const TableManageRoom: React.FC = () => {
   const columns: ColumnsType<RoomResponseDto> = [
     {
       title: "Room Name",
-      dataIndex: "name",
-      key: "name",
+      dataIndex: "title",
+      key: "title",
       sorter: (a, b) => a.title.localeCompare(b.title),
     },
     {
       title: "Description",
       dataIndex: "description",
       key: "description",
+      width: 250,
+      render: (text: string) => (
+        <div className="line-clamp-5 break-words">{text}</div>
+      ),
     },
     {
       title: "Owner Name",
@@ -116,15 +129,24 @@ const TableManageRoom: React.FC = () => {
     },
     {
       title: "Address",
-      dataIndex: "addressText",
-      key: "addressText",
+      key: "address",
+      render: (_, record) => {
+        const addr = record.address;
+        if (!addr) return "";
+        const street = addr.street || "";
+        const ward = addr.ward?.name || "";
+        const district = addr.ward?.district?.name || "";
+        const province = addr.ward?.district?.province?.name || "";
+        return `${street}, ${ward}, ${district}, ${province}`;
+      },
     },
     {
       title: "Price/month",
-      dataIndex: "price",
-      key: "price",
+      dataIndex: "priceMonth",
+      key: "priceMonth",
       sorter: (a, b) => a.priceMonth - b.priceMonth,
-      render: (price) => price.toLocaleString() + " ₫",
+      render: (priceMonth) =>
+        priceMonth ? priceMonth.toLocaleString() + " ₫" : "N/A",
     },
     {
       title: "Available",
@@ -184,7 +206,7 @@ const TableManageRoom: React.FC = () => {
               ? "Do you want to show this post again?"
               : "Are you sure to remove this post?"
           }
-          onConfirm={() => toggleHidden(record)}
+          onConfirm={() => toggleRemove(record)}
           okText="Yes"
           cancelText="No"
         >
@@ -217,100 +239,37 @@ const TableManageRoom: React.FC = () => {
       ),
     },
   ];
-
+  console.log(data);
   return (
     <>
+      {contextHolder}
       <Table
         columns={columns}
-        dataSource={data}
-        rowKey="key"
-        loading={loading}
+        dataSource={data?.rooms}
+        rowKey="id"
+        loading={isLoading}
         pagination={{
           pageSize,
           current: page + 1,
-          total,
+          total: data?.totalRecords || 0,
           onChange: (p) => setPage(p - 1),
         }}
       />
       {/* ...existing code for modals... */}
-      <Modal
-        title="Send Email"
+      <SendMailModal
         open={isModalOpen}
         onCancel={() => setModalOpen(false)}
-        footer={null}
-        className={isDark ? "dark" : ""}
-      >
-        <Form
-          layout="vertical"
-          onFinish={(values) => {
-            console.log("Email values:", values);
-            message.success("Email sent successfully!");
-            setModalOpen(false);
-          }}
-        >
-          <Form.Item label="To">
-            <Input value={selectedRoom?.title} disabled />
-          </Form.Item>
-          <Form.Item
-            label="Subject"
-            name="subject"
-            rules={[{ required: true, message: "Please enter email subject" }]}
-          >
-            <Input placeholder="Enter email subject" />
-          </Form.Item>
-          <Form.Item
-            label="Message"
-            name="message"
-            rules={[
-              { required: true, message: "Please enter your message" },
-              { min: 10, message: "Message should be at least 10 characters" },
-            ]}
-          >
-            <Input.TextArea
-              rows={4}
-              placeholder="Enter your message"
-              maxLength={500}
-              showCount
-            />
-          </Form.Item>
-          <Form.Item>
-            <Button type="primary" htmlType="submit" className="w-full">
-              Send
-            </Button>
-          </Form.Item>
-        </Form>
-      </Modal>
-      <Modal
-        title="Room Details"
+        landlordEmail={selectedRoom?.landlordEmail ?? ""}
+        onSend={async (formData) => {
+          await sendAdminEmailToLandlordWithFile(formData);
+        }}
+        isDark={isDark}
+      />
+      <RoomDetailModal
+        roomId={selectedRoom?.id}
         open={isInfoModalOpen}
         onCancel={() => setInfoModalOpen(false)}
-        footer={null}
-        width={700}
-        className={isDark ? "dark" : ""}
-      >
-        <p>
-          <b>Name:</b> {selectedRoom?.title}
-        </p>
-        <p>
-          <b>Description:</b> {selectedRoom?.description}
-        </p>
-        <p>
-          <b>Address:</b>{" "}
-          {selectedRoom?.address ? String(selectedRoom.address) : ""}
-        </p>
-        <p>
-          <b>Price:</b> {selectedRoom?.priceMonth?.toLocaleString()} ₫
-        </p>
-        <p>
-          <b>Status:</b> {selectedRoom?.available}
-        </p>
-        <p>
-          <b>Approval:</b> {selectedRoom?.approval}
-        </p>
-        <p>
-          <b>Removed:</b> {selectedRoom?.isRemoved === 1 ? "Yes" : "No"}
-        </p>
-      </Modal>
+      />
     </>
   );
 };

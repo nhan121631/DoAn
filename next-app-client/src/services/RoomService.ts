@@ -22,11 +22,8 @@ export async function createRoom(images: File[] | null, room: string) {
   return response.json();
 }
 
-export async function updateRoom(
-roomId: string,
-formData: FormData
-) {
-  // Log 
+export async function updateRoom(roomId: string, formData: FormData) {
+  // Log
   console.log("--- UPDATE ROOM API ---");
   console.log("roomId:", roomId);
   for (const pair of formData.entries()) {
@@ -34,7 +31,7 @@ formData: FormData
   }
   console.log("-----------------------");
 
-  const response = await fetch(`/api/landlord/room/${roomId}`, {
+  const response = await fetch(`/api/landlord/room?roomId=${roomId}`, {
     method: "PATCH",
     body: formData,
   });
@@ -121,7 +118,9 @@ export async function getRoomById(id: string) {
 
 export async function getRoomVipUser(page: number, size: number) {
   try {
-    const response = await fetch(`${API_URL}/rooms/allroom-vip?page=${page}&size=${size}`);
+    const response = await fetch(
+      `${API_URL}/rooms/allroom-vip?page=${page}&size=${size}`
+    );
     if (!response.ok) {
       const data = await response.json();
       throw new Error(data.message || "Failed to fetch room images");
@@ -134,7 +133,9 @@ export async function getRoomVipUser(page: number, size: number) {
 }
 export async function getRoomNormalUser(page: number, size: number) {
   try {
-    const response = await fetch(`${API_URL}/rooms/allroom-normal?page=${page}&size=${size}`);
+    const response = await fetch(
+      `${API_URL}/rooms/allroom-normal?page=${page}&size=${size}`
+    );
     if (!response.ok) {
       const data = await response.json();
       throw new Error(data.message || "Failed to fetch room images");

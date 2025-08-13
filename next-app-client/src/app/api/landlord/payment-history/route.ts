@@ -19,7 +19,6 @@ export async function GET(request: Request) {
   const size = Number(searchParams.get("size")) || 5;
 
   try {
-    // Gọi trực tiếp backend
     const backendRes = await fetch(
       `${API_URL}/transactions/by-user/${session.user.id}/paging?page=${page}&size=${size}`,
       {

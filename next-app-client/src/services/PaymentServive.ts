@@ -49,6 +49,45 @@ export async function createTransactionByUserId(transactionData: any) {
   }
 }
 
+export async function getTransactionsByUserIdAndDateRange(
+  startDate: string,
+  endDate: string,
+  page: number = 0,
+  size: number = 5
+) {
+  try {
+    const params = new URLSearchParams({
+      startDate,
+      endDate,
+      page: page.toString(),
+      size: size.toString(),
+    }).toString();
+
+    const response = await fetch(
+      `/api/landlord/payment-history/filter-by-date?${params}`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    if (!response.ok) throw new Error("Network error");
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error fetching transactions by date range:", error);
+    return {
+      transactions: [],
+      pageNumber: page,
+      pageSize: size,
+      totalRecords: 0,
+      totalPages: 0,
+      hasNext: false,
+      hasPrevious: false,
+    };
+  }
+}
+
 type PaymentData = {
   amount: number;
   vnp_BankCode?: string;

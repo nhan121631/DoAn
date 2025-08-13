@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 import React, { useState } from "react";
 import {
@@ -23,13 +24,13 @@ import {
 import * as XLSX from "xlsx";
 import Image from "next/image";
 
-const availableRooms = [
-  { name: "Mr. Nam's Room 1", address: "Ngu Hanh Son, Da Nang" },
-  { name: "Mr. Tien's Room 2", address: "Son Tra, Da Nang" },
-  { name: "Mr. Duong's Room 3", address: "Lien Chieu, Da Nang" },
-  { name: "Ms. Phung's Room 1", address: "Hoa Vang , Da Nang" },
-  { name: "Ms. Lan's Room 2", address: "Hoa Xuan , Da Nang" },
-];
+// const availableRooms = [
+//   { name: "Mr. Nam's Room 1", address: "Ngu Hanh Son, Da Nang" },
+//   { name: "Mr. Tien's Room 2", address: "Son Tra, Da Nang" },
+//   { name: "Mr. Duong's Room 3", address: "Lien Chieu, Da Nang" },
+//   { name: "Ms. Phung's Room 1", address: "Hoa Vang , Da Nang" },
+//   { name: "Ms. Lan's Room 2", address: "Hoa Xuan , Da Nang" },
+// ];
 
 const initialContractData: ContractData[] = [
   {
