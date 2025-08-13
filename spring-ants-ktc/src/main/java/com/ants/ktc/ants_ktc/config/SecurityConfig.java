@@ -42,8 +42,11 @@ public class SecurityConfig {
                                                 .authenticationEntryPoint(this.customAuthenticationEntryPoint)
                                                 .accessDeniedHandler(this.customAccessDeniedHandler))
                                 .authorizeHttpRequests(auth -> auth
+                                                .requestMatchers("/api/auth/change-password").authenticated()
                                                 .requestMatchers("/api/auth/**").permitAll()
                                                 // Cho phép GET /api/post-types/** cho cả Landlords và Administrators
+                                                // admin
+                                                .requestMatchers("/api/admin/**").hasRole("Administrators")
                                                 .requestMatchers(HttpMethod.GET, "/api/post-types/**")
                                                 .hasAnyRole("Landlords", "Administrators")
                                                 .requestMatchers("/api/post-types/**").hasAnyRole("Administrators")

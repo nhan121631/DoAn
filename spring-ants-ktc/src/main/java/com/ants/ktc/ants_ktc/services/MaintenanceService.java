@@ -31,8 +31,10 @@ public class MaintenanceService {
         private RoomJpaRepository roomJpaRepository;
 
         @Transactional
-        public MaintenanceResponseDto createMaintenance(UUID userId, MaintenanceRequestDto requestDto) {
-                Room room = roomJpaRepository.findByIdAndUserIdAndIsRemovedFalse(requestDto.getRoomId(), userId)
+        public MaintenanceResponseDto createMaintenance(UUID userId,
+                        MaintenanceRequestDto requestDto) {
+                Room room = roomJpaRepository.findByIdAndUserIdAndIsRemovedFalse(requestDto.getRoomId(),
+                                userId)
                                 .orElseThrow(() -> new IllegalArgumentException(
                                                 "Room not found or does not belong to the current landlord."));
 

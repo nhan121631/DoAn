@@ -81,4 +81,20 @@ public interface UserJpaRepository extends JpaRepository<User, UUID> {
             WHERE r.name <> 'Administrators' OR r IS NULL
             """, countQuery = "SELECT count(DISTINCT u) FROM User u LEFT JOIN u.roles r WHERE r.name <> 'Administrators' OR r IS NULL")
     Page<User> findAllExcludingAdmins(Pageable pageable);
+
+    @Query(value = """
+            SELECT COUNT(u) FROM User u WHERE u.isActive = 0
+            """)
+    Long countInactiveUsers();
+
+    @EntityGraph(attributePaths = {
+            "profile",
+            "profile.address",
+            "profile.address.ward",
+            "profile.address.ward.district",
+            "profile.address.ward.district.province",
+            "roles"
+    })
+    @org.springframework.lang.NonNull
+    Optional<User> findById(@org.springframework.lang.NonNull UUID userId);
 }

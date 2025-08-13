@@ -107,6 +107,7 @@ export type PaginatedResponse<T> = {
   size: number;
   totalElements: number;
   totalPages: number;
+  totalRecords: number;
 };
 
 export type CreateMaintenanceFormValues = {
@@ -234,3 +235,9 @@ export type LandlordPaymentInfo = {
   phoneNumber: string;
   email: string;
 };
+export type Roomname ={
+  name:string;
+  address:string
+}
+
+export type SearchParamsType = { [key: string]: string | string[] | undefined };

@@ -120,7 +120,7 @@ export default function ButtonEditProfile({
         onClick={() => setOpen(true)}
         className="bg-blue-600 hover:bg-blue-700 !text-white font-semibold px-6 py-2 rounded transition-colors duration-200 dark:bg-blue-800 dark:hover:bg-blue-900"
       >
-        Chỉnh sửa thông tin
+        Edit Profile
       </button>
       <ModalProfile
         open={open}

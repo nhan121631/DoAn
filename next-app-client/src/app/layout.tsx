@@ -25,13 +25,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-        <NextAuthProvider>
     <html lang="en">
       <body className={`${inter.variable} ${robotoMono.variable} antialiased`}>
-        {children}
+        <NextAuthProvider>{children}</NextAuthProvider>
       </body>
     </html>
-        </NextAuthProvider>
-
   );
 }

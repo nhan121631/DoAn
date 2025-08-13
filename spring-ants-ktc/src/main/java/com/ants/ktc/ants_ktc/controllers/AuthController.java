@@ -1,9 +1,11 @@
 package com.ants.ktc.ants_ktc.controllers;
 
 import java.util.Map;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -63,7 +65,7 @@ public class AuthController {
     }
 
     @PostMapping("/update-password")
-    public ResponseEntity<Object> changePassword(@RequestBody Map<String, String> request) {
+    public ResponseEntity<Object> updatePassword(@RequestBody Map<String, String> request) {
         String email = request.get("email");
         String newPassword = request.get("newPassword");
         String code = request.get("code");
@@ -76,4 +78,18 @@ public class AuthController {
         }
     }
 
+    @PatchMapping("/change-password")
+    public ResponseEntity<Object> changePassword(@RequestBody Map<String, String> request) {
+        String userIdStr = request.get("userId");
+        String password = request.get("password");
+        UUID userId = UUID.fromString(userIdStr);
+        String newPassword = request.get("newPassword");
+        boolean isChanged = this.userService.changePassword(userId, password, newPassword);
+        if (isChanged) {
+            return ResponseEntity.ok(Map.of("message", "Password changed successfully"));
+        } else {
+            return ResponseEntity.badRequest().body(Map.of("message", "Failed to change password"));
+        }
+
+    }
 }

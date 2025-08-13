@@ -3,6 +3,7 @@ import { URL_PPYTHON } from "@/services/Constant";
 import { useEffect, useState, useRef } from "react";
 import { HiOutlineSearch } from "react-icons/hi";
 import { VscSettings } from "react-icons/vsc";
+import ModalFilter from "./Filter/ModalFilter";
 
 const API_URL = `${URL_PPYTHON}/ai_search`;
 
@@ -12,6 +13,7 @@ export default function SearchBar() {
   const inputRef = useRef<HTMLInputElement>(null);
   const [showSuggest, setShowSuggest] = useState(false);
   const [inputValue, setInputValue] = useState("");
+  const [openModalFilter, setOpenModalFilter] = useState(false);
   //   const [error, setError] = useState<string | null>(null);
 
   const handleSearch = async (query: string) => {
@@ -87,71 +89,73 @@ export default function SearchBar() {
   }, []);
 
   return (
-    <div className="absolute bottom-[-40px] left-1/2 -translate-x-1/2 w-[90%] max-w-3xl bg-stone-900 rounded-3xl shadow-lg flex items-center px-4 py-3 gap-2">
-      <div className="relative w-full flex items-center gap-4 justify-center">
-        <div className="flex gap-2 justify-center items-center">
-          <div className="flex items-center gap-2">
-            <div className="flex flex-col">
-              <input
-                ref={inputRef}
-                id="search-input"
-                className="flex-1 w-full md:w-[400px] border rounded-2xl px-4 py-3 text-white border-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 transition-all"
-                value={inputValue}
-                onChange={handleSearchChange}
-                onFocus={() => setShowSuggest(true)}
-                placeholder="Enter Keyword"
-              />
-              {showSuggest && (loading || textSearchs.length > 0) && (
-                <ul
-                  className="absolute left-0 md:left-0 bg-white border rounded shadow-lg z-50 max-h-60 overflow-auto w-full md:w-[400px] scrollbar-hide"
-                  style={{ top: "100%", marginTop: 0 }}
-                >
-                  {textSearchs.map((item, idx) => (
-                    <li
-                      key={idx}
-                      className="px-4 py-2 hover:bg-yellow-100 cursor-pointer text-gray-800"
-                      onMouseDown={(e) => {
-                        e.preventDefault();
-                        setInputValue(item);
-                        console.log("Selected item:", item);
-                        setTextSearchs([]);
-                        setShowSuggest(false);
-                        prevWordCountRef.current = 0;
-                        if (inputRef.current) {
-                          inputRef.current.focus();
-                        }
-                      }}
-                    >
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-              )}
+    <div>
+      {openModalFilter && (
+        <ModalFilter handleClose={() => setOpenModalFilter(false)} />
+      )}
+      <div className="absolute bottom-[-40px] left-1/2 -translate-x-1/2 w-[90%] max-w-3xl bg-stone-900 rounded-3xl shadow-lg flex items-center px-4 py-3 gap-2">
+        <div className="relative w-full flex items-center gap-4 justify-center">
+          <div className="flex gap-2 justify-center items-center">
+            <div className="flex items-center gap-2">
+              <div className="flex flex-col">
+                <input
+                  ref={inputRef}
+                  id="search-input"
+                  className="flex-1 w-full md:w-[400px] border rounded-2xl px-4 py-3 text-white border-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 transition-all"
+                  value={inputValue}
+                  onChange={handleSearchChange}
+                  onFocus={() => setShowSuggest(true)}
+                  placeholder="Enter Keyword"
+                />
+                {showSuggest && (loading || textSearchs.length > 0) && (
+                  <ul
+                    className="absolute left-0 md:left-0 bg-white border rounded shadow-lg z-50 max-h-60 overflow-auto w-full md:w-[400px] scrollbar-hide"
+                    style={{ top: "100%", marginTop: 0 }}
+                  >
+                    {textSearchs.map((item, idx) => (
+                      <li
+                        key={idx}
+                        className="px-4 py-2 hover:bg-yellow-100 cursor-pointer text-gray-800"
+                        onMouseDown={(e) => {
+                          e.preventDefault();
+                          setInputValue(item);
+                          console.log("Selected item:", item);
+                          setTextSearchs([]);
+                          setShowSuggest(false);
+                          prevWordCountRef.current = 0;
+                          if (inputRef.current) {
+                            inputRef.current.focus();
+                          }
+                        }}
+                      >
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+              <button
+                className="border-1 border-gray-500 text-white px-5 py-3 rounded-xl font-semibold shadow flex items-center gap-2"
+                onClick={() => {
+                  setOpenModalFilter(true);
+                }}
+              >
+                <VscSettings />
+                <span>Filter</span>
+              </button>
+              <button
+                className="bg-white hover:bg-gray-300 text-stone-900 px-5 py-3 rounded-xl font-semibold shadow flex items-center gap-2"
+                onClick={() => {
+                  if (inputValue.trim()) {
+                    console.log("Search for:", inputValue);
+                    setShowSuggest(false);
+                  }
+                }}
+              >
+                <HiOutlineSearch />
+                <span>Search </span>
+              </button>
             </div>
-            <button
-              className="border-1 border-gray-500 text-white px-5 py-3 rounded-xl font-semibold shadow flex items-center gap-2"
-              onClick={() => {
-                if (inputValue.trim()) {
-                  console.log("Search for:", inputValue);
-                  setShowSuggest(false);
-                }
-              }}
-            >
-              <VscSettings />
-              <span>Filter</span>
-            </button>
-            <button
-              className="bg-white hover:bg-gray-300 text-stone-900 px-5 py-3 rounded-xl font-semibold shadow flex items-center gap-2"
-              onClick={() => {
-                if (inputValue.trim()) {
-                  console.log("Search for:", inputValue);
-                  setShowSuggest(false);
-                }
-              }}
-            >
-              <HiOutlineSearch />
-              <span>Search </span>
-            </button>
           </div>
         </div>
       </div>

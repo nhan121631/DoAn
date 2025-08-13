@@ -4,6 +4,13 @@ import { MdAccountCircle } from "react-icons/md";
 import { RiFileListLine } from "react-icons/ri";
 import { TbClockCheck } from "react-icons/tb";
 import TableManageRoom from "../components/TableManageRoom";
+import { useQuery } from "@tanstack/react-query";
+import { useCountActiveUsers } from "../service/ReactQueryAccount";
+import {
+  useCountAcceptedRoomsQueryOptions,
+  useCountPendingRoomsQueryOptions,
+  useCountTotalRoomsQueryOptions,
+} from "../service/ReactQueryRoom";
 
 const { Content } = Layout;
 
@@ -11,6 +18,15 @@ function StatisticPage() {
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
+
+  const { data: activeUsersCount } = useQuery(useCountActiveUsers());
+  const { data: acceptedRoomsCount } = useQuery(
+    useCountAcceptedRoomsQueryOptions()
+  );
+  const { data: pendingRoomsCount } = useQuery(
+    useCountPendingRoomsQueryOptions()
+  );
+  const { data: totalRoomsCount } = useQuery(useCountTotalRoomsQueryOptions());
 
   return (
     <Content className="mx-4 my-6 min-h-[280px]">
@@ -25,7 +41,9 @@ function StatisticPage() {
           <div className="flex justify-between">
             <div className="flex flex-col font-semibold justify-between gap-y-10">
               <span className="text-xl">Account</span>
-              <span className="text-3xl">10</span>
+              <span className="text-3xl">
+                {activeUsersCount?.data || activeUsersCount || 0}
+              </span>
             </div>
             <div className="flex text-6xl text-sky-600 dark:text-sky-400">
               <MdAccountCircle />
@@ -42,7 +60,7 @@ function StatisticPage() {
           <div className="flex justify-between">
             <div className="flex flex-col font-semibold justify-between gap-y-10">
               <span className="text-xl">Approved Post</span>
-              <span className="text-3xl">17</span>
+              <span className="text-3xl">{acceptedRoomsCount || 0}</span>
             </div>
             <div className="flex text-6xl text-green-500 dark:text-green-400">
               <AiOutlineCheckCircle />
@@ -59,7 +77,7 @@ function StatisticPage() {
           <div className="flex justify-between">
             <div className="flex flex-col font-semibold justify-between gap-y-10">
               <span className="text-xl">Pending Approval</span>
-              <span className="text-3xl">10</span>
+              <span className="text-3xl">{pendingRoomsCount || 0}</span>
             </div>
             <div className="flex text-6xl text-amber-500 dark:text-amber-400">
               <TbClockCheck />
@@ -76,7 +94,7 @@ function StatisticPage() {
           <div className="flex justify-between">
             <div className="flex flex-col font-semibold justify-between gap-y-10">
               <span className="text-xl">Total Posts</span>
-              <span className="text-3xl">10</span>
+              <span className="text-3xl">{totalRoomsCount || 0}</span>
             </div>
             <div className="flex text-6xl text-sky-600 dark:text-sky-400">
               <RiFileListLine />

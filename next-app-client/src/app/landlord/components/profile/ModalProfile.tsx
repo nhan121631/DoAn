@@ -254,7 +254,11 @@ export default function ModalProfile({
           </Form.Item>
         </div>
 
-        <Form.Item name="name" label="Full Name">
+        <Form.Item
+          name="name"
+          label="Full Name"
+          rules={[{ required: true, message: "Please enter your full name" }]}
+        >
           <Input prefix={<FaUser />} placeholder="Full Name" />
         </Form.Item>
 
@@ -262,7 +266,7 @@ export default function ModalProfile({
           name="phone"
           label="Phone Number"
           rules={[
-            { required: true, message: "Please enter your phone number" },
+            // { required: true, message: "Please enter your phone number" },
             {
               pattern: /^\d{10,15}$/,
               message: "Phone number must be 10-15 digits",

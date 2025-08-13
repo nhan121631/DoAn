@@ -18,7 +18,6 @@ import RoomDetailModal from "./RoomDetailModal";
 import SendMailModal from "./SendMailModal";
 
 const TableManageRoom: React.FC = () => {
-  // const [data, setData] = useState<RoomResponseDto[]>([]);
   const [selectedRoom, setSelectedRoom] = useState<RoomResponseDto | null>(
     null
   );
@@ -66,10 +65,13 @@ const TableManageRoom: React.FC = () => {
 
   const deleteMutation = useDeleteRoom({
     mutationConfig: {
-      onSuccess: () => {
+      onSuccess: (_, variables) => {
         refetch();
         messageApi.success({
-          content: "You removed the room successfully!",
+          content:
+            variables && variables.isRemoved === 0
+              ? "Post is now recovered."
+              : "You removed the room successfully!",
           duration: 3,
         });
       },
@@ -92,31 +94,6 @@ const TableManageRoom: React.FC = () => {
       pageSize,
     });
   };
-  // const toggleRemove = async (record: RoomResponseDto) => {
-  //   try {
-  //     // Call backend API to update isRemoved status in DB
-  //     await deleteRoom(record.id, record.isRemoved === 1 ? 0 : 1);
-  //     // Update local state after successful DB update
-  //     const updated = data.map((item) =>
-  //       item.id === record.id
-  //         ? { ...item, isRemoved: (item.isRemoved === 1 ? 0 : 1) as 0 | 1 }
-  //         : item
-  //     );
-  //     setData(updated);
-  //     messageApi.success({
-  //       content:
-  //         record.isRemoved === 1
-  //           ? "Post is now recovered."
-  //           : "Post has been deleted.",
-  //       duration: 2,
-  //     });
-  //   } catch {
-  //     messageApi.error({
-  //       content: "Failed to update post status!",
-  //       duration: 2,
-  //     });
-  //   }
-  // };
 
   const handleMailClick = (record: RoomResponseDto) => {
     setSelectedRoom(record);
@@ -289,7 +266,7 @@ const TableManageRoom: React.FC = () => {
         isDark={isDark}
       />
       <RoomDetailModal
-        roomId={selectedRoom?.id ?? null}
+        roomId={selectedRoom?.id}
         open={isInfoModalOpen}
         onCancel={() => setInfoModalOpen(false)}
       />

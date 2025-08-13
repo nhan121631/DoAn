@@ -26,6 +26,7 @@ import com.ants.ktc.ants_ktc.dtos.address.DistrictResponseDto;
 import com.ants.ktc.ants_ktc.dtos.address.ProvinceResponseDto;
 import com.ants.ktc.ants_ktc.dtos.address.WardResponseDto;
 import com.ants.ktc.ants_ktc.dtos.convenient.ConvenientResponseDto;
+import com.ants.ktc.ants_ktc.dtos.filters.FilterRoomRequestDto;
 import com.ants.ktc.ants_ktc.dtos.image.ImageResponseDto;
 import com.ants.ktc.ants_ktc.dtos.room.PaginationRoomAdminResponseDto;
 import com.ants.ktc.ants_ktc.dtos.room.PaginationRoomInUserResponseDto;
@@ -133,6 +134,11 @@ public class RoomService {
         private List<ConvenientResponseDto> convertConveniences(List<Convenient> conveniences) {
                 if (conveniences == null)
                         return new ArrayList<>();
+                // Ensure no null name
+                conveniences.forEach(c -> {
+                        if (c.getName() == null)
+                                c.setName("");
+                });
                 return conveniences.stream()
                                 .map(conv -> ConvenientResponseDto.builder()
                                                 .id(conv.getId())
@@ -255,6 +261,11 @@ public class RoomService {
                 if (convenients.size() != requestDto.getConvenientIds().size()) {
                         throw new IllegalArgumentException("Convenients not found");
                 }
+                // Ensure no null name
+                convenients.forEach(c -> {
+                        if (c.getName() == null)
+                                c.setName("");
+                });
                 room.setConvenients(convenients);
 
                 // Xử lý images
@@ -336,6 +347,11 @@ public class RoomService {
                 if (convenients.size() != request.getConvenientIds().size()) {
                         throw new IllegalArgumentException("Convenients not found");
                 }
+                // Ensure no null name
+                convenients.forEach(c -> {
+                        if (c.getName() == null)
+                                c.setName("");
+                });
                 room.setConvenients(convenients);
 
                 // Xử lý cập nhật ảnh
@@ -577,7 +593,7 @@ public class RoomService {
                                 roomJpaRepository.updateApprovalById(roomId, newApproval);
                         }
                 }
-                
+
                 roomJpaRepository.updateApprovalById(roomId, newApproval);
                 return RoomApprovalProjectionDto.builder()
                                 .approval(newApproval)
@@ -604,7 +620,7 @@ public class RoomService {
                                 .convenients(room.getConvenients().stream()
                                                 .map(c -> ConvenientResponseDto.builder()
                                                                 .id(c.getId())
-                                                                .name(c.getName())
+                                                                .name(c.getName() == null ? "" : c.getName())
                                                                 .build())
                                                 .toList())
                                 .images(convertImages(room.getImages()))
@@ -808,4 +824,109 @@ public class RoomService {
 
         }
 
+        public PaginationRoomInUserResponseDto filterRooms(int pageNumber, int pageSize,
+                        FilterRoomRequestDto filterDto) {
+                Pageable pageable = PageRequest.of(pageNumber, pageSize);
+
+                Page<Room> roomPage;
+
+                // Kiểm tra có convenient filter không
+                if (filterDto.getListConvenientIds() == null || filterDto.getListConvenientIds().isEmpty()) {
+                        // KHÔNG CÓ CONVENIENT FILTER - dùng query cơ bản
+                        roomPage = roomJpaRepository.findRoomsWithBasicFilter(
+                                        filterDto.getMinPrice(),
+                                        filterDto.getMaxPrice(),
+                                        filterDto.getMinArea(),
+                                        filterDto.getMaxArea(),
+                                        filterDto.getProvinceId(),
+                                        filterDto.getDistrictId(),
+                                        filterDto.getWardId(),
+                                        pageable);
+
+                } else {
+                        // CÓ CONVENIENT FILTER - dùng 2 bước
+
+                        // Bước 1: Lấy room IDs thỏa mãn convenient requirements
+                        List<String> validRoomIdHex = roomJpaRepository.findRoomIdsByConvenientsHex(
+                                        filterDto.getListConvenientIds(),
+                                        filterDto.getListConvenientIds().size());
+                        System.out.println("Raw validRoomIdHex: " + validRoomIdHex);
+
+                        List<UUID> validRoomIds = validRoomIdHex == null ? new ArrayList<>()
+                                        : validRoomIdHex.stream()
+                                                        .filter(s -> s != null && !s.isBlank())
+                                                        .map(s -> {
+                                                                try {
+                                                                        return UUID.fromString(formatHexToUuid(s));
+                                                                } catch (Exception e) {
+                                                                        System.out.println("Invalid UUID hex: " + s);
+                                                                        return null;
+                                                                }
+                                                        })
+                                                        .filter(u -> u != null)
+                                                        .collect(Collectors.toList());
+
+                        System.out.println("Valid Room IDs: " + validRoomIds);
+
+                        if (validRoomIds.isEmpty()) {
+                                // Không có room nào thỏa mãn convenient -> trả về empty
+                                roomPage = Page.empty(pageable);
+                        } else {
+                                // Bước 2: Apply các filter khác với valid room IDs
+                                roomPage = roomJpaRepository.findRoomsWithBasicFilterAndRoomIds(
+                                                filterDto.getMinPrice(),
+                                                filterDto.getMaxPrice(),
+                                                filterDto.getMinArea(),
+                                                filterDto.getMaxArea(),
+                                                filterDto.getProvinceId(),
+                                                filterDto.getDistrictId(),
+                                                filterDto.getWardId(),
+                                                validRoomIds,
+                                                pageable);
+                        }
+                }
+
+                // Convert to response DTO
+                List<RoomInUserResponseDto> rooms = roomPage.getContent().stream()
+                                .map(room -> {
+                                        // Ensure no null name in convenients
+                                        List<Convenient> convenients = room.getConvenients();
+                                        if (convenients != null) {
+                                                convenients.forEach(c -> {
+                                                        if (c.getName() == null)
+                                                                c.setName("");
+                                                });
+                                        }
+                                        return RoomInUserResponseDto.builder()
+                                                        .id(room.getId())
+                                                        .title(room.getTitle())
+                                                        .description(room.getDescription())
+                                                        .priceMonth(room.getPrice_month())
+                                                        .area(room.getArea())
+                                                        .postStartDate(room.getPost_start_date())
+                                                        .address(convertAddress(room.getAddress()))
+                                                        .images(convertImages(room.getImages()))
+                                                        .conveniences(convertConveniences(room.getConvenients()))
+                                                        .landlord(convertLandlord(room.getUser()))
+                                                        .build();
+                                })
+                                .collect(Collectors.toList());
+
+                return PaginationRoomInUserResponseDto.builder()
+                                .data(rooms)
+                                .pageNumber(roomPage.getNumber())
+                                .pageSize(roomPage.getSize())
+                                .totalRecords(roomPage.getTotalElements())
+                                .totalPages(roomPage.getTotalPages())
+                                .hasNext(roomPage.hasNext())
+                                .hasPrevious(roomPage.hasPrevious())
+                                .build();
+        }
+
+        // Helper to convert hex string to UUID format
+        private String formatHexToUuid(String hex) {
+                return hex.replaceFirst(
+                                "(\\w{8})(\\w{4})(\\w{4})(\\w{4})(\\w{12})",
+                                "$1-$2-$3-$4-$5");
+        }
 }
