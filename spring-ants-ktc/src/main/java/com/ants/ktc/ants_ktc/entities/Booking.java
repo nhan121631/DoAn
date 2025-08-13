@@ -19,7 +19,8 @@ public class Booking extends BaseEntity {
     private Date rentalDate;
     private Date rentalExpires;
     private int tenantCount;
-    private int status; // 0: pending, 1: chờ cọc, 2: reject, 3: chờ xác nhận cọc, 4: đã cọc, 5:đã hủy
+    private int status; // 0: pending, 1: accepted, 2: rejected, 3: waiting for deposit, 4: deposited
+    private int isRemoved = 0; // 0: not removed, 1: removed
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "room_id", nullable = false)

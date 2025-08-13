@@ -3,8 +3,8 @@ import React, { useEffect, useState } from "react";
 import { Modal, Spin } from "antd";
 import { getRoomById } from "../service/RoomService";
 import { Slide } from "./room-detail/Slide";
-import Convenient from "./room-detail/convenient";
-import MapSection from "./room-detail/map";
+import Convenient from "./room-detail/Convenient";
+import MapSection from "./room-detail/Map";
 
 interface RoomDetailModalProps {
   roomId: string | null;

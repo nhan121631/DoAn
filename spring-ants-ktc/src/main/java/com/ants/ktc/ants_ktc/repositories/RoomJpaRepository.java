@@ -61,8 +61,7 @@ public interface RoomJpaRepository extends JpaRepository<Room, UUID> {
                         "LEFT JOIN FETCH r.address a " +
                         "LEFT JOIN FETCH a.ward w " +
                         "LEFT JOIN FETCH w.district d " +
-                        "LEFT JOIN FETCH d.province pr " +
-                        "WHERE r.isRemoved = 0")
+                        "LEFT JOIN FETCH d.province pr ")
         Page<RoomByAdminPagingProjection> findAllByAdmin(Pageable pageable);
 
         // Fetch room details for extend functionality
