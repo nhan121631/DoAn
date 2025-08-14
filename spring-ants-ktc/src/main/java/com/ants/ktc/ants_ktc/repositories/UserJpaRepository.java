@@ -86,4 +86,15 @@ public interface UserJpaRepository extends JpaRepository<User, UUID> {
             SELECT COUNT(u) FROM User u WHERE u.isActive = 0
             """)
     Long countInactiveUsers();
+
+    @EntityGraph(attributePaths = {
+            "profile",
+            "profile.address",
+            "profile.address.ward",
+            "profile.address.ward.district",
+            "profile.address.ward.district.province",
+            "roles"
+    })
+    @org.springframework.lang.NonNull
+    Optional<User> findById(@org.springframework.lang.NonNull UUID userId);
 }

@@ -3,95 +3,14 @@
 import { Button, Table, Tag, Form, Space } from "antd";
 import ModalPayment from "../components/rental-history/ModalPayment";
 import RequestModal from "../components/rental-history/RequestModal";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import React from "react";
 import { IoMdAddCircleOutline } from "react-icons/io";
-
-interface RentalData {
-  key: number;
-  name_landlord: string;
-  phone_landlord: string;
-  room: string;
-  address: string;
-  rentalDate: string;
-  expires: string;
-  tenants: number;
-  price: string;
-  status: 0 | 1 | 2 | 3 | 4; // 0: pending, 1: accepted, 2: rejected, 3: waiting for deposit, 4: deposited
-  isRemoved: 0 | 1; // 0: not removed, 1: removed
-}
-
-const data: RentalData[] = [
-  {
-    key: 1,
-    name_landlord: "Nguyen Van Nam",
-    phone_landlord: "0905123456",
-    room: "Mr. Nam's Room 1",
-    address: "123 Main St, District 1, HCMC",
-    rentalDate: "2024-01-01",
-    expires: "2025-01-01",
-    tenants: 2,
-    price: "$1,000",
-    status: 0,
-    isRemoved: 0,
-  },
-  {
-    key: 2,
-    name_landlord: "Tran Thi B",
-    phone_landlord: "0905123457",
-    room: "Ms. B's Room 2",
-    address: "456 Main St, District 2, HCMC",
-    rentalDate: "2025-08-01",
-    expires: "2025-10-01",
-    tenants: 1,
-    price: "$900",
-    status: 4,
-    isRemoved: 0,
-  },
-  {
-    key: 3,
-    name_landlord: "Le Van C",
-    phone_landlord: "0905123458",
-    room: "Mr. C's Room 3",
-    address: "789 Main St, District 3, HCMC",
-    rentalDate: "2024-03-01",
-    expires: "2025-03-01",
-    tenants: 3,
-    price: "$1,200",
-    status: 2,
-    isRemoved: 1,
-  },
-  {
-    key: 4,
-    name_landlord: "Pham Thi D",
-    phone_landlord: "0905123459",
-    room: "Ms. D's Room 4",
-    address: "101 Main St, District 4, HCMC",
-    rentalDate: "2024-04-01",
-    expires: "2025-04-01",
-    tenants: 2,
-    price: "$1,100",
-    status: 3,
-    isRemoved: 0,
-  },
-  {
-    key: 5,
-    name_landlord: "Nguyen Van E",
-    phone_landlord: "0905123460",
-    room: "Mr. E's Room 5",
-    address: "202 Main St, District 5, HCMC",
-    rentalDate: "2024-05-01",
-    expires: "2025-05-01",
-    tenants: 4,
-    price: "$1,500",
-    status: 1,
-    isRemoved: 0,
-  },
-];
+import { userFetchBookings } from "@/services/BookingService";
 
 function useRentalStatusModal() {
   const [visible, setVisible] = useState(false);
-  const [selectedKey, setSelectedKey] = useState<number | null>(null);
+  const [selectedKey, setSelectedKey] = useState<string | null>(null);
   const [confirmLoading, setConfirmLoading] = useState(false);
 
   return {
@@ -104,14 +23,83 @@ function useRentalStatusModal() {
   };
 }
 
+interface RentalData {
+  key: string;
+  name_landlord: string;
+  phone_landlord: string;
+  room: string;
+  address: string;
+  rentalDate: string;
+  expires: string;
+  tenants: number;
+  price: string;
+  status: number;
+  isRemoved?: number;
+}
+
 function RentalHistory() {
-  const [tableData, setTableData] = React.useState(data);
+  const [tableData, setTableData] = useState<RentalData[]>([]);
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 5,
+    total: 0,
+  });
+  const [loading, setLoading] = useState(false);
   const modal = useRentalStatusModal();
+
+  const mapBookingToRentalData = (booking: any): RentalData => {
+    const address = booking.room.address;
+    const fullAddress = `${address.street}, ${address.ward.name}, ${address.ward.district.name}, ${address.ward.district.province.name}`;
+    return {
+      key: booking.bookingId,
+      name_landlord: booking.room.ownerName,
+      phone_landlord: booking.room.ownerPhone,
+      room: booking.room.title,
+      address: fullAddress,
+      rentalDate: booking.rentalDate
+        ? new Date(booking.rentalDate).toISOString().slice(0, 10)
+        : "",
+      expires: booking.rentalExpires
+        ? new Date(booking.rentalExpires).toISOString().slice(0, 10)
+        : "",
+      tenants: booking.tenantCount,
+      price: booking.room.priceMonth
+        ? `${booking.room.priceMonth.toLocaleString()}₫`
+        : "",
+      status: booking.status,
+      isRemoved: booking.isRemoved,
+    };
+  };
+
+  const fetchTableData = async (page = 1, pageSize = pagination.pageSize) => {
+    setLoading(true);
+    try {
+      const response = await userFetchBookings(page - 1, pageSize);
+      const bookings = response.bookings || response;
+      const total = response.totalRecords || bookings.length;
+      setTableData(bookings.map(mapBookingToRentalData));
+      setPagination({ current: page, pageSize, total });
+      console.log("Fetched bookings:", response);
+    } catch (error) {
+      console.error("Failed to fetch bookings:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchTableData(pagination.current, pagination.pageSize);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pagination.current, pagination.pageSize]);
+
+  const handleTableChange = (pagination: any) => {
+    fetchTableData(pagination.current, pagination.pageSize);
+  };
 
   // State for RequestModal
   const [open, setOpen] = useState(false);
   const [form] = Form.useForm();
-  const [fieldValue, setFieldValue] = useState<RentalData | null>(null);
+  const [fieldValue, setFieldValue] = useState<any | null>(null);
   const [modalType, setModalType] = useState<"add" | "edit">("add");
 
   const onCancel = () => {
@@ -126,23 +114,24 @@ function RentalHistory() {
     form.resetFields();
   };
 
-  const handleAccept = (key: number) => {
+  const handleAccept = (key: string) => {
     modal.setSelectedKey(key);
     modal.setVisible(true);
   };
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     if (modal.selectedKey !== null) {
       modal.setConfirmLoading(true);
-      setTimeout(() => {
-        setTableData((prev) =>
-          prev.map((item) =>
-            item.key === modal.selectedKey ? { ...item, status: 3 } : item
-          )
-        );
+      try {
+        // The ModalPayment component will handle the updateBookingStatus call
+        // Just refresh the table data after successful update
+        await fetchTableData(pagination.current, pagination.pageSize);
+      } catch (error) {
+        console.error("Failed to update booking:", error);
+      } finally {
         modal.setConfirmLoading(false);
         modal.setVisible(false);
-      }, 1000);
+      }
     }
   };
 
@@ -150,7 +139,7 @@ function RentalHistory() {
     {
       title: "Landlord Name",
       dataIndex: "name_landlord",
-      sorter: (a: RentalData, b: RentalData) =>
+      sorter: (a: any, b: any) =>
         a.name_landlord.localeCompare(b.name_landlord),
       key: "name_landlord",
     },
@@ -272,7 +261,9 @@ function RentalHistory() {
             }}
             title="Add Request"
             disabled={record.status !== 4}
-          ><IoMdAddCircleOutline size={18} /> Sent new request</Button>
+          >
+            <IoMdAddCircleOutline size={18} /> Sent new request
+          </Button>
           {/* <Button
             type="text"
             icon={<AiOutlineEdit size={18} />}
@@ -289,6 +280,17 @@ function RentalHistory() {
         </Space>
       ),
     },
+    {
+      title: "Available",
+      key: "available",
+      render: (_: any, record: RentalData) => {
+        if (record.isRemoved === 1) {
+          return <Tag color="red">Removed by owner</Tag>;
+        }
+        return <Tag color="green">Active</Tag>;
+      },
+      
+    }
   ];
 
   return (
@@ -299,13 +301,20 @@ function RentalHistory() {
       <Table
         columns={columns}
         dataSource={tableData}
-        pagination={{ pageSize: 5 }}
+        pagination={{
+          current: pagination.current,
+          pageSize: pagination.pageSize,
+          total: pagination.total,
+        }}
+        loading={loading}
+        onChange={handleTableChange}
       />
       <ModalPayment
         open={modal.visible}
         onCancel={() => modal.setVisible(false)}
         onConfirm={handleConfirm}
         confirmLoading={modal.confirmLoading}
+        bookingId={modal.selectedKey || ""}
       />
       {/* Request Modal moved to component */}
       <RequestModal

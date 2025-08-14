@@ -1,10 +1,22 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
-import { Table, Tag, Button, Modal, message, Space, Input, Form, Select, Row, Col } from "antd";
+import {
+  Table,
+  Tag,
+  Button,
+  Modal,
+  message,
+  Space,
+  Input,
+  Form,
+  Select,
+  Row,
+  Col,
+} from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { AiOutlineEdit } from "react-icons/ai";
-import { Room } from "@/types/types";
+import { Roomname } from "@/types/types";
 import { RequestData } from "@/app/user-dashboard/request-status/page";
 
 const { Option } = Select;
@@ -22,8 +34,8 @@ interface RequestStatusInteractiveProps {
 }
 
 //data mẫu sau có thể fetch
-const availableRooms: Room[] = [
-  { name: "Phòng trọ Mr. Nam", address: "Ngu Hanh Son, Da Nang"},
+const availableRooms: Roomname[] = [
+  { name: "Phòng trọ Mr. Nam", address: "Ngu Hanh Son, Da Nang" },
   { name: "Phòng trọ Ms. Lan", address: "Son Tra, Da Nang" },
   { name: "Phòng trọ Mr. Duong", address: "Lien Chieu, Da Nang" },
 ];
@@ -34,9 +46,9 @@ const RequestEditModalContent: React.FC<{
   onCancel: () => void;
   onSubmit: (values: RequestFormValues) => void;
   editingRequest: RequestData | null;
-  availableRooms: Room[];
+  availableRooms: Roomname[];
 }> = ({ open, onCancel, onSubmit, editingRequest, availableRooms }) => {
-  const [form] = Form.useForm(); 
+  const [form] = Form.useForm();
 
   useEffect(() => {
     if (open && editingRequest) {
@@ -50,15 +62,17 @@ const RequestEditModalContent: React.FC<{
     onSubmit(values);
   };
 
-  const handleRoomNameChange = useCallback((value: string) => {
-    const selectedRoom = availableRooms.find(room => room.name === value);
-    if (selectedRoom) {
-      form.setFieldsValue({ roomName: selectedRoom.name }); // Ensure roomName is set
-    } else {
-      form.setFieldsValue({ roomName: "" });
-    }
-  }, [form, availableRooms]);
-
+  const handleRoomNameChange = useCallback(
+    (value: string) => {
+      const selectedRoom = availableRooms.find((room) => room.name === value);
+      if (selectedRoom) {
+        form.setFieldsValue({ roomName: selectedRoom.name }); // Ensure roomName is set
+      } else {
+        form.setFieldsValue({ roomName: "" });
+      }
+    },
+    [form, availableRooms]
+  );
 
   return (
     <Modal
@@ -71,11 +85,7 @@ const RequestEditModalContent: React.FC<{
       destroyOnHidden={true}
       width={600}
     >
-      <Form
-        form={form}
-        layout="vertical"
-        onFinish={handleFinish}
-      >
+      <Form form={form} layout="vertical" onFinish={handleFinish}>
         <div className="max-h-[400px] overflow-y-auto pr-4">
           <Form.Item
             label="Room Name"
@@ -88,7 +98,9 @@ const RequestEditModalContent: React.FC<{
               onChange={handleRoomNameChange} // Add onChange to update form
               optionFilterProp="children"
               filterOption={(input, option) =>
-                String(option?.children).toLowerCase().indexOf(input.toLowerCase()) >= 0
+                String(option?.children)
+                  .toLowerCase()
+                  .indexOf(input.toLowerCase()) >= 0
               }
             >
               {availableRooms.map((room) => (
@@ -104,7 +116,9 @@ const RequestEditModalContent: React.FC<{
               <Form.Item
                 label="Customer Name"
                 name="customerName"
-                rules={[{ required: true, message: "Please enter customer name!" }]}
+                rules={[
+                  { required: true, message: "Please enter customer name!" },
+                ]}
               >
                 <Input placeholder="e.g., Nguyen Van A" />
               </Form.Item>
@@ -113,7 +127,9 @@ const RequestEditModalContent: React.FC<{
               <Form.Item
                 label="Phone Number"
                 name="phoneNumber"
-                rules={[{ required: true, message: "Please enter phone number!" }]}
+                rules={[
+                  { required: true, message: "Please enter phone number!" },
+                ]}
               >
                 <Input placeholder="e.g., 0912345678" />
               </Form.Item>
@@ -123,9 +139,14 @@ const RequestEditModalContent: React.FC<{
           <Form.Item
             label="Request Description"
             name="requestDescription"
-            rules={[{ required: true, message: "Please enter request description!" }]}
+            rules={[
+              { required: true, message: "Please enter request description!" },
+            ]}
           >
-            <Input.TextArea rows={4} placeholder="e.g., Yêu cầu sửa chữa điện nước" />
+            <Input.TextArea
+              rows={4}
+              placeholder="e.g., Yêu cầu sửa chữa điện nước"
+            />
           </Form.Item>
         </div>
 
@@ -142,18 +163,23 @@ const RequestEditModalContent: React.FC<{
   );
 };
 
-
-const RequestStatusInteractive: React.FC<RequestStatusInteractiveProps> = ({ initialRequests }) => {
+const RequestStatusInteractive: React.FC<RequestStatusInteractiveProps> = ({
+  initialRequests,
+}) => {
   const [data, setData] = useState<RequestData[]>(initialRequests);
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
-  const [editingRequest, setEditingRequest] = useState<RequestData | null>(null);
-
+  const [editingRequest, setEditingRequest] = useState<RequestData | null>(
+    null
+  );
 
   const getStatusDisplay = (status: 0 | 1) => {
     switch (status) {
-      case 0: return { text: "Not Processed", color: "red" };
-      case 1: return { text: "Completed", color: "green" };
-      default: return { text: "Unknown", color: "default" };
+      case 0:
+        return { text: "Not Processed", color: "red" };
+      case 1:
+        return { text: "Completed", color: "green" };
+      default:
+        return { text: "Unknown", color: "default" };
     }
   };
 
@@ -161,11 +187,11 @@ const RequestStatusInteractive: React.FC<RequestStatusInteractiveProps> = ({ ini
     if (editingRequest) {
       const updatedData = data.map((item) =>
         item.key === editingRequest.key
-          ? {
+          ? ({
               ...item,
               ...values,
               status: item.status,
-            } as RequestData
+            } as RequestData)
           : item
       );
       setData(updatedData);
@@ -251,16 +277,23 @@ const RequestStatusInteractive: React.FC<RequestStatusInteractiveProps> = ({ ini
 
   return (
     <div className="flex flex-col flex-1 p-6 bg-white rounded-lg shadow-md dark:bg-gray-800">
-      <h2 className="mb-6 text-2xl font-bold text-gray-800 dark:text-white">Request Management</h2>
+      <h2 className="mb-6 text-2xl font-bold text-gray-800 dark:text-white">
+        Request Management
+      </h2>
       <div className="flex items-center justify-end mb-6">
         <Input.Search
           placeholder="Search requests..."
           style={{ width: 250 }}
           onSearch={(value) => {
-            const filteredData = initialRequests.filter(request =>
-              request.roomName.toLowerCase().includes(value.toLowerCase()) ||
-              request.customerName.toLowerCase().includes(value.toLowerCase()) ||
-              request.requestDescription.toLowerCase().includes(value.toLowerCase())
+            const filteredData = initialRequests.filter(
+              (request) =>
+                request.roomName.toLowerCase().includes(value.toLowerCase()) ||
+                request.customerName
+                  .toLowerCase()
+                  .includes(value.toLowerCase()) ||
+                request.requestDescription
+                  .toLowerCase()
+                  .includes(value.toLowerCase())
             );
             setData(filteredData);
           }}

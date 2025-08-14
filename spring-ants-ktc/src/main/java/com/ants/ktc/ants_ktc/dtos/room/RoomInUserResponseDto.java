@@ -8,7 +8,6 @@ import com.ants.ktc.ants_ktc.dtos.address.AddressResponseDto;
 import com.ants.ktc.ants_ktc.dtos.convenient.ConvenientResponseDto;
 import com.ants.ktc.ants_ktc.dtos.image.ImageResponseDto;
 import com.ants.ktc.ants_ktc.dtos.user.LandlordResponseDto;
-import com.ants.ktc.ants_ktc.entities.Convenient;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

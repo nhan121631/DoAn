@@ -19,17 +19,20 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.ants.ktc.ants_ktc.dtos.filters.FilterRoomRequestDto;
 import com.ants.ktc.ants_ktc.dtos.room.PaginationRoomAdminResponseDto;
 import com.ants.ktc.ants_ktc.dtos.room.PaginationRoomInUserResponseDto;
 import com.ants.ktc.ants_ktc.dtos.room.PaginationRoomResponseDto;
 import com.ants.ktc.ants_ktc.dtos.room.RoomApprovalProjectionDto;
 import com.ants.ktc.ants_ktc.dtos.room.RoomDeleteRequestDto;
+import com.ants.ktc.ants_ktc.dtos.room.RoomRecentResponseDto;
 import com.ants.ktc.ants_ktc.dtos.room.RoomRequestCreateDto;
 import com.ants.ktc.ants_ktc.dtos.room.RoomRequestUpdateDto;
 import com.ants.ktc.ants_ktc.dtos.room.RoomResponseDto;
 import com.ants.ktc.ants_ktc.dtos.room.RoomShowHideProjectionDto;
 import com.ants.ktc.ants_ktc.dtos.room.RoomUpdateExpireDateRequestDto;
 import com.ants.ktc.ants_ktc.dtos.room.RoomUpdateExpireDateResponseDto;
+import com.ants.ktc.ants_ktc.repositories.projection.RoomNewProjection;
 import com.ants.ktc.ants_ktc.services.RoomService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -179,5 +182,20 @@ public class RoomController {
         String code = "NORMAL";
         PaginationRoomInUserResponseDto response = roomService.getAllRoomInUser(pageNumber, pageSize, code);
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("filter-rooms")
+    public ResponseEntity<PaginationRoomInUserResponseDto> filterRooms(
+            @RequestParam(name = "page", defaultValue = "0") int pageNumber,
+            @RequestParam(name = "size", defaultValue = "5") int pageSize,
+            @RequestBody FilterRoomRequestDto filterDto) {
+        PaginationRoomInUserResponseDto response = roomService.filterRooms(pageNumber, pageSize, filterDto);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("recent-rooms")
+    public ResponseEntity<List<RoomRecentResponseDto>> getRecentRooms() {
+        List<RoomRecentResponseDto> recentRooms = roomService.findRecentRooms();
+        return ResponseEntity.ok(recentRooms);
     }
 }

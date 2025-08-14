@@ -1,5 +1,7 @@
 package com.ants.ktc.ants_ktc.repositories;
 
+import java.sql.Date;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -19,11 +21,14 @@ import com.ants.ktc.ants_ktc.repositories.projection.RoomByAdminPagingProjection
 import com.ants.ktc.ants_ktc.repositories.projection.RoomByLandlordPagingProjection;
 import com.ants.ktc.ants_ktc.repositories.projection.RoomDeleteProjection;
 import com.ants.ktc.ants_ktc.repositories.projection.RoomHiddenProjection;
+import com.ants.ktc.ants_ktc.repositories.projection.RoomNewProjection;
 
 @Repository
 public interface RoomJpaRepository extends JpaRepository<Room, UUID> {
         @EntityGraph(attributePaths = { "images", "convenients", "postType" })
-        Optional<Room> findById(UUID id);
+        @Override
+        @org.springframework.lang.NonNull
+        Optional<Room> findById(@org.springframework.lang.NonNull UUID id);
 
         // @EntityGraph(attributePaths = {
         // "user", "user.roles", "address", "address.ward", "address.ward.district",
@@ -134,5 +139,90 @@ public interface RoomJpaRepository extends JpaRepository<Room, UUID> {
 
         @Query(" SELECT COUNT(r) FROM Room r WHERE isRemoved = 0 and approval != 2")
         Long countTotalApprovalRooms();
+
+        @EntityGraph(attributePaths = {
+                        "address.ward.district.province",
+                        "address.ward",
+                        "address.ward.district",
+                        "postType",
+                        // "convenients",
+                        "user",
+                        "images"
+        })
+        @Query("SELECT r FROM Room r " +
+                        "JOIN r.address a " +
+                        "JOIN a.ward w " +
+                        "JOIN w.district d " +
+                        "JOIN d.province p " +
+                        "WHERE r.available = 0 " +
+                        "AND r.post_end_date > CURRENT_DATE " +
+                        "AND r.hidden = 0 " +
+                        "AND r.isRemoved = 0 " +
+                        "AND r.approval = 1 " +
+                        "AND (:minPrice IS NULL OR r.price_month >= :minPrice) " +
+                        "AND (:maxPrice IS NULL OR r.price_month <= :maxPrice) " +
+                        "AND (:minArea IS NULL OR r.area >= :minArea) " +
+                        "AND (:maxArea IS NULL OR r.area <= :maxArea) " +
+                        "AND (:provinceId IS NULL OR p.id = :provinceId) " +
+                        "AND (:districtId IS NULL OR d.id = :districtId) " +
+                        "AND (:wardId IS NULL OR w.id = :wardId) " +
+                        "AND r.id IN (:roomIds)")
+        Page<Room> findRoomsWithBasicFilterAndRoomIds(
+                        @Param("minPrice") Double minPrice,
+                        @Param("maxPrice") Double maxPrice,
+                        @Param("minArea") Double minArea,
+                        @Param("maxArea") Double maxArea,
+                        @Param("provinceId") Long provinceId,
+                        @Param("districtId") Long districtId,
+                        @Param("wardId") Long wardId,
+                        @Param("roomIds") List<UUID> roomIds,
+                        Pageable pageable);
+
+        @Query(value = "SELECT LOWER(HEX(rc.room_id)) FROM room_convenients rc " +
+                        "WHERE rc.convenient_id IN (:convenientIds) " +
+                        "GROUP BY rc.room_id " +
+                        "HAVING COUNT(DISTINCT rc.convenient_id) = :requiredCount", nativeQuery = true)
+        List<String> findRoomIdsByConvenientsHex(
+                        @Param("convenientIds") List<Long> convenientIds,
+                        @Param("requiredCount") int requiredCount);
+
+        @Query("SELECT r FROM Room r " +
+                        "JOIN r.address a " +
+                        "JOIN a.ward w " +
+                        "JOIN w.district d " +
+                        "JOIN d.province p " +
+                        "WHERE r.available = 0 " +
+                        "AND r.post_end_date > CURRENT_DATE " +
+                        "AND r.hidden = 0 " +
+                        "AND r.isRemoved = 0 " +
+                        "AND r.approval = 1 " +
+                        "AND (:minPrice IS NULL OR r.price_month >= :minPrice) " +
+                        "AND (:maxPrice IS NULL OR r.price_month <= :maxPrice) " +
+                        "AND (:minArea IS NULL OR r.area >= :minArea) " +
+                        "AND (:maxArea IS NULL OR r.area <= :maxArea) " +
+                        "AND (:provinceId IS NULL OR p.id = :provinceId) " +
+                        "AND (:districtId IS NULL OR d.id = :districtId) " +
+                        "AND (:wardId IS NULL OR w.id = :wardId)")
+        Page<Room> findRoomsWithBasicFilter(
+                        @Param("minPrice") Double minPrice,
+                        @Param("maxPrice") Double maxPrice,
+                        @Param("minArea") Double minArea,
+                        @Param("maxArea") Double maxArea,
+                        @Param("provinceId") Long provinceId,
+                        @Param("districtId") Long districtId,
+                        @Param("wardId") Long wardId,
+                        Pageable pageable);
+
+@Query(value = "SELECT LOWER(HEX(r.id)) AS id, r.title AS title, r.price_month AS priceMonth, r.post_start_date AS postStartDate, " +
+               "(SELECT i.url FROM images i WHERE i.room_id = r.id ORDER BY i.id ASC LIMIT 1) AS imageUrl " +
+               "FROM rooms r " +
+               "WHERE r.available = 0 " +
+               "AND r.post_end_date > CURRENT_DATE " +
+               "AND r.hidden = 0 " +
+               "AND r.is_removed = 0 " +
+               "AND r.approval = 1 " +
+               "AND r.post_start_date >= :limitday",
+       nativeQuery = true)
+List<RoomNewProjection> findRecentRooms(@Param("limitday") Date limitday, Pageable pageable);
 
 }

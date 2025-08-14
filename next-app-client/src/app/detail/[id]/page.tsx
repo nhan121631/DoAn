@@ -1,3 +1,4 @@
+import BookingForm from "@/app/landlord/components/booking-room/BookingForm";
 import Convenient from "@/app/landlord/components/room-detail/convenient";
 import MapSection from "@/app/landlord/components/room-detail/map";
 import { Slide } from "@/app/landlord/components/room-detail/Slide";
@@ -19,7 +20,11 @@ export async function generateStaticParams() {
   }));
 }
 
-export default async function Page({ params }: { params: Promise<{ id: string }> }) {
+export default async function Page({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const { id } = await params;
   const room = await getRoomById(id);
   if (!room) {
@@ -107,6 +112,15 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
               ? new Date(room.postEndDate).toLocaleString()
               : ""}
           </span>
+        </div>
+
+        {/* Booking Form */}
+        <div className="mt-4">
+          <BookingForm
+            roomId={room.id}
+            roomTitle={room.title || "Room for rent"}
+            priceMonth={room.priceMonth || 0}
+          />
         </div>
         {/* <div className="mt-2 text-sm text-gray-500 dark:text-gray-400">
              Updated:{" "}

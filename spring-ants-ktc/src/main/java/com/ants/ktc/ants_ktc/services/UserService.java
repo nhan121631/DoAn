@@ -375,4 +375,18 @@ public class UserService {
                 return user.getId();
         }
 
+        public boolean changePassword(UUID userId, String password, String newPassword) {
+                User user = userJpaRepository.findById(userId)
+                                .orElseThrow(() -> new UsernameNotFoundException(
+                                                "User not found in database for ID: " + userId));
+
+                if (!passwordEncoder.matches(password, user.getPassword())) {
+                        throw new IllegalArgumentException("Current password is incorrect");
+                }
+
+                user.setPassword(passwordEncoder.encode(newPassword));
+                userJpaRepository.save(user);
+                return true;
+        }
+
 }
