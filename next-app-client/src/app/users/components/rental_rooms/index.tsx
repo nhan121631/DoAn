@@ -7,6 +7,7 @@ import {
 } from "@/services/RoomService";
 import { PaginatedResponse, RoomInUser } from "@/types/types";
 import Link from "next/link";
+import { notFound } from "next/navigation";
 
 import { BiChevronLeft, BiChevronRight } from "react-icons/bi";
 import CardFilter from "../Filter/CardFilter";
@@ -67,28 +68,37 @@ export default async function RentalRooms({
     listConvenientIds,
   };
 
+  let filteredRooms: PaginatedResponse<RoomInUser> | null = null;
+  let roomVips: PaginatedResponse<RoomInUser> | null = null;
+  let roomNormals: PaginatedResponse<RoomInUser> | null = null;
   const sizeSearch = 2;
   const pageSearch = Number(params?.pageSearch ?? 0);
-  console.log("Filters applied:", filters);
-  const filteredRooms = (await filterRooms(
-    pageSearch,
-    sizeSearch,
-    filters
-  )) as PaginatedResponse<RoomInUser>;
-
   const size = 4;
   const page = Number(params?.page ?? 0);
-  const roomVips = (await getRoomVipUser(
-    page,
-    size
-  )) as PaginatedResponse<RoomInUser>;
-
   const size_normal = 6;
   const page_normal = Number(params?.pageNormal ?? 0);
-  const roomNormals = (await getRoomNormalUser(
-    page_normal,
-    size_normal
-  )) as PaginatedResponse<RoomInUser>;
+  try {
+    filteredRooms = (await filterRooms(
+      pageSearch,
+      sizeSearch,
+      filters
+    )) as PaginatedResponse<RoomInUser>;
+    roomVips = (await getRoomVipUser(
+      page,
+      size
+    )) as PaginatedResponse<RoomInUser>;
+    roomNormals = (await getRoomNormalUser(
+      page_normal,
+      size_normal
+    )) as PaginatedResponse<RoomInUser>;
+  } catch (e) {
+    return notFound();
+  }
+
+  // Nếu fetch thành công nhưng dữ liệu không hợp lệ (null hoặc không có data)
+  if (!filteredRooms || !roomVips || !roomNormals) {
+    return notFound();
+  }
 
   const isEmptyFilter = Object.entries(filters).every(([_, value]) => {
     if (Array.isArray(value)) return value.length === 0;
