@@ -7,7 +7,6 @@ import com.ants.ktc.ants_ktc.dtos.manage_maintain.RoomDetailForMaintenanceDto;
 import com.ants.ktc.ants_ktc.dtos.manage_maintain.UpdateMaintenanceRequestDto;
 import com.ants.ktc.ants_ktc.entities.Maintenances;
 import com.ants.ktc.ants_ktc.entities.Room;
-import com.ants.ktc.ants_ktc.repositories.MaintenanceProjection;
 import com.ants.ktc.ants_ktc.repositories.MaintenancesRepository;
 import com.ants.ktc.ants_ktc.repositories.RoomJpaRepository;
 import com.ants.ktc.ants_ktc.repositories.RoomNameProjection;
@@ -31,10 +30,8 @@ public class MaintenanceService {
         private RoomJpaRepository roomJpaRepository;
 
         @Transactional
-        public MaintenanceResponseDto createMaintenance(UUID userId,
-                        MaintenanceRequestDto requestDto) {
-                Room room = roomJpaRepository.findByIdAndUserIdAndIsRemovedFalse(requestDto.getRoomId(),
-                                userId)
+        public MaintenanceResponseDto createMaintenance(UUID userId, MaintenanceRequestDto requestDto) {
+                Room room = roomJpaRepository.findActiveRoomByIdAndUserId(requestDto.getRoomId(), userId)
                                 .orElseThrow(() -> new IllegalArgumentException(
                                                 "Room not found or does not belong to the current landlord."));
 
@@ -51,7 +48,7 @@ public class MaintenanceService {
 
         @Transactional(readOnly = true)
         public List<RoomNameProjection> getRoomsForLandlord(UUID userId) {
-                return roomJpaRepository.findByUserIdAndIsRemovedFalse(userId);
+                return roomJpaRepository.findActiveRoomsByUserId(userId);
         }
 
         @Transactional(readOnly = true)
@@ -59,25 +56,13 @@ public class MaintenanceService {
                         UUID userId, Integer status, UUID roomId, int page, int size) {
 
                 Pageable pageable = PageRequest.of(page, size, Sort.by("createdDate").descending());
-                Page<MaintenanceProjection> maintenances;
 
-                if (status != null && roomId != null) {
-                        maintenances = maintenancesRepository
-                                        .findByRoom_UserIdAndStatusAndRoom_IdAndIsRemovedFalse(userId, status, roomId,
-                                                        pageable);
-                } else if (status != null) {
-                        maintenances = maintenancesRepository
-                                        .findByRoom_UserIdAndStatusAndIsRemovedFalse(userId, status, pageable);
-                } else if (roomId != null) {
-                        maintenances = maintenancesRepository
-                                        .findByRoom_UserIdAndRoom_IdAndIsRemovedFalse(userId, roomId, pageable);
-                } else {
-                        maintenances = maintenancesRepository
-                                        .findByRoom_UserIdAndIsRemovedFalse(userId, pageable);
-                }
+                // Gọi phương thức repository đã được tối ưu hóa
+                Page<Maintenances> maintenances = maintenancesRepository.findMaintenanceRequestsByCriteria(
+                                userId, status, roomId, pageable);
 
                 List<MaintenanceResponseDto> dtoList = maintenances.getContent().stream()
-                                .map(this::convertToMaintenanceResponseDtoFromProjection)
+                                .map(this::convertToMaintenanceResponseDto)
                                 .collect(Collectors.toList());
 
                 return new PaginatedMaintenanceResponseDto<>(
@@ -93,7 +78,7 @@ public class MaintenanceService {
         @Transactional
         public MaintenanceResponseDto updateMaintenance(UUID userId, UUID id, UpdateMaintenanceRequestDto requestDto) {
                 Maintenances existingMaintenance = maintenancesRepository
-                                .findByIdAndRoom_UserIdAndIsRemovedFalse(id, userId)
+                                .findActiveByIdAndUserId(id, userId)
                                 .orElseThrow(() -> new IllegalArgumentException(
                                                 "Maintenance not found or does not belong to the current landlord."));
 
@@ -109,28 +94,12 @@ public class MaintenanceService {
         @Transactional
         public void deleteMaintenance(UUID userId, UUID maintenanceId) {
                 Maintenances maintenance = maintenancesRepository
-                                .findByIdAndRoom_UserIdAndIsRemovedFalse(maintenanceId, userId)
+                                .findActiveByIdAndUserId(maintenanceId, userId)
                                 .orElseThrow(() -> new IllegalArgumentException(
                                                 "Maintenance not found or not owned by this landlord."));
 
                 maintenance.setRemoved(true);
                 maintenancesRepository.save(maintenance);
-        }
-
-        private MaintenanceResponseDto convertToMaintenanceResponseDtoFromProjection(MaintenanceProjection projection) {
-                RoomDetailForMaintenanceDto roomDto = RoomDetailForMaintenanceDto.builder()
-                                .id(projection.getRoom().getId())
-                                .title(projection.getRoom().getTitle())
-                                .build();
-
-                return MaintenanceResponseDto.builder()
-                                .id(projection.getId())
-                                .problem(projection.getProblem())
-                                .cost(projection.getCost())
-                                .status(projection.getStatus())
-                                .requestDate(new java.util.Date(projection.getCreatedDate().getTime()))
-                                .room(roomDto)
-                                .build();
         }
 
         private MaintenanceResponseDto convertToMaintenanceResponseDto(Maintenances maintenance) {

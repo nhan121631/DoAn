@@ -1,6 +1,3 @@
-
-
-
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { DownOutlined } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
@@ -15,10 +12,9 @@ import {
 import type { UserResponseDto } from "../types/type";
 
 const TableManageAccount: React.FC = () => {
-  // State để quản lý phân trang
   const [pagination, setPagination] = useState({
     page: 0,
-    pageSize: 5,
+    pageSize: 7,
   });
 
   const { data, isLoading } = useQuery(getPaginatedAccountsQueryOptions(pagination.page, pagination.pageSize));

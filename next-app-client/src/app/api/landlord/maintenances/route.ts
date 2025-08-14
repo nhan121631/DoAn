@@ -3,10 +3,8 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth'; 
 import { API_URL } from '@/services/Constant'; 
 
-// Đây là URL của backend Spring Boot của bạn
 const SPRING_BOOT_API_URL = `${API_URL}/landlord/maintenances`;
 
-// Hàm xử lý yêu cầu GET: Lấy danh sách yêu cầu bảo trì
 export async function GET(request: NextRequest) {
     try {
         const session = await getServerSession(authOptions);
@@ -47,7 +45,6 @@ export async function GET(request: NextRequest) {
     }
 }
 
-// Hàm xử lý yêu cầu POST: Tạo một yêu cầu bảo trì mới
 export async function POST(request: NextRequest) {
     try {
         const session = await getServerSession(authOptions);
@@ -79,7 +76,6 @@ export async function POST(request: NextRequest) {
     }
 }
 
-// Hàm xử lý yêu cầu PATCH: Cập nhật một yêu cầu bảo trì
 export async function PATCH(request: NextRequest) {
     try {
         const session = await getServerSession(authOptions);
@@ -89,7 +85,6 @@ export async function PATCH(request: NextRequest) {
         
         const body = await request.json();
 
-        // Đường dẫn PATCH của bạn có ID nằm trong URL
         const response = await fetch(`${SPRING_BOOT_API_URL}/${body.id}`, {
             method: 'PATCH',
             headers: {
@@ -112,7 +107,6 @@ export async function PATCH(request: NextRequest) {
     }
 }
 
-// Hàm xử lý yêu cầu DELETE: Xóa một yêu cầu bảo trì
 export async function DELETE(request: NextRequest) {
     try {
         const session = await getServerSession(authOptions);
