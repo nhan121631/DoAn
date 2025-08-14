@@ -47,33 +47,32 @@ export type RoomDetail = {
     id: string;
     street: string;
     ward: {
+      id: number;
+      name: string;
+      district: {
         id: number;
         name: string;
-        district: {
+        province: {
           id: number;
           name: string;
-          province: {
-            id: number;
-            name: string;
-          };
         };
       };
     };
-    priceMonth: number;
-    priceDeposit: number;
-    area: number;
-    postStartDate: string;
-    postEndDate: string;
-    images: Image[];
-    typepost: string;
-    convenients: Convenient[];
-    
+  };
+  priceMonth: number;
+  priceDeposit: number;
+  area: number;
+  postStartDate: string;
+  postEndDate: string;
+  images: Image[];
+  typepost: string;
+  convenients: Convenient[];
 };
 //--------------------------------------//
 export type Image = {
   id: number;
   url: string;
-}
+};
 //--------------------------------------//
 // export type Room = {
 //   name: string;
@@ -186,7 +185,7 @@ export type Landlord = {
 
 
 export type Reply = {
-  sender: 'admin' | 'user';
+  sender: "admin" | "user";
   message: string;
   timestamp: string;
 };
@@ -207,20 +206,19 @@ export type CommentFormValues = {
   newReplyContent: string;
 };
 
-
 //--------------------------------------//
 
 export type ContractData = {
   key: string;
   contractName: string;
-  roomName: string; 
-  tenantName: string; 
-  phoneNumber: string; 
+  roomName: string;
+  tenantName: string;
+  phoneNumber: string;
   numberOfPeople: number;
-  price: number; 
-  durationMonths: number; 
-  startDate: string; 
-  endDate: string; 
+  price: number;
+  durationMonths: number;
+  startDate: string;
+  endDate: string;
   status: 0 | 1; // 0 = Rented, 1 = Checked Out
   contractImageUrl?: string;
 };
@@ -244,6 +242,18 @@ export type InvoiceFormValues = {
   installationCost?: number;
 };
 
+//--------------------------------------//
+// Landlord Payment Info
+export type LandlordPaymentInfo = {
+  landlordId: string;
+  landlordName: string;
+  accountHolderName: string;
+  bankNumber: string;
+  bankName: string;
+  binCode: string;
+  phoneNumber: string;
+  email: string;
+};
 export type Roomname ={
   name:string;
   address:string

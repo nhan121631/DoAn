@@ -96,7 +96,7 @@ input[type="password"]::-webkit-credentials-auto-fill-button {
 /* --- Ant Design Form & Form.Item dark mode --- */
 .dark .ant-form,
 .dark .ant-form-item,
-.dark .ant-form-item-label>label {
+.dark .ant-form-item-label > label {
   color: #fff !important;
 }
 
@@ -112,11 +112,15 @@ input[type="password"]::-webkit-credentials-auto-fill-button {
   color: #facc15 !important;
 }
 
-.dark .ant-form-item-label>label.ant-form-item-required:not(.ant-form-item-required-mark-optional)::before {
+.dark
+  .ant-form-item-label
+  > label.ant-form-item-required:not(
+    .ant-form-item-required-mark-optional
+  )::before {
   color: #f87171 !important;
 }
 
-.dark .ant-form-item-label>label.ant-form-item-required-mark-optional {
+.dark .ant-form-item-label > label.ant-form-item-required-mark-optional {
   color: #94a3b8 !important;
 }
 
@@ -157,21 +161,21 @@ input[type="password"]::-webkit-credentials-auto-fill-button {
 /* Table border và cell */
 .dark .ant-table,
 .dark .ant-table-container,
-.dark .ant-table-thead>tr>th,
-.dark .ant-table-tbody>tr>td {
+.dark .ant-table-thead > tr > th,
+.dark .ant-table-tbody > tr > td {
   border-color: #334155 !important;
   background-color: #171f2f !important;
   color: #fff !important;
 }
 
 /* Header */
-.dark .ant-table-thead>tr>th {
+.dark .ant-table-thead > tr > th {
   background-color: #1e293b !important;
   color: #fff !important;
 }
 
 /* Hover row */
-.dark .ant-table-tbody>tr:hover>td {
+.dark .ant-table-tbody > tr:hover > td {
   background-color: #22304a !important;
   color: #fff !important;
 }
@@ -225,7 +229,7 @@ input[type="password"]::-webkit-credentials-auto-fill-button {
 }
 
 /* Icon (ví dụ svg trong button) */
-.dark .ant-btn>span>svg {
+.dark .ant-btn > span > svg {
   color: #fff !important;
 }
 
