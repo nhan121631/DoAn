@@ -20,7 +20,7 @@ export default async function FeaturedListingsCard() {
   function getRelativeTime(dateString: string): string {
     const now = new Date();
     const date = new Date(dateString);
-    let diff = Math.floor((now.getTime() - date.getTime()) / 1000); // seconds
+    const diff = Math.floor((now.getTime() - date.getTime()) / 1000); // seconds
     if (diff < 0) return "Just now";
     if (diff < 60) return `${diff} seconds ago`;
     if (diff < 3600) return `${Math.floor(diff / 60)} minutes ago`;

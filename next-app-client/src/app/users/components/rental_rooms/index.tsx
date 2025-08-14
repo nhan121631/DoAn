@@ -92,6 +92,7 @@ export default async function RentalRooms({
       size_normal
     )) as PaginatedResponse<RoomInUser>;
   } catch (e) {
+    console.error("Error fetching rental rooms:", e);
     return notFound();
   }
 
@@ -99,7 +100,6 @@ export default async function RentalRooms({
   if (!filteredRooms || !roomVips || !roomNormals) {
     return notFound();
   }
-
   const isEmptyFilter = Object.entries(filters).every(([_, value]) => {
     if (Array.isArray(value)) return value.length === 0;
     return value === undefined || value === null || value === "";

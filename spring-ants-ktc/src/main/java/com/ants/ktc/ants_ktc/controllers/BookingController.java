@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
 import com.ants.ktc.ants_ktc.dtos.booking.BookingRoomByUserResponseDto;
 import com.ants.ktc.ants_ktc.dtos.booking.BookingRoomRequestDto;
 import com.ants.ktc.ants_ktc.dtos.booking.BookingStatusResponseDto;
