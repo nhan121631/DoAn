@@ -9,7 +9,9 @@ import {
 } from "@ant-design/icons";
 import { createBooking } from "@/services/BookingService";
 import dayjs, { Dayjs } from "dayjs";
-import { useRouter } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
+import { getServerSession } from "next-auth";
+import { useSession } from "next-auth/react";
 
 interface BookingFormProps {
   roomId: string;
@@ -29,6 +31,8 @@ export default function BookingForm({
   priceMonth,
   onBookingSuccess,
 }: BookingFormProps) {
+  const { data: session } = useSession();
+
   const [form] = Form.useForm<BookingFormData>();
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isConfirmModalVisible, setIsConfirmModalVisible] = useState(false);
@@ -40,7 +44,11 @@ export default function BookingForm({
   const router = useRouter();
 
   const showModal = () => {
-    setIsModalVisible(true);
+    if (!session) {
+      redirect("/auth/login");
+    } else {
+      setIsModalVisible(true);
+    }
   };
 
   const handleCancel = () => {
@@ -219,7 +227,6 @@ export default function BookingForm({
               placeholder="Select number of months (Default: 1 month)"
               onChange={(value) => calculateEndDate(value)}
               suffixIcon={<ClockCircleOutlined />}
-              defaultValue={1}
             >
               {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((month) => (
                 <Select.Option key={month} value={month}>

@@ -8,11 +8,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
 import com.ants.ktc.ants_ktc.entities.Booking;
 import com.ants.ktc.ants_ktc.repositories.projection.BookingUserProjection;
 import com.ants.ktc.ants_ktc.repositories.projection.BookingLandlordProjection;
 
+@Repository
 public interface BookingJpaRepository extends JpaRepository<Booking, UUID> {
 
         // Kiểm tra user đã đặt phòng này chưa

@@ -67,10 +67,18 @@ public class ProfileService {
                         }
                         profile.setPhoneNumber(dto.getPhoneNumber());
                 }
-                profile.setBankName(dto.getBankName());
-                profile.setBinCode(dto.getBinCode());
-                profile.setBankNumber(dto.getBankNumber());
-                profile.setAccoutHolderName(dto.getAccoutHolderName());
+                if (dto.getBankName() != null) {
+                        profile.setBankName(dto.getBankName());
+                }
+                if (dto.getBinCode() != null) {
+                        profile.setBinCode(dto.getBinCode());
+                }
+                if (dto.getBankNumber() != null) {
+                        profile.setBankNumber(dto.getBankNumber());
+                }
+                if (dto.getAccoutHolderName() != null) {
+                        profile.setAccoutHolderName(dto.getAccoutHolderName());
+                }
 
                 AddressResponseDto addressDto = null;
                 if (dto.getAddress() != null && dto.getAddress().getWardId() != null) {
