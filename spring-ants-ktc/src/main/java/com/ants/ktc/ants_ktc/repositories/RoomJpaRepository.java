@@ -104,9 +104,14 @@ public interface RoomJpaRepository extends JpaRepository<Room, UUID> {
                         "WHERE r.user.id = :userId")
         Page<Room> findAllByUser(@Param("userId") UUID userId, Pageable pageable);
 
-        List<RoomNameProjection> findByUserIdAndIsRemovedFalse(UUID userId);
+        // List<RoomNameProjection> findByUserIdAndIsRemovedFalse(UUID userId);
 
-        Optional<Room> findByIdAndUserIdAndIsRemovedFalse(UUID id, UUID userId);
+        // Optional<Room> findByIdAndUserIdAndIsRemovedFalse(UUID id, UUID userId);
+        @Query("SELECT r FROM Room r WHERE r.user.id = :userId AND r.isRemoved = 0")
+        List<RoomNameProjection> findActiveRoomsByUserId(@Param("userId") UUID userId);
+
+        @Query("SELECT r FROM Room r WHERE r.id = :id AND r.user.id = :userId AND r.isRemoved = 0")
+        Optional<Room> findActiveRoomByIdAndUserId(@Param("id") UUID id, @Param("userId") UUID userId);
 
         @Query("SELECT r FROM Room r " +
                         "JOIN FETCH r.user u " +
