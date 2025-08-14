@@ -182,6 +182,8 @@ export type Landlord = {
 
 
 
+
+
 export type Reply = {
   sender: 'admin' | 'user';
   message: string;
@@ -240,3 +242,7 @@ export type InvoiceFormValues = {
   invoiceName: string;
   installationCost?: number;
 };
+
+
+
+

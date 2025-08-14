@@ -3,7 +3,6 @@ import { API_URL } from '@/services/Constant';
 import { getServerSession } from 'next-auth';
 import { NextResponse } from 'next/server';
 
-// Xử lý yêu cầu GET để lấy danh sách phòng
 export async function GET() {
     try {
         const session = await getServerSession(authOptions);
@@ -20,7 +19,6 @@ export async function GET() {
         });
 
         if (!response.ok) {
-            // Xử lý lỗi từ backend một cách an toàn và trả về JSON
             const errorData = await response.json();
             return NextResponse.json(errorData, { status: response.status });
         }
@@ -28,7 +26,6 @@ export async function GET() {
         const data = await response.json();
         return NextResponse.json(data);
     } catch (error) {
-        // Ghi lại lỗi để dễ dàng debug và trả về lỗi 500
         console.error('API Error:', error);
         return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
     }
