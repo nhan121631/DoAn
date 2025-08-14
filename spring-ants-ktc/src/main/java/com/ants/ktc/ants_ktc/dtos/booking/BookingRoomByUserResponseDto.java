@@ -21,6 +21,7 @@ public class BookingRoomByUserResponseDto {
     private Date rentalExpires;
     private int tenantCount;
     private int status; // 0: pending, 1: accepted, 2: rejected, 3: waiting for deposit, 4: deposited
+    private int isRemoved; // 0: not removed, 1: removed
     private RoomBookingByUserResponseDto room;
     // private UserBookingResponseDto user;
 }

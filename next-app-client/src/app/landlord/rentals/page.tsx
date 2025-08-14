@@ -4,6 +4,7 @@ import { Table, Tag, Button, Space, Popconfirm, message } from "antd";
 import {
   landlordFetchBookings,
   updateBookingStatus,
+  deleteBooking,
 } from "@/services/BookingService";
 import React from "react";
 import { useEffect, useState } from "react";
@@ -105,6 +106,23 @@ export default function RentalsPage() {
       console.error("Failed to update booking status:", error);
       messageApi.error({
         content: `Failed to ${actionName.toLowerCase()} booking`,
+        duration: 2,
+      });
+    }
+  };
+
+  const handleDeleteBooking = async (bookingId: number) => {
+    try {
+      await deleteBooking(bookingId.toString());
+      messageApi.success({
+        content: "Booking removed successfully!",
+        duration: 2,
+      });
+      await fetchTableData(pagination.current, pagination.pageSize);
+    } catch (error) {
+      console.error("Failed to delete booking:", error);
+      messageApi.error({
+        content: "Failed to remove booking",
         duration: 2,
       });
     }
@@ -289,19 +307,27 @@ export default function RentalsPage() {
         isRemoved === 1 ? (
           <Tag color="red">Removed</Tag>
         ) : (
-          <Button
-            type="primary"
-            size="small"
-            style={{
-              backgroundColor: "red",
-              color: "#fff",
-              borderColor: "red",
-              fontWeight: 400,
-            }}
-            color="green"
+          <Popconfirm
+            title="Remove this booking?"
+            description="Are you sure you want to remove this booking?"
+            onConfirm={() => handleDeleteBooking(isRemoved)}
+            okText="Yes"
+            cancelText="No"
           >
-            Remove
-          </Button>
+            <Button
+              type="primary"
+              size="small"
+              style={{
+                backgroundColor: "red",
+                color: "#fff",
+                borderColor: "red",
+                fontWeight: 400,
+              }}
+              color="green"
+            >
+              Remove
+            </Button>
+          </Popconfirm>
         ),
     },
   ];

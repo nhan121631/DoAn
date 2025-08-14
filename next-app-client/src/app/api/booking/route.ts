@@ -119,7 +119,7 @@ export async function GET(request: Request) {
   const bookingId = searchParams.get("bookingId");
   const action = searchParams.get("action");
 
-  // Nếu action là "landlord-payment-info", lấy thông tin thanh toán của landlord
+  // Nếu action là "landlord-payment-info"
   if (action === "landlord-payment-info" && bookingId) {
     const response = await fetch(
       `${API_URL}/bookings/${bookingId}/landlord-payment-info`,
@@ -142,6 +142,5 @@ export async function GET(request: Request) {
     return new Response(JSON.stringify(paymentInfo), { status: 200 });
   }
 
-  // Mặc định trả về lỗi nếu không có action hợp lệ
   return new Response("Invalid request parameters", { status: 400 });
 }

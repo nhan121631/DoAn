@@ -221,7 +221,9 @@ const AddRoomForm: React.FC<{ onFinish?: (values: RoomData) => void }> = (
       setSelectedTypePostId(undefined);
     } catch (error: any) {
       messageApi.error({
-        content: error.message || "An error occurred while submitting room information",
+        content:
+          error.message ||
+          "An error occurred while submitting room information",
         duration: 1.5,
       });
       // console.error("Validation failed:", error.message);
@@ -424,9 +426,7 @@ const AddRoomForm: React.FC<{ onFinish?: (values: RoomData) => void }> = (
             </Form.Item> */}
 
               {/* Phần tiện nghi (convenient) */}
-              <h3 className="font-semibold text-base mb-2">
-                Convenient Part
-              </h3>
+              <h3 className="font-semibold text-base mb-2">Convenient Part</h3>
               <Form.Item
                 label="Convenients"
                 name="convenients"
@@ -503,16 +503,17 @@ const AddRoomForm: React.FC<{ onFinish?: (values: RoomData) => void }> = (
                   </table>
                 </div>
               </Form.Item>
+              {/* Start Date: always today, disabled input */}
               <Form.Item
                 label="Start Date"
                 name="startDate"
-                rules={[{ required: true, message: "Select start date" }]}
+                initialValue={startDate}
+                rules={[]}
               >
                 <Input
                   type="date"
                   value={startDate}
-                  min={new Date().toISOString().split("T")[0]}
-                  onChange={(e) => setStartDate(e.target.value)}
+                  disabled
                   className="w-full"
                 />
               </Form.Item>
@@ -529,7 +530,11 @@ const AddRoomForm: React.FC<{ onFinish?: (values: RoomData) => void }> = (
                 <Input
                   type="date"
                   value={endDate}
-                  min={startDate}
+                  min={(() => {
+                    const d = new Date();
+                    d.setDate(d.getDate() + 1);
+                    return d.toISOString().split("T")[0];
+                  })()}
                   onChange={(e) => setEndDate(e.target.value)}
                   className="w-full"
                 />

@@ -93,3 +93,20 @@ export async function getLandlordPaymentInfo(
   const paymentInfo = await response.json();
   return paymentInfo;
 }
+
+export async function deleteBooking(bookingId: string) {
+  const response = await fetch(`/api/booking?bookingId=${bookingId}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    const errorJson = await response.json();
+    throw new Error(errorJson.message || "Failed to delete booking");
+  }
+
+  return { success: true };
+  
+}

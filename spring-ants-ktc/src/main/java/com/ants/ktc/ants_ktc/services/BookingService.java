@@ -9,8 +9,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.scheduling.annotation.Scheduled;
 
 import com.ants.ktc.ants_ktc.dtos.address.AddressResponseDto;
 import com.ants.ktc.ants_ktc.dtos.address.DistrictResponseDto;
@@ -235,20 +237,66 @@ public class BookingService {
         // xoa booking set isRemoved = 1
         @Transactional
         public void deleteBooking(UUID bookingId, UUID userId) {
-                Booking booking = bookingJpaRepository.findById(bookingId)
-                                .orElseThrow(() -> new IllegalArgumentException("Booking not found"));
+                Booking booking = bookingJpaRepository.findByIdForStatusUpdate(bookingId);
+                if (booking == null) {
+                        throw new RuntimeException("Booking not found");
+                }
+                // Only select needed fields for fast check
+                Object[] result = bookingJpaRepository.findBookingUserAndLandlordIds(bookingId);
+                if (result == null || result.length < 2) {
+                        throw new IllegalArgumentException("Booking not found");
+                }
+                UUID bookingUserId = (UUID) result[0];
+                UUID landlordId = (UUID) result[1];
 
-                
-                if (!booking.getUser().getId().equals(userId)) {
-                        throw new IllegalArgumentException("You can only delete your own bookings");
+                if (!userId.equals(bookingUserId) && (landlordId == null || !userId.equals(landlordId))) {
+                        throw new IllegalArgumentException(
+                                        "You can only delete your own bookings or bookings for your own rooms");
+                }
+                Room room = booking.getRoom();
+                room.setAvailable(0);
+
+                // Update only isRemoved field for performance
+                bookingJpaRepository.updateIsRemovedById(bookingId, 1);
+        }
+
+        // ======================== Scheduled Tasks
+        // ========================//
+
+        // @Scheduled(cron = "0 0 1 * * ?") // Chạy hàng ngày lúc 1:00 AM
+        @Scheduled(cron = "0 10 11 * * ?") // Chạy hàng ngày 11 giờ 10 phút trưa
+        @Transactional
+        public void dailyRoomAvailabilityCheck() {
+                Date currentDate = new Date();
+
+                // Lấy tất cả booking có status = 4 (đang thuê) và chưa bị xóa
+                List<Booking> activeBookings = bookingJpaRepository.findActiveBookingsForAvailabilityCheck();
+
+                int updatedRooms = 0;
+                for (Booking booking : activeBookings) {
+                        Date rentalDate = booking.getRentalDate();
+                        Date rentalExpires = booking.getRentalExpires();
+
+                        if (rentalDate != null && rentalExpires != null) {
+                                boolean isOutsideRentalPeriod = currentDate.before(rentalDate)
+                                                || currentDate.after(rentalExpires);
+
+                                if (isOutsideRentalPeriod) {
+                                        Room room = booking.getRoom();
+                                        if (room != null && room.getAvailable() == 1) {
+                                                room.setAvailable(0);
+                                                roomJpaRepository.save(room);
+                                                updatedRooms++;
+                                        }
+                                }
+                        }
                 }
 
-                booking.setIsRemoved(1);
-                bookingJpaRepository.save(booking);
+                System.out.println("⏰ Daily room availability check completed. Updated " + updatedRooms
+                                + " rooms to unavailable.");
         }
 
         // ======================== Projection-based conversion methods
-        // ======================== Helper methods for DTO conversion
         // ========================//
 
         // convert BookingUserProjection to BookingRoomByUserResponseDto
@@ -259,6 +307,7 @@ public class BookingService {
                                 .rentalExpires(projection.getRentalExpires())
                                 .tenantCount(projection.getTenantCount())
                                 .status(projection.getStatus())
+                                .isRemoved(projection.getIsRemoved())
                                 .room(convertFromRoomProjectionToDto(projection.getRoom()))
                                 .build();
         }

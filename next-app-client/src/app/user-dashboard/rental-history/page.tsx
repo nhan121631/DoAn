@@ -34,6 +34,7 @@ interface RentalData {
   tenants: number;
   price: string;
   status: number;
+  isRemoved?: number;
 }
 
 function RentalHistory() {
@@ -66,6 +67,7 @@ function RentalHistory() {
         ? `${booking.room.priceMonth.toLocaleString()}₫`
         : "",
       status: booking.status,
+      isRemoved: booking.isRemoved,
     };
   };
 
@@ -278,6 +280,17 @@ function RentalHistory() {
         </Space>
       ),
     },
+    {
+      title: "Available",
+      key: "available",
+      render: (_: any, record: RentalData) => {
+        if (record.isRemoved === 1) {
+          return <Tag color="red">Removed by owner</Tag>;
+        }
+        return <Tag color="green">Active</Tag>;
+      },
+      
+    }
   ];
 
   return (

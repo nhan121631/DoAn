@@ -14,6 +14,8 @@ public interface BookingUserProjection {
 
     Integer getStatus();
 
+    Integer getIsRemoved();
+
     // Room projection
     BookingRoomUserProjection getRoom();
 

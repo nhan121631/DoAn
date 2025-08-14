@@ -37,3 +37,42 @@ export async function GET(request: Request) {
     headers: { "Content-Type": "application/json" },
   });
 }
+
+export async function PATCH(request: Request) {
+  const session = await getServerSession(authOptions);
+  if (!session) {
+    return new Response("Unauthorized", { status: 401 });
+  }
+  const { searchParams } = new URL(request.url);
+  const bookingId = searchParams.get("bookingId");
+  if (!bookingId) {
+    return new Response("Missing bookingId", { status: 400 });
+  }
+  const userId = session.user.id;
+  if (!userId) {
+    return new Response("Missing userId", { status: 400 });
+  }
+
+  const response = await fetch(
+    `${API_URL}/bookings/${bookingId}/delete?userId=${userId}`,
+    {
+      method: "PATCH",
+      headers: {
+        Authorization: `Bearer ${session.user.accessToken}`,
+      },
+    }
+  );
+
+  if (!response.ok) {
+    let errorText;
+    try {
+      errorText = await response.text();
+    } catch {
+      errorText = "Unknown error";
+    }
+    return new Response(errorText, { status: response.status });
+  }
+
+  const data = await response.text();
+  return new Response(data, { status: 200 });
+}
