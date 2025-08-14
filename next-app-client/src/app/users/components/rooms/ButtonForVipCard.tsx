@@ -14,14 +14,17 @@ interface ButtonFavoriteProps {
   isFavorite?: boolean;
 }
 
-export function ButtonForVipCard({
-  onClick,
-  isFavorite,
-  room,
-}: ButtonFavoriteProps) {
+export function ButtonForVipCard({ room, isFavorite = true, onFavoriteChange }: { room: RoomInUser, isFavorite?: boolean, onFavoriteChange?: (id: string) => void }) {
+
+// export function ButtonForVipCard({
+//   onClick,
+//   isFavorite,
+//   room,
+// }: ButtonFavoriteProps) {
   const { items, addItem } = useCompareStore((state) => state);
   const [isCompared, setIsCompared] = useState(false);
   const [messageApi, contextHolder] = message.useMessage();
+  const [loading, setLoading] = useState(false);
 
   const handleCompare = () => {
     if (items.length >= 2) {
@@ -39,10 +42,34 @@ export function ButtonForVipCard({
     setIsCompared(items.some((item) => item.room.id === room.id));
   }, [items, room.id]);
 
+
+  const handleFavorite = async () => {
+    setLoading(true);
+    try {
+      if (isFavorite) {
+        // Xóa khỏi danh sách yêu thích
+        const res = await fetch(`/api/user-dashboard/favorited-rooms/${room.id}`, {
+          method: "DELETE",
+        });
+        if (res.ok && onFavoriteChange) onFavoriteChange(room.id);
+      } else {
+        // Thêm vào danh sách yêu thích
+        const res = await fetch(`/api/user-dashboard/favorited-rooms/${room.id}`, {
+          method: "POST",
+        });
+        if (res.ok && onFavoriteChange) onFavoriteChange(room.id);
+      }
+    } catch (e) {
+      // Xử lý lỗi nếu cần
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <>
       {contextHolder}
-      <button
+      {/* <button
         aria-label="Favorite"
         className={`transition-colors ${
           isFavorite ? "text-red-500" : "text-gray-400 hover:text-red-500"
@@ -51,7 +78,16 @@ export function ButtonForVipCard({
         type="button"
       >
         <FaHeart size={22} />
-      </button>
+      </button> */}
+      <button
+      aria-label="Favorite"
+      className={`transition-colors ${isFavorite ? "text-red-500" : "text-gray-400 hover:text-red-500"}`}
+      onClick={handleFavorite}
+      disabled={loading}
+      type="button"
+    >
+      <FaHeart size={22} />
+    </button>
       <button
         className={`flex items-center justify-center gap-1 px-5 py-2 rounded-full transition 
       ${

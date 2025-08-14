@@ -7,9 +7,12 @@ import RoomCartActionsWrapper from "./RoomCardActionsWrapper";
 
 interface RoomVipCardProps {
   room: RoomInUser;
+  onFavoriteChange?: (id: string) => void;
 }
 
-export default function RoomVipCard({ room }: RoomVipCardProps) {
+
+
+export default function RoomVipCard({ room, onFavoriteChange }: RoomVipCardProps) {
   // Xử lý ngày đăng bài
   function getPostDateLabel(postStartDate: string) {
     if (!postStartDate) return "";
@@ -126,7 +129,7 @@ export default function RoomVipCard({ room }: RoomVipCardProps) {
               ? room.landlord.landlordProfile.phoneNumber
               : room.landlord.landlordProfile.email}
           </span>
-          <ButtonForVipCard room={room} />
+          <ButtonForVipCard room={room} isFavorite={true} onFavoriteChange={onFavoriteChange} />
         </div>
       </div>
     </div>

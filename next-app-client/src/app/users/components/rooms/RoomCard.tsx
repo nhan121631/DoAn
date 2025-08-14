@@ -11,6 +11,7 @@ export interface RoomCardProps {
   room: RoomInUser;
   isForSale?: boolean;
   isFeatured?: boolean;
+  onFavoriteChange?: (id: string) => void;
 }
 
 const RoomCard: React.FC<RoomCardProps> = ({

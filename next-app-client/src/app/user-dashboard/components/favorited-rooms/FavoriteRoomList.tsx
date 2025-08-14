@@ -35,6 +35,13 @@ export default function FavoriteRoomList() {
     fetchInitial();
   }, []);
 
+
+ 
+
+const handleFavoriteChange = (id: string) => {
+  setRooms((prev) => prev.filter((room) => room.id !== id));
+};
+
   // Fetch more rooms when scroll to bottom
   const fetchMoreRooms = async () => {
     if (loading || !hasMore) return;
@@ -75,7 +82,7 @@ export default function FavoriteRoomList() {
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
         {rooms.map((room) => (
           <div key={room.id}>
-            {room.isVip ? <RoomVipCard room={room} /> : <RoomCard room={room} />}
+            {room.isVip ? <RoomVipCard room={room} onFavoriteChange={handleFavoriteChange}  /> : <RoomCard room={room} onFavoriteChange={handleFavoriteChange}  />}
           </div>
         ))}
       </div>
