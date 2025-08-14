@@ -1,7 +1,6 @@
-// // Sử dụng Server-side code để bảo mật token
 // import { API_URL } from "@/services/Constant";
 // import { getServerSession } from "next-auth/next";
-// import {  authOptions } from "@/app/api/auth/[...nextauth]/route";
+// import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 // import { NextResponse } from "next/server";
 
 // export async function GET(request: Request) {
@@ -9,7 +8,6 @@
 //   const page = searchParams.get("page") || "0";
 //   const size = searchParams.get("size") || "10";
 
-//   // Lấy token từ session
 //   const session = await getServerSession(authOptions);
 
 //   if (!session || !session.accessToken) {
@@ -21,11 +19,9 @@
 //       method: "GET",
 //       headers: {
 //         "Content-Type": "application/json",
-//         // Gửi Authorization header với token
 //         "Authorization": `Bearer ${session.accessToken}`,
 //       },
-//       // Sử dụng cache: 'no-store' để đảm bảo dữ liệu luôn mới
-//       cache: 'no-store',
+//       cache: "no-store",
 //     });
 
 //     if (!response.ok) {
