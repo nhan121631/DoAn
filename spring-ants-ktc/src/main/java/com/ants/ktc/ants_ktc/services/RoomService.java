@@ -35,6 +35,7 @@ import com.ants.ktc.ants_ktc.dtos.room.RoomAdminResponseProjectionDto;
 import com.ants.ktc.ants_ktc.dtos.room.RoomApprovalProjectionDto;
 import com.ants.ktc.ants_ktc.dtos.room.RoomDeleteRequestDto;
 import com.ants.ktc.ants_ktc.dtos.room.RoomInUserResponseDto;
+import com.ants.ktc.ants_ktc.dtos.room.RoomRecentResponseDto;
 import com.ants.ktc.ants_ktc.dtos.room.RoomRequestCreateDto;
 import com.ants.ktc.ants_ktc.dtos.room.RoomRequestUpdateDto;
 import com.ants.ktc.ants_ktc.dtos.room.RoomResponseDto;
@@ -62,6 +63,7 @@ import com.ants.ktc.ants_ktc.repositories.address.WardJpaRepository;
 import com.ants.ktc.ants_ktc.repositories.projection.RoomApprovalProjection;
 import com.ants.ktc.ants_ktc.repositories.projection.RoomByAdminPagingProjection;
 import com.ants.ktc.ants_ktc.repositories.projection.RoomByLandlordPagingProjection;
+import com.ants.ktc.ants_ktc.repositories.projection.RoomNewProjection;
 
 @Service
 public class RoomService {
@@ -928,5 +930,22 @@ public class RoomService {
                 return hex.replaceFirst(
                                 "(\\w{8})(\\w{4})(\\w{4})(\\w{4})(\\w{12})",
                                 "$1-$2-$3-$4-$5");
+        }
+
+        public List<RoomRecentResponseDto> findRecentRooms() {
+                Pageable pageable = PageRequest.of(0, 8);
+                LocalDate sevenDaysAgo = LocalDate.now().minusDays(7);
+                java.sql.Date sqlDate = java.sql.Date.valueOf(sevenDaysAgo);
+                List<RoomNewProjection> roomProjections = roomJpaRepository.findRecentRooms(sqlDate, pageable);
+                return roomProjections.stream()
+                                .map(projection -> RoomRecentResponseDto.builder()
+                                                .id(UUID.fromString(formatHexToUuid(projection.getId())))
+                                                .title(projection.getTitle())
+                                                .priceMonth(projection.getPriceMonth())
+                                                .postStartDate(projection.getPostStartDate())
+                                                .imageUrl(projection.getImageUrl())
+                                                .build())
+                                .collect(Collectors.toList());
+
         }
 }

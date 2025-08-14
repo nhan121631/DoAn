@@ -177,3 +177,18 @@ export async function filterRooms(
     return null;
   }
 }
+
+//------ rencent room--------//
+export async function getRecentRooms() {
+  try {
+    const response = await fetch(`${API_URL}/rooms/recent-rooms`);
+    if (!response.ok) {
+      const data = await response.json();
+      throw new Error(data.message || "Failed to fetch recent rooms");
+    }
+    return response.json();
+  } catch (error) {
+    console.error("Error fetching recent rooms:", error);
+    return null;
+  }
+}

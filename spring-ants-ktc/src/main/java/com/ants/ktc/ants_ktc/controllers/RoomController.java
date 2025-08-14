@@ -25,12 +25,14 @@ import com.ants.ktc.ants_ktc.dtos.room.PaginationRoomInUserResponseDto;
 import com.ants.ktc.ants_ktc.dtos.room.PaginationRoomResponseDto;
 import com.ants.ktc.ants_ktc.dtos.room.RoomApprovalProjectionDto;
 import com.ants.ktc.ants_ktc.dtos.room.RoomDeleteRequestDto;
+import com.ants.ktc.ants_ktc.dtos.room.RoomRecentResponseDto;
 import com.ants.ktc.ants_ktc.dtos.room.RoomRequestCreateDto;
 import com.ants.ktc.ants_ktc.dtos.room.RoomRequestUpdateDto;
 import com.ants.ktc.ants_ktc.dtos.room.RoomResponseDto;
 import com.ants.ktc.ants_ktc.dtos.room.RoomShowHideProjectionDto;
 import com.ants.ktc.ants_ktc.dtos.room.RoomUpdateExpireDateRequestDto;
 import com.ants.ktc.ants_ktc.dtos.room.RoomUpdateExpireDateResponseDto;
+import com.ants.ktc.ants_ktc.repositories.projection.RoomNewProjection;
 import com.ants.ktc.ants_ktc.services.RoomService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -189,5 +191,11 @@ public class RoomController {
             @RequestBody FilterRoomRequestDto filterDto) {
         PaginationRoomInUserResponseDto response = roomService.filterRooms(pageNumber, pageSize, filterDto);
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("recent-rooms")
+    public ResponseEntity<List<RoomRecentResponseDto>> getRecentRooms() {
+        List<RoomRecentResponseDto> recentRooms = roomService.findRecentRooms();
+        return ResponseEntity.ok(recentRooms);
     }
 }
