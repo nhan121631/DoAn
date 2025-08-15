@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import React from "react";
 import { IoMdAddCircleOutline } from "react-icons/io";
 import { userFetchBookings } from "@/services/BookingService";
+import dayjs, { Dayjs } from "dayjs";
 
 function useRentalStatusModal() {
   const [visible, setVisible] = useState(false);
@@ -47,6 +48,15 @@ function RentalHistory() {
   const [loading, setLoading] = useState(false);
   const modal = useRentalStatusModal();
 
+  const calculateMonthsFromDates = (
+    startDate: Dayjs,
+    endDate: Dayjs
+  ): number => {
+    if (!startDate || !endDate) return 0;
+    const months = endDate.diff(startDate, "month", true);
+    return Math.ceil(months);
+  };
+
   const mapBookingToRentalData = (booking: any): RentalData => {
     const address = booking.room.address;
     const fullAddress = `${address.street}, ${address.ward.name}, ${address.ward.district.name}, ${address.ward.district.province.name}`;
@@ -63,8 +73,14 @@ function RentalHistory() {
         ? new Date(booking.rentalExpires).toISOString().slice(0, 10)
         : "",
       tenants: booking.tenantCount,
+      // price: booking.room.priceMonth
+      //   ? `${booking.room.priceMonth.toLocaleString()}₫`
+      //   : "",
       price: booking.room.priceMonth
-        ? `${booking.room.priceMonth.toLocaleString()}₫`
+        ? `${(booking.room.priceMonth * calculateMonthsFromDates(
+            dayjs(booking.rentalDate),
+            dayjs(booking.rentalExpires)
+          )).toLocaleString()}₫`
         : "",
       status: booking.status,
       isRemoved: booking.isRemoved,
@@ -247,24 +263,28 @@ function RentalHistory() {
     {
       title: "Request Action",
       key: "requestAction",
-      render: (_: any, record: RentalData) => (
-        <Space size="middle">
-          <Button
-            type="primary"
-            size="small"
-            onClick={() => {
-              if (record.status === 4) {
-                setFieldValue(record);
-                setModalType("add");
-                setOpen(true);
-              }
-            }}
-            title="Add Request"
-            disabled={record.status !== 4}
-          >
-            <IoMdAddCircleOutline size={18} /> Sent new request
-          </Button>
-          {/* <Button
+      render: (_: any, record: RentalData) => {
+        const today = new Date();
+        // const rentalDate = new Date(record.rentalDate);
+        const expiresDate = new Date(record.expires);
+        return (
+          <Space size="middle">
+            <Button
+              type="primary"
+              size="small"
+              onClick={() => {
+                if (record.status === 4) {
+                  setFieldValue(record);
+                  setModalType("add");
+                  setOpen(true);
+                }
+              }}
+              title="Add Request"
+              disabled={record.status !== 4 || today > expiresDate}
+            >
+              <IoMdAddCircleOutline size={18} /> Sent new request
+            </Button>
+            {/* <Button
             type="text"
             icon={<AiOutlineEdit size={18} />}
             onClick={() => {
@@ -277,8 +297,9 @@ function RentalHistory() {
             title="Edit Request"
             disabled={record.status !== 4}
           /> */}
-        </Space>
-      ),
+          </Space>
+        );
+      },
     },
     {
       title: "Available",
@@ -289,8 +310,7 @@ function RentalHistory() {
         }
         return <Tag color="green">Active</Tag>;
       },
-      
-    }
+    },
   ];
 
   return (

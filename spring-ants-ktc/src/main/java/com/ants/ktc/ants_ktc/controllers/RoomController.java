@@ -97,8 +97,10 @@ public class RoomController {
     @GetMapping("/by-admin/paging")
     public ResponseEntity<PaginationRoomAdminResponseDto> getAllRoomByAdminPaginated(
             @RequestParam(value = "page", defaultValue = "0") int page,
-            @RequestParam(value = "size", defaultValue = "5") int size) {
-        PaginationRoomAdminResponseDto rooms = roomService.getAllRoomByAdminPaginated(page, size);
+            @RequestParam(value = "size", defaultValue = "5") int size,
+            @RequestParam(value = "sortField", required = false) String sortField,
+            @RequestParam(value = "sortOrder", required = false) String sortOrder) {
+        PaginationRoomAdminResponseDto rooms = roomService.getAllRoomByAdminPaginated(page, size, sortField, sortOrder);
         return ResponseEntity.ok(rooms);
     }
 

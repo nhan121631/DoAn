@@ -53,18 +53,18 @@ public class BookingService {
         @Transactional
         public BookingRoomByUserResponseDto createBooking(UUID userId, BookingRoomRequestDto request) {
                 User user = userJpaRepository.findById(userId)
-                                .orElseThrow(() -> new RuntimeException("User not found"));
+                                .orElseThrow(() -> new IllegalArgumentException("User not found"));
                 Room room = roomJpaRepository.findById(request.getRoomId())
-                                .orElseThrow(() -> new RuntimeException("Room not found"));
+                                .orElseThrow(() -> new IllegalArgumentException("Room not found"));
 
                 if (room.getAvailable() == 1) {
-                        throw new RuntimeException("Room is not available for booking");
+                        throw new IllegalArgumentException("Room is not available for booking");
                 }
 
                 // Kiểm tra user đã đặt phòng này chưa
                 boolean exists = bookingJpaRepository.existsByUserIdAndRoomIdAndIsRemoved(userId, room.getId(), 0);
                 if (exists) {
-                        throw new RuntimeException("User has already booked this room");
+                        throw new IllegalArgumentException("User has already booked this room");
                 }
 
                 // kiểm tra ngày thuê không nhỏ hơn ngày hiện tại (cho phép đặt từ hôm nay)
@@ -75,7 +75,7 @@ public class BookingService {
                 // Cho phép đặt nếu ngày thuê cách ngày hiện tại không quá 24 giờ về trước
                 long diffInHours = (currentTimeMillis - rentalTimeMillis) / (1000 * 60 * 60);
                 if (diffInHours > 24) {
-                        throw new RuntimeException("Rental date cannot be more than 1 day in the past");
+                        throw new IllegalArgumentException("Rental date cannot be more than 1 day in the past");
                 }
 
                 // Tạo booking mới
@@ -87,6 +87,8 @@ public class BookingService {
                 booking.setTenantCount(request.getTenantCount());
                 booking.setStatus(0);
 
+                room.setAvailable(1);
+                roomJpaRepository.save(room);
                 Booking savedBooking = bookingJpaRepository.save(booking);
                 return convertToResponseDto(savedBooking);
         }
@@ -142,6 +144,7 @@ public class BookingService {
 
                 User landlord = booking.getRoom().getUser();
                 UserProfile profile = landlord.getProfile();
+                Room room = booking.getRoom();
 
                 if (profile == null) {
                         throw new RuntimeException("Landlord profile not found");
@@ -154,6 +157,7 @@ public class BookingService {
                                 .bankNumber(profile.getBankNumber())
                                 .bankName(profile.getBankName())
                                 .binCode(profile.getBinCode())
+                                .depositAmount(room.getPrice_deposit())
                                 .phoneNumber(profile.getPhoneNumber())
                                 .email(profile.getEmail())
                                 .build();
@@ -190,15 +194,19 @@ public class BookingService {
                                 message = "Booking accepted successfully";
                         } else if (currentStatus == 0 && newStatus == 2) {
                                 booking.setStatus(newStatus);
+
+                                Room room = booking.getRoom();
+                                room.setAvailable(0);
+                                roomJpaRepository.save(room);
                                 message = "Booking rejected successfully";
                         }
                         // Landlord từ 3 -> 4 (confirm deposit)
                         else if (currentStatus == 3 && newStatus == 4) {
                                 booking.setStatus(newStatus);
                                 // Set phòng là không available khi đã confirm deposit
-                                Room room = booking.getRoom();
-                                room.setAvailable(1);
-                                roomJpaRepository.save(room);
+                                // Room room = booking.getRoom();
+                                // room.setAvailable(1);
+                                // roomJpaRepository.save(room);
                                 message = "Deposit confirmed successfully. Room is now rented";
                         } else {
                                 throw new IllegalArgumentException(
@@ -255,6 +263,7 @@ public class BookingService {
                 }
                 Room room = booking.getRoom();
                 room.setAvailable(0);
+                roomJpaRepository.save(room);
 
                 // Update only isRemoved field for performance
                 bookingJpaRepository.updateIsRemovedById(bookingId, 1);
@@ -263,8 +272,8 @@ public class BookingService {
         // ======================== Scheduled Tasks
         // ========================//
 
-        // @Scheduled(cron = "0 0 1 * * ?") // Chạy hàng ngày lúc 1:00 AM
-        @Scheduled(cron = "0 10 11 * * ?") // Chạy hàng ngày 11 giờ 10 phút trưa
+        @Scheduled(cron = "0 0 1 * * ?") // Chạy hàng ngày lúc 1:00 AM
+        // @Scheduled(cron = "0 10 11 * * ?") // Chạy hàng ngày 11 giờ 10 phút trưa
         @Transactional
         public void dailyRoomAvailabilityCheck() {
                 Date currentDate = new Date();

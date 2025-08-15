@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable react-hooks/exhaustive-deps */
 import { Button, message, Popconfirm, Space, Table, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import React, { useContext, useState } from "react";
@@ -18,6 +17,8 @@ import RoomDetailModal from "./RoomDetailModal";
 import SendMailModal from "./SendMailModal";
 
 const TableManageRoom: React.FC = () => {
+  const [sortField, setSortField] = useState<string | undefined>(undefined);
+  const [sortOrder, setSortOrder] = useState<string | undefined>(undefined);
   const [selectedRoom, setSelectedRoom] = useState<RoomResponseDto | null>(
     null
   );
@@ -31,8 +32,13 @@ const TableManageRoom: React.FC = () => {
   // const [form] = Form.useForm();
 
   const { data, isLoading, refetch } = useQuery(
-    getRoomQueryOptions(page, pageSize)
+    getRoomQueryOptions(page, pageSize, sortField, sortOrder)
   );
+
+  // Reset to first page when sort changes
+  React.useEffect(() => {
+    setPage(0);
+  }, [sortField, sortOrder]);
 
   const updateApprovalMutation = useUpdateApproval({
     mutationConfig: {
@@ -110,7 +116,7 @@ const TableManageRoom: React.FC = () => {
       title: "Room Name",
       dataIndex: "title",
       key: "title",
-      sorter: (a, b) => a.title.localeCompare(b.title),
+      sorter: true,
     },
     {
       title: "Description",
@@ -144,7 +150,7 @@ const TableManageRoom: React.FC = () => {
       title: "Price/month",
       dataIndex: "priceMonth",
       key: "priceMonth",
-      sorter: (a, b) => a.priceMonth - b.priceMonth,
+      sorter: true,
       render: (priceMonth) =>
         priceMonth ? priceMonth.toLocaleString() + " ₫" : "N/A",
     },
@@ -157,12 +163,12 @@ const TableManageRoom: React.FC = () => {
         const color = available === 1 ? "green" : "blue";
         return <Tag color={color}>{label}</Tag>;
       },
-      sorter: (a, b) => a.available - b.available,
+      sorter: true,
     },
     {
       title: "Approval",
       key: "approval",
-      sorter: (a, b) => a.approval - b.approval,
+      sorter: true,
       render: (_, record) => {
         if (record.approval === 0) {
           return (
@@ -253,6 +259,18 @@ const TableManageRoom: React.FC = () => {
           current: page + 1,
           total: data?.totalRecords || 0,
           onChange: (p) => setPage(p - 1),
+        }}
+        onChange={(_pagination, _filters, sorter) => {
+          // AntD Table passes sorter.field as the dataIndex, but our approval column has key only
+          let field = undefined;
+          if (!Array.isArray(sorter) && sorter && sorter.order) {
+            field = sorter.field || sorter.columnKey;
+            setSortField(field as string);
+            setSortOrder(sorter.order === "ascend" ? "asc" : "desc");
+          } else {
+            setSortField(undefined);
+            setSortOrder(undefined);
+          }
         }}
       />
       {/* ...existing code for modals... */}

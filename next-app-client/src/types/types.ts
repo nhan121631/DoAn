@@ -232,6 +232,7 @@ export type LandlordPaymentInfo = {
   bankNumber: string;
   bankName: string;
   binCode: string;
+  depositAmount: number;
   phoneNumber: string;
   email: string;
 };

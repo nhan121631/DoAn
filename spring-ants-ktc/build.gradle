@@ -44,6 +44,9 @@ dependencies {
 	// Cache in Redis
 	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 
+ 	// Cloudinary dependencies
+	implementation 'com.cloudinary:cloudinary-http44:1.37.0'
+
 	compileOnly 'org.projectlombok:lombok'
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	runtimeOnly 'com.mysql:mysql-connector-j'

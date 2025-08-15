@@ -10,6 +10,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -17,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -88,6 +90,9 @@ public class RoomService {
 
         @Autowired
         private MailService mailService;
+
+        @Autowired
+        private CloudinaryService cloudinaryService;
 
         private List<ImageResponseDto> convertImages(List<Image> images) {
                 if (images == null)
@@ -268,24 +273,21 @@ public class RoomService {
                 });
                 room.setConvenients(convenients);
 
-                // Xử lý images
-                List<Image> images = files.stream()
+                // Xử lý images - Upload song song để tăng tốc
+                List<Image> images = files.parallelStream()
                                 .filter(file -> file != null && !file.isEmpty())
                                 .map(file -> {
                                         try {
-                                                String fileName = System.currentTimeMillis() + "_"
-                                                                + file.getOriginalFilename();
-                                                Path filePath = Paths.get("public/uploads/" + fileName);
-                                                Files.createDirectories(filePath.getParent());
-                                                Files.write(filePath, file.getBytes());
+                                                Map<String, String> uploadResult = cloudinaryService.uploadFile(file);
+                                                String fileUrl = uploadResult.get("url");
 
-                                                String fileUrl = "/uploads/" + fileName;
                                                 Image image = new Image();
                                                 image.setUrl(fileUrl);
                                                 image.setRoom(room); // quan hệ 2 chiều
                                                 return image;
                                         } catch (Exception e) {
-                                                throw new RuntimeException("Failed to save file: " + e.getMessage(), e);
+                                                throw new RuntimeException("Failed to upload file to Cloudinary: "
+                                                                + e.getMessage(), e);
                                         }
                                 })
                                 .toList();
@@ -375,23 +377,29 @@ public class RoomService {
                         imagesToKeep.addAll(oldImages);
                 }
 
-                // Thêm ảnh mới
+                // Thêm ảnh mới - Upload song song để tăng tốc
                 if (images != null && !images.isEmpty()) {
-                        for (MultipartFile file : images) {
-                                if (!file.isEmpty()) {
-                                        String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
-                                        Path filePath = Paths.get("public/uploads/" + fileName);
-                                        Files.createDirectories(filePath.getParent());
-                                        Files.write(filePath, file.getBytes());
-                                        String fileUrl = "/uploads/" + fileName;
+                        List<Image> newImages = images.parallelStream()
+                                        .filter(file -> !file.isEmpty())
+                                        .map(file -> {
+                                                try {
+                                                        Map<String, String> uploadResult = cloudinaryService.uploadFile(file);
+                                                        String fileUrl = uploadResult.get("url");
 
-                                        Image image = new Image();
-                                        image.setRoom(room);
-                                        image.setUrl(fileUrl);
-                                        imageJpaRepository.save(image);
-                                        imagesToKeep.add(image);
-                                }
-                        }
+                                                        Image image = new Image();
+                                                        image.setRoom(room);
+                                                        image.setUrl(fileUrl);
+                                                        return image;
+                                                } catch (Exception e) {
+                                                        throw new RuntimeException("Failed to upload file to Cloudinary: "
+                                                                        + e.getMessage(), e);
+                                                }
+                                        })
+                                        .toList();
+                        
+                        // Lưu tất cả ảnh mới cùng lúc
+                        imageJpaRepository.saveAll(newImages);
+                        imagesToKeep.addAll(newImages);
                 }
 
                 // Cập nhật danh sách ảnh vào room
@@ -445,8 +453,12 @@ public class RoomService {
         }
 
         @Transactional(readOnly = true)
-        public PaginationRoomAdminResponseDto getAllRoomByAdminPaginated(int page, int size) {
-                Pageable pageable = PageRequest.of(page, size);
+        public PaginationRoomAdminResponseDto getAllRoomByAdminPaginated(int page, int size, String sortField,
+                        String sortOrder) {
+                String sortBy = (sortField != null && !sortField.isBlank()) ? sortField : "title";
+                String direction = (sortOrder != null && sortOrder.equalsIgnoreCase("desc")) ? "desc" : "asc";
+                Pageable pageable = PageRequest.of(page, size,
+                                direction.equals("asc") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending());
                 Page<RoomByAdminPagingProjection> roomPage = roomJpaRepository.findAllByAdmin(pageable);
 
                 List<RoomAdminResponseProjectionDto> roomDtos = roomPage.getContent().stream()
@@ -751,7 +763,16 @@ public class RoomService {
 
         private void deleteFileFromStorage(String fileUrl) {
                 try {
-                        if (fileUrl != null && fileUrl.startsWith("/uploads/")) {
+                        // Check if it's a Cloudinary URL (starts with cloud name path)
+                        if (fileUrl != null && fileUrl.contains("cloudinary")) {
+                                // Note: For proper Cloudinary deletion, we would need the public_id
+                                // Since we don't store public_id in the Image entity, we cannot delete from
+                                // Cloudinary
+                                // Consider adding a public_id field to the Image entity for proper cleanup
+                                System.out.println("Cloudinary file deletion skipped - public_id not available: "
+                                                + fileUrl);
+                        } else if (fileUrl != null && fileUrl.startsWith("/uploads/")) {
+                                // Handle local files (legacy support)
                                 long count = imageJpaRepository.countByUrl(fileUrl);
                                 if (count == 0) {
                                         String fileName = fileUrl.substring("/uploads/".length());
