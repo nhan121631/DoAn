@@ -32,8 +32,9 @@ import com.ants.ktc.ants_ktc.dtos.room.RoomResponseDto;
 import com.ants.ktc.ants_ktc.dtos.room.RoomShowHideProjectionDto;
 import com.ants.ktc.ants_ktc.dtos.room.RoomUpdateExpireDateRequestDto;
 import com.ants.ktc.ants_ktc.dtos.room.RoomUpdateExpireDateResponseDto;
-import com.ants.ktc.ants_ktc.repositories.projection.RoomNewProjection;
+import com.ants.ktc.ants_ktc.dtos.user.LandlordResponseByRoomDto;
 import com.ants.ktc.ants_ktc.services.RoomService;
+import com.ants.ktc.ants_ktc.services.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.validation.ConstraintViolation;
@@ -47,6 +48,8 @@ public class RoomController {
     private RoomService roomService;
     @Autowired
     private Validator validator;
+    @Autowired
+    private UserService userService;
 
     @PostMapping
     public ResponseEntity<RoomResponseDto> createRoom(
@@ -69,7 +72,7 @@ public class RoomController {
 
     @PatchMapping("/{id}")
     public ResponseEntity<RoomResponseDto> updateRoom(
-            @PathVariable UUID id,
+            @PathVariable("id") UUID id,
             @RequestPart("room") String roomJson,
             @RequestPart(value = "images", required = false) List<MultipartFile> images) throws Exception {
         RoomRequestUpdateDto request = new ObjectMapper().readValue(roomJson, RoomRequestUpdateDto.class);
@@ -197,5 +200,11 @@ public class RoomController {
     public ResponseEntity<List<RoomRecentResponseDto>> getRecentRooms() {
         List<RoomRecentResponseDto> recentRooms = roomService.findRecentRooms();
         return ResponseEntity.ok(recentRooms);
+    }
+
+    @GetMapping("landlord-room/{id}")
+    public ResponseEntity<LandlordResponseByRoomDto> getLandlordByRoomId(@PathVariable("id") UUID roomId) {
+        LandlordResponseByRoomDto landlord = userService.getLandlordInfoByRoomId(roomId);
+        return ResponseEntity.ok(landlord);
     }
 }

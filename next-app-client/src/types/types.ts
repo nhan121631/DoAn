@@ -160,11 +160,48 @@ export type LandlordProfile = {
   avatar: string;
 };
 
+export type RequirementRequestRoomDto ={
+  userId: string;
+  roomId: string;
+  description: string;
+}
+
+export type UpdateRequestRoomDto = {
+  id: string;
+  description: string;
+};
+
 export type Landlord = {
   id: string;
   landlordProfile: LandlordProfile;
 };
 
+export type LandlordDetailByRoom = {
+    id: string;
+    fullName: string;
+    email: string;
+    avatar: string;
+    amountPost: number;
+    phone: string;
+    createDate: string;
+}
+
+export type Requirement = {
+  id: string;
+  userId: string;
+  roomId: string;
+  description: string;
+  status: 0 | 1 | 2; // 0 = pending, 1 = approved, 2 = rejected
+}
+
+export type RequirementDetail ={
+        id: string;
+        roomTitle: string;
+        userName: string;
+        email: string;
+        description: string;
+        status: 0 | 1 | 2;
+}
 
 export type Reply = {
   sender: "admin" | "user";

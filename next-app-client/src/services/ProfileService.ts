@@ -24,7 +24,7 @@ export async function getBanks(){
     const response = await fetch("https://api.vietqr.io/v2/banks", {
         method: "GET",
     });
-
+1
     if (!response.ok) {
         throw new Error("Failed to fetch banks");
     }

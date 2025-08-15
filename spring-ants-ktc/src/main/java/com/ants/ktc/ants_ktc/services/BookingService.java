@@ -12,7 +12,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.scheduling.annotation.Scheduled;
 
 import com.ants.ktc.ants_ktc.dtos.address.AddressResponseDto;
 import com.ants.ktc.ants_ktc.dtos.address.DistrictResponseDto;
@@ -32,11 +31,11 @@ import com.ants.ktc.ants_ktc.entities.Booking;
 import com.ants.ktc.ants_ktc.entities.Room;
 import com.ants.ktc.ants_ktc.entities.User;
 import com.ants.ktc.ants_ktc.entities.UserProfile;
-import com.ants.ktc.ants_ktc.repositories.projection.BookingUserProjection;
-import com.ants.ktc.ants_ktc.repositories.projection.BookingLandlordProjection;
 import com.ants.ktc.ants_ktc.repositories.BookingJpaRepository;
 import com.ants.ktc.ants_ktc.repositories.RoomJpaRepository;
 import com.ants.ktc.ants_ktc.repositories.UserJpaRepository;
+import com.ants.ktc.ants_ktc.repositories.projection.BookingLandlordProjection;
+import com.ants.ktc.ants_ktc.repositories.projection.BookingUserProjection;
 
 @Service
 public class BookingService {
@@ -169,7 +168,6 @@ public class BookingService {
                 int currentStatus = booking.getStatus();
                 String message = "";
 
-                // Kiểm tra nếu ngày hiện tại > rentalExpires thì set room available = 0
                 Date currentDate = new Date();
                 if (booking.getRentalExpires() != null && currentDate.after(booking.getRentalExpires())) {
                         Room room = booking.getRoom();

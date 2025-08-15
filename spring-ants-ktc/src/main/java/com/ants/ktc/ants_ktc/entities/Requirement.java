@@ -8,10 +8,12 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "requirements")
 @Data
+@NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 public class Requirement extends BaseEntity {
     @Column(name = "description", length = 500)
@@ -27,4 +29,11 @@ public class Requirement extends BaseEntity {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
+
+    public Requirement(String description, int status, Room room, User user) {
+        this.description = description;
+        this.status = status;
+        this.room = room;
+        this.user = user;
+    }
 }

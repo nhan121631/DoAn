@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { FilterRequest, useFilterStore } from "@/app/stores/FilterStore";
+import { FilterRequest, useFilterStore } from "@/stores/FilterStore";
 import {
   getDistricts,
   getProvinces,

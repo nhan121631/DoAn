@@ -1,7 +1,5 @@
 package com.ants.ktc.ants_ktc.services;
 
-import java.util.UUID;
-
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.net.URI;
@@ -9,15 +7,16 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.UUID;
 
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -30,6 +29,7 @@ import com.ants.ktc.ants_ktc.dtos.auth.LoginRequestDto;
 import com.ants.ktc.ants_ktc.dtos.auth.LoginResponseDto;
 import com.ants.ktc.ants_ktc.dtos.auth.RegisterRequestDto;
 import com.ants.ktc.ants_ktc.dtos.auth.RegisterResponseDto;
+import com.ants.ktc.ants_ktc.dtos.user.LandlordResponseByRoomDto;
 import com.ants.ktc.ants_ktc.dtos.userprofile.UserProfileResponseDto;
 import com.ants.ktc.ants_ktc.entities.Role;
 import com.ants.ktc.ants_ktc.entities.User;
@@ -42,6 +42,7 @@ import com.ants.ktc.ants_ktc.exceptions.HttpException;
 import com.ants.ktc.ants_ktc.repositories.ProfileJpaRepository;
 import com.ants.ktc.ants_ktc.repositories.RoleJpaRepository;
 import com.ants.ktc.ants_ktc.repositories.UserJpaRepository;
+import com.ants.ktc.ants_ktc.repositories.projection.LandLordProjectionByRoom;
 import com.ants.ktc.ants_ktc.services.auth.JwtService;
 
 import jakarta.transaction.Transactional;
@@ -387,6 +388,33 @@ public class UserService {
                 user.setPassword(passwordEncoder.encode(newPassword));
                 userJpaRepository.save(user);
                 return true;
+        }
+
+        private String formatHexToUuid(String hex) {
+                return hex.replaceFirst(
+                                "(\\w{8})(\\w{4})(\\w{4})(\\w{4})(\\w{12})",
+                                "$1-$2-$3-$4-$5");
+        }
+
+        public LandlordResponseByRoomDto getLandlordInfoByRoomId(UUID roomId) {
+                LandLordProjectionByRoom landlord = userJpaRepository.findLandlord(roomId)
+                                .orElseThrow(() -> new IllegalArgumentException(
+                                                "Landlord not found for room ID: " + roomId));
+                String idHex = landlord.getId();
+                UUID uuid = null;
+                if (idHex != null) {
+                        uuid = UUID.fromString(formatHexToUuid(idHex));
+                }
+                int amountPost = userJpaRepository.countRoomsByUserId(uuid);
+                return LandlordResponseByRoomDto.builder()
+                                .id(uuid)
+                                .fullName(landlord.getFullName())
+                                .email(landlord.getEmail())
+                                .avatar(landlord.getAvatar())
+                                .amountPost(amountPost)
+                                .phone(landlord.getPhone())
+                                .createDate(landlord.getCreateDate())
+                                .build();
         }
 
 }

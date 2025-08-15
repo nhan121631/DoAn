@@ -1,6 +1,6 @@
 "use client";
 
-import { useCompareStore } from "@/app/stores/CompareStore";
+import { useCompareStore } from "@/stores/CompareStore";
 import { URL_IMAGE } from "@/services/Constant";
 import { TableOutlined } from "@ant-design/icons";
 import { Avatar, Badge, Button, Drawer, List, message } from "antd";

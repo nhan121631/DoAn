@@ -1,44 +1,15 @@
+import { authOptions } from "@/lib/auth";
+import { getRequestsByUser } from "@/services/Requirements";
+import { PaginatedResponse, RequirementDetail } from "@/types/types";
+import { getServerSession } from "next-auth";
 import React from "react";
 import RequestStatusInteractive from "../components/request-status/RequestStatusInteractive";
 
-export type RequestData = {
-  key: string;
-  roomName: string;
-  customerName: string;
-  phoneNumber: string;
-  requestDescription: string;
-  status: 0 | 1;
-};
-
-const initialRequestData: RequestData[] = [
-  {
-    key: "1",
-    roomName: "Phòng trọ Mr. Nam",
-    customerName: "Nguyễn Văn A",
-    phoneNumber: "123456789",
-    requestDescription: "Yêu cầu sửa chữa điện nước",
-    status: 0,
-  },
-  {
-    key: "2",
-    roomName: "Phòng trọ Ms. Lan",
-    customerName: "Trần Thị B",
-    phoneNumber: "987654321",
-    requestDescription: "Yêu cầu dọn dẹp phòng",
-    status: 1,
-  },
-  {
-    key: "3",
-    roomName: "Phòng trọ Mr. Duong",
-    customerName: "Phạm Văn C",
-    phoneNumber: "0901234567",
-    requestDescription: "Yêu cầu kiểm tra điều hòa",
-    status: 0,
-  },
-];
-
-const RequestStatusPage: React.FC = () => {
-  const requests = initialRequestData;
+const RequestStatusPage: React.FC = async () => {
+  const session = await getServerSession(authOptions);
+  const requests = (await getRequestsByUser(
+    session
+  )) as PaginatedResponse<RequirementDetail>;
 
   return <RequestStatusInteractive initialRequests={requests} />;
 };

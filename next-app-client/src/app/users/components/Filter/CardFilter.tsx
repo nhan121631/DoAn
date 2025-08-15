@@ -2,7 +2,7 @@
 
 "use client";
 
-import { useFilterStore } from "@/app/stores/FilterStore";
+import { useFilterStore } from "@/stores/FilterStore";
 import { useRouter } from "next/navigation";
 
 export default function CardFilter() {

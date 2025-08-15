@@ -59,6 +59,9 @@ public class SecurityConfig {
                                                 .hasAnyRole("Landlords", "Administrators")
                                                 .requestMatchers("/api/transactions/**")
                                                 .hasAnyRole("Landlords", "Administrators")
+                                                .requestMatchers("/api/requirements/**").authenticated()
+                                                .requestMatchers("/api/requirements/landlord/**")
+                                                .hasAnyRole("Landlords", "Administrators")
                                                 .anyRequest().permitAll())
                                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
                 return http.build();

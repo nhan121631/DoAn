@@ -186,106 +186,115 @@ export default function BookingForm({
             {priceMonth?.toLocaleString("vi-VN")} VND/month
           </p>
         </div>
-
-        <Form
-          form={form}
-          layout="vertical"
-          onFinish={handleSubmit}
-          initialValues={{
-            tenantCount: 1,
-            rentalMonths: 1,
-          }}
-        >
-          <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
-            <div className="flex items-center gap-2 mb-2">
-              <CalendarOutlined className="text-blue-600" />
-              <span className="font-medium text-gray-700">Rental Period</span>
-            </div>
-            <div className="text-sm text-gray-600">
-              <p>
-                <strong>Start Date:</strong> {dayjs().format("DD/MM/YYYY")}{" "}
-                (Today)
-              </p>
-              {rentalEndDate && (
-                <p>
-                  <strong>End Date:</strong>{" "}
-                  {rentalEndDate.format("DD/MM/YYYY")}
-                </p>
-              )}
-            </div>
-          </div>
-
-          <Form.Item
-            name="rentalMonths"
-            label="Rental Duration (Months)"
-            rules={[
-              { type: "number", min: 1, message: "At least 1 month required" },
-            ]}
+        {isModalVisible && (
+          <Form
+            form={form}
+            layout="vertical"
+            onFinish={handleSubmit}
+            initialValues={{
+              tenantCount: 1,
+              rentalMonths: 1,
+            }}
           >
-            <Select
-              className="w-full"
-              placeholder="Select number of months (Default: 1 month)"
-              onChange={(value) => calculateEndDate(value)}
-              suffixIcon={<ClockCircleOutlined />}
-            >
-              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((month) => (
-                <Select.Option key={month} value={month}>
-                  {month} {month === 1 ? "Month" : "Months"}
-                </Select.Option>
-              ))}
-            </Select>
-          </Form.Item>
-
-          {rentalEndDate && (
-            <div className="mb-4 p-3 bg-green-50 rounded-lg border border-green-200">
-              <div className="flex items-center gap-2 mb-1">
-                <CalendarOutlined className="text-green-600" />
-                <span className="font-medium text-gray-700">Total Cost</span>
+            <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+              <div className="flex items-center gap-2 mb-2">
+                <CalendarOutlined className="text-blue-600" />
+                <span className="font-medium text-gray-700">Rental Period</span>
               </div>
-              <p className="text-lg font-bold text-green-600">
-                {(
-                  priceMonth * (form.getFieldValue("rentalMonths") || 1)
-                ).toLocaleString("vi-VN")}{" "}
-                VND
-              </p>
-              <p className="text-sm text-gray-600">
-                {form.getFieldValue("rentalMonths") || 1} months ×{" "}
-                {priceMonth.toLocaleString("vi-VN")} VND/month
-              </p>
+              <div className="text-sm text-gray-600">
+                <p>
+                  <strong>Start Date:</strong> {dayjs().format("DD/MM/YYYY")}{" "}
+                  (Today)
+                </p>
+                {rentalEndDate && (
+                  <p>
+                    <strong>End Date:</strong>{" "}
+                    {rentalEndDate.format("DD/MM/YYYY")}
+                  </p>
+                )}
+              </div>
             </div>
-          )}
 
-          <Form.Item
-            name="tenantCount"
-            label="Number of Tenants"
-            rules={[
-              { required: true, message: "Please enter number of tenants" },
-              { type: "number", min: 1, message: "At least 1 tenant required" },
-            ]}
-          >
-            <InputNumber
-              className="w-full"
-              min={1}
-              max={10}
-              prefix={<UserOutlined />}
-              placeholder="Enter number of tenants"
-            />
-          </Form.Item>
-
-          <div className="flex gap-3 mt-6">
-            <Button onClick={handleCancel} className="flex-1">
-              Cancel
-            </Button>
-            <Button
-              type="primary"
-              htmlType="submit"
-              loading={loading}
-              className="flex-1 bg-blue-600 hover:bg-blue-700"
+            <Form.Item
+              name="rentalMonths"
+              label="Rental Duration (Months)"
+              rules={[
+                {
+                  type: "number",
+                  min: 1,
+                  message: "At least 1 month required",
+                },
+              ]}
             >
-              Confirm Booking
-            </Button>
-          </div>
-        </Form>
+              <Select
+                className="w-full"
+                placeholder="Select number of months (Default: 1 month)"
+                onChange={(value) => calculateEndDate(value)}
+                suffixIcon={<ClockCircleOutlined />}
+              >
+                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((month) => (
+                  <Select.Option key={month} value={month}>
+                    {month} {month === 1 ? "Month" : "Months"}
+                  </Select.Option>
+                ))}
+              </Select>
+            </Form.Item>
+
+            {rentalEndDate && (
+              <div className="mb-4 p-3 bg-green-50 rounded-lg border border-green-200">
+                <div className="flex items-center gap-2 mb-1">
+                  <CalendarOutlined className="text-green-600" />
+                  <span className="font-medium text-gray-700">Total Cost</span>
+                </div>
+                <p className="text-lg font-bold text-green-600">
+                  {(
+                    priceMonth * (form.getFieldValue("rentalMonths") || 1)
+                  ).toLocaleString("vi-VN")}{" "}
+                  VND
+                </p>
+                <p className="text-sm text-gray-600">
+                  {form.getFieldValue("rentalMonths") || 1} months ×{" "}
+                  {priceMonth.toLocaleString("vi-VN")} VND/month
+                </p>
+              </div>
+            )}
+
+            <Form.Item
+              name="tenantCount"
+              label="Number of Tenants"
+              rules={[
+                { required: true, message: "Please enter number of tenants" },
+                {
+                  type: "number",
+                  min: 1,
+                  message: "At least 1 tenant required",
+                },
+              ]}
+            >
+              <InputNumber
+                className="w-full"
+                min={1}
+                max={10}
+                prefix={<UserOutlined />}
+                placeholder="Enter number of tenants"
+              />
+            </Form.Item>
+
+            <div className="flex gap-3 mt-6">
+              <Button onClick={handleCancel} className="flex-1">
+                Cancel
+              </Button>
+              <Button
+                type="primary"
+                htmlType="submit"
+                loading={loading}
+                className="flex-1 bg-blue-600 hover:bg-blue-700"
+              >
+                Confirm Booking
+              </Button>
+            </div>
+          </Form>
+        )}
       </Modal>
 
       {/* Modal xác nhận chuyển trang */}
