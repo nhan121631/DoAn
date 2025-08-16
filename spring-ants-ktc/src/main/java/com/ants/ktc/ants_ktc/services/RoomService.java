@@ -15,10 +15,12 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -54,6 +56,7 @@ import com.ants.ktc.ants_ktc.entities.Transaction;
 import com.ants.ktc.ants_ktc.entities.User;
 import com.ants.ktc.ants_ktc.entities.address.Address;
 import com.ants.ktc.ants_ktc.entities.address.Ward;
+import com.ants.ktc.ants_ktc.models.ImageUploadMessage;
 import com.ants.ktc.ants_ktc.repositories.ConvenientsRepository;
 import com.ants.ktc.ants_ktc.repositories.ImageJpaRepository;
 import com.ants.ktc.ants_ktc.repositories.PostTypeJpaRepository;
@@ -91,8 +94,50 @@ public class RoomService {
         @Autowired
         private MailService mailService;
 
+        // @Autowired
+        // private CloudinaryService cloudinaryService;
+
         @Autowired
-        private CloudinaryService cloudinaryService;
+        @Qualifier("imageRedisTemplate")
+        private RedisTemplate<String, ImageUploadMessage> redisTemplate;
+
+        private static final String IMAGE_UPLOAD_QUEUE = "image_upload_queue";
+        private static final String TEMP_DIR_PREFIX = "room_images";
+
+        /**
+         * Lưu file tạm thời và tạo message để upload async
+         */
+        private ImageUploadMessage prepareAsyncImageUpload(MultipartFile file, Room room) throws Exception {
+                // Tạo temporary file
+                String fileName = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
+                Path tempDir = Paths.get(System.getProperty("java.io.tmpdir"), TEMP_DIR_PREFIX);
+                Files.createDirectories(tempDir); // Tạo thư mục nếu chưa tồn tại
+                Path tempFilePath = tempDir.resolve(fileName);
+
+                // Ghi file vào disk tạm thời
+                Files.write(tempFilePath, file.getBytes());
+
+                // Tạo Image entity với URL tạm thời và room đã có ID
+                Image image = new Image();
+                image.setUrl("pending://uploading"); // URL tạm thời để biết đang upload
+                image.setRoom(room);
+                imageJpaRepository.save(image);
+
+                // Tạo message cho queue
+                ImageUploadMessage message = new ImageUploadMessage();
+                message.setRoomId(room.getId());
+                message.setImageId(image.getId());
+                message.setLocalTempPath(tempFilePath.toString());
+
+                return message;
+        }
+
+        /**
+         * Enqueue image upload job vào Redis
+         */
+        private void enqueueImageUpload(ImageUploadMessage message) {
+                redisTemplate.opsForList().rightPush(IMAGE_UPLOAD_QUEUE, message);
+        }
 
         private List<ImageResponseDto> convertImages(List<Image> images) {
                 if (images == null)
@@ -273,27 +318,36 @@ public class RoomService {
                 });
                 room.setConvenients(convenients);
 
-                // Xử lý images - Upload song song để tăng tốc
-                List<Image> images = files.parallelStream()
-                                .filter(file -> file != null && !file.isEmpty())
-                                .map(file -> {
-                                        try {
-                                                Map<String, String> uploadResult = cloudinaryService.uploadFile(file);
-                                                String fileUrl = uploadResult.get("url");
+                // Lưu phòng trước để có ID
+                roomJpaRepository.save(room);
 
-                                                Image image = new Image();
-                                                image.setUrl(fileUrl);
-                                                image.setRoom(room); // quan hệ 2 chiều
-                                                return image;
+                // Xử lý images - Async upload để không block user
+                List<Image> images = new ArrayList<>();
+                if (files != null && !files.isEmpty()) {
+                        for (MultipartFile file : files) {
+                                if (file != null && !file.isEmpty()) {
+                                        try {
+                                                // Tạo image record với URL tạm thời và enqueue upload job
+                                                ImageUploadMessage message = prepareAsyncImageUpload(file, room);
+
+                                                // Lấy image đã tạo
+                                                Image image = imageJpaRepository.findById(message.getImageId())
+                                                                .orElseThrow();
+                                                images.add(image);
+
+                                                // Enqueue upload job
+                                                enqueueImageUpload(message);
                                         } catch (Exception e) {
-                                                throw new RuntimeException("Failed to upload file to Cloudinary: "
-                                                                + e.getMessage(), e);
+                                                // Log error nhưng không fail toàn bộ quá trình
+                                                System.err.println("Failed to prepare async upload for file: "
+                                                                + e.getMessage());
                                         }
-                                })
-                                .toList();
+                                }
+                        }
+                }
                 room.setImages(images);
 
-                // Lưu phòng
+                // Lưu room với images đã set
                 roomJpaRepository.save(room);
 
                 // Trả về DTO
@@ -377,29 +431,28 @@ public class RoomService {
                         imagesToKeep.addAll(oldImages);
                 }
 
-                // Thêm ảnh mới - Upload song song để tăng tốc
+                // Thêm ảnh mới - Async upload để không block user
                 if (images != null && !images.isEmpty()) {
-                        List<Image> newImages = images.parallelStream()
-                                        .filter(file -> !file.isEmpty())
-                                        .map(file -> {
-                                                try {
-                                                        Map<String, String> uploadResult = cloudinaryService.uploadFile(file);
-                                                        String fileUrl = uploadResult.get("url");
+                        for (MultipartFile file : images) {
+                                if (file != null && !file.isEmpty()) {
+                                        try {
+                                                // Tạo image record với URL tạm thời và enqueue upload job
+                                                ImageUploadMessage message = prepareAsyncImageUpload(file, room);
 
-                                                        Image image = new Image();
-                                                        image.setRoom(room);
-                                                        image.setUrl(fileUrl);
-                                                        return image;
-                                                } catch (Exception e) {
-                                                        throw new RuntimeException("Failed to upload file to Cloudinary: "
-                                                                        + e.getMessage(), e);
-                                                }
-                                        })
-                                        .toList();
-                        
-                        // Lưu tất cả ảnh mới cùng lúc
-                        imageJpaRepository.saveAll(newImages);
-                        imagesToKeep.addAll(newImages);
+                                                // Lấy image đã tạo
+                                                Image image = imageJpaRepository.findById(message.getImageId())
+                                                                .orElseThrow();
+                                                imagesToKeep.add(image);
+
+                                                // Enqueue upload job
+                                                enqueueImageUpload(message);
+                                        } catch (Exception e) {
+                                                // Log error nhưng không fail toàn bộ quá trình
+                                                System.err.println("Failed to prepare async upload for file: "
+                                                                + e.getMessage());
+                                        }
+                                }
+                        }
                 }
 
                 // Cập nhật danh sách ảnh vào room
