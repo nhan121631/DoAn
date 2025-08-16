@@ -1,5 +1,6 @@
 package com.ants.ktc.ants_ktc.controllers;
 
+import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
@@ -60,8 +61,12 @@ public class PaymentController {
             vnp_Params.put("vnp_TxnRef", transactionId);
 
             // Encode userId + transactionId để confirm dễ xử lý
-            String orderInfo = Base64.getUrlEncoder().encodeToString(
-                    ("WALLET|" + userId + "|" + transactionId).getBytes(StandardCharsets.UTF_8));
+            // String orderInfo = Base64.getUrlEncoder().encodeToString(
+            // ("WALLET|" + userId + "|" + transactionId).getBytes(StandardCharsets.UTF_8));
+            String safeDescription = URLEncoder.encode(description, StandardCharsets.UTF_8);
+            String rawInfo = "WALLET|" + userId + "|" + transactionId + "|" + safeDescription;
+            String orderInfo = Base64.getUrlEncoder().encodeToString(rawInfo.getBytes(StandardCharsets.UTF_8));
+
             vnp_Params.put("vnp_OrderInfo", orderInfo);
 
             vnp_Params.put("vnp_OrderType", "wallet");
@@ -125,20 +130,31 @@ public class PaymentController {
 
             // 3) Parse OrderInfo
             String orderInfoRaw = vnpParams.get("vnp_OrderInfo");
+            // String decoded;
+            // try {
+            // decoded = new String(Base64.getUrlDecoder().decode(orderInfoRaw));
+            // } catch (Exception e) {
+            // decoded = orderInfoRaw; // fallback nếu không phải Base64
+            // }
             String decoded;
+
             try {
-                decoded = new String(Base64.getUrlDecoder().decode(orderInfoRaw));
+                decoded = new String(Base64.getUrlDecoder().decode(orderInfoRaw), StandardCharsets.UTF_8);
             } catch (Exception e) {
-                decoded = orderInfoRaw; // fallback nếu không phải Base64
+                return ResponseEntity.badRequest().body(Map.of(
+                        "success", false,
+                        "message", "Base64 decode failed",
+                        "raw", orderInfoRaw));
             }
 
             String[] parts = decoded.split("\\|");
-            if (parts.length < 3) {
+            if (parts.length < 4) {
                 return ResponseEntity.badRequest().body(Map.of(
                         "success", false,
                         "message", "Invalid OrderInfo format",
-                        "raw", decoded));
+                        "decoded", decoded));
             }
+            String description = URLDecoder.decode(parts[3], StandardCharsets.UTF_8);
 
             UUID userId;
             try {
@@ -149,7 +165,11 @@ public class PaymentController {
                         "message", "Invalid UUID in OrderInfo",
                         "raw", parts[1]));
             }
-
+            if (transactionService.existsByTransactionCode(vnpParams.get("vnp_TransactionNo"))) {
+                return ResponseEntity.ok(Map.of(
+                        "success", true,
+                        "message", "Transaction already processed"));
+            }
             // 4) Save to DB
             CreateTransactionRequestDto dto = new CreateTransactionRequestDto();
             dto.setAmount(Double.parseDouble(vnpParams.get("vnp_Amount")) / 100.0);
@@ -158,7 +178,7 @@ public class PaymentController {
             dto.setBankTransactionName(vnpParams.get("vnp_BankCode"));
             dto.setTransactionCode(vnpParams.get("vnp_TransactionNo"));
             dto.setStatus(1);
-            dto.setDescription("Nạp ví qua VNPay");
+            dto.setDescription(description);
 
             var saved = transactionService.createTransactionByUserId(userId, dto);
 
