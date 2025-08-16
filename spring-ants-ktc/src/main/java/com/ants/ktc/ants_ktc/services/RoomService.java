@@ -10,7 +10,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -96,8 +95,8 @@ public class RoomService {
         @Autowired
         private MailService mailService;
 
-        // @Autowired
-        // private CloudinaryService cloudinaryService;
+        @Autowired
+        private CloudinaryService cloudinaryService;
 
         @Autowired
         @Qualifier("imageRedisTemplate")
@@ -138,11 +137,12 @@ public class RoomService {
          * Enqueue image upload job vào Redis
          */
         private void enqueueImageUpload(ImageUploadMessage message) {
-            try {
-                redisTemplate.opsForList().rightPush(IMAGE_UPLOAD_QUEUE, message);
-            } catch (Exception ex) {
-                throw new RuntimeException("Redis server is not available. Please try again later or contact admin.", ex);
-            }
+                try {
+                        redisTemplate.opsForList().rightPush(IMAGE_UPLOAD_QUEUE, message);
+                } catch (Exception ex) {
+                        throw new RuntimeException(
+                                        "Redis server is not available. Please try again later or contact admin.", ex);
+                }
         }
 
         private List<ImageResponseDto> convertImages(List<Image> images) {
@@ -212,8 +212,6 @@ public class RoomService {
                 room.setDescription(requestDto.getDescription());
                 room.setPrice_month(requestDto.getPriceMonth());
                 room.setPrice_deposit(requestDto.getPriceDeposit());
-                room.setPost_start_date(requestDto.getPostStartDate());
-                room.setPost_end_date(requestDto.getPostEndDate());
                 room.setArea(requestDto.getArea());
 
                 // Lấy PostType và User
@@ -221,6 +219,7 @@ public class RoomService {
                                 .orElseThrow(() -> new IllegalArgumentException("PostType not found"));
                 room.setPostType(postType);
 
+                // Convert dates to LocalDate for validation
                 LocalDate startDate = requestDto.getPostStartDate().toInstant().atZone(ZoneId.systemDefault())
                                 .toLocalDate();
                 LocalDate endDate = requestDto.getPostEndDate().toInstant().atZone(ZoneId.systemDefault())
@@ -232,6 +231,10 @@ public class RoomService {
                 if (startDate.isBefore(today)) {
                         throw new IllegalArgumentException("Start date must be today or later");
                 }
+
+                // Use the exact dates from request (preserve time)
+                room.setPost_start_date(requestDto.getPostStartDate());
+                room.setPost_end_date(requestDto.getPostEndDate());
 
                 long diffDays = ChronoUnit.DAYS.between(
                                 requestDto.getPostStartDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate(),
@@ -323,6 +326,31 @@ public class RoomService {
                                 c.setName("");
                 });
                 room.setConvenients(convenients);
+
+                // // Xử lý ảnh cũ
+                // List<Image> images = files.stream()
+                // .filter(file -> file != null && !file.isEmpty())
+                // .map(file -> {
+                // try {
+                // String fileName = System.currentTimeMillis() + "_"
+                // + file.getOriginalFilename();
+                // Path filePath = Paths.get("public/uploads/" + fileName);
+                // Files.createDirectories(filePath.getParent());
+                // Files.write(filePath, file.getBytes());
+
+                // String fileUrl = "/uploads/" + fileName;
+                // Image image = new Image();
+                // image.setUrl(fileUrl);
+                // image.setRoom(room); // quan hệ 2 chiều
+                // return image;
+                // } catch (Exception e) {
+                // throw new RuntimeException("Failed to save file: " + e.getMessage(), e);
+                // }
+                // })
+                // .toList();
+                // room.setImages(images);
+
+                // roomJpaRepository.save(room);
 
                 // Lưu phòng trước để có ID
                 roomJpaRepository.save(room);
@@ -416,6 +444,8 @@ public class RoomService {
                 });
                 room.setConvenients(convenients);
 
+                room.setApproval(0); 
+
                 // Xử lý cập nhật ảnh
                 // 1. Lấy danh sách ảnh cũ
                 List<Image> oldImages = imageJpaRepository.findByRoomId(id);
@@ -436,6 +466,26 @@ public class RoomService {
                         // Nếu null => giữ nguyên toàn bộ ảnh cũ
                         imagesToKeep.addAll(oldImages);
                 }
+
+                // // Thêm ảnh mới - code cũ
+                // if (images != null && !images.isEmpty()) {
+                // for (MultipartFile file : images) {
+                // if (!file.isEmpty()) {
+                // String fileName = System.currentTimeMillis() + "_" +
+                // file.getOriginalFilename();
+                // Path filePath = Paths.get("public/uploads/" + fileName);
+                // Files.createDirectories(filePath.getParent());
+                // Files.write(filePath, file.getBytes());
+                // String fileUrl = "/uploads/" + fileName;
+
+                // Image image = new Image();
+                // image.setRoom(room);
+                // image.setUrl(fileUrl);
+                // imageJpaRepository.save(image);
+                // imagesToKeep.add(image);
+                // }
+                // }
+                // }
 
                 // Thêm ảnh mới - Async upload để không block user
                 if (images != null && !images.isEmpty()) {
@@ -582,14 +632,19 @@ public class RoomService {
                 transaction.setWallet(user.getWallet());
                 transactionsJpaRepository.save(transaction);
 
-                room.setPost_start_date(newStartDate);
-                room.setPost_end_date(newEndDate);
+                // Convert LocalDate back to Date with local timezone (start of day) to fix
+                // timezone issue
+                Date startDateWithLocalTime = Date.from(reqStartDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+                Date endDateWithLocalTime = Date.from(reqEndDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+
+                room.setPost_start_date(startDateWithLocalTime);
+                room.setPost_end_date(endDateWithLocalTime);
                 roomJpaRepository.save(room);
 
                 // Trả về DTO
                 return RoomUpdateExpireDateResponseDto.builder()
-                                .postStartDate(newStartDate)
-                                .postEndDate(newEndDate)
+                                .postStartDate(startDateWithLocalTime)
+                                .postEndDate(endDateWithLocalTime)
                                 .message("Room post updated successfully").build();
         }
 
@@ -824,12 +879,33 @@ public class RoomService {
                 try {
                         // Check if it's a Cloudinary URL (starts with cloud name path)
                         if (fileUrl != null && fileUrl.contains("cloudinary")) {
-                                // Note: For proper Cloudinary deletion, we would need the public_id
-                                // Since we don't store public_id in the Image entity, we cannot delete from
-                                // Cloudinary
-                                // Consider adding a public_id field to the Image entity for proper cleanup
-                                System.out.println("Cloudinary file deletion skipped - public_id not available: "
-                                                + fileUrl);
+                                // Extract public_id from Cloudinary URL for deletion
+                                try {
+                                        // Cloudinary URL format: /cloudname/image/upload/version/public_id.extension
+                                        // fileUrl format: /cloudname/image/upload/v1234567890/folder/filename.jpg
+                                        String publicId = extractPublicIdFromUrl(fileUrl);
+                                        if (publicId != null && !publicId.isEmpty()) {
+                                                cloudinaryService.deleteFile(publicId);
+                                                System.out.println("Successfully deleted file from Cloudinary: "
+                                                                + publicId);
+                                        } else {
+                                                System.out.println("Could not extract public_id from URL: " + fileUrl);
+                                        }
+                                } catch (Exception e) {
+                                        System.err.println("Failed to delete file from Cloudinary: " + e.getMessage());
+                                        e.printStackTrace();
+                                }
+
+                                // Code cũ 
+                                /*
+                                 * // Note: For proper Cloudinary deletion, we would need the public_id
+                                 * // Since we don't store public_id in the Image entity, we cannot delete from
+                                 * // Cloudinary
+                                 * // Consider adding a public_id field to the Image entity for proper cleanup
+                                 * System.out.
+                                 * println("Cloudinary file deletion skipped - public_id not available: "
+                                 * + fileUrl);
+                                 */
                         } else if (fileUrl != null && fileUrl.startsWith("/uploads/")) {
                                 // Handle local files (legacy support)
                                 long count = imageJpaRepository.countByUrl(fileUrl);
@@ -850,7 +926,45 @@ public class RoomService {
                 } catch (java.io.IOException e) {
                         e.printStackTrace();
                 }
+        }
 
+        /**
+         * Extract public_id from Cloudinary URL
+         * URL format: /cloudname/image/upload/v1234567890/folder/filename.jpg
+         * public_id: folder/filename (without extension)
+         */
+        private String extractPublicIdFromUrl(String cloudinaryUrl) {
+                try {
+                        if (cloudinaryUrl == null || !cloudinaryUrl.contains("/upload/")) {
+                                return null;
+                        }
+
+                        // Split by "/upload/" and take the part after it
+                        String[] parts = cloudinaryUrl.split("/upload/");
+                        if (parts.length < 2) {
+                                return null;
+                        }
+
+                        String afterUpload = parts[1];
+
+                        // Remove version (v1234567890) if present
+                        if (afterUpload.startsWith("v") && afterUpload.contains("/")) {
+                                int firstSlash = afterUpload.indexOf("/");
+                                afterUpload = afterUpload.substring(firstSlash + 1);
+                        }
+
+                        // Remove file extension
+                        int lastDot = afterUpload.lastIndexOf(".");
+                        if (lastDot > 0) {
+                                afterUpload = afterUpload.substring(0, lastDot);
+                        }
+
+                        return afterUpload;
+                } catch (Exception e) {
+                        System.err.println("Error extracting public_id from URL: " + cloudinaryUrl + " - "
+                                        + e.getMessage());
+                        return null;
+                }
         }
 
         public void sendAdminMailToLandlord(String email, String subject, String message, MultipartFile file) {

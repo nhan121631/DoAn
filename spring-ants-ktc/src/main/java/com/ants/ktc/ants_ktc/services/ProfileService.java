@@ -46,6 +46,15 @@ public class ProfileService {
                         } catch (Exception e) {
                                 throw new RuntimeException("Failed to upload avatar: " + e.getMessage(), e);
                         }
+
+                        // code cũ 
+                        // String fileName = System.currentTimeMillis() + "_" + avatar.getOriginalFilename();
+                        // Path filePath = Paths.get("public/uploads/" + fileName);
+                        // Files.createDirectories(filePath.getParent());
+                        // Files.write(filePath, avatar.getBytes());
+
+                        // String avatarUrl = "/uploads/" + fileName;
+                        // profile.setAvatar(avatarUrl); // cập nhật avatar cho profile
                 }
 
                 profile.setId(dto.getId());

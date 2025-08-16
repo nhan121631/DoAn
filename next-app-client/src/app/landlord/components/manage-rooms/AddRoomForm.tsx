@@ -193,8 +193,8 @@ const AddRoomForm: React.FC<{ onFinish?: (values: RoomData) => void }> = (
         priceMonth: values.priceMonth,
         priceDeposit: values.priceDeposit,
         area: values.area,
-        postStartDate: startDate,
-        postEndDate: endDate,
+        postStartDate: new Date().toISOString(), // Sử dụng thời gian hiện tại đầy đủ
+        postEndDate: new Date(endDate + "T23:59:59").toISOString(), // Kết thúc vào cuối ngày được chọn
         typepostId: selectedTypePostId,
         // userId: "44256067-6f69-11f0-8622-b42e993f445f", // đã handled trong server action api next
         address,

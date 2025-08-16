@@ -67,6 +67,9 @@ public class UserService {
         @Autowired
         private MailService mailService;
 
+        @Autowired
+        private CloudinaryService cloudinaryService;
+
         private final RestTemplate restTemplate = new RestTemplate();
 
         // ...existing code...
@@ -158,7 +161,9 @@ public class UserService {
         public LoginResponseDto googleLogin(GoogleLoginRequestDto requestDto) {
                 String credential = requestDto.getCredential();
                 String url = "https://oauth2.googleapis.com/tokeninfo?id_token=" + credential;
+                @SuppressWarnings("rawtypes")
                 ResponseEntity<Map> response = restTemplate.getForEntity(url, Map.class);
+                @SuppressWarnings("unchecked")
                 Map<String, Object> payload = response.getBody();
                 if (response.getStatusCode() != HttpStatus.OK) {
                         throw new HttpException("Invalid Google token", HttpStatus.UNAUTHORIZED);
@@ -199,8 +204,40 @@ public class UserService {
 
                         profile.setEmail(email);
                         profile.setFullName(payload.get("name").toString());
-                        // Tải ảnh về server
-
+                        
+                        // Upload ảnh lên Cloudinary
+                        String pictureUrl = payload.get("picture").toString();
+                        System.out.println("Attempting to upload Google avatar from URL: " + pictureUrl);
+                        try {
+                                // Tạo temporary file từ URL ảnh Google
+                                java.io.File tempFile = java.io.File.createTempFile("google_avatar", ".jpg");
+                                System.out.println("Created temp file: " + tempFile.getAbsolutePath());
+                                
+                                // Download ảnh từ Google về temp file
+                                try (InputStream in = URI.create(pictureUrl).toURL().openStream();
+                                     FileOutputStream out = new FileOutputStream(tempFile)) {
+                                        IOUtils.copy(in, out);
+                                }
+                                System.out.println("Downloaded image from Google to temp file, size: " + tempFile.length() + " bytes");
+                                
+                                // Upload lên Cloudinary
+                                System.out.println("Uploading to Cloudinary...");
+                                Map<String, String> uploadResult = cloudinaryService.uploadFile(tempFile);
+                                String cloudinaryUrl = uploadResult.get("url");
+                                System.out.println("Upload successful! Cloudinary URL: " + cloudinaryUrl);
+                                profile.setAvatar(cloudinaryUrl);
+                                
+                                // Xóa temp file
+                                boolean deleted = tempFile.delete();
+                                System.out.println("Temp file deleted: " + deleted);
+                        } catch (Exception e) {
+                                profile.setAvatar(null);
+                                System.err.println("Failed to upload avatar to Cloudinary: " + e.getMessage());
+                                e.printStackTrace(); // In stack trace để debug
+                        }
+                        
+                        // Code cũ
+                        /*
                         String pictureUrl = payload.get("picture").toString();
                         String fileName = "google_" + System.currentTimeMillis() + ".jpg";
                         String uploadPath = "public/uploads/" + fileName;
@@ -211,6 +248,7 @@ public class UserService {
                         } catch (Exception e) {
                                 profile.setAvatar(null);
                         }
+                        */
                         user.setProfile(profile);
                         // Gán role USER
                         Role userRole = roleJpaRepository.findByName("Users").orElseThrow();

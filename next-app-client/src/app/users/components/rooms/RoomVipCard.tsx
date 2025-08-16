@@ -11,18 +11,28 @@ interface RoomVipCardProps {
 
 export default function RoomVipCard({ room }: RoomVipCardProps) {
   // Xử lý ngày đăng bài
-  function getPostDateLabel(postStartDate: string) {
-    if (!postStartDate) return "";
-    const today = new Date();
-    const postDate = new Date(postStartDate);
-    today.setHours(0, 0, 0, 0);
-    postDate.setHours(0, 0, 0, 0);
-    const diffTime = today.getTime() - postDate.getTime();
-    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-    if (diffDays === 0) return "Hôm nay";
-    if (diffDays === 1) return "Hôm qua";
-    if (diffDays > 1 && diffDays <= 5) return `${diffDays} ngày trước`;
-    return postStartDate;
+  // function getPostDateLabel(postStartDate: string) {
+  //   if (!postStartDate) return "";
+  //   const today = new Date();
+  //   const postDate = new Date(postStartDate);
+  //   today.setHours(0, 0, 0, 0);
+  //   postDate.setHours(0, 0, 0, 0);
+  //   const diffTime = today.getTime() - postDate.getTime();
+  //   const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+  //   if (diffDays === 0) return "Hôm nay";
+  //   if (diffDays === 1) return "Hôm qua";
+  //   if (diffDays > 1 && diffDays <= 5) return `${diffDays} ngày trước`;
+  //   return postStartDate;
+  // }
+  function getRelativeTime(dateString: string): string {
+    const now = new Date();
+    const date = new Date(dateString);
+    const diff = Math.floor((now.getTime() - date.getTime()) / 1000); // seconds
+    if (diff < 0) return "Just now";
+    if (diff < 60) return `${diff} seconds ago`;
+    if (diff < 3600) return `${Math.floor(diff / 60)} minutes ago`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)} hours ago`;
+    return `${Math.floor(diff / 86400)} days ago`;
   }
 
   return (
@@ -119,7 +129,7 @@ export default function RoomVipCard({ room }: RoomVipCardProps) {
             {room.landlord.landlordProfile.fullName}
           </span>
           <span className="text-xs text-gray-600">
-            {getPostDateLabel(room.postStartDate)}
+            {getRelativeTime(room.postStartDate)}
           </span>
           <span className="px-3 py-1 ml-auto text-sm font-semibold rounded-full bg-emerald-100 text-emerald-700">
             {room.landlord.landlordProfile.phoneNumber

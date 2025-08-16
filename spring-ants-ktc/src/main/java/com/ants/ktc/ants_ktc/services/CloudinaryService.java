@@ -69,4 +69,22 @@ public class CloudinaryService {
             throw new RuntimeException("Upload to Cloudinary failed: " + e.getMessage(), e);
         }
     }
+
+    /**
+     * Delete file from Cloudinary using public_id
+     */
+    public void deleteFile(String publicId) {
+        try {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> deleteResult = cloudinary.uploader().destroy(publicId, ObjectUtils.emptyMap());
+            String result = deleteResult.get("result").toString();
+            if (!"ok".equals(result) && !"not found".equals(result)) {
+                System.err.println("Failed to delete file from Cloudinary: " + result + " for public_id: " + publicId);
+            } else {
+                System.out.println("Successfully deleted file from Cloudinary: " + publicId + " - Result: " + result);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Delete from Cloudinary failed: " + e.getMessage(), e);
+        }
+    }
 }
