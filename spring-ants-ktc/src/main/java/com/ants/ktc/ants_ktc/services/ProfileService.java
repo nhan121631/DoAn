@@ -1,9 +1,7 @@
 package com.ants.ktc.ants_ktc.services;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +28,9 @@ public class ProfileService {
         @Autowired
         private WardJpaRepository wardRepository;
 
+        @Autowired
+        private CloudinaryService cloudinaryService;
+
         public UserProfileResponseDto updateProfile(MultipartFile avatar, ProfileUpdateRequestDto dto)
                         throws IOException {
 
@@ -37,13 +38,14 @@ public class ProfileService {
                                 .orElseThrow(() -> new IllegalArgumentException("Profile not found"));
 
                 if (avatar != null && !avatar.isEmpty()) {
-                        String fileName = System.currentTimeMillis() + "_" + avatar.getOriginalFilename();
-                        Path filePath = Paths.get("public/uploads/" + fileName);
-                        Files.createDirectories(filePath.getParent());
-                        Files.write(filePath, avatar.getBytes());
-
-                        String avatarUrl = "/uploads/" + fileName;
-                        profile.setAvatar(avatarUrl); // cập nhật avatar cho profile
+                        try {
+                                // Upload ảnh lên Cloudinary
+                                Map<String, String> uploadResult = cloudinaryService.uploadFile(avatar);
+                                String avatarUrl = uploadResult.get("url");
+                                profile.setAvatar(avatarUrl); // cập nhật avatar cho profile
+                        } catch (Exception e) {
+                                throw new RuntimeException("Failed to upload avatar: " + e.getMessage(), e);
+                        }
                 }
 
                 profile.setId(dto.getId());

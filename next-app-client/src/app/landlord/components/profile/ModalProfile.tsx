@@ -57,7 +57,8 @@ export default function ModalProfile({
   avatarUrl,
   form,
   userProfile,
-}: ModalProfileProps) {
+  loading,
+}: ModalProfileProps & { loading?: boolean }) {
   // const [fileList, setFileList] = useState<UploadFile[]>([]);
   const [previewUrl, setPreviewUrl] = useState<string>();
   const [provinces, setProvinces] = useState<SelectOption[]>([]);
@@ -471,8 +472,15 @@ export default function ModalProfile({
         </Form.Item>
 
         <div className="flex justify-end gap-2 mt-4">
-          <Button onClick={onCancel}>Cancel</Button>
-          <Button type="primary" htmlType="submit">
+          <Button onClick={onCancel} disabled={loading}>
+            Cancel
+          </Button>
+          <Button
+            type="primary"
+            htmlType="submit"
+            loading={loading}
+            disabled={loading}
+          >
             Save
           </Button>
         </div>

@@ -148,13 +148,29 @@ public class PaymentController {
             }
 
             String[] parts = decoded.split("\\|");
-            if (parts.length < 4) {
+            if (parts.length < 3) {
                 return ResponseEntity.badRequest().body(Map.of(
                         "success", false,
-                        "message", "Invalid OrderInfo format",
-                        "decoded", decoded));
+                        "message", "Invalid OrderInfo format - need at least 3 parts",
+                        "decoded", decoded,
+                        "partsCount", parts.length));
             }
-            String description = URLDecoder.decode(parts[3], StandardCharsets.UTF_8);
+
+            String description = "";
+            if (parts.length > 3 && !parts[3].isEmpty()) {
+                String rawDesc = parts[3];
+                if (rawDesc.contains("%")) {
+                    // Contains URL encoded characters, decode it
+                    try {
+                        description = URLDecoder.decode(rawDesc, StandardCharsets.UTF_8);
+                    } catch (Exception e) {
+                        description = rawDesc; // fallback if decode fails
+                    }
+                } else {
+                    // No encoding, use as-is
+                    description = rawDesc;
+                }
+            }
 
             UUID userId;
             try {
