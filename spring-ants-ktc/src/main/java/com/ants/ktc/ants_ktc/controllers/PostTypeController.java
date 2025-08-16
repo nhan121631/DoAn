@@ -35,8 +35,8 @@ public class PostTypeController {
     }
 
     @GetMapping
-    public ResponseEntity<List<TypePostProjection>> getPostTypes() {
-        List<TypePostProjection> postTypes = postTypeService.getPostTypes();
+    public ResponseEntity<List<PostTypeResponseDto>> getPostTypes() {
+        List<PostTypeResponseDto> postTypes = postTypeService.getPostTypes();
         if (postTypes.isEmpty()) {
             return ResponseEntity.noContent().build();
         }

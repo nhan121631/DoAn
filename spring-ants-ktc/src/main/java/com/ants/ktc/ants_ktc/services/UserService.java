@@ -11,6 +11,7 @@ import java.util.UUID;
 
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -155,6 +156,7 @@ public class UserService {
                                 .build();
         }
 
+        @CacheEvict(value = "manage-accounts", allEntries = true)
         public LoginResponseDto googleLogin(GoogleLoginRequestDto requestDto) {
                 String credential = requestDto.getCredential();
                 String url = "https://oauth2.googleapis.com/tokeninfo?id_token=" + credential;
@@ -261,6 +263,7 @@ public class UserService {
 
         }
 
+        @CacheEvict(value = "manage-accounts", allEntries = true)
         public RegisterResponseDto register(RegisterRequestDto request) {
                 if (userJpaRepository.existsByUsername(request.getUsername())) {
                         throw new IllegalArgumentException("Username already exists");

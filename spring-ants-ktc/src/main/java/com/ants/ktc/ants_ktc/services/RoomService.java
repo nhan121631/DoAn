@@ -10,7 +10,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -138,11 +137,12 @@ public class RoomService {
          * Enqueue image upload job vào Redis
          */
         private void enqueueImageUpload(ImageUploadMessage message) {
-            try {
-                redisTemplate.opsForList().rightPush(IMAGE_UPLOAD_QUEUE, message);
-            } catch (Exception ex) {
-                throw new RuntimeException("Redis server is not available. Please try again later or contact admin.", ex);
-            }
+                try {
+                        redisTemplate.opsForList().rightPush(IMAGE_UPLOAD_QUEUE, message);
+                } catch (Exception ex) {
+                        throw new RuntimeException(
+                                        "Redis server is not available. Please try again later or contact admin.", ex);
+                }
         }
 
         private List<ImageResponseDto> convertImages(List<Image> images) {
