@@ -177,3 +177,32 @@ export async function filterRooms(
     return null;
   }
 }
+
+//------ rencent room--------//
+export async function getRecentRooms() {
+  try {
+    const response = await fetch(`${API_URL}/rooms/recent-rooms`);
+    if (!response.ok) {
+      const data = await response.json();
+      throw new Error(data.message || "Failed to fetch recent rooms");
+    }
+    return response.json();
+  } catch (error) {
+    console.error("Error fetching recent rooms:", error);
+    return null;
+  }
+}
+//------ landlord detail by room id ------//
+export async function getLandlordByRoomId(roomId: string) {
+  try {
+    const response = await fetch(`${API_URL}/rooms/landlord-room/${roomId}`);
+    if (!response.ok) {
+      const data = await response.json();
+      throw new Error(data.message || "Failed to fetch landlord details");
+    }
+    return response.json();
+  } catch (error) {
+    console.error("Error fetching landlord details:", error);
+    return null;
+  }
+}

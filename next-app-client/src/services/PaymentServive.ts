@@ -124,6 +124,41 @@ export function mapPaymentDataToTransactionData(payment: PaymentData) {
   };
 }
 
+//-------------create-payment--------------//
+export const createPayment = async (payload: {
+  amount: number;
+  description: string;
+  userId: string;
+}) => {
+  const res = await fetch("/api/payments/create", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || "Payment creation failed");
+  return data;
+};
+//------- confirm payment ------//
+export const confirmPayment = async (query: string) => {
+  try {
+    const res = await fetch(`/api/payments/confirm?${query}`, {
+      method: "GET",
+    });
+
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.message || "Failed to confirm payment");
+    }
+
+    return data;
+  } catch (error: any) {
+    console.error("Confirm payment service error:", error);
+    throw error;
+  }
+};
+
 // export async function getAllTransactionsByUserId(
 //   userId: string,
 //   accessToken: string

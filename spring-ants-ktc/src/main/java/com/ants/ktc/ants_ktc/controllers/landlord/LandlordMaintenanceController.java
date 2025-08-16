@@ -29,30 +29,27 @@ public class LandlordMaintenanceController {
     private UserService userService;
 
     @GetMapping("/rooms")
-    public ResponseEntity<List<RoomNameProjection>>
-    getLandlordRoomsForMaintenance() {
-    UUID currentUserId = userService.getAuthenticatedUserId();
-    List<RoomNameProjection> rooms =
-    maintenanceService.getRoomsForLandlord(currentUserId);
-    return ResponseEntity.ok(rooms);
+    public ResponseEntity<List<RoomNameProjection>> getLandlordRoomsForMaintenance() {
+        UUID currentUserId = userService.getAuthenticatedUserId();
+        List<RoomNameProjection> rooms = maintenanceService.getRoomsForLandlord(currentUserId);
+        return ResponseEntity.ok(rooms);
     }
 
     @PostMapping
     public ResponseEntity<MaintenanceResponseDto> createMaintenance(
-    @Valid @RequestBody MaintenanceRequestDto maintenanceRequestDto) {
-    UUID currentUserId = userService.getAuthenticatedUserId();
-    MaintenanceResponseDto newMaintenance =
-    maintenanceService.createMaintenance(currentUserId,
-    maintenanceRequestDto);
-    return ResponseEntity.status(201).body(newMaintenance);
+            @Valid @RequestBody MaintenanceRequestDto maintenanceRequestDto) {
+        UUID currentUserId = userService.getAuthenticatedUserId();
+        MaintenanceResponseDto newMaintenance = maintenanceService.createMaintenance(currentUserId,
+                maintenanceRequestDto);
+        return ResponseEntity.status(201).body(newMaintenance);
     }
 
     @GetMapping
     public ResponseEntity<PaginatedMaintenanceResponseDto<MaintenanceResponseDto>> getLandlordMaintenances(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "7") int size,
-            @RequestParam(required = false) Integer status,
-            @RequestParam(required = false) UUID roomId) {
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "7") int size,
+            @RequestParam(name = "status", required = false) Integer status,
+            @RequestParam(name = "roomId", required = false) UUID roomId) {
         UUID currentUserId = userService.getAuthenticatedUserId();
         PaginatedMaintenanceResponseDto<MaintenanceResponseDto> maintenances = maintenanceService
                 .getLandlordMaintenances(

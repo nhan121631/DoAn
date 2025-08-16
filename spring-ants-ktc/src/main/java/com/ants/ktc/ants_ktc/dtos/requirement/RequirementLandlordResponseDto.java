@@ -1,0 +1,22 @@
+package com.ants.ktc.ants_ktc.dtos.requirement;
+
+import java.util.UUID;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+public class RequirementLandlordResponseDto {
+    private UUID id;
+    private String roomTitle;
+    private String userName;
+    private String email;
+    private String description;
+    private int status;
+
+}

@@ -1,77 +1,116 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import { ColumnsType } from "antd/es/table";
-import { Table, Popconfirm, Button, message } from "antd";
-import React from "react";
-
-type ManageRequestsData = {
-  id: number;
-  roomName: string;
-  customerName: string;
-  phoneNumber: number;
-  requestDescription: string;
-  status: 0 | 1; // 0 = chưa xử lý, 1 = completed
-};
-
-const initialRequests: ManageRequestsData[] = [
-  {
-    id: 1,
-    roomName: "Phòng trọ Mr. Nam",
-    customerName: "Nguyễn Văn A",
-    phoneNumber: 123456789,
-    requestDescription: "Yêu cầu sửa chữa điện nước",
-    status: 0,
-  },
-  {
-    id: 2,
-    roomName: "Phòng trọ Ms. Lan",
-    customerName: "Trần Thị B",
-    phoneNumber: 987654321,
-    requestDescription: "Yêu cầu dọn dẹp phòng",
-    status: 1,
-  },
-];
+import { Table, Popconfirm, Button, message, Tag } from "antd";
+import React, { useEffect } from "react";
 
 import { useState } from "react";
+import { PaginatedResponse, Requirement } from "@/types/types";
+import {
+  getRequestsByLandlordId,
+  rejectRequirement,
+  updateRequirementStatus,
+} from "@/services/Requirements";
+import { useSession } from "next-auth/react";
 
 export default function ManageRequests() {
-  const [requests, setRequests] =
-    useState<ManageRequestsData[]>(initialRequests);
+  const [requests, setRequests] = useState<Requirement[]>([]);
+  const [paging, setPaging] = useState<PaginatedResponse<Requirement>>();
+  const [messageApi, contextHolder] = message.useMessage();
 
-  const handleStatusChange = (id: number) => {
-    setRequests((prev) =>
-      prev.map((item) =>
-        item.id === id ? { ...item, status: item.status === 0 ? 1 : 0 } : item
-      )
-    );
-    message.success("Status updated successfully!");
+  const handleStatusChange = async (id: string) => {
+    try {
+      await updateRequirementStatus(id);
+      setRequests((prev) =>
+        prev.map((item) =>
+          item.id === id ? { ...item, status: (item.status = 1) } : item
+        )
+      );
+      messageApi.success({
+        content: "Status updated successfully!",
+        duration: 2,
+      });
+    } catch (error: any) {
+      messageApi.error({
+        content: error.message,
+        duration: 2,
+      });
+    }
   };
+  const handleReject = async (id: string) => {
+    try {
+      await rejectRequirement(id);
+      setRequests((prev) =>
+        prev.map((item) =>
+          item.id === id ? { ...item, status: (item.status = 2) } : item
+        )
+      );
+      messageApi.success({
+        content: "Status updated successfully!",
+        duration: 2,
+      });
+    } catch (error: any) {
+      messageApi.error({
+        content: error.message,
+        duration: 2,
+      });
+    }
+  };
+  const { data: session } = useSession();
 
-  const columns: ColumnsType<ManageRequestsData> = [
+  useEffect(() => {
+    if (!session?.user) return;
+
+    const fetchData = async () => {
+      try {
+        const res =
+          (await getRequestsByLandlordId()) as PaginatedResponse<Requirement>;
+
+        setRequests(res?.data || []);
+        setPaging(res);
+        console.log(
+          "Requests:",
+          res?.data.map((req) => ({
+            id: req.id,
+            status: req.status,
+          }))
+        );
+      } catch (error: any) {
+        messageApi.error({
+          content: error.message,
+          duration: 2,
+        });
+      }
+    };
+    fetchData();
+  }, [session?.user]);
+
+  const columns: ColumnsType<Requirement> = [
     {
-      title: "ID",
-      dataIndex: "id",
-      key: "id",
+      title: "STT",
+      key: "stt",
       width: 80,
+      render: (_: any, __: any, index: number) => index + 1,
     },
     {
       title: "Room Name",
-      dataIndex: "roomName",
-      key: "roomName",
+      dataIndex: "roomTitle",
+      key: "roomTitle",
     },
     {
       title: "Customer Name",
-      dataIndex: "customerName",
-      key: "customerName",
+      dataIndex: "userName",
+      key: "userName",
     },
     {
-      title: "Phone Number",
-      dataIndex: "phoneNumber",
-      key: "phoneNumber",
+      title: "Email",
+      dataIndex: "email",
+      key: "email",
     },
     {
       title: "Request Description",
-      dataIndex: "requestDescription",
-      key: "requestDescription",
+      dataIndex: "description",
+      key: "description",
     },
     {
       title: "Status",
@@ -89,32 +128,62 @@ export default function ManageRequests() {
               Not processed
             </Button>
           </Popconfirm>
+        ) : status === 1 ? (
+          <Tag color="green">Completed</Tag>
         ) : (
+          <Tag color="red">Rejected</Tag>
+        ),
+    },
+    {
+      title: "Action",
+      dataIndex: "action",
+      key: "action",
+      render: (_, record) =>
+        record.status === 0 ? (
           <Popconfirm
-            title="Mark as not processed?"
-            onConfirm={() => handleStatusChange(record.id)}
+            title="Are you sure?"
+            onConfirm={() => handleReject(record.id)}
             okText="Yes"
             cancelText="No"
           >
-            <Button type="default" size="small">
-              Completed
+            <Button
+              type="default"
+              size="small"
+              style={{
+                backgroundColor: "red",
+                color: "white",
+                borderColor: "red",
+              }}
+            >
+              Reject
             </Button>
           </Popconfirm>
+        ) : record.status === 1 ? (
+          <Tag color="default">Completed</Tag>
+        ) : (
+          <Tag color="default">Rejected</Tag>
         ),
     },
   ];
 
   return (
     <div className="p-4">
+      {contextHolder}
       <div className="mb-4">
-        <h2 className="text-4xl font-semibold dark:!text-white">Manage Requests</h2>
+        <h2 className="text-4xl font-semibold dark:!text-white">
+          Manage Requests
+        </h2>
         <p className="text-xl text-gray-500">Room Request Management</p>
       </div>
       <Table
         columns={columns}
-        dataSource={requests}
+        dataSource={requests || []}
         rowKey="id"
-        pagination={{ pageSize: 8 }}
+        pagination={{
+          current: (paging?.page ?? 0) + 1,
+          pageSize: paging?.size ?? 5,
+          total: paging?.totalRecords ?? 0,
+        }}
       />
     </div>
   );

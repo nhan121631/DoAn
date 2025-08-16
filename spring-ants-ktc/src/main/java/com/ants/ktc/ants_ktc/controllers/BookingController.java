@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
 import com.ants.ktc.ants_ktc.dtos.booking.BookingRoomByUserResponseDto;
 import com.ants.ktc.ants_ktc.dtos.booking.BookingRoomRequestDto;
 import com.ants.ktc.ants_ktc.dtos.booking.BookingStatusResponseDto;
@@ -53,8 +52,8 @@ public class BookingController {
     @GetMapping("/user/{userId}/paging")
     public ResponseEntity<PaginationUserBookingRoomResponseDto> getPaginatedUserBookings(
             @PathVariable("userId") UUID userId,
-            @RequestParam int page,
-            @RequestParam int size) {
+            @RequestParam("page") int page,
+            @RequestParam("size") int size) {
         PaginationUserBookingRoomResponseDto response = bookingService.getPaginatedUserBookings(userId, page, size);
         return ResponseEntity.ok(response);
     }
@@ -62,8 +61,8 @@ public class BookingController {
     @GetMapping("/landlord/{landlordId}/paging")
     public ResponseEntity<PaginationLandlordResponseDto> getPaginatedLandlordBookings(
             @PathVariable("landlordId") UUID landlordId,
-            @RequestParam int page,
-            @RequestParam int size) {
+            @RequestParam("page") int page,
+            @RequestParam("size") int size) {
         PaginationLandlordResponseDto response = bookingService.getPaginatedLandlordBookings(landlordId, page, size);
         return ResponseEntity.ok(response);
     }

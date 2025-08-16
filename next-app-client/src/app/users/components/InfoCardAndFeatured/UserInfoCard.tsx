@@ -1,26 +1,41 @@
 "use client";
 
-import React, { useState } from 'react'; 
-import Image from 'next/image';
-import Link from 'next/link';
-import { MdPhone, MdMessage } from 'react-icons/md';
-import { FaRegBookmark, FaBookmark, FaTimes } from 'react-icons/fa'; 
-import { IoShareSocialOutline, IoWarningOutline } from 'react-icons/io5';
+import React, { useState, useEffect } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { MdPhone, MdMessage } from "react-icons/md";
+import { FaRegBookmark, FaBookmark, FaTimes } from "react-icons/fa";
+import { IoShareSocialOutline, IoWarningOutline } from "react-icons/io5";
+import { getLandlordByRoomId } from "@/services/RoomService";
+import { LandlordDetailByRoom } from "@/types/types";
 
-export default function UserInfoCard() {
-  const [isSaved, setIsSaved] = useState(false); // Trạng thái của nút Lưu tin
-  const [showShareModal, setShowShareModal] = useState(false); // Trạng thái hiển thị modal Chia sẻ
-  const [showReportModal, setShowReportModal] = useState(false); // Trạng thái hiển thị modal Báo xấu
-  const [reportReason, setReportReason] = useState(''); // Trạng thái lý do báo xấu
-  const [reportDescription, setReportDescription] = useState(''); // Trạng thái mô tả báo xấu
-  const [isRobot, setIsRobot] = useState(false); // Trạng thái checkbox "Tôi không phải là người máy"
-  const [contactName, setContactName] = useState(''); 
-  const [contactPhone, setContactPhone] = useState(''); 
+export default function UserInfoCard({ id }: { id: string }) {
+  const [isSaved, setIsSaved] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [reportReason, setReportReason] = useState("");
+  const [reportDescription, setReportDescription] = useState("");
+  const [isRobot, setIsRobot] = useState(false);
+  const [contactName, setContactName] = useState("");
+  const [contactPhone, setContactPhone] = useState("");
+  const [landlord, setLandlord] = useState<LandlordDetailByRoom | null>(null);
 
   const currentPostUrl = "http://localhost:3000/users";
 
+  useEffect(() => {
+    async function fetchData() {
+      const data = await getLandlordByRoomId(id);
+      setLandlord(data as LandlordDetailByRoom);
+    }
+    fetchData();
+  }, [id]);
+
+  if (!landlord) {
+    return <div>Landlord not found</div>;
+  }
+
   const handleSavePost = () => {
-    setIsSaved(!isSaved); // Đảo ngược 
+    setIsSaved(!isSaved); // Đảo ngược
     if (!isSaved) {
       console.log("Tin đã lưu thành công!"); // Thông báo lưu thành công
     } else {
@@ -30,23 +45,23 @@ export default function UserInfoCard() {
 
   // Sao chép URL
   const handleCopyLink = () => {
-    navigator.clipboard.writeText(currentPostUrl)
+    navigator.clipboard
+      .writeText(currentPostUrl)
       .then(() => {
         console.log("Đã sao chép URL vào clipboard!");
       })
-      .catch(err => {
+      .catch((err) => {
         console.error("Không thể sao chép URL: ", err);
       });
   };
 
-  
   const handleSubmitReport = () => {
     if (!reportReason) {
-      alert("Vui lòng chọn lý do phản ánh."); 
+      alert("Vui lòng chọn lý do phản ánh.");
       return;
     }
     if (!isRobot) {
-      alert("Vui lòng xác nhận bạn không phải là người máy."); 
+      alert("Vui lòng xác nhận bạn không phải là người máy.");
       return;
     }
     if (!contactName.trim() || !contactPhone.trim()) {
@@ -62,19 +77,20 @@ export default function UserInfoCard() {
       isRobot: isRobot,
       postUrl: currentPostUrl,
     });
-  
+
     alert("Cảm ơn bạn đã gửi phản ánh!");
-    setShowReportModal(false); 
-    setReportReason(''); 
-    setReportDescription('');
-    setContactName(''); 
-    setContactPhone('');
+    setShowReportModal(false);
+    setReportReason("");
+    setReportDescription("");
+    setContactName("");
+    setContactPhone("");
     setIsRobot(false);
   };
 
   // Hàm xử lý đóng modal khi click ra ngoài lớp phủ
   const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (e.target === e.currentTarget) { // Chỉ đóng khi click trực tiếp vào lớp phủ
+    if (e.target === e.currentTarget) {
+      // Chỉ đóng khi click trực tiếp vào lớp phủ
       setShowShareModal(false);
       setShowReportModal(false);
     }
@@ -90,53 +106,65 @@ export default function UserInfoCard() {
         className="rounded-full object-cover border-4 border-blue-400"
         priority
       />
-      <h3 className="text-xl font-bold mt-4 text-gray-800">Park Eun Bin (*)</h3>
+      <h3 className="text-xl font-bold mt-4 text-gray-800">
+        {landlord.fullName}
+      </h3>
       <p className="text-sm text-green-600 flex items-center gap-1 mt-1">
         <span className="relative flex h-2 w-2">
           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
           <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
         </span>
-        Đang hoạt động
+        Active
       </p>
       <p className="text-xs text-gray-500 mt-1">
-        2 tin đăng - Tham gia từ: 28/07/2025
+        {landlord.amountPost} Post - Joined since: {landlord.createDate}
       </p>
       <div className="flex flex-col gap-3 mt-6 w-full">
         <Link
-          href="tel:0918180057"
-          className="bg-green-500 hover:bg-green-600 text-white font-semibold py-3 rounded-lg shadow-md flex items-center justify-center gap-2 transition duration-300"
+          href={`tel:${landlord.phone}` || `mailto:${landlord.email}`}
+          className={`${
+            landlord.phone ? "bg-green-500 hover:bg-green-600" : "bg-gray-300"
+          } text-white font-semibold py-3 rounded-lg shadow-md flex items-center justify-center gap-2 transition duration-300`}
         >
           <MdPhone className="h-5 w-5" />
-          0347002025
+          {landlord.phone || landlord.email}
         </Link>
         <Link
-          href="https://zalo.me/0347002025"
+          href={
+            `https://zalo.me/${landlord.phone}` || `mailto:${landlord.email}`
+          }
           target="_blank"
           rel="noopener noreferrer"
           className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 rounded-lg shadow-md flex items-center justify-center gap-2 transition duration-300"
         >
           <MdMessage className="h-5 w-5" />
-          Nhắn Zalo
+          Chat with Zalo
         </Link>
       </div>
 
       <div className="flex justify-around w-full mt-6 text-gray-600 text-sm">
         <button
           onClick={handleSavePost}
-          className={`flex flex-col items-center transition w-28 ${isSaved ? 'text-red-500' : 'hover:text-blue-600'}`} 
+          className={`flex flex-col items-center transition w-28 ${
+            isSaved ? "text-red-500" : "hover:text-blue-600"
+          }`}
         >
-          {isSaved ? <FaBookmark className="h-6 w-6" /> : <FaRegBookmark className="h-6 w-6" />} 
-          {isSaved ? 'Tin đã lưu' : 'Lưu tin'} 
+          {isSaved ? (
+            <FaBookmark className="h-6 w-6" />
+          ) : (
+            <FaRegBookmark className="h-6 w-6" />
+          )}
+          {isSaved ? "Tin đã lưu" : "Lưu tin"}
         </button>
         <button
-          onClick={() => setShowShareModal(true)} 
+          onClick={() => setShowShareModal(true)}
           className="flex flex-col items-center hover:text-blue-600 transition w-28"
         >
           <IoShareSocialOutline className="h-6 w-6" />
           Chia sẻ
         </button>
         <button
-          onClick={() => setShowReportModal(true)} 
+          onClick={() => setShowReportModal(true)}
           className="flex flex-col items-center hover:text-red-600 transition w-28"
         >
           <IoWarningOutline className="h-6 w-6" />
@@ -144,18 +172,23 @@ export default function UserInfoCard() {
         </button>
       </div>
 
- 
       {showShareModal && (
-        <div className="fixed inset-0 bg-gray-800/50 flex items-center justify-end z-50" onMouseDown={handleOverlayClick}>
-          <div className="bg-white rounded-lg p-6 shadow-xl h-full w-full max-w-sm relative transform transition-transform duration-300 ease-in-out" onMouseDown={(e) => e.stopPropagation()}> 
+        <div
+          className="fixed inset-0 bg-gray-800/50 flex items-center justify-end z-50"
+          onMouseDown={handleOverlayClick}
+        >
+          <div
+            className="bg-white rounded-lg p-6 shadow-xl h-full w-full max-w-sm relative transform transition-transform duration-300 ease-in-out"
+            onMouseDown={(e) => e.stopPropagation()}
+          >
             <button
               onClick={() => setShowShareModal(false)}
               className="absolute top-3 right-3 text-gray-500 hover:text-gray-800"
             >
               <FaTimes className="h-6 w-6" />
             </button>
-            <h2 className="text-xl font-bold mb-4 text-gray-800">Chia sẻ</h2>
-            <p className="mb-4 text-gray-700">Chia sẻ tin đăng này</p>
+            <h2 className="text-xl font-bold mb-4 text-gray-800">Share</h2>
+            <p className="mb-4 text-gray-700">Share this post</p>
             <div className="flex items-center border border-gray-300 rounded-md overflow-hidden mb-4">
               <input
                 type="text"
@@ -175,19 +208,30 @@ export default function UserInfoCard() {
       )}
 
       {showReportModal && (
-        <div className="fixed inset-0 bg-gray-800/50 flex items-center justify-end z-50" onMouseDown={handleOverlayClick}>
-          <div className="bg-white rounded-lg p-5 shadow-xl h-full w-full max-w-sm relative transform transition-transform duration-300 ease-in-out overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] "
-           onMouseDown={(e) => e.stopPropagation()}>
+        <div
+          className="fixed inset-0 bg-gray-800/50 flex items-center justify-end z-50"
+          onMouseDown={handleOverlayClick}
+        >
+          <div
+            className="bg-white rounded-lg p-5 shadow-xl h-full w-full max-w-sm relative transform transition-transform duration-300 ease-in-out overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] "
+            onMouseDown={(e) => e.stopPropagation()}
+          >
             <button
               onClick={() => setShowReportModal(false)}
               className="absolute top-3 right-3 text-gray-500 hover:text-gray-800"
             >
               <FaTimes className="h-6 w-6" />
             </button>
-            <h2 className="text-2xl font-bold mb-4 text-gray-800">Phản ánh tin đăng</h2>
-            <p className="mb-3 text-gray-700 text-base font-bold">Thông tin liên hệ</p>
+            <h2 className="text-2xl font-bold mb-4 text-gray-800">
+              Report Post
+            </h2>
+            <p className="mb-3 text-gray-700 text-base font-bold">
+              Contact Information
+            </p>
             <div className="mb-4">
-              <label className="block text-left text-gray-700 text-base mb-2">Họ tên của bạn</label>
+              <label className="block text-left text-gray-700 text-base mb-2">
+                Your Name
+              </label>
               <input
                 type="text"
                 id="contactName"
@@ -198,7 +242,9 @@ export default function UserInfoCard() {
               />
             </div>
             <div className="mb-6">
-              <label className="block text-left text-gray-700 text-base mb-2">Số điện thoại của bạn</label>
+              <label className="block text-left text-gray-700 text-base mb-2">
+                Your Phone Number
+              </label>
               <input
                 type="tel"
                 id="contactPhone"
@@ -208,51 +254,63 @@ export default function UserInfoCard() {
                 placeholder="Nhập số điện thoại của bạn"
               />
             </div>
-            <p className="mb-2 text-gray-700 text-lg">Lý do phản ánh:</p> 
-            <div className="flex flex-col space-y-3 mb-6"> 
-              <label className="inline-flex items-center text-gray-700 text-base"> 
+            <p className="mb-2 text-gray-700 text-lg">Reason for Reporting:</p>
+            <div className="flex flex-col space-y-3 mb-6">
+              <label className="inline-flex items-center text-gray-700 text-base">
                 <input
                   type="radio"
                   name="reportReason"
                   value="Thông tin đã hết/không còn hiệu lực"
-                  checked={reportReason === "Thông tin đã hết/không còn hiệu lực"}
+                  checked={
+                    reportReason === "Thông tin đã hết/không còn hiệu lực"
+                  }
                   onChange={(e) => setReportReason(e.target.value)}
                   className="form-radio text-blue-600 h-5 w-5"
                 />
-                <span className="ml-3">Thông tin đã hết/không còn hiệu lực</span> 
+                <span className="ml-3">Information has expired</span>
               </label>
               <label className="inline-flex items-center text-gray-700 text-base">
                 <input
                   type="radio"
                   name="reportReason"
-                  value="Tin trùng lặp nội dung"
-                  checked={reportReason === "Tin trùng lặp nội dung"}
+                  value="Duplicate content"
+                  checked={reportReason === "Duplicate content"}
                   onChange={(e) => setReportReason(e.target.value)}
                   className="form-radio text-blue-600 h-5 w-5"
                 />
-                <span className="ml-3">Tin trùng lặp nội dung</span>
+                <span className="ml-3">Duplicate content</span>
               </label>
               <label className="inline-flex items-center text-gray-700 text-base">
                 <input
                   type="radio"
                   name="reportReason"
-                  value="Không liên hệ được chủ tin đăng"
-                  checked={reportReason === "Không liên hệ được chủ tin đăng"}
+                  value="Unable to contact the listing owner"
+                  checked={
+                    reportReason === "Unable to contact the listing owner"
+                  }
                   onChange={(e) => setReportReason(e.target.value)}
                   className="form-radio text-blue-600 h-5 w-5"
                 />
-                <span className="ml-3">Không liên hệ được chủ tin đăng</span>
+                <span className="ml-3">
+                  Unable to contact the listing owner
+                </span>
               </label>
               <label className="inline-flex items-center text-gray-700 text-base">
                 <input
                   type="radio"
                   name="reportReason"
-                  value="Thông tin tin đăng không đúng thực tế (giá, diện tích, hình ảnh...)"
-                  checked={reportReason === "Thông tin tin đăng không đúng thực tế (giá, diện tích, hình ảnh...)"}
+                  value="Information in the listing is inaccurate (price, area, images...)"
+                  checked={
+                    reportReason ===
+                    "Information in the listing is inaccurate (price, area, images...)"
+                  }
                   onChange={(e) => setReportReason(e.target.value)}
                   className="form-radio text-blue-600 h-5 w-5"
                 />
-                <span className="ml-3">Thông tin tin đăng không đúng thực tế (giá, diện tích, hình ảnh...)</span>
+                <span className="ml-3">
+                  Information in the listing is inaccurate (price, area,
+                  images...)
+                </span>
               </label>
               <label className="inline-flex items-center text-gray-700 text-base">
                 <input
@@ -263,34 +321,34 @@ export default function UserInfoCard() {
                   onChange={(e) => setReportReason(e.target.value)}
                   className="form-radio text-blue-600 h-5 w-5"
                 />
-                <span className="ml-3">Lý do khác</span>
+                <span className="ml-3">Other reasons</span>
               </label>
             </div>
 
-            <p className="mb-3 text-gray-700 text-base">Mô tả thêm</p>
+            <p className="mb-3 text-gray-700 text-base">More Description</p>
             <textarea
               value={reportDescription}
               onChange={(e) => setReportDescription(e.target.value)}
               className="w-full p-3 border border-gray-300 rounded-md mb-6 text-gray-800 text-base"
               rows={3}
-              placeholder="Nhập mô tả chi tiết..."
+              placeholder="Enter detailed description..."
             ></textarea>
 
-            <label className="inline-flex items-center text-gray-700 text-base mb-6"> 
+            <label className="inline-flex items-center text-gray-700 text-base mb-6">
               <input
                 type="checkbox"
                 checked={isRobot}
                 onChange={(e) => setIsRobot(e.target.checked)}
                 className="form-checkbox text-blue-600 h-5 w-5"
               />
-              <span className="ml-3">Tôi không phải là người máy</span> 
+              <span className="ml-3">I am not a robot</span>
             </label>
 
             <button
               onClick={handleSubmitReport}
-              className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 rounded-lg shadow-md transition duration-300 text-lg" 
+              className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 rounded-lg shadow-md transition duration-300 text-lg"
             >
-              Gửi phản ánh
+              Send Report
             </button>
           </div>
         </div>

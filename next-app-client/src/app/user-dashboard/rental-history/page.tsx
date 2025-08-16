@@ -1,18 +1,20 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import { Button, Table, Tag, Form, Space } from "antd";
+import { Button, Table, Tag, Form, Space, message } from "antd";
 import ModalPayment from "../components/rental-history/ModalPayment";
 import RequestModal from "../components/rental-history/RequestModal";
 import { useEffect, useState } from "react";
 import React from "react";
 import { IoMdAddCircleOutline } from "react-icons/io";
 import { userFetchBookings } from "@/services/BookingService";
-import dayjs, { Dayjs } from "dayjs";
+import { RequirementRequestRoomDto } from "@/types/types";
+import { createRequest } from "@/services/Requirements";
 
 function useRentalStatusModal() {
   const [visible, setVisible] = useState(false);
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
   const [confirmLoading, setConfirmLoading] = useState(false);
+  const [selectedIdRoom, setSelectedIdRoom] = useState<string | null>(null);
 
   return {
     visible,
@@ -21,6 +23,8 @@ function useRentalStatusModal() {
     setSelectedKey,
     confirmLoading,
     setConfirmLoading,
+    selectedIdRoom,
+    setSelectedIdRoom,
   };
 }
 
@@ -29,6 +33,7 @@ interface RentalData {
   name_landlord: string;
   phone_landlord: string;
   room: string;
+  idRoom: string;
   address: string;
   rentalDate: string;
   expires: string;
@@ -47,15 +52,7 @@ function RentalHistory() {
   });
   const [loading, setLoading] = useState(false);
   const modal = useRentalStatusModal();
-
-  const calculateMonthsFromDates = (
-    startDate: Dayjs,
-    endDate: Dayjs
-  ): number => {
-    if (!startDate || !endDate) return 0;
-    const months = endDate.diff(startDate, "month", true);
-    return Math.ceil(months);
-  };
+  const [messageApi, contextHolder] = message.useMessage();
 
   const mapBookingToRentalData = (booking: any): RentalData => {
     const address = booking.room.address;
@@ -65,6 +62,7 @@ function RentalHistory() {
       name_landlord: booking.room.ownerName,
       phone_landlord: booking.room.ownerPhone,
       room: booking.room.title,
+      idRoom: booking.room.roomId,
       address: fullAddress,
       rentalDate: booking.rentalDate
         ? new Date(booking.rentalDate).toISOString().slice(0, 10)
@@ -73,14 +71,8 @@ function RentalHistory() {
         ? new Date(booking.rentalExpires).toISOString().slice(0, 10)
         : "",
       tenants: booking.tenantCount,
-      // price: booking.room.priceMonth
-      //   ? `${booking.room.priceMonth.toLocaleString()}₫`
-      //   : "",
       price: booking.room.priceMonth
-        ? `${(booking.room.priceMonth * calculateMonthsFromDates(
-            dayjs(booking.rentalDate),
-            dayjs(booking.rentalExpires)
-          )).toLocaleString()}₫`
+        ? `${booking.room.priceMonth.toLocaleString()}₫`
         : "",
       status: booking.status,
       isRemoved: booking.isRemoved,
@@ -95,7 +87,6 @@ function RentalHistory() {
       const total = response.totalRecords || bookings.length;
       setTableData(bookings.map(mapBookingToRentalData));
       setPagination({ current: page, pageSize, total });
-      console.log("Fetched bookings:", response);
     } catch (error) {
       console.error("Failed to fetch bookings:", error);
     } finally {
@@ -124,10 +115,33 @@ function RentalHistory() {
     form.resetFields();
   };
 
-  const handleFinish = () => {
-    setOpen(false);
-    setFieldValue(null);
-    form.resetFields();
+  const handleFinish = async (request: RequirementRequestRoomDto) => {
+    try {
+      console.log("Submitting request:", request);
+      await createRequest(request);
+
+      messageApi.success({
+        content: "Request submitted successfully",
+        duration: 2,
+      });
+      setOpen(false);
+      setFieldValue(null);
+      form.resetFields();
+    } catch (error: any) {
+      let errorMsg = "Failed to submit request";
+      // Nếu dùng fetch, error có thể là object trả về từ response.json()
+      if (error?.message) {
+        if (Array.isArray(error.message)) {
+          errorMsg = error.message[0];
+        } else {
+          errorMsg = error.message;
+        }
+      }
+      messageApi.error({
+        content: errorMsg,
+        duration: 3,
+      });
+    }
   };
 
   const handleAccept = (key: string) => {
@@ -263,28 +277,26 @@ function RentalHistory() {
     {
       title: "Request Action",
       key: "requestAction",
-      render: (_: any, record: RentalData) => {
-        const today = new Date();
-        // const rentalDate = new Date(record.rentalDate);
-        const expiresDate = new Date(record.expires);
-        return (
-          <Space size="middle">
-            <Button
-              type="primary"
-              size="small"
-              onClick={() => {
-                if (record.status === 4) {
-                  setFieldValue(record);
-                  setModalType("add");
-                  setOpen(true);
-                }
-              }}
-              title="Add Request"
-              disabled={record.status !== 4 || today > expiresDate}
-            >
-              <IoMdAddCircleOutline size={18} /> Sent new request
-            </Button>
-            {/* <Button
+      render: (_: any, record: RentalData) => (
+        <Space size="middle">
+          <Button
+            type="primary"
+            size="small"
+            onClick={() => {
+              if (record.status === 4) {
+                setFieldValue(record);
+                setModalType("add");
+                modal.setSelectedKey(record.key);
+                modal.setSelectedIdRoom(record.idRoom);
+                setOpen(true);
+              }
+            }}
+            title="Add Request"
+            disabled={record.status !== 4}
+          >
+            <IoMdAddCircleOutline size={18} /> Sent new request
+          </Button>
+          {/* <Button
             type="text"
             icon={<AiOutlineEdit size={18} />}
             onClick={() => {
@@ -297,9 +309,8 @@ function RentalHistory() {
             title="Edit Request"
             disabled={record.status !== 4}
           /> */}
-          </Space>
-        );
-      },
+        </Space>
+      ),
     },
     {
       title: "Available",
@@ -314,8 +325,9 @@ function RentalHistory() {
   ];
 
   return (
-    <div className="flex flex-col flex-1 p-6 bg-white rounded-lg shadow-md dark:bg-gray-800">
-      <h2 className="text-2xl font-bold mb-4 dark:!text-white">
+    <div style={{ padding: 24 }}>
+      {contextHolder}
+      <h2 className="text-xl font-bold mb-4 dark:!text-white">
         Rental History
       </h2>
       <Table
@@ -338,6 +350,7 @@ function RentalHistory() {
       />
       {/* Request Modal moved to component */}
       <RequestModal
+        id={modal.selectedIdRoom}
         open={open}
         onCancel={onCancel}
         onFinish={handleFinish}
@@ -345,6 +358,7 @@ function RentalHistory() {
         fieldValue={fieldValue}
         modalType={modalType}
       />
+      ;
     </div>
   );
 }

@@ -4,7 +4,9 @@ import React, { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import VnpayResult from "@/app/landlord/components/payment/VnpayResult";
 import { formatCurrency } from "@/lib/vnpay-utils";
-import { mapPaymentDataToTransactionData } from "@/services/PaymentServive";
+// import { mapPaymentDataToTransactionData } from "@/services/PaymentServive";
+import { API_URL } from "@/services/Constant";
+import { confirmPayment } from "@/services/PaymentServive";
 
 interface PaymentData {
   transactionStatus: { success: boolean; message: string };
@@ -39,6 +41,46 @@ export default function PaymentResultClient() {
     fetchSession();
   }, [userId]);
 
+  // useEffect(() => {
+  //   const fetchPaymentResult = async () => {
+  //     try {
+  //       const params = new URLSearchParams();
+  //       searchParams.forEach((value, key) => {
+  //         params.append(key, value);
+  //       });
+  //       const response = await fetch(`/api/vnpay-return?${params.toString()}`);
+  //       if (!response.ok) {
+  //         throw new Error("Failed to process payment result");
+  //       }
+  //       const data = await response.json();
+  //       setPaymentData(data);
+  //       try {
+  //         // savePaymentToLocalStorage(data);
+  //         const transactionData = mapPaymentDataToTransactionData(data);
+  //         // await createTransactionByUserId(userId, transactionData);
+  //         await fetch("/api/landlord/payment-result-client", {
+  //           method: "POST",
+  //           headers: { "Content-Type": "application/json" },
+  //           body: JSON.stringify(transactionData),
+  //         });
+  //         console.log("Transaction data:", transactionData);
+  //       } catch (saveError) {
+  //         console.error("Failed to save payment data:", saveError);
+  //       }
+  //     } catch (err) {
+  //       setError("An error occurred while processing the payment result");
+  //       console.error("Payment result fetch error:", err);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
+  //   if (searchParams.toString()) {
+  //     fetchPaymentResult();
+  //   } else {
+  //     setError("No payment information found");
+  //     setLoading(false);
+  //   }
+  // }, [searchParams]);
   useEffect(() => {
     const fetchPaymentResult = async () => {
       try {
@@ -46,32 +88,41 @@ export default function PaymentResultClient() {
         searchParams.forEach((value, key) => {
           params.append(key, value);
         });
-        const response = await fetch(`/api/vnpay-return?${params.toString()}`);
-        if (!response.ok) {
-          throw new Error("Failed to process payment result");
+
+        const raw = await confirmPayment(params.toString());
+
+        let mappedData: PaymentData;
+        if (!raw.success) {
+          mappedData = {
+            transactionStatus: {
+              success: false,
+              message: raw.message || "Payment failed",
+            },
+            vnp_TxnRef: "",
+            amount: 0,
+            vnp_OrderInfo: "",
+          };
+        } else {
+          const tx = raw.transaction;
+          mappedData = {
+            transactionStatus: { success: true, message: "Payment successful" },
+            vnp_TxnRef: tx.transactionCode,
+            amount: tx.amount,
+            vnp_OrderInfo: tx.description || "",
+            vnp_TransactionNo: tx.transactionCode,
+            vnp_BankCode: tx.bankTransactionName,
+          };
         }
-        const data = await response.json();
-        setPaymentData(data);
-        try {
-          // savePaymentToLocalStorage(data);
-          const transactionData = mapPaymentDataToTransactionData(data);
-          // await createTransactionByUserId(userId, transactionData);
-          await fetch("/api/landlord/payment-result-client", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(transactionData),
-          });
-          console.log("Transaction data:", transactionData);
-        } catch (saveError) {
-          console.error("Failed to save payment data:", saveError);
-        }
+
+        setPaymentData(mappedData);
       } catch (err) {
         setError("An error occurred while processing the payment result");
-        console.error("Payment result fetch error:", err);
+        console.error("Payment confirm error:", err);
       } finally {
         setLoading(false);
       }
     };
+
     if (searchParams.toString()) {
       fetchPaymentResult();
     } else {
@@ -79,7 +130,6 @@ export default function PaymentResultClient() {
       setLoading(false);
     }
   }, [searchParams]);
-
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">

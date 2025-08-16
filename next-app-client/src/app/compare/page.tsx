@@ -1,6 +1,6 @@
 "use client";
 import HeaderDetail from "../detail/Header-detail";
-import { useCompareStore } from "../stores/CompareStore";
+import { useCompareStore } from "../../stores/CompareStore";
 import ListingComparisonDisplay from "../users/components/compare/ListingComparisonDisplay";
 import Footer from "../users/components/Footer";
 

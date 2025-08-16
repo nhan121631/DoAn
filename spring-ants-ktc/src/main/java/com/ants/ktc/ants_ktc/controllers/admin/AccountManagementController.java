@@ -28,11 +28,11 @@ public class AccountManagementController {
         this.accountManagementService = accountManagementService;
     }
 
-    @GetMapping
-    public ResponseEntity<List<UserResponseDto>> getAllUsers() {
-        List<UserResponseDto> response = accountManagementService.getAllUsers();
-        return ResponseEntity.ok(response);
-    }
+    // @GetMapping
+    // public ResponseEntity<List<UserResponseDto>> getAllUsers() {
+    // List<UserResponseDto> response = accountManagementService.getAllUsers();
+    // return ResponseEntity.ok(response);
+    // }
 
     @GetMapping("/paginated")
     public ResponseEntity<UserPageResponseDto> getPaginatedUsers(Pageable pageable) {

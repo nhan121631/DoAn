@@ -1,5 +1,5 @@
 "use client";
-import { useCompareStore } from "@/app/stores/CompareStore";
+import { useCompareStore } from "@/stores/CompareStore";
 import { RoomInUser } from "@/types/types";
 import { message } from "antd";
 import { useRouter } from "next/navigation";

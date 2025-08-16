@@ -14,7 +14,5 @@ export default async function LandlordLayout({
     // Redirect to login if not authenticated
     redirect("/accessdenied");
   }
-  console.log("Session in LandlordLayout:", session?.user);
-
   return <LandlordLayoutClient>{children}</LandlordLayoutClient>;
 }
