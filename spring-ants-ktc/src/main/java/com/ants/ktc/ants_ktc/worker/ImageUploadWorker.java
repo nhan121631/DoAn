@@ -2,6 +2,7 @@ package com.ants.ktc.ants_ktc.worker;
 
 import java.io.File;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -28,7 +29,7 @@ public class ImageUploadWorker {
     @Scheduled(fixedDelay = 500) // mỗi 0.5s xử lý 1 batch
     public void processQueue() {
         ImageUploadMessage job;
-        while ((job = redisTemplate.opsForList().leftPop(IMAGE_UPLOAD_QUEUE)) != null) {
+        while ((job = redisTemplate.opsForList().leftPop(IMAGE_UPLOAD_QUEUE, 2, TimeUnit.SECONDS)) != null) {
             try {
                 File file = new File(job.getLocalTempPath());
 

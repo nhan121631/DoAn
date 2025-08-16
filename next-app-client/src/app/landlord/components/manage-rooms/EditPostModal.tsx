@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   getDistricts,
   getProvinces,
@@ -20,15 +21,6 @@ import {
 import type { UploadFile } from "antd/es/upload/interface";
 import React, { useEffect, useState } from "react";
 
-interface EditPostModalProps {
-  open: boolean;
-  onClose: () => void;
-  roomId: string | null;
-  onSuccess?: () => void;
-}
-
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 type ProvinceOption = {
   label: string;
   value: string;
@@ -47,8 +39,8 @@ const EditPostModal: React.FC<EditPostModalProps> = ({
   roomId,
   onSuccess,
 }) => {
-  const [messageApi, contextHolder] = message.useMessage();
   const [form] = Form.useForm();
+  const [messageApi, contextHolder] = message.useMessage();
   const [loading, setLoading] = useState(false);
   const [roomData, setRoomData] = useState<any>(null);
   const [fileList, setFileList] = useState<UploadFile[]>([]);
@@ -313,7 +305,7 @@ const EditPostModal: React.FC<EditPostModalProps> = ({
                   Room Information
                 </h3>
 
-                <Form.Item label="Room Images" required>
+                <Form.Item label="Room Images">
                   <Upload
                     listType="picture-card"
                     fileList={fileList}

@@ -314,8 +314,8 @@ function RentalHistory() {
   ];
 
   return (
-    <div style={{ padding: 24 }}>
-      <h2 className="text-xl font-bold mb-4 dark:!text-white">
+    <div className="flex flex-col flex-1 p-6 bg-white rounded-lg shadow-md dark:bg-gray-800">
+      <h2 className="text-2xl font-bold mb-4 dark:!text-white">
         Rental History
       </h2>
       <Table

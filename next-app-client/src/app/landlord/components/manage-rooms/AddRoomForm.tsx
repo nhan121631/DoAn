@@ -249,7 +249,11 @@ const AddRoomForm: React.FC<{ onFinish?: (values: RoomData) => void }> = (
                 <Upload
                   listType="picture-card"
                   fileList={fileList}
-                  onChange={({ fileList: newList }) => setFileList(newList)}
+                  onChange={({ fileList: newList }) => {
+                    if (newList.length <= 8) {
+                      setFileList(newList);
+                    }
+                  }}
                   beforeUpload={() => false}
                   multiple
                 >

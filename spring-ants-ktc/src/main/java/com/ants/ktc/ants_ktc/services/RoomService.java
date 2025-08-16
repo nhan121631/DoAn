@@ -136,7 +136,11 @@ public class RoomService {
          * Enqueue image upload job vào Redis
          */
         private void enqueueImageUpload(ImageUploadMessage message) {
+            try {
                 redisTemplate.opsForList().rightPush(IMAGE_UPLOAD_QUEUE, message);
+            } catch (Exception ex) {
+                throw new RuntimeException("Redis server is not available. Please try again later or contact admin.", ex);
+            }
         }
 
         private List<ImageResponseDto> convertImages(List<Image> images) {
