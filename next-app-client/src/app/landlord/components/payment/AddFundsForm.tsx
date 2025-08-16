@@ -1,8 +1,9 @@
 /* eslint-disable react/no-unescaped-entities */
 "use client";
-
+import { formatCurrency } from "@/lib/vnpay-utils";
+import { createPayment } from "@/services/PaymentServive";
 import { message } from "antd";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 interface AddFundsFormProps {
   onSuccess?: () => void;
@@ -14,62 +15,46 @@ export default function AddFundsForm({ onSuccess }: AddFundsFormProps) {
   //   const [bankCode, setBankCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [messageApi, contextHolder] = message.useMessage();
+  const [userId, setUserId] = useState<string>("");
 
+  useEffect(() => {
+    (async () => {
+      try {
+        const r = await fetch("/api/auth/session");
+        const s = await r.json();
+        if (s?.user?.id) setUserId(s.user.id);
+      } catch {}
+    })();
+  }, []);
   const handlePay = async () => {
     const amountNumber = Number(amount);
     if (amountNumber < 5000) {
-      messageApi.error({
-        content: "Minimum amount is 5,000 VND",
-        duration: 1.5,
-      });
+      messageApi.error({ content: "Minimum amount is 5,000 VND", duration: 2 });
       return;
     }
+
     setLoading(true);
     try {
-      const transactionData = {
+      const data = await createPayment({
         amount: amountNumber,
-        orderInfo: orderInfo || `Add ${formatCurrency(amountNumber)} to wallet`,
-      };
-      const result = await fetch("/api/vnpay", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          ...transactionData,
-          // bankCode, // Uncomment if you want to use bankCode
-        }),
-      }).then((res) => res.json());
+        description:
+          orderInfo || `Add ${formatCurrency(amountNumber)} to wallet`,
+        userId,
+      });
+      if (!data.paymentUrl) {
+        throw new Error("No payment URL received");
+      }
 
-      if (result.error) {
-        messageApi.error({
-          content: result.error,
-          duration: 1.5,
-        });
-        alert(result.error);
-        return;
-      }
-      // Nếu backend trả về url để redirect VNPay
-      if (result.url) {
-        window.location.href = result.url;
-      }
-      if (onSuccess) onSuccess();
-    } catch (error) {
-      console.error("Payment error:", error);
+      window.location.href = data.paymentUrl;
+    } catch (err: any) {
+      console.error("Payment error:", err);
       messageApi.error({
-        content: "An error occurred while processing your payment. Please try again.",
-        duration: 1.5,
+        content: err.message || "Payment failed",
+        duration: 2,
       });
     } finally {
       setLoading(false);
     }
-  };
-
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat("vi-VN", {
-      style: "currency",
-      currency: "VND",
-    }).format(value);
   };
 
   return (
