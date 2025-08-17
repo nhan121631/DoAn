@@ -3,14 +3,14 @@
 
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useCompareStore } from "@/app/stores/CompareStore";
 import { RoomInUser } from "@/types/types";
 import { message } from "antd";
 import { useEffect, useState } from "react";
 import { FaRegCheckCircle } from "react-icons/fa";
 import { FaHeart } from "react-icons/fa6";
 import { IoIosAddCircleOutline } from "react-icons/io";
-import { useFavoriteStore } from "@/app/stores/favoriteStore";
+import { useFavoriteStore } from "@/stores/favoriteStore";
+import { useCompareStore } from "@/stores/CompareStore";
 
 
 interface ButtonFavoriteProps {
