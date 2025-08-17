@@ -297,6 +297,7 @@ public class RoomService {
                 */
                 
                 transaction.setTransactionCode(transactionCode);
+                System.out.println("Transaction id before save: " + transaction.getId());
 
                 transaction.setBankTransactionName("Ants Wallet");
                 transaction.setDescription("Payment for room post: " + room.getTitle());

@@ -3,8 +3,13 @@ package com.ants.ktc.ants_ktc.services;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
+import org.hibernate.annotations.Cache;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import com.ants.ktc.ants_ktc.dtos.post_types.PostTypeJpaCreateDto;
@@ -30,6 +35,8 @@ public class PostTypeService {
                 .build();
     }
 
+    @CachePut(value = "typeposts", key = "#root.args[0].id")
+    @CacheEvict(value = "typeposts", key = "'all'")
     public PostTypeResponseDto createPostType(PostTypeJpaCreateDto postTypeJpaCreateDto) {
         postTypeRepository.findByCode(postTypeJpaCreateDto.getCode())
                 .ifPresent(existingPostType -> {
@@ -45,14 +52,27 @@ public class PostTypeService {
         return convertDto(postType);
     }
 
-    public List<TypePostProjection> getPostTypes() {
+    @Cacheable(value = "typeposts", key = "'all'")
+    public List<PostTypeResponseDto> getPostTypes() {
+        System.out.println("Fetching all post types");
         List<TypePostProjection> postTypes = postTypeRepository.findAllActive();
         if (postTypes.isEmpty()) {
             throw new IllegalArgumentException("No post types found");
         }
-        return postTypes;
+
+        return postTypes.stream()
+                .map((TypePostProjection p) -> PostTypeResponseDto.builder()
+                        .id(UUID.fromString(p.getId()))
+                        .code(p.getCode())
+                        .name(p.getName())
+                        .pricePerDay(p.getPricePerDay())
+                        .description(p.getDescription())
+                        .build())
+                .collect(Collectors.toList());
     }
 
+    @CachePut(value = "typeposts", key = "#root.args[0].id")
+    @CacheEvict(value = "typeposts", key = "'all'")
     public PostTypeResponseDto updatePostType(PostTypeJpaUpdateDto postTypeJpaUpdateDto) {
         PostType postType = postTypeRepository.findById(postTypeJpaUpdateDto.getId())
                 .orElseThrow(() -> new IllegalArgumentException(
@@ -72,6 +92,8 @@ public class PostTypeService {
         return convertDto(postType);
     }
 
+    // @CachePut(value = "typeposts", key = "#root.args[0].id")
+    @CacheEvict(value = "typeposts", key = "'all'")
     public void deletePostType(UUID id) {
         PostType postType = postTypeRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Post type not found with id: " + id));

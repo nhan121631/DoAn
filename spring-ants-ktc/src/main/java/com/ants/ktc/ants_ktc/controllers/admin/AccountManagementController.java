@@ -1,15 +1,14 @@
 package com.ants.ktc.ants_ktc.controllers.admin;
 
-import java.util.List;
 import java.util.UUID;
 
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ants.ktc.ants_ktc.dtos.manage_account.RoleUpdateRequestDto;
@@ -34,9 +33,18 @@ public class AccountManagementController {
     // return ResponseEntity.ok(response);
     // }
 
+    // @GetMapping("/paginated")
+    // public ResponseEntity<UserPageResponseDto> getPaginatedUsers(Pageable
+    // pageable) {
+    // UserPageResponseDto response =
+    // accountManagementService.getPaginatedUsers(pageable);
+    // return ResponseEntity.ok(response);
+    // }
     @GetMapping("/paginated")
-    public ResponseEntity<UserPageResponseDto> getPaginatedUsers(Pageable pageable) {
-        UserPageResponseDto response = accountManagementService.getPaginatedUsers(pageable);
+    public ResponseEntity<UserPageResponseDto> getPaginatedUsers(
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "10") int size) {
+        UserPageResponseDto response = accountManagementService.getPaginatedUsers(page, size);
         return ResponseEntity.ok(response);
     }
 

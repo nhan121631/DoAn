@@ -283,7 +283,7 @@ const EditPostModal: React.FC<EditPostModalProps> = ({
         onCancel={handleClose}
         footer={null}
         width={1200}
-        destroyOnHidden
+        destroyOnHidden={false}
         styles={{
           body: { maxHeight: "70vh", overflowY: "auto" },
         }}
