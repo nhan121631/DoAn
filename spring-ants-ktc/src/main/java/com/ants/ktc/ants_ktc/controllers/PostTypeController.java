@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.ants.ktc.ants_ktc.dtos.post_types.PostTypeJpaCreateDto;
 import com.ants.ktc.ants_ktc.dtos.post_types.PostTypeJpaUpdateDto;
 import com.ants.ktc.ants_ktc.dtos.post_types.PostTypeResponseDto;
-import com.ants.ktc.ants_ktc.repositories.TypePostProjection;
 import com.ants.ktc.ants_ktc.services.PostTypeService;
 
 import jakarta.validation.Valid;

@@ -2,7 +2,6 @@ package com.ants.ktc.ants_ktc.controllers.admin;
 
 import java.util.UUID;
 
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;

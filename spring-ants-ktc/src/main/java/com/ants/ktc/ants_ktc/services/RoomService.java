@@ -289,6 +289,7 @@ public class RoomService {
                 String random = String.format("%04d", (int) (Math.random() * 10000));
                 String transactionCode = day + hour + random;
                 transaction.setTransactionCode(transactionCode);
+                System.out.println("Transaction id before save: " + transaction.getId());
 
                 transaction.setBankTransactionName("Ants Wallet");
                 transaction.setDescription("Payment for room post: " + room.getTitle());

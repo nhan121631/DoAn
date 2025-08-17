@@ -219,6 +219,28 @@ public class PaymentController {
         return HexFormat.of().formatHex(bytes);
     }
 
+    // public static boolean verifySignature(Map<String, String> vnpParams, String
+    // secret) {
+    // try {
+    // String vnpSecureHash = vnpParams.get("vnp_SecureHash");
+    // if (vnpSecureHash == null)
+    // return false;
+
+    // Map<String, String> data = new HashMap<>(vnpParams);
+    // data.remove("vnp_SecureHash");
+    // data.remove("vnp_SecureHashType");
+
+    // String hashData = data.entrySet().stream()
+    // .sorted(Map.Entry.comparingByKey())
+    // .map(entry -> entry.getKey() + "=" + entry.getValue())
+    // .collect(Collectors.joining("&"));
+
+    // String calcHash = hmacSHA512(secret, hashData);
+    // return vnpSecureHash.equalsIgnoreCase(calcHash);
+    // } catch (Exception e) {
+    // return false;
+    // }
+    // }
     public static boolean verifySignature(Map<String, String> vnpParams, String secret) {
         try {
             String vnpSecureHash = vnpParams.get("vnp_SecureHash");
@@ -229,15 +251,27 @@ public class PaymentController {
             data.remove("vnp_SecureHash");
             data.remove("vnp_SecureHashType");
 
-            String hashData = data.entrySet().stream()
-                    .sorted(Map.Entry.comparingByKey())
-                    .map(entry -> entry.getKey() + "=" + entry.getValue())
-                    .collect(Collectors.joining("&"));
+            List<String> fieldNames = new ArrayList<>(data.keySet());
+            Collections.sort(fieldNames);
 
-            String calcHash = hmacSHA512(secret, hashData);
+            StringBuilder hashData = new StringBuilder();
+            for (String fieldName : fieldNames) {
+                String fieldValue = data.get(fieldName);
+                if (fieldValue != null && fieldValue.length() > 0) {
+                    hashData.append(fieldName).append("=")
+                            .append(URLEncoder.encode(fieldValue, StandardCharsets.US_ASCII))
+                            .append("&");
+                }
+            }
+            hashData.setLength(hashData.length() - 1); // remove last &
+
+            String calcHash = hmacSHA512(secret, hashData.toString());
+
             return vnpSecureHash.equalsIgnoreCase(calcHash);
         } catch (Exception e) {
+            e.printStackTrace();
             return false;
         }
     }
+
 }
