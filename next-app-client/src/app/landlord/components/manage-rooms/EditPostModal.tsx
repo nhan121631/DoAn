@@ -559,7 +559,16 @@ const EditPostModal: React.FC<EditPostModalProps> = ({
             </div>
 
             <div className="flex-1 bg-white dark:bg-[#232b3b] rounded-none p-4 shadow-none flex flex-col gap-2">
-              <Form.Item label="Description" name="description">
+              <Form.Item
+                label="Description"
+                name="description"
+                rules={[
+                  {
+                    max: 2000,
+                    message: "Description must be at most 2000 characters.",
+                  },
+                ]}
+              >
                 <Input.TextArea rows={4} placeholder="Description (optional)" />
               </Form.Item>
 

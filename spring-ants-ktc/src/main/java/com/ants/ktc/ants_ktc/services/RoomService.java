@@ -286,16 +286,16 @@ public class RoomService {
 
                 // Generate unique 8-digit transaction code (no prefix)
                 String transactionCode = generateUniqueTransactionCode("CREATE", user.getId());
-                
+
                 // Code cũ - transaction code generation
                 /*
-                LocalDateTime now = LocalDateTime.now(ZoneId.systemDefault());
-                String day = String.format("%02d", now.getDayOfMonth());
-                String hour = String.format("%02d", now.getHour());
-                String random = String.format("%04d", (int) (Math.random() * 10000));
-                String transactionCode = day + hour + random;
-                */
-                
+                 * LocalDateTime now = LocalDateTime.now(ZoneId.systemDefault());
+                 * String day = String.format("%02d", now.getDayOfMonth());
+                 * String hour = String.format("%02d", now.getHour());
+                 * String random = String.format("%04d", (int) (Math.random() * 10000));
+                 * String transactionCode = day + hour + random;
+                 */
+
                 transaction.setTransactionCode(transactionCode);
                 System.out.println("Transaction id before save: " + transaction.getId());
 
@@ -450,7 +450,7 @@ public class RoomService {
                 });
                 room.setConvenients(convenients);
 
-                room.setApproval(0); 
+                room.setApproval(0);
 
                 // Xử lý cập nhật ảnh
                 // 1. Lấy danh sách ảnh cũ
@@ -627,19 +627,19 @@ public class RoomService {
                 transaction.setAmount(totalPrice);
                 transaction.setDescription("Extend room post: " + room.getTitle());
                 transaction.setTransactionDate(new Date());
-                
-                // Generate unique 8-digit transaction code 
+
+                // Generate unique 8-digit transaction code
                 String transactionCode = generateUniqueTransactionCode("EXT", user.getId());
-                
-                // Code cũ 
+
+                // Code cũ
                 /*
-                LocalDateTime now = LocalDateTime.now(ZoneId.systemDefault());
-                String day = String.format("%02d", now.getDayOfMonth());
-                String hour = String.format("%02d", now.getHour());
-                String random = String.format("%04d", (int) (Math.random() * 10000));
-                String transactionCode = day + hour + random;
-                */
-                
+                 * LocalDateTime now = LocalDateTime.now(ZoneId.systemDefault());
+                 * String day = String.format("%02d", now.getDayOfMonth());
+                 * String hour = String.format("%02d", now.getHour());
+                 * String random = String.format("%04d", (int) (Math.random() * 10000));
+                 * String transactionCode = day + hour + random;
+                 */
+
                 transaction.setTransactionCode(transactionCode);
                 transaction.setBankTransactionName("Ants Wallet");
                 transaction.setStatus(1); // 1: thành công
@@ -717,19 +717,19 @@ public class RoomService {
                                 refundTransaction.setDescription(
                                                 "Refund for rejected room post: " + roomProj.getTitle());
                                 refundTransaction.setTransactionDate(new Date());
-                                
+
                                 // Generate unique 8-digit transaction code
                                 String transactionCode = generateUniqueTransactionCode("REFUND", user.getId());
-                                
-                                // Code cũ 
+
+                                // Code cũ
                                 /*
-                                LocalDateTime now = LocalDateTime.now(ZoneId.systemDefault());
-                                String day = String.format("%02d", now.getDayOfMonth());
-                                String hour = String.format("%02d", now.getHour());
-                                String random = String.format("%04d", (int) (Math.random() * 10000));
-                                String transactionCode = day + hour + random;
-                                */
-                                
+                                 * LocalDateTime now = LocalDateTime.now(ZoneId.systemDefault());
+                                 * String day = String.format("%02d", now.getDayOfMonth());
+                                 * String hour = String.format("%02d", now.getHour());
+                                 * String random = String.format("%04d", (int) (Math.random() * 10000));
+                                 * String transactionCode = day + hour + random;
+                                 */
+
                                 refundTransaction.setTransactionCode(transactionCode);
                                 refundTransaction.setBankTransactionName("Ants Wallet");
                                 refundTransaction.setStatus(1);
@@ -918,7 +918,7 @@ public class RoomService {
                                         e.printStackTrace();
                                 }
 
-                                // Code cũ 
+                                // Code cũ
                                 /*
                                  * // Note: For proper Cloudinary deletion, we would need the public_id
                                  * // Since we don't store public_id in the Image entity, we cannot delete from
@@ -1165,20 +1165,22 @@ public class RoomService {
 
         /**
          * Generate unique 8-digit transaction code using timestamp and user ID
-         * @param userId User ID for uniqueness (prefix parameter kept for compatibility but not used)
+         * 
+         * @param userId User ID for uniqueness (prefix parameter kept for compatibility
+         *               but not used)
          * @return Unique 8-digit transaction code
          */
         private String generateUniqueTransactionCode(String unusedPrefix, UUID userId) {
                 // Use last 4 digits of timestamp for time uniqueness
                 long timestamp = System.currentTimeMillis();
                 String timestampSuffix = String.valueOf(timestamp).substring(String.valueOf(timestamp).length() - 4);
-                
+
                 // Use 4 digits from user ID hash for user uniqueness
                 int userIdHash = Math.abs(userId.toString().hashCode());
                 String userIdSuffix = String.format("%04d", userIdHash % 10000);
 
                 // Combine to create 8-digit code (no prefix)
                 return timestampSuffix + userIdSuffix;
-                
+
         }
 }
