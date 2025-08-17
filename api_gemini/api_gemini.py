@@ -3,6 +3,7 @@ from flask_cors import CORS
 import os, datetime
 import mysql.connector
 import requests, json
+import uuid
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -84,7 +85,13 @@ def ai_chatbot():
     rooms_text = ""
     for row in result:
         info = {col: str(val) if val not in [None, 'None'] else 'Chưa cập nhật' for col, val in zip(columns, row)}
-        link = f"http://localhost:3000/detail/{info.get('room_id','')}"
+        import uuid
+        room_id = info.get('room_id', '')
+        if isinstance(row[0], bytes) and len(row[0]) == 16:
+            room_id_str = str(uuid.UUID(bytes=row[0]))
+        else:
+            room_id_str = str(room_id)
+        link = f"http://localhost:3000/detail/{room_id_str}"
         rooms_text += f"- Title: {info.get('title','')}\n"
         rooms_text += f"  Address: {info.get('full_address','')}\n"
         rooms_text += f"  Price: {info.get('price_month','')} VNĐ/month\n"
@@ -115,7 +122,6 @@ def ai_chatbot():
 
     # Chuẩn bị payload gửi API Gemini
     API_KEY = os.getenv("API_KEY")
-    print("API_KEY loaded:", API_KEY)
     MODEL = "gemini-2.0-flash"
     URL = f"https://generativelanguage.googleapis.com/v1beta/models/{MODEL}:generateContent?key={API_KEY}"
 
