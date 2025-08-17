@@ -8,6 +8,7 @@ import { FaRegBookmark, FaBookmark, FaTimes } from "react-icons/fa";
 import { IoShareSocialOutline, IoWarningOutline } from "react-icons/io5";
 import { getLandlordByRoomId } from "@/services/RoomService";
 import { LandlordDetailByRoom } from "@/types/types";
+import { URL_IMAGE } from "@/services/Constant";
 
 export default function UserInfoCard({ id }: { id: string }) {
   const [isSaved, setIsSaved] = useState(false);
@@ -20,7 +21,7 @@ export default function UserInfoCard({ id }: { id: string }) {
   const [contactPhone, setContactPhone] = useState("");
   const [landlord, setLandlord] = useState<LandlordDetailByRoom | null>(null);
 
-  const currentPostUrl = "http://localhost:3000/users";
+  const currentPostUrl = `http://localhost:3000/detail/${id}`;
 
   useEffect(() => {
     async function fetchData() {
@@ -99,7 +100,7 @@ export default function UserInfoCard({ id }: { id: string }) {
   return (
     <div className="bg-white rounded-xl shadow-lg py-15 px-6 min-h-96 flex flex-col items-center text-center">
       <Image
-        src="/images/useravt.png"
+        src={URL_IMAGE + landlord.avatar || "/images/useravt.png"}
         alt="User Avatar"
         width={100}
         height={100}
