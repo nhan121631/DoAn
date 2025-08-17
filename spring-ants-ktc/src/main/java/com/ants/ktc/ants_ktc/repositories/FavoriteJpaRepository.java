@@ -1,5 +1,6 @@
 package com.ants.ktc.ants_ktc.repositories;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.data.domain.Page;
@@ -18,4 +19,5 @@ public interface FavoriteJpaRepository extends JpaRepository<Favorite, UUID> {
 
     @Query("SELECT f FROM Favorite f JOIN FETCH f.room WHERE f.user.id = :userId")
     Page<Favorite> findByUserIdWithRoom(UUID userId, Pageable pageable);
+
 }

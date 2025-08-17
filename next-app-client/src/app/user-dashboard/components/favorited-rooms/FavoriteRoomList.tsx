@@ -1,106 +1,121 @@
-// "use client";
+"use client";
 
-// import { useEffect, useState, useRef } from 'react';
-// import { FavoriteRoomProjection } from '@/dtos/favorite/FavoriteRoomProjection';
-// import RoomVipCard from '@/app/users/components/rooms/RoomVipCard';
-// import RoomCard from '@/app/users/components/rooms/RoomCard';
+import { useEffect, useState, useCallback } from "react";
+import RoomVipCard from "@/app/users/components/rooms/RoomVipCard";
+import RoomCard from "@/app/users/components/rooms/RoomCard";
+import { useFavoriteStore } from "@/app/stores/favoriteStore";
+import { RoomInUser } from "@/types/types";
 
-// interface FavoriteRoomListProps {
-//   initialData: {
-//     content: FavoriteRoomProjection[];
-//     pageable: {
-//       pageNumber: number;
-//       pageSize: number;
-//       // ... các thông tin phân trang khác
-//     };
-//     totalPages: number;
-//     totalElements: number;
-//     last: boolean;
-//   };
-// }
+export default function FavoriteRoomList() {
+  const { setFavoriteRoomIds, favoriteRoomIds, removeFavorite } = useFavoriteStore();
+  const [rooms, setRooms] = useState<RoomInUser[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  
+  // State cho phân trang
+  const [currentPage, setCurrentPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const pageSize = 3;
 
-// export default function FavoriteRoomList({ initialData }: FavoriteRoomListProps) {
-//   const [rooms, setRooms] = useState<FavoriteRoomProjection[]>(initialData.content);
-//   const [page, setPage] = useState(initialData.pageable.pageNumber);
-//   const [loading, setLoading] = useState(false);
-//   const [hasMore, setHasMore] = useState(!initialData.last);
-//   const observerTarget = useRef(null);
-
-//   const fetchMoreRooms = async () => {
-//     if (loading || !hasMore) return;
-
-//     setLoading(true);
-//     const nextPage = page + 1;
-    
-//     try {
-//       const response = await fetch(`/api/favorites?page=${nextPage}&size=10`);
-//       if (!response.ok) {
-//         throw new Error('Failed to fetch more rooms.');
-//       }
-//       const data = await response.json();
+  const fetchRooms = useCallback(async (page: number) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/user-dashboard/favorited-rooms?page=${page}&size=${pageSize}`);
+      if (!res.ok) throw new Error("Không thể tải danh sách phòng yêu thích.");
+      const data = await res.json();
       
-//       setRooms((prevRooms) => [...prevRooms, ...data.content]);
-//       setPage(nextPage);
-//       setHasMore(!data.last);
+      const newRooms: RoomInUser[] = data.content || [];
+      const newFavoriteIds: string[] = newRooms.map(room => room.id);
+      
+      setFavoriteRoomIds(newFavoriteIds);
+      setRooms(newRooms);
+      setCurrentPage(data.page);
+      setTotalPages(data.totalPages);
 
-//     } catch (error) {
-//       console.error("Lỗi khi tải thêm phòng:", error);
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
+    } catch (e: unknown) {
+  if (e instanceof Error) {
+    setError(e.message);
+  } else {
+    setError("Đã xảy ra lỗi khi tải dữ liệu.");
+  }
+} finally {
+  setLoading(false);
+}
+  }, [setFavoriteRoomIds]);
 
-//   useEffect(() => {
-//     if (!observerTarget.current || !hasMore) return;
+  useEffect(() => {
+    fetchRooms(currentPage);
+  }, [currentPage, fetchRooms]);
 
-//     const observer = new IntersectionObserver(
-//       (entries) => {
-//         if (entries[0].isIntersecting && !loading && hasMore) {
-//           fetchMoreRooms();
-//         }
-//       },
-//       { threshold: 1 }
-//     );
+  const handlePageChange = (newPage: number) => {
+    if (newPage >= 0 && newPage < totalPages) {
+      setCurrentPage(newPage);
+    }
+  };
 
-//     observer.observe(observerTarget.current);
+  const handleFavoriteChange = (roomId: string) => {
+    // Cập nhật trạng thái hiển thị bằng cách lọc bỏ phòng đã xóa
+    setRooms(prevRooms => prevRooms.filter(room => room.id !== roomId));
+    // Sau khi xóa, fetch lại trang hiện tại để cập nhật
+    fetchRooms(currentPage);
+  };
 
-//     return () => {
-//       observer.disconnect();
-//     };
-//   }, [loading, hasMore, fetchMoreRooms]);
+  if (loading) {
+    return <p className="py-4 text-center">Đang tải danh sách phòng...</p>;
+  }
 
-//   return (
-//     <div>
-//       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-//         {rooms.map((room) => (
-//           <div key={room.id}>
-//             {/* Sử dụng điều kiện để hiển thị loại card phù hợp */}
-//             {/* Giả định có một trường isVip để phân biệt */}
-//             {room.isVip ? (
-//               <RoomVipCard room={room} />
-//             ) : (
-//               <RoomCard room={room} />
-//             )}
-//           </div>
-//         ))}
-//       </div>
+  if (error) {
+    return <p className="py-4 text-center text-red-500">{error}</p>;
+  }
 
-//       {/* Target cho Intersection Observer */}
-//       {hasMore && (
-//         <div ref={observerTarget} className="py-4 text-center">
-//           {loading && <p>Đang tải thêm phòng...</p>}
-//         </div>
-//       )}
+  if (rooms.length === 0) {
+    return <p className="py-8 text-center text-gray-500">Bạn chưa có phòng trọ yêu thích nào.</p>;
+  }
 
-//       {!hasMore && rooms.length > 0 && (
-//         <p className="py-4 text-center text-gray-500">Bạn đã xem hết danh sách.</p>
-//       )}
-
-//       {rooms.length === 0 && !loading && (
-//         <p className="py-8 text-center text-gray-500">
-//           Bạn chưa có phòng trọ yêu thích nào.
-//         </p>
-//       )}
-//     </div>
-//   );
-// }
+  return (
+    <div>
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {rooms.map((room) => {
+          const isFavorite = favoriteRoomIds.has(room.id);
+          return (
+            <div key={room.id}>
+              {room.isVip ? (
+                <RoomVipCard
+                  room={room}
+                  isFavorite={isFavorite}
+                  onFavoriteChange={handleFavoriteChange}
+                />
+              ) : (
+                <RoomCard
+                  room={room}
+                  isFavorite={isFavorite}
+                  onFavoriteChange={handleFavoriteChange}
+                />
+              )}
+            </div>
+          );
+        })}
+      </div>
+      <div className="flex items-center justify-center gap-4 py-8">
+        <button
+          onClick={() => handlePageChange(currentPage - 1)}
+          disabled={currentPage === 0}
+          className="px-4 py-2 text-white bg-blue-500 rounded-md disabled:bg-gray-400"
+        >
+          Trang trước
+        </button>
+        <span className="text-lg font-semibold">
+          Trang {currentPage + 1} / {totalPages}
+        </span>
+        <button
+          onClick={() => handlePageChange(currentPage + 1)}
+          disabled={currentPage >= totalPages - 1}
+          className="px-4 py-2 text-white bg-blue-500 rounded-md disabled:bg-gray-400"
+        >
+          Trang sau
+        </button>
+      </div>
+    </div>
+  );
+}

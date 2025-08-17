@@ -1,17 +1,23 @@
 "use client";
-import { useCompareStore } from "@/stores/CompareStore";
+import { useSession } from "next-auth/react";
+
+import { useCompareStore } from "@/app/stores/CompareStore";
 import { RoomInUser } from "@/types/types";
 import { message } from "antd";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { FaHeart, FaRegCheckCircle } from "react-icons/fa";
 import { IoIosAddCircleOutline } from "react-icons/io";
+import { useFavoriteStore } from "@/app/stores/favoriteStore";
+
 
 export interface RoomCardProps {
   room: RoomInUser;
+  isFavorite?: boolean;
+  onFavoriteChange?: (id: string) => void;
 }
 
-export default function RoomCartActions({ room }: RoomCardProps) {
+export default function RoomCartActions({ room, onFavoriteChange }: RoomCardProps) {
   const router = useRouter();
   const handleClick = () => {
     router.push(`/detail/${room.id}`);
@@ -20,6 +26,11 @@ export default function RoomCartActions({ room }: RoomCardProps) {
   const { items, addItem } = useCompareStore((state) => state);
   const [isCompared, setIsCompared] = useState(false);
   const [messageApi, contextHolder] = message.useMessage();
+
+  const { data: session } = useSession();
+
+  const { favoriteRoomIds, addFavorite, removeFavorite } = useFavoriteStore();
+  const isFavorite = favoriteRoomIds.has(room.id);
 
   const handleCompare = () => {
     if (items.length >= 2) {
@@ -37,14 +48,47 @@ export default function RoomCartActions({ room }: RoomCardProps) {
     setIsCompared(items.some((item) => item.room.id === room.id));
   }, [items, room.id]);
 
+
+  const handleFavorite = async () => {
+    if (!session) {
+      router.push("/auth/login");
+      return;
+    }
+    try {
+      const res = await fetch(
+        `/api/favorites/rooms/${room.id}`,
+        { method: isFavorite ? "DELETE" : "POST" }
+      );
+
+      if (res.ok) {
+        if (isFavorite) {
+          removeFavorite(room.id);
+          if (onFavoriteChange) onFavoriteChange(room.id);
+          messageApi.success("Removed from favorites");
+        } else {
+          addFavorite(room.id);
+          messageApi.success("Added to favorites");
+        }
+      } else {
+        throw new Error("Failed to update favorite status");
+      }
+    } catch {
+      messageApi.error("Failed to update favorite status");
+    }
+  };
+
   return (
     <>
       {contextHolder}
       <div className="flex gap-2">
         <button
-          className="flex items-center gap-1 px-2 py-1.5 text-sm font-semibold rounded-full shadow bg-white/90 text-red-500 hover:bg-amber-100 focus:outline-none"
+          className={`flex items-center gap-1 px-2 py-1.5 text-sm font-semibold rounded-full shadow bg-white/90 ${
+            isFavorite ? "text-red-500" : "text-gray-400 hover:text-red-500"
+          }`}
           tabIndex={0}
           title="Add to favorites"
+          onClick={handleFavorite}
+          type="button"
         >
           <FaHeart className="text-base" />
         </button>
@@ -73,3 +117,4 @@ export default function RoomCartActions({ room }: RoomCardProps) {
     </>
   );
 }
+

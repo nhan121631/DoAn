@@ -32,6 +32,7 @@ public class FavoriteController {
         String username = authentication.getName();
         favoriteService.addFavoriteRoom(username, roomId);
         return ResponseEntity.ok().build();
+
     }
 
     @DeleteMapping("/rooms/{roomId}")
