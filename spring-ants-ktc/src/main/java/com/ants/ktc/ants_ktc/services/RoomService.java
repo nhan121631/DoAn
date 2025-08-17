@@ -4,7 +4,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -285,12 +284,18 @@ public class RoomService {
                 transaction.setDescription("Create a New Room Post " + room.getTitle());
                 transaction.setTransactionDate(transactionDate);
 
-                // Tạo mã giao dịch
+                // Generate unique 8-digit transaction code (no prefix)
+                String transactionCode = generateUniqueTransactionCode("CREATE", user.getId());
+                
+                // Code cũ - transaction code generation
+                /*
                 LocalDateTime now = LocalDateTime.now(ZoneId.systemDefault());
                 String day = String.format("%02d", now.getDayOfMonth());
                 String hour = String.format("%02d", now.getHour());
                 String random = String.format("%04d", (int) (Math.random() * 10000));
                 String transactionCode = day + hour + random;
+                */
+                
                 transaction.setTransactionCode(transactionCode);
 
                 transaction.setBankTransactionName("Ants Wallet");
@@ -621,11 +626,19 @@ public class RoomService {
                 transaction.setAmount(totalPrice);
                 transaction.setDescription("Extend room post: " + room.getTitle());
                 transaction.setTransactionDate(new Date());
+                
+                // Generate unique 8-digit transaction code 
+                String transactionCode = generateUniqueTransactionCode("EXT", user.getId());
+                
+                // Code cũ 
+                /*
                 LocalDateTime now = LocalDateTime.now(ZoneId.systemDefault());
                 String day = String.format("%02d", now.getDayOfMonth());
                 String hour = String.format("%02d", now.getHour());
                 String random = String.format("%04d", (int) (Math.random() * 10000));
                 String transactionCode = day + hour + random;
+                */
+                
                 transaction.setTransactionCode(transactionCode);
                 transaction.setBankTransactionName("Ants Wallet");
                 transaction.setStatus(1); // 1: thành công
@@ -703,11 +716,19 @@ public class RoomService {
                                 refundTransaction.setDescription(
                                                 "Refund for rejected room post: " + roomProj.getTitle());
                                 refundTransaction.setTransactionDate(new Date());
+                                
+                                // Generate unique 8-digit transaction code
+                                String transactionCode = generateUniqueTransactionCode("REFUND", user.getId());
+                                
+                                // Code cũ 
+                                /*
                                 LocalDateTime now = LocalDateTime.now(ZoneId.systemDefault());
                                 String day = String.format("%02d", now.getDayOfMonth());
                                 String hour = String.format("%02d", now.getHour());
                                 String random = String.format("%04d", (int) (Math.random() * 10000));
                                 String transactionCode = day + hour + random;
+                                */
+                                
                                 refundTransaction.setTransactionCode(transactionCode);
                                 refundTransaction.setBankTransactionName("Ants Wallet");
                                 refundTransaction.setStatus(1);
@@ -1139,5 +1160,24 @@ public class RoomService {
                                                 .build())
                                 .collect(Collectors.toList());
 
+        }
+
+        /**
+         * Generate unique 8-digit transaction code using timestamp and user ID
+         * @param userId User ID for uniqueness (prefix parameter kept for compatibility but not used)
+         * @return Unique 8-digit transaction code
+         */
+        private String generateUniqueTransactionCode(String unusedPrefix, UUID userId) {
+                // Use last 4 digits of timestamp for time uniqueness
+                long timestamp = System.currentTimeMillis();
+                String timestampSuffix = String.valueOf(timestamp).substring(String.valueOf(timestamp).length() - 4);
+                
+                // Use 4 digits from user ID hash for user uniqueness
+                int userIdHash = Math.abs(userId.toString().hashCode());
+                String userIdSuffix = String.format("%04d", userIdHash % 10000);
+
+                // Combine to create 8-digit code (no prefix)
+                return timestampSuffix + userIdSuffix;
+                
         }
 }
