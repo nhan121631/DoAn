@@ -70,14 +70,15 @@ public class FavoriteController {
     }
 
     @PostMapping("/rooms/{roomId}")
-    public ResponseEntity<Void> addFavoriteRoom(@PathVariable UUID roomId, Authentication authentication) {
+    public ResponseEntity<Void> addFavoriteRoom(@PathVariable("roomId") UUID roomId, Authentication authentication) {
         String username = authentication.getName();
         favoriteService.addFavoriteRoom(username, roomId);
         return ResponseEntity.ok().build();
+
     }
 
     @DeleteMapping("/rooms/{roomId}")
-    public ResponseEntity<Void> removeFavoriteRoom(@PathVariable UUID roomId, Authentication authentication) {
+    public ResponseEntity<Void> removeFavoriteRoom(@PathVariable("roomId") UUID roomId, Authentication authentication) {
         String username = authentication.getName();
         favoriteService.removeFavoriteRoom(username, roomId);
         return ResponseEntity.ok().build();
@@ -85,8 +86,8 @@ public class FavoriteController {
 
     @GetMapping
     public ResponseEntity<PageResponse<FavoriteRoomProjection>> getAllFavoriteRooms(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "10") int size) {
         // Gọi service để lấy danh sách phòng yêu thích với phân trang
         Page<FavoriteRoomProjection> favoriteRoomsPage = favoriteService.findAllFavoriteRooms(page, size);
 

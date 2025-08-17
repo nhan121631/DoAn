@@ -151,6 +151,7 @@ export type RoomInUser = {
   conveniences: Convenient[];
   images: Image[];
   landlord: Landlord;
+  isVip?: boolean;
 };
 export type LandlordProfile = {
   id: string;
@@ -242,3 +243,5 @@ export type Roomname ={
 }
 
 export type SearchParamsType = { [key: string]: string | string[] | undefined };
+
+
