@@ -2,28 +2,23 @@ import { useFavoriteStore } from "@/stores/favoriteStore";
 import { RoomInUser } from "@/types/types";
 import { getSession } from "next-auth/react";
 
-// Lấy danh sách ID phòng yêu thích
-export async function getFavoriteRoomIds(): Promise<string[]> {
-  // Kiểm tra session trước khi gọi API
+export async function getFavoriteRoomIds(page = 0, pageSize = 1000): Promise<string[]> {
   if (typeof window !== 'undefined') {
     const session = await getSession();
-    // Nếu chưa đăng nhập, không gọi API và trả về mảng rỗng
     if (!session?.user) {
       return [];
     }
   }
 
   try {
-    // Gọi đến API trung gian cục bộ của Next.js
-    const res = await fetch("/api/user-dashboard/favorited-rooms?page=0&size=1000");
+    // const res = await fetch("/api/user-dashboard/favorited-rooms?page=0&size=1000");
+    const res = await fetch(`/api/user-dashboard/favorited-rooms?page=${page}&size=${pageSize}`);
 
     if (!res.ok) {
-      // Nếu lỗi 401, xử lý nhẹ nhàng hơn (không log lỗi)
       if (res.status === 401) {
         return [];
       }
       
-      // Các lỗi khác vẫn log ra
       const errorText = await res.text();
       console.error(`API Error: Failed to fetch favorites. Status: ${res.status} - ${res.statusText}`);
       console.error("Response body:", errorText);

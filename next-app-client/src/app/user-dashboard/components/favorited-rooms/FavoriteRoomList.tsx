@@ -15,7 +15,7 @@ export default function FavoriteRoomList() {
   // State cho phân trang
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
-  const pageSize = 3;
+  const pageSize = 6;
 
   const fetchRooms = useCallback(async (page: number) => {
     setLoading(true);
@@ -54,15 +54,26 @@ export default function FavoriteRoomList() {
     }
   };
 
+  // const handleFavoriteChange = (roomId: string) => {
+  //   // Cập nhật trạng thái hiển thị bằng cách lọc bỏ phòng đã xóa
+  //   setRooms(prevRooms => prevRooms.filter(room => room.id !== roomId));
+  //   // Sau khi xóa, fetch lại trang hiện tại để cập nhật
+  //   fetchRooms(currentPage);
+  // };
   const handleFavoriteChange = (roomId: string) => {
-    // Cập nhật trạng thái hiển thị bằng cách lọc bỏ phòng đã xóa
-    setRooms(prevRooms => prevRooms.filter(room => room.id !== roomId));
-    // Sau khi xóa, fetch lại trang hiện tại để cập nhật
-    fetchRooms(currentPage);
-  };
+  setRooms(prevRooms => prevRooms.filter(room => room.id !== roomId));
+  
+  setTimeout(() => {
+    if (rooms.length <= 1 && currentPage > 0) {
+      setCurrentPage(currentPage - 1);
+    } else {
+      fetchRooms(currentPage);
+    }
+  }, 300);
+};
 
   if (loading) {
-    return <p className="py-4 text-center">Đang tải danh sách phòng...</p>;
+    return <p className="py-4 text-center">Loading room list...</p>;
   }
 
   if (error) {
@@ -70,7 +81,7 @@ export default function FavoriteRoomList() {
   }
 
   if (rooms.length === 0) {
-    return <p className="py-8 text-center text-gray-500">Bạn chưa có phòng trọ yêu thích nào.</p>;
+    return <p className="py-8 text-center text-gray-500">You have no favorited rooms.</p>;
   }
 
   return (
@@ -103,17 +114,17 @@ export default function FavoriteRoomList() {
           disabled={currentPage === 0}
           className="px-4 py-2 text-white bg-blue-500 rounded-md disabled:bg-gray-400"
         >
-          Trang trước
+          Previous Page
         </button>
         <span className="text-lg font-semibold">
-          Trang {currentPage + 1} / {totalPages}
+          Page {currentPage + 1} / {totalPages}
         </span>
         <button
           onClick={() => handlePageChange(currentPage + 1)}
           disabled={currentPage >= totalPages - 1}
           className="px-4 py-2 text-white bg-blue-500 rounded-md disabled:bg-gray-400"
         >
-          Trang sau
+          Next Page
         </button>
       </div>
     </div>
