@@ -1,53 +1,35 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import { updateRequest } from "@/services/Requirements";
 import {
-  Table,
-  Tag,
-  Button,
-  Modal,
-  message,
-  Space,
-  Input,
-  Form,
-  Select,
-  Row,
-  Col,
-} from "antd";
+  PaginatedResponse,
+  // Requirement,
+  RequirementDetail,
+  UpdateRequestRoomDto,
+} from "@/types/types";
+import { Button, Form, Input, message, Modal, Space, Table, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
+import React, { useEffect, useState } from "react";
 import { AiOutlineEdit } from "react-icons/ai";
-import { Roomname } from "@/types/types";
-import { RequestData } from "@/app/user-dashboard/request-status/page";
-
-const { Option } = Select;
 
 //trường trong bảng
 export type RequestFormValues = {
   roomName: string;
-  customerName: string;
-  phoneNumber: string;
   requestDescription: string;
 };
 
 interface RequestStatusInteractiveProps {
-  initialRequests: RequestData[];
+  initialRequests: PaginatedResponse<RequirementDetail>;
 }
-
-//data mẫu sau có thể fetch
-const availableRooms: Roomname[] = [
-  { name: "Phòng trọ Mr. Nam", address: "Ngu Hanh Son, Da Nang" },
-  { name: "Phòng trọ Ms. Lan", address: "Son Tra, Da Nang" },
-  { name: "Phòng trọ Mr. Duong", address: "Lien Chieu, Da Nang" },
-];
 
 // Component con để chứa Modal và Form của nó, quản lý useForm riêng
 const RequestEditModalContent: React.FC<{
   open: boolean;
   onCancel: () => void;
   onSubmit: (values: RequestFormValues) => void;
-  editingRequest: RequestData | null;
-  availableRooms: Roomname[];
-}> = ({ open, onCancel, onSubmit, editingRequest, availableRooms }) => {
+  editingRequest: RequirementDetail | null;
+}> = ({ open, onCancel, onSubmit, editingRequest }) => {
   const [form] = Form.useForm();
 
   useEffect(() => {
@@ -62,17 +44,7 @@ const RequestEditModalContent: React.FC<{
     onSubmit(values);
   };
 
-  const handleRoomNameChange = useCallback(
-    (value: string) => {
-      const selectedRoom = availableRooms.find((room) => room.name === value);
-      if (selectedRoom) {
-        form.setFieldsValue({ roomName: selectedRoom.name }); // Ensure roomName is set
-      } else {
-        form.setFieldsValue({ roomName: "" });
-      }
-    },
-    [form, availableRooms]
-  );
+  // const handleRoomNameChange = (value: string) => {};
 
   return (
     <Modal
@@ -87,65 +59,37 @@ const RequestEditModalContent: React.FC<{
     >
       <Form form={form} layout="vertical" onFinish={handleFinish}>
         <div className="max-h-[400px] overflow-y-auto pr-4">
-          <Form.Item
-            label="Room Name"
-            name="roomName"
-            rules={[{ required: true, message: "Please select a room!" }]}
-          >
-            <Select
-              placeholder="Select a room"
-              showSearch
-              onChange={handleRoomNameChange} // Add onChange to update form
-              optionFilterProp="children"
-              filterOption={(input, option) =>
-                String(option?.children)
-                  .toLowerCase()
-                  .indexOf(input.toLowerCase()) >= 0
+          <Form.Item label="Room Name" name="roomName">
+            <Input
+              disabled
+              placeholder={
+                editingRequest ? editingRequest.roomTitle : "Room name"
               }
-            >
-              {availableRooms.map((room) => (
-                <Option key={room.name} value={room.name}>
-                  {room.name}
-                </Option>
-              ))}
-            </Select>
+            />
           </Form.Item>
-
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item
-                label="Customer Name"
-                name="customerName"
-                rules={[
-                  { required: true, message: "Please enter customer name!" },
-                ]}
-              >
-                <Input placeholder="e.g., Nguyen Van A" />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item
-                label="Phone Number"
-                name="phoneNumber"
-                rules={[
-                  { required: true, message: "Please enter phone number!" },
-                ]}
-              >
-                <Input placeholder="e.g., 0912345678" />
-              </Form.Item>
-            </Col>
-          </Row>
 
           <Form.Item
             label="Request Description"
             name="requestDescription"
             rules={[
               { required: true, message: "Please enter request description!" },
+              {
+                min: 5,
+                message: "Request description must be at least 5 characters.",
+              },
+              {
+                max: 500,
+                message: "Request description cannot exceed 500 characters.",
+              },
             ]}
           >
             <Input.TextArea
               rows={4}
-              placeholder="e.g., Yêu cầu sửa chữa điện nước"
+              placeholder={
+                editingRequest
+                  ? editingRequest.description
+                  : "e.g., Request description"
+              }
             />
           </Form.Item>
         </div>
@@ -166,42 +110,60 @@ const RequestEditModalContent: React.FC<{
 const RequestStatusInteractive: React.FC<RequestStatusInteractiveProps> = ({
   initialRequests,
 }) => {
-  const [data, setData] = useState<RequestData[]>(initialRequests);
+  const [data, setData] =
+    useState<PaginatedResponse<RequirementDetail>>(initialRequests);
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
-  const [editingRequest, setEditingRequest] = useState<RequestData | null>(
-    null
-  );
+  const [editingRequest, setEditingRequest] =
+    useState<RequirementDetail | null>(null);
+  const [messageApi, contextHolder] = message.useMessage();
 
-  const getStatusDisplay = (status: 0 | 1) => {
+  const getStatusDisplay = (status: 0 | 1 | 2) => {
     switch (status) {
       case 0:
-        return { text: "Not Processed", color: "red" };
+        return { text: "Not Processed", color: "orange" };
       case 1:
         return { text: "Completed", color: "green" };
+      case 2:
+        return { text: "Rejected", color: "red" };
       default:
         return { text: "Unknown", color: "default" };
     }
   };
 
-  const handleFormSubmit = (values: RequestFormValues) => {
+  const handleFormSubmit = async (values: RequestFormValues) => {
     if (editingRequest) {
-      const updatedData = data.map((item) =>
-        item.key === editingRequest.key
-          ? ({
-              ...item,
-              ...values,
-              status: item.status,
-            } as RequestData)
-          : item
-      );
-      setData(updatedData);
-      message.success("Request updated successfully!");
+      const payload: UpdateRequestRoomDto = {
+        id: editingRequest.id,
+        description: values.requestDescription,
+      };
+      try {
+        await updateRequest(payload);
+        // Update local state only after successful API call
+        const updatedData = data.data.map((item: RequirementDetail) =>
+          item.id === editingRequest.id
+            ? {
+                ...item,
+                description: values.requestDescription,
+              }
+            : item
+        );
+        setData({ ...data, data: updatedData });
+        messageApi.success({
+          content: "Request updated successfully!",
+          duration: 2,
+        });
+      } catch (error: any) {
+        messageApi.error({
+          content: error.message || "Failed to update request.",
+          duration: 2,
+        });
+      }
     }
     setIsFormModalOpen(false);
     setEditingRequest(null);
   };
 
-  const handleEditRequest = (record: RequestData) => {
+  const handleEditRequest = (record: RequirementDetail) => {
     setEditingRequest(record);
     setIsFormModalOpen(true);
   };
@@ -211,46 +173,38 @@ const RequestStatusInteractive: React.FC<RequestStatusInteractiveProps> = ({
     setEditingRequest(null);
   };
 
-  const columns: ColumnsType<RequestData> = [
+  const columns: ColumnsType<RequirementDetail> = [
     {
-      title: "ID",
-      dataIndex: "key",
-      key: "id",
-      sorter: (a, b) => Number(a.key) - Number(b.key),
-      width: 70,
+      title: "STT",
+      key: "stt",
+      width: 80,
+      render: (_: any, __: any, index: number) => index + 1,
     },
     {
       title: "Room Name",
-      dataIndex: "roomName",
-      key: "roomName",
-      sorter: (a, b) => a.roomName.localeCompare(b.roomName),
-      width: 150,
+      dataIndex: "roomTitle",
+      key: "roomTitle",
     },
     {
       title: "Customer Name",
-      dataIndex: "customerName",
-      key: "customerName",
-      sorter: (a, b) => a.customerName.localeCompare(b.customerName),
-      width: 150,
+      dataIndex: "userName",
+      key: "userName",
     },
     {
-      title: "Phone Number",
-      dataIndex: "phoneNumber",
-      key: "phoneNumber",
-      width: 120,
+      title: "Email",
+      dataIndex: "email",
+      key: "email",
     },
     {
       title: "Request Description",
-      dataIndex: "requestDescription",
-      key: "requestDescription",
-      ellipsis: true,
-      width: 250,
+      dataIndex: "description",
+      key: "description",
     },
     {
       title: "Status",
       dataIndex: "status",
       key: "status",
-      render: (status: 0 | 1) => {
+      render: (status: 0 | 1 | 2) => {
         const { text, color } = getStatusDisplay(status);
         return <Tag color={color}>{text}</Tag>;
       },
@@ -268,7 +222,7 @@ const RequestStatusInteractive: React.FC<RequestStatusInteractiveProps> = ({
             icon={<AiOutlineEdit size={18} />}
             onClick={() => handleEditRequest(record)}
             title="Edit Request"
-            disabled={record.status === 1}
+            disabled={record.status === 1 || record.status === 2}
           />
         </Space>
       ),
@@ -277,10 +231,11 @@ const RequestStatusInteractive: React.FC<RequestStatusInteractiveProps> = ({
 
   return (
     <div className="flex flex-col flex-1 p-6 bg-white rounded-lg shadow-md dark:bg-gray-800">
+      {contextHolder}
       <h2 className="mb-6 text-2xl font-bold text-gray-800 dark:text-white">
         Request Management
       </h2>
-      <div className="flex items-center justify-end mb-6">
+      {/* <div className="flex items-center justify-end mb-6">
         <Input.Search
           placeholder="Search requests..."
           style={{ width: 250 }}
@@ -303,12 +258,12 @@ const RequestStatusInteractive: React.FC<RequestStatusInteractiveProps> = ({
             }
           }}
         />
-      </div>
+      </div> */}
 
       <Table
         columns={columns}
-        dataSource={data}
-        rowKey="key"
+        dataSource={data.data}
+        rowKey="id"
         pagination={{ pageSize: 7 }}
         className="mt-4 mb-8 border border-gray-200 rounded-md dark:border-gray-700"
       />
@@ -319,7 +274,6 @@ const RequestStatusInteractive: React.FC<RequestStatusInteractiveProps> = ({
           onCancel={handleCancelModal}
           onSubmit={handleFormSubmit}
           editingRequest={editingRequest}
-          availableRooms={availableRooms}
         />
       )}
     </div>

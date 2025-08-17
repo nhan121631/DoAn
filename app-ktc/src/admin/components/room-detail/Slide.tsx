@@ -10,8 +10,8 @@ interface Props {
   address?: string;
 }
 
-const BASE_IMAGE_URL = "http://localhost:3333"; // Set to your base URL if needed, e.g. ""
-
+// const BASE_IMAGE_URL = "http://localhost:3333"; // Set to your base URL if needed, e.g. ""
+const BASE_IMAGE_URL = "https://res.cloudinary.com";
 export const Slide: React.FC<Props> = ({ images }) => {
   const [indexImg, setIndexImg] = React.useState(0);
 

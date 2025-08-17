@@ -1,7 +1,5 @@
 package com.ants.ktc.ants_ktc.services;
 
-import java.util.UUID;
-
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.net.URI;
@@ -9,15 +7,17 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.UUID;
 
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -30,6 +30,7 @@ import com.ants.ktc.ants_ktc.dtos.auth.LoginRequestDto;
 import com.ants.ktc.ants_ktc.dtos.auth.LoginResponseDto;
 import com.ants.ktc.ants_ktc.dtos.auth.RegisterRequestDto;
 import com.ants.ktc.ants_ktc.dtos.auth.RegisterResponseDto;
+import com.ants.ktc.ants_ktc.dtos.user.LandlordResponseByRoomDto;
 import com.ants.ktc.ants_ktc.dtos.userprofile.UserProfileResponseDto;
 import com.ants.ktc.ants_ktc.entities.Role;
 import com.ants.ktc.ants_ktc.entities.User;
@@ -42,6 +43,7 @@ import com.ants.ktc.ants_ktc.exceptions.HttpException;
 import com.ants.ktc.ants_ktc.repositories.ProfileJpaRepository;
 import com.ants.ktc.ants_ktc.repositories.RoleJpaRepository;
 import com.ants.ktc.ants_ktc.repositories.UserJpaRepository;
+import com.ants.ktc.ants_ktc.repositories.projection.LandLordProjectionByRoom;
 import com.ants.ktc.ants_ktc.services.auth.JwtService;
 
 import jakarta.transaction.Transactional;
@@ -65,6 +67,9 @@ public class UserService {
 
         @Autowired
         private MailService mailService;
+
+        @Autowired
+        private CloudinaryService cloudinaryService;
 
         private final RestTemplate restTemplate = new RestTemplate();
 
@@ -154,10 +159,13 @@ public class UserService {
                                 .build();
         }
 
+        @CacheEvict(value = "manage-accounts", allEntries = true)
         public LoginResponseDto googleLogin(GoogleLoginRequestDto requestDto) {
                 String credential = requestDto.getCredential();
                 String url = "https://oauth2.googleapis.com/tokeninfo?id_token=" + credential;
+                @SuppressWarnings("rawtypes")
                 ResponseEntity<Map> response = restTemplate.getForEntity(url, Map.class);
+                @SuppressWarnings("unchecked")
                 Map<String, Object> payload = response.getBody();
                 if (response.getStatusCode() != HttpStatus.OK) {
                         throw new HttpException("Invalid Google token", HttpStatus.UNAUTHORIZED);
@@ -198,8 +206,40 @@ public class UserService {
 
                         profile.setEmail(email);
                         profile.setFullName(payload.get("name").toString());
-                        // Tải ảnh về server
-
+                        
+                        // Upload ảnh lên Cloudinary
+                        String pictureUrl = payload.get("picture").toString();
+                        System.out.println("Attempting to upload Google avatar from URL: " + pictureUrl);
+                        try {
+                                // Tạo temporary file từ URL ảnh Google
+                                java.io.File tempFile = java.io.File.createTempFile("google_avatar", ".jpg");
+                                System.out.println("Created temp file: " + tempFile.getAbsolutePath());
+                                
+                                // Download ảnh từ Google về temp file
+                                try (InputStream in = URI.create(pictureUrl).toURL().openStream();
+                                     FileOutputStream out = new FileOutputStream(tempFile)) {
+                                        IOUtils.copy(in, out);
+                                }
+                                System.out.println("Downloaded image from Google to temp file, size: " + tempFile.length() + " bytes");
+                                
+                                // Upload lên Cloudinary
+                                System.out.println("Uploading to Cloudinary...");
+                                Map<String, String> uploadResult = cloudinaryService.uploadFile(tempFile);
+                                String cloudinaryUrl = uploadResult.get("url");
+                                System.out.println("Upload successful! Cloudinary URL: " + cloudinaryUrl);
+                                profile.setAvatar(cloudinaryUrl);
+                                
+                                // Xóa temp file
+                                boolean deleted = tempFile.delete();
+                                System.out.println("Temp file deleted: " + deleted);
+                        } catch (Exception e) {
+                                profile.setAvatar(null);
+                                System.err.println("Failed to upload avatar to Cloudinary: " + e.getMessage());
+                                e.printStackTrace(); // In stack trace để debug
+                        }
+                        
+                        // Code cũ
+                        /*
                         String pictureUrl = payload.get("picture").toString();
                         String fileName = "google_" + System.currentTimeMillis() + ".jpg";
                         String uploadPath = "public/uploads/" + fileName;
@@ -210,6 +250,7 @@ public class UserService {
                         } catch (Exception e) {
                                 profile.setAvatar(null);
                         }
+                        */
                         user.setProfile(profile);
                         // Gán role USER
                         Role userRole = roleJpaRepository.findByName("Users").orElseThrow();
@@ -260,6 +301,7 @@ public class UserService {
 
         }
 
+        @CacheEvict(value = "manage-accounts", allEntries = true)
         public RegisterResponseDto register(RegisterRequestDto request) {
                 if (userJpaRepository.existsByUsername(request.getUsername())) {
                         throw new IllegalArgumentException("Username already exists");
@@ -387,6 +429,33 @@ public class UserService {
                 user.setPassword(passwordEncoder.encode(newPassword));
                 userJpaRepository.save(user);
                 return true;
+        }
+
+        private String formatHexToUuid(String hex) {
+                return hex.replaceFirst(
+                                "(\\w{8})(\\w{4})(\\w{4})(\\w{4})(\\w{12})",
+                                "$1-$2-$3-$4-$5");
+        }
+
+        public LandlordResponseByRoomDto getLandlordInfoByRoomId(UUID roomId) {
+                LandLordProjectionByRoom landlord = userJpaRepository.findLandlord(roomId)
+                                .orElseThrow(() -> new IllegalArgumentException(
+                                                "Landlord not found for room ID: " + roomId));
+                String idHex = landlord.getId();
+                UUID uuid = null;
+                if (idHex != null) {
+                        uuid = UUID.fromString(formatHexToUuid(idHex));
+                }
+                int amountPost = userJpaRepository.countRoomsByUserId(uuid);
+                return LandlordResponseByRoomDto.builder()
+                                .id(uuid)
+                                .fullName(landlord.getFullName())
+                                .email(landlord.getEmail())
+                                .avatar(landlord.getAvatar())
+                                .amountPost(amountPost)
+                                .phone(landlord.getPhone())
+                                .createDate(landlord.getCreateDate())
+                                .build();
         }
 
 }

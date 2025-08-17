@@ -28,7 +28,7 @@ public class Room extends BaseEntity {
     @Column(name = "title", nullable = false, length = 255)
     private String title;
 
-    @Column(name = "description", length = 1000)
+    @Column(name = "description", length = 2000)
     private String description;
 
     @Column(name = "price_month", nullable = false)

@@ -149,10 +149,13 @@ function TableManageRoom() {
       key: "postStartDate",
       render: (date) =>
         date
-          ? new Date(date).toLocaleDateString("vi-VN", {
+          ? new Date(date).toLocaleString("vi-VN", {
               year: "numeric",
               month: "2-digit",
               day: "2-digit",
+              hour: "2-digit",
+              minute: "2-digit",
+              second: "2-digit",
             })
           : "-",
       sorter: (a, b) => {
@@ -167,10 +170,13 @@ function TableManageRoom() {
       key: "postEndDate",
       render: (date) =>
         date
-          ? new Date(date).toLocaleDateString("vi-VN", {
+          ? new Date(date).toLocaleString("vi-VN", {
               year: "numeric",
               month: "2-digit",
               day: "2-digit",
+              hour: "2-digit",
+              minute: "2-digit",
+              second: "2-digit",
             })
           : "-",
       sorter: (a, b) => {
@@ -307,14 +313,12 @@ function TableManageRoom() {
               size="small"
               disabled={!extendDates[record.id] || !selectedTypePostId}
               onClick={async () => {
-                const formatDate = (date: Date | string) => {
-                  const d = typeof date === "string" ? new Date(date) : date;
-                  return d.toISOString();
-                };
                 try {
-                  // postStartDate lấy ngày hiện tại, postEndDate lấy ngày từ input
-                  const postStartDate = formatDate(new Date());
-                  const postEndDate = formatDate(extendDates[record.id]);
+                  // postStartDate lấy ngày giờ hiện tại đầy đủ
+                  const postStartDate = new Date().toISOString();
+                  // postEndDate lấy ngày từ input và set thời gian cuối ngày
+                  const endDate = new Date(extendDates[record.id] + "T23:59:59");
+                  const postEndDate = endDate.toISOString();
                   await updateRoomPostExtend(
                     record.id,
                     postStartDate,
@@ -442,10 +446,10 @@ function TableManageRoom() {
       title: "Actions",
       key: "actions",
       render: (_, record) => {
-        const now = new Date().setHours(0, 0, 0, 0);
-        // const start = new Date(record.postStartDate).setHours(0, 0, 0, 0);
-        const end = new Date(record.postEndDate).setHours(0, 0, 0, 0);
-        const isStillValid = now <= end;
+        const now = new Date(); 
+        // const start = new Date(record.postStartDate);
+        const end = new Date(record.postEndDate);
+        const isStillValid = now <= end; 
 
         if (record.isRemoved === 1) {
           return (

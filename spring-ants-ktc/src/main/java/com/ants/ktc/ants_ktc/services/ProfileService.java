@@ -1,9 +1,7 @@
 package com.ants.ktc.ants_ktc.services;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,11 +22,41 @@ import com.ants.ktc.ants_ktc.repositories.address.WardJpaRepository;
 
 @Service
 public class ProfileService {
+        private AddressResponseDto addressConvert(Address address) {
+                if (address == null)
+                        return null;
+                Ward ward = address.getWard();
+                WardResponseDto wardDto = null;
+                if (ward != null) {
+                        wardDto = WardResponseDto.builder()
+                                        .id(ward.getId())
+                                        .name(ward.getName())
+                                        .district(DistrictResponseDto.builder()
+                                                        .id(ward.getDistrict().getId())
+                                                        .name(ward.getDistrict().getName())
+                                                        .province(ProvinceResponseDto.builder()
+                                                                        .id(ward.getDistrict().getProvince().getId())
+                                                                        .name(ward.getDistrict().getProvince()
+                                                                                        .getName())
+                                                                        .build())
+                                                        .build())
+                                        .build();
+                }
+                return AddressResponseDto.builder()
+                                .id(address.getId())
+                                .street(address.getStreet())
+                                .ward(wardDto)
+                                .build();
+        }
+
         @Autowired
         private ProfileJpaRepository profileJpaRepository;
 
         @Autowired
         private WardJpaRepository wardRepository;
+
+        @Autowired
+        private CloudinaryService cloudinaryService;
 
         public UserProfileResponseDto updateProfile(MultipartFile avatar, ProfileUpdateRequestDto dto)
                         throws IOException {
@@ -37,13 +65,23 @@ public class ProfileService {
                                 .orElseThrow(() -> new IllegalArgumentException("Profile not found"));
 
                 if (avatar != null && !avatar.isEmpty()) {
-                        String fileName = System.currentTimeMillis() + "_" + avatar.getOriginalFilename();
-                        Path filePath = Paths.get("public/uploads/" + fileName);
-                        Files.createDirectories(filePath.getParent());
-                        Files.write(filePath, avatar.getBytes());
+                        try {
+                                // Upload ảnh lên Cloudinary
+                                Map<String, String> uploadResult = cloudinaryService.uploadFile(avatar);
+                                String avatarUrl = uploadResult.get("url");
+                                profile.setAvatar(avatarUrl); // cập nhật avatar cho profile
+                        } catch (Exception e) {
+                                throw new RuntimeException("Failed to upload avatar: " + e.getMessage(), e);
+                        }
 
-                        String avatarUrl = "/uploads/" + fileName;
-                        profile.setAvatar(avatarUrl); // cập nhật avatar cho profile
+                        // code cũ 
+                        // String fileName = System.currentTimeMillis() + "_" + avatar.getOriginalFilename();
+                        // Path filePath = Paths.get("public/uploads/" + fileName);
+                        // Files.createDirectories(filePath.getParent());
+                        // Files.write(filePath, avatar.getBytes());
+
+                        // String avatarUrl = "/uploads/" + fileName;
+                        // profile.setAvatar(avatarUrl); // cập nhật avatar cho profile
                 }
 
                 profile.setId(dto.getId());
@@ -93,56 +131,11 @@ public class ProfileService {
                                         .orElseThrow(() -> new RuntimeException("Ward Not Found"));
                         address.setWard(ward);
                         profileJpaRepository.save(profile);
-                        addressDto = AddressResponseDto.builder()
-                                        .id(address.getId())
-                                        .street(address.getStreet())
-                                        .ward(WardResponseDto.builder()
-                                                        .id(ward.getId())
-                                                        .name(ward.getName())
-                                                        .district(DistrictResponseDto.builder()
-                                                                        .id(ward.getDistrict().getId())
-                                                                        .name(ward.getDistrict().getName())
-                                                                        .province(ProvinceResponseDto.builder()
-                                                                                        .id(ward.getDistrict()
-                                                                                                        .getProvince()
-                                                                                                        .getId())
-                                                                                        .name(ward.getDistrict()
-                                                                                                        .getProvince()
-                                                                                                        .getName())
-                                                                                        .build())
-                                                                        .build())
-                                                        .build())
-                                        .build();
+                        addressDto = addressConvert(address);
                 } else {
                         profileJpaRepository.save(profile);
                         Address address = profile.getAddress();
-                        if (address != null) {
-                                Ward ward = address.getWard();
-                                WardResponseDto wardDto = null;
-                                if (ward != null) {
-                                        wardDto = WardResponseDto.builder()
-                                                        .id(ward.getId())
-                                                        .name(ward.getName())
-                                                        .district(DistrictResponseDto.builder()
-                                                                        .id(ward.getDistrict().getId())
-                                                                        .name(ward.getDistrict().getName())
-                                                                        .province(ProvinceResponseDto.builder()
-                                                                                        .id(ward.getDistrict()
-                                                                                                        .getProvince()
-                                                                                                        .getId())
-                                                                                        .name(ward.getDistrict()
-                                                                                                        .getProvince()
-                                                                                                        .getName())
-                                                                                        .build())
-                                                                        .build())
-                                                        .build();
-                                }
-                                addressDto = AddressResponseDto.builder()
-                                                .id(address.getId())
-                                                .street(address.getStreet())
-                                                .ward(wardDto)
-                                                .build();
-                        }
+                        addressDto = addressConvert(address);
                 }
                 return UserProfileResponseDto.builder()
                                 .id(profile.getId())
@@ -163,32 +156,7 @@ public class ProfileService {
                                 .orElseThrow(() -> new IllegalArgumentException("Profile not found"));
 
                 Address address = profile.getAddress();
-                AddressResponseDto addressDto = null;
-                if (address != null) {
-                        Ward ward = address.getWard();
-                        WardResponseDto wardDto = null;
-                        if (ward != null) {
-                                wardDto = WardResponseDto.builder()
-                                                .id(ward.getId())
-                                                .name(ward.getName())
-                                                .district(DistrictResponseDto.builder()
-                                                                .id(ward.getDistrict().getId())
-                                                                .name(ward.getDistrict().getName())
-                                                                .province(ProvinceResponseDto.builder()
-                                                                                .id(ward.getDistrict().getProvince()
-                                                                                                .getId())
-                                                                                .name(ward.getDistrict().getProvince()
-                                                                                                .getName())
-                                                                                .build())
-                                                                .build())
-                                                .build();
-                        }
-                        addressDto = AddressResponseDto.builder()
-                                        .id(address.getId())
-                                        .street(address.getStreet())
-                                        .ward(wardDto)
-                                        .build();
-                }
+                AddressResponseDto addressDto = addressConvert(address);
                 return UserProfileResponseDto.builder()
                                 .id(profile.getId())
                                 .fullName(profile.getFullName())

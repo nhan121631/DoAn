@@ -16,6 +16,7 @@ export default function ButtonEditProfile({
   const [form] = Form.useForm();
   const [avatarUrl, setAvatarUrl] = useState("");
   const [messageApi, contextHolder] = message.useMessage();
+  const [loading, setLoading] = useState(false);
 
   // Nhận userProfile qua props
   // const props = arguments[0] || {};
@@ -81,6 +82,7 @@ export default function ButtonEditProfile({
     if (file) {
       formData.append("avatar", file);
     }
+    setLoading(true);
     try {
       const res = await fetch("/api/profile", {
         method: "PATCH",
@@ -111,6 +113,8 @@ export default function ButtonEditProfile({
         content: "Error: " + (err as any)?.message,
         duration: 2,
       });
+    } finally {
+      setLoading(false);
     }
   };
   return (
@@ -130,6 +134,7 @@ export default function ButtonEditProfile({
         onAvatarChange={handleAvatarChange}
         form={form}
         userProfile={userProfile}
+        loading={loading}
       />
     </>
   );

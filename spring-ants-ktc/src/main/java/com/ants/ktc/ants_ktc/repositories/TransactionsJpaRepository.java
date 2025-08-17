@@ -36,4 +36,6 @@ public interface TransactionsJpaRepository extends JpaRepository<Transaction, UU
     @Query("SELECT t FROM Transaction t WHERE t.wallet.user.id = :userId AND t.transactionDate >= :startDate AND t.transactionDate <= :endDate")
     Page<Transaction> findAllByUserIdAndDateRange(@Param("userId") UUID userId,
             @Param("startDate") Date startDate, @Param("endDate") Date endDate, Pageable pageable);
+
+    boolean existsByTransactionCode(String transactionCode);
 }

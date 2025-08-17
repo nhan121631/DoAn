@@ -18,7 +18,7 @@ interface AppSidebarProps {
 }
 
 function AppSidebar({ collapsed }: AppSidebarProps) {
-  const isDark = true;
+  const isDark = false;
   const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
 

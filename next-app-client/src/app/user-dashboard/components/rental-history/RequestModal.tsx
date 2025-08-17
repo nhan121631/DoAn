@@ -1,9 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect } from "react";
 import { Modal, Form, Input, Button } from "antd";
+import { useSession } from "next-auth/react";
 
 interface RequestModalProps {
   open: boolean;
+  id: string | null;
   onCancel: () => void;
   onFinish: (values: any) => void;
   form: any;
@@ -12,6 +14,7 @@ interface RequestModalProps {
 }
 
 const RequestModal: React.FC<RequestModalProps> = ({
+  id,
   open,
   onCancel,
   onFinish,
@@ -19,7 +22,9 @@ const RequestModal: React.FC<RequestModalProps> = ({
   fieldValue,
   modalType = "add",
 }) => {
-  // Set form values when modal opens and fieldValue changes
+  const { data: session } = useSession();
+  const userId = session?.user.id;
+
   useEffect(() => {
     if (open && fieldValue) {
       form.setFieldsValue({
@@ -27,6 +32,15 @@ const RequestModal: React.FC<RequestModalProps> = ({
       });
     }
   }, [open, fieldValue, form]);
+
+  const handleFinish = async (values: any) => {
+    const request = {
+      userId,
+      roomId: id,
+      description: values.requestDescription,
+    };
+    onFinish(request);
+  };
 
   return (
     <Modal
@@ -37,17 +51,14 @@ const RequestModal: React.FC<RequestModalProps> = ({
       destroyOnHidden={true}
       width={600}
     >
-      <Form form={form} layout="vertical" onFinish={onFinish}>
+      <Form form={form} layout="vertical" onFinish={handleFinish}>
         <div className="max-h-[400px] overflow-y-auto pr-4">
           <Form.Item
             label="Room Name"
             name="roomName"
             rules={[{ required: true, message: "Please select a room!" }]}
           >
-            <Input
-              disabled
-              placeholder="Room name"
-            />
+            <Input disabled placeholder="Room name" />
           </Form.Item>
 
           <Form.Item

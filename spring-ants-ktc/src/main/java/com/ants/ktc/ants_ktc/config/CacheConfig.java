@@ -26,9 +26,8 @@ public class CacheConfig {
 
                 // Cấu hình TTL cho từng cache cụ thể
                 Map<String, RedisCacheConfiguration> cacheConfigs = new HashMap<>();
-                cacheConfigs.put("students", config.entryTtl(Duration.ofMinutes(20))); // TTL 10 phút
-                cacheConfigs.put("courses", config.entryTtl(Duration.ofMinutes(30))); // TTL 30 phút
-                cacheConfigs.put("departments", config.entryTtl(Duration.ofHours(2))); // TTL 2 giờ
+                cacheConfigs.put("typeposts", config.entryTtl(Duration.ofMinutes(24 * 60))); // TTL 24 giờ
+                cacheConfigs.put("manage-accounts", config.entryTtl(Duration.ofMinutes(24 * 60))); // TTL 24 giờ
 
                 return RedisCacheManager.builder(redisConnectionFactory)
                                 .cacheDefaults(config)

@@ -1,14 +1,7 @@
-"use client";
 import Link from "next/link";
-import { useFilterStore } from "./stores/FilterStore";
-import { useEffect } from "react";
 
 export default function NotFound() {
-  const { resetFilters } = useFilterStore((state) => state);
-
-  useEffect(() => {
-    resetFilters();
-  }, [resetFilters]);
+ 
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] py-12 bg-gray-50">

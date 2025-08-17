@@ -193,8 +193,8 @@ const AddRoomForm: React.FC<{ onFinish?: (values: RoomData) => void }> = (
         priceMonth: values.priceMonth,
         priceDeposit: values.priceDeposit,
         area: values.area,
-        postStartDate: startDate,
-        postEndDate: endDate,
+        postStartDate: new Date().toISOString(), // Sử dụng thời gian hiện tại đầy đủ
+        postEndDate: new Date(endDate + "T23:59:59").toISOString(), // Kết thúc vào cuối ngày được chọn
         typepostId: selectedTypePostId,
         // userId: "44256067-6f69-11f0-8622-b42e993f445f", // đã handled trong server action api next
         address,
@@ -249,7 +249,11 @@ const AddRoomForm: React.FC<{ onFinish?: (values: RoomData) => void }> = (
                 <Upload
                   listType="picture-card"
                   fileList={fileList}
-                  onChange={({ fileList: newList }) => setFileList(newList)}
+                  onChange={({ fileList: newList }) => {
+                    if (newList.length <= 8) {
+                      setFileList(newList);
+                    }
+                  }}
                   beforeUpload={() => false}
                   multiple
                 >
@@ -550,7 +554,16 @@ const AddRoomForm: React.FC<{ onFinish?: (values: RoomData) => void }> = (
           </div>
 
           <div className="flex-1 bg-white dark:bg-[#232b3b] rounded-none p-4 shadow-none flex flex-col gap-2">
-            <Form.Item label="Description" name="description">
+            <Form.Item
+              label="Description"
+              name="description"
+              rules={[
+                {
+                  max: 2000,
+                  message: "Description must be at most 2000 characters.",
+                },
+              ]}
+            >
               <Input.TextArea rows={10} placeholder="Description (optional)" />
             </Form.Item>
             <Form.Item>

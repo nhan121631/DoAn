@@ -136,7 +136,7 @@ function ModalPayment({
           {/* QR Code */}
           <div className="flex flex-col items-center bg-white border border-gray-200 rounded-lg p-4">
             <Image
-              src={`https://img.vietqr.io/image/${paymentInfo.binCode}-${paymentInfo.bankNumber}-qr_only.png?amount=5000000&addInfo=Dat coc phong ${bookingId}`}
+              src={`https://img.vietqr.io/image/${paymentInfo.binCode}-${paymentInfo.bankNumber}-qr_only.png?amount=${paymentInfo.depositAmount}&addInfo=Dat coc phong ${bookingId}`}
               alt="QR Code for Payment"
               width={200}
               height={200}

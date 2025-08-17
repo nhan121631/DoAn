@@ -1,14 +1,14 @@
 "use client";
 import { useSession } from "next-auth/react";
 
-import { useCompareStore } from "@/app/stores/CompareStore";
 import { RoomInUser } from "@/types/types";
 import { message } from "antd";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { FaHeart, FaRegCheckCircle } from "react-icons/fa";
 import { IoIosAddCircleOutline } from "react-icons/io";
-import { useFavoriteStore } from "@/app/stores/favoriteStore";
+import { useFavoriteStore } from "@/stores/favoriteStore";
+import { useCompareStore } from "@/stores/CompareStore";
 
 
 export interface RoomCardProps {
@@ -25,6 +25,7 @@ export default function RoomCartActions({ room, onFavoriteChange }: RoomCardProp
 
   const { items, addItem } = useCompareStore((state) => state);
   const [isCompared, setIsCompared] = useState(false);
+  const [loadingFavorite, setLoadingFavorite] = useState(false);
   const [messageApi, contextHolder] = message.useMessage();
 
   const { data: session } = useSession();
@@ -50,10 +51,12 @@ export default function RoomCartActions({ room, onFavoriteChange }: RoomCardProp
 
 
   const handleFavorite = async () => {
+    if (loadingFavorite) return;
     if (!session) {
       router.push("/auth/login");
       return;
     }
+    setLoadingFavorite(true);
     try {
       const res = await fetch(
         `/api/favorites/rooms/${room.id}`,
@@ -75,6 +78,8 @@ export default function RoomCartActions({ room, onFavoriteChange }: RoomCardProp
 
     } catch {
       messageApi.error("Failed to update favorite status");
+    } finally {
+      setLoadingFavorite(false);
     }
   };
 
@@ -85,13 +90,17 @@ export default function RoomCartActions({ room, onFavoriteChange }: RoomCardProp
         <button
           className={`flex items-center gap-1 px-2 py-1.5 text-sm font-semibold rounded-full shadow bg-white/90 ${
             isFavorite ? "text-red-500" : "text-gray-400 hover:text-red-500"
-          }`}
+          } ${loadingFavorite ? "opacity-60 cursor-not-allowed" : ""}`}
           tabIndex={0}
           title="Add to favorites"
           onClick={handleFavorite}
           type="button"
+          disabled={loadingFavorite}
         >
           <FaHeart className="text-base" />
+          {loadingFavorite && (
+            <span className="ml-1 animate-spin text-xs">⏳</span>
+          )}
         </button>
         <button
           className={`flex items-center justify-center gap-1 px-3 py-1.5 text-sm transition rounded-full

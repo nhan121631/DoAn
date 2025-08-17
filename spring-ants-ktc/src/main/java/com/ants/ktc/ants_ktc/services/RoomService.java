@@ -4,7 +4,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -14,9 +13,12 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -53,6 +55,7 @@ import com.ants.ktc.ants_ktc.entities.Transaction;
 import com.ants.ktc.ants_ktc.entities.User;
 import com.ants.ktc.ants_ktc.entities.address.Address;
 import com.ants.ktc.ants_ktc.entities.address.Ward;
+import com.ants.ktc.ants_ktc.models.ImageUploadMessage;
 import com.ants.ktc.ants_ktc.repositories.ConvenientsRepository;
 import com.ants.ktc.ants_ktc.repositories.ImageJpaRepository;
 import com.ants.ktc.ants_ktc.repositories.PostTypeJpaRepository;
@@ -90,6 +93,56 @@ public class RoomService {
 
         @Autowired
         private MailService mailService;
+
+        @Autowired
+        private CloudinaryService cloudinaryService;
+
+        @Autowired
+        @Qualifier("imageRedisTemplate")
+        private RedisTemplate<String, ImageUploadMessage> redisTemplate;
+
+        private static final String IMAGE_UPLOAD_QUEUE = "image_upload_queue";
+        private static final String TEMP_DIR_PREFIX = "room_images";
+
+        /**
+         * Lưu file tạm thời và tạo message để upload async
+         */
+        private ImageUploadMessage prepareAsyncImageUpload(MultipartFile file, Room room) throws Exception {
+                // Tạo temporary file
+                String fileName = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
+                Path tempDir = Paths.get(System.getProperty("java.io.tmpdir"), TEMP_DIR_PREFIX);
+                Files.createDirectories(tempDir); // Tạo thư mục nếu chưa tồn tại
+                Path tempFilePath = tempDir.resolve(fileName);
+
+                // Ghi file vào disk tạm thời
+                Files.write(tempFilePath, file.getBytes());
+
+                // Tạo Image entity với URL tạm thời và room đã có ID
+                Image image = new Image();
+                image.setUrl("pending://uploading"); // URL tạm thời để biết đang upload
+                image.setRoom(room);
+                imageJpaRepository.save(image);
+
+                // Tạo message cho queue
+                ImageUploadMessage message = new ImageUploadMessage();
+                message.setRoomId(room.getId());
+                message.setImageId(image.getId());
+                message.setLocalTempPath(tempFilePath.toString());
+
+                return message;
+        }
+
+        /**
+         * Enqueue image upload job vào Redis
+         */
+        private void enqueueImageUpload(ImageUploadMessage message) {
+                try {
+                        redisTemplate.opsForList().rightPush(IMAGE_UPLOAD_QUEUE, message);
+                } catch (Exception ex) {
+                        throw new RuntimeException(
+                                        "Redis server is not available. Please try again later or contact admin.", ex);
+                }
+        }
 
         private List<ImageResponseDto> convertImages(List<Image> images) {
                 if (images == null)
@@ -158,8 +211,6 @@ public class RoomService {
                 room.setDescription(requestDto.getDescription());
                 room.setPrice_month(requestDto.getPriceMonth());
                 room.setPrice_deposit(requestDto.getPriceDeposit());
-                room.setPost_start_date(requestDto.getPostStartDate());
-                room.setPost_end_date(requestDto.getPostEndDate());
                 room.setArea(requestDto.getArea());
 
                 // Lấy PostType và User
@@ -167,6 +218,7 @@ public class RoomService {
                                 .orElseThrow(() -> new IllegalArgumentException("PostType not found"));
                 room.setPostType(postType);
 
+                // Convert dates to LocalDate for validation
                 LocalDate startDate = requestDto.getPostStartDate().toInstant().atZone(ZoneId.systemDefault())
                                 .toLocalDate();
                 LocalDate endDate = requestDto.getPostEndDate().toInstant().atZone(ZoneId.systemDefault())
@@ -178,6 +230,10 @@ public class RoomService {
                 if (startDate.isBefore(today)) {
                         throw new IllegalArgumentException("Start date must be today or later");
                 }
+
+                // Use the exact dates from request (preserve time)
+                room.setPost_start_date(requestDto.getPostStartDate());
+                room.setPost_end_date(requestDto.getPostEndDate());
 
                 long diffDays = ChronoUnit.DAYS.between(
                                 requestDto.getPostStartDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate(),
@@ -228,13 +284,20 @@ public class RoomService {
                 transaction.setDescription("Create a New Room Post " + room.getTitle());
                 transaction.setTransactionDate(transactionDate);
 
-                // Tạo mã giao dịch
-                LocalDateTime now = LocalDateTime.now(ZoneId.systemDefault());
-                String day = String.format("%02d", now.getDayOfMonth());
-                String hour = String.format("%02d", now.getHour());
-                String random = String.format("%04d", (int) (Math.random() * 10000));
-                String transactionCode = day + hour + random;
+                // Generate unique 8-digit transaction code (no prefix)
+                String transactionCode = generateUniqueTransactionCode("CREATE", user.getId());
+
+                // Code cũ - transaction code generation
+                /*
+                 * LocalDateTime now = LocalDateTime.now(ZoneId.systemDefault());
+                 * String day = String.format("%02d", now.getDayOfMonth());
+                 * String hour = String.format("%02d", now.getHour());
+                 * String random = String.format("%04d", (int) (Math.random() * 10000));
+                 * String transactionCode = day + hour + random;
+                 */
+
                 transaction.setTransactionCode(transactionCode);
+                System.out.println("Transaction id before save: " + transaction.getId());
 
                 transaction.setBankTransactionName("Ants Wallet");
                 transaction.setDescription("Payment for room post: " + room.getTitle());
@@ -270,30 +333,61 @@ public class RoomService {
                 });
                 room.setConvenients(convenients);
 
-                // Xử lý images
-                List<Image> images = files.stream()
-                                .filter(file -> file != null && !file.isEmpty())
-                                .map(file -> {
-                                        try {
-                                                String fileName = System.currentTimeMillis() + "_"
-                                                                + file.getOriginalFilename();
-                                                Path filePath = Paths.get("public/uploads/" + fileName);
-                                                Files.createDirectories(filePath.getParent());
-                                                Files.write(filePath, file.getBytes());
+                // // Xử lý ảnh cũ
+                // List<Image> images = files.stream()
+                // .filter(file -> file != null && !file.isEmpty())
+                // .map(file -> {
+                // try {
+                // String fileName = System.currentTimeMillis() + "_"
+                // + file.getOriginalFilename();
+                // Path filePath = Paths.get("public/uploads/" + fileName);
+                // Files.createDirectories(filePath.getParent());
+                // Files.write(filePath, file.getBytes());
 
-                                                String fileUrl = "/uploads/" + fileName;
-                                                Image image = new Image();
-                                                image.setUrl(fileUrl);
-                                                image.setRoom(room); // quan hệ 2 chiều
-                                                return image;
+                // String fileUrl = "/uploads/" + fileName;
+                // Image image = new Image();
+                // image.setUrl(fileUrl);
+                // image.setRoom(room); // quan hệ 2 chiều
+                // return image;
+                // } catch (Exception e) {
+                // throw new RuntimeException("Failed to save file: " + e.getMessage(), e);
+                // }
+                // })
+                // .toList();
+                // room.setImages(images);
+
+                // roomJpaRepository.save(room);
+
+                // Lưu phòng trước để có ID
+                roomJpaRepository.save(room);
+
+                // Xử lý images - Async upload để không block user
+                List<Image> images = new ArrayList<>();
+                if (files != null && !files.isEmpty()) {
+                        for (MultipartFile file : files) {
+                                if (file != null && !file.isEmpty()) {
+                                        try {
+                                                // Tạo image record với URL tạm thời và enqueue upload job
+                                                ImageUploadMessage message = prepareAsyncImageUpload(file, room);
+
+                                                // Lấy image đã tạo
+                                                Image image = imageJpaRepository.findById(message.getImageId())
+                                                                .orElseThrow();
+                                                images.add(image);
+
+                                                // Enqueue upload job
+                                                enqueueImageUpload(message);
                                         } catch (Exception e) {
-                                                throw new RuntimeException("Failed to save file: " + e.getMessage(), e);
+                                                // Log error nhưng không fail toàn bộ quá trình
+                                                System.err.println("Failed to prepare async upload for file: "
+                                                                + e.getMessage());
                                         }
-                                })
-                                .toList();
+                                }
+                        }
+                }
                 room.setImages(images);
 
-                // Lưu phòng
+                // Lưu room với images đã set
                 roomJpaRepository.save(room);
 
                 // Trả về DTO
@@ -356,6 +450,8 @@ public class RoomService {
                 });
                 room.setConvenients(convenients);
 
+                room.setApproval(0);
+
                 // Xử lý cập nhật ảnh
                 // 1. Lấy danh sách ảnh cũ
                 List<Image> oldImages = imageJpaRepository.findByRoomId(id);
@@ -377,21 +473,46 @@ public class RoomService {
                         imagesToKeep.addAll(oldImages);
                 }
 
-                // Thêm ảnh mới
+                // // Thêm ảnh mới - code cũ
+                // if (images != null && !images.isEmpty()) {
+                // for (MultipartFile file : images) {
+                // if (!file.isEmpty()) {
+                // String fileName = System.currentTimeMillis() + "_" +
+                // file.getOriginalFilename();
+                // Path filePath = Paths.get("public/uploads/" + fileName);
+                // Files.createDirectories(filePath.getParent());
+                // Files.write(filePath, file.getBytes());
+                // String fileUrl = "/uploads/" + fileName;
+
+                // Image image = new Image();
+                // image.setRoom(room);
+                // image.setUrl(fileUrl);
+                // imageJpaRepository.save(image);
+                // imagesToKeep.add(image);
+                // }
+                // }
+                // }
+
+                // Thêm ảnh mới - Async upload để không block user
                 if (images != null && !images.isEmpty()) {
                         for (MultipartFile file : images) {
-                                if (!file.isEmpty()) {
-                                        String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
-                                        Path filePath = Paths.get("public/uploads/" + fileName);
-                                        Files.createDirectories(filePath.getParent());
-                                        Files.write(filePath, file.getBytes());
-                                        String fileUrl = "/uploads/" + fileName;
+                                if (file != null && !file.isEmpty()) {
+                                        try {
+                                                // Tạo image record với URL tạm thời và enqueue upload job
+                                                ImageUploadMessage message = prepareAsyncImageUpload(file, room);
 
-                                        Image image = new Image();
-                                        image.setRoom(room);
-                                        image.setUrl(fileUrl);
-                                        imageJpaRepository.save(image);
-                                        imagesToKeep.add(image);
+                                                // Lấy image đã tạo
+                                                Image image = imageJpaRepository.findById(message.getImageId())
+                                                                .orElseThrow();
+                                                imagesToKeep.add(image);
+
+                                                // Enqueue upload job
+                                                enqueueImageUpload(message);
+                                        } catch (Exception e) {
+                                                // Log error nhưng không fail toàn bộ quá trình
+                                                System.err.println("Failed to prepare async upload for file: "
+                                                                + e.getMessage());
+                                        }
                                 }
                         }
                 }
@@ -447,8 +568,12 @@ public class RoomService {
         }
 
         @Transactional(readOnly = true)
-        public PaginationRoomAdminResponseDto getAllRoomByAdminPaginated(int page, int size) {
-                Pageable pageable = PageRequest.of(page, size);
+        public PaginationRoomAdminResponseDto getAllRoomByAdminPaginated(int page, int size, String sortField,
+                        String sortOrder) {
+                String sortBy = (sortField != null && !sortField.isBlank()) ? sortField : "title";
+                String direction = (sortOrder != null && sortOrder.equalsIgnoreCase("desc")) ? "desc" : "asc";
+                Pageable pageable = PageRequest.of(page, size,
+                                direction.equals("asc") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending());
                 Page<RoomByAdminPagingProjection> roomPage = roomJpaRepository.findAllByAdmin(pageable);
 
                 List<RoomAdminResponseProjectionDto> roomDtos = roomPage.getContent().stream()
@@ -502,25 +627,38 @@ public class RoomService {
                 transaction.setAmount(totalPrice);
                 transaction.setDescription("Extend room post: " + room.getTitle());
                 transaction.setTransactionDate(new Date());
-                LocalDateTime now = LocalDateTime.now(ZoneId.systemDefault());
-                String day = String.format("%02d", now.getDayOfMonth());
-                String hour = String.format("%02d", now.getHour());
-                String random = String.format("%04d", (int) (Math.random() * 10000));
-                String transactionCode = day + hour + random;
+
+                // Generate unique 8-digit transaction code
+                String transactionCode = generateUniqueTransactionCode("EXT", user.getId());
+
+                // Code cũ
+                /*
+                 * LocalDateTime now = LocalDateTime.now(ZoneId.systemDefault());
+                 * String day = String.format("%02d", now.getDayOfMonth());
+                 * String hour = String.format("%02d", now.getHour());
+                 * String random = String.format("%04d", (int) (Math.random() * 10000));
+                 * String transactionCode = day + hour + random;
+                 */
+
                 transaction.setTransactionCode(transactionCode);
                 transaction.setBankTransactionName("Ants Wallet");
                 transaction.setStatus(1); // 1: thành công
                 transaction.setWallet(user.getWallet());
                 transactionsJpaRepository.save(transaction);
 
-                room.setPost_start_date(newStartDate);
-                room.setPost_end_date(newEndDate);
+                // Convert LocalDate back to Date with local timezone (start of day) to fix
+                // timezone issue
+                Date startDateWithLocalTime = Date.from(reqStartDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+                Date endDateWithLocalTime = Date.from(reqEndDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+
+                room.setPost_start_date(startDateWithLocalTime);
+                room.setPost_end_date(endDateWithLocalTime);
                 roomJpaRepository.save(room);
 
                 // Trả về DTO
                 return RoomUpdateExpireDateResponseDto.builder()
-                                .postStartDate(newStartDate)
-                                .postEndDate(newEndDate)
+                                .postStartDate(startDateWithLocalTime)
+                                .postEndDate(endDateWithLocalTime)
                                 .message("Room post updated successfully").build();
         }
 
@@ -579,11 +717,19 @@ public class RoomService {
                                 refundTransaction.setDescription(
                                                 "Refund for rejected room post: " + roomProj.getTitle());
                                 refundTransaction.setTransactionDate(new Date());
-                                LocalDateTime now = LocalDateTime.now(ZoneId.systemDefault());
-                                String day = String.format("%02d", now.getDayOfMonth());
-                                String hour = String.format("%02d", now.getHour());
-                                String random = String.format("%04d", (int) (Math.random() * 10000));
-                                String transactionCode = day + hour + random;
+
+                                // Generate unique 8-digit transaction code
+                                String transactionCode = generateUniqueTransactionCode("REFUND", user.getId());
+
+                                // Code cũ
+                                /*
+                                 * LocalDateTime now = LocalDateTime.now(ZoneId.systemDefault());
+                                 * String day = String.format("%02d", now.getDayOfMonth());
+                                 * String hour = String.format("%02d", now.getHour());
+                                 * String random = String.format("%04d", (int) (Math.random() * 10000));
+                                 * String transactionCode = day + hour + random;
+                                 */
+
                                 refundTransaction.setTransactionCode(transactionCode);
                                 refundTransaction.setBankTransactionName("Ants Wallet");
                                 refundTransaction.setStatus(1);
@@ -753,7 +899,37 @@ public class RoomService {
 
         private void deleteFileFromStorage(String fileUrl) {
                 try {
-                        if (fileUrl != null && fileUrl.startsWith("/uploads/")) {
+                        // Check if it's a Cloudinary URL (starts with cloud name path)
+                        if (fileUrl != null && fileUrl.contains("cloudinary")) {
+                                // Extract public_id from Cloudinary URL for deletion
+                                try {
+                                        // Cloudinary URL format: /cloudname/image/upload/version/public_id.extension
+                                        // fileUrl format: /cloudname/image/upload/v1234567890/folder/filename.jpg
+                                        String publicId = extractPublicIdFromUrl(fileUrl);
+                                        if (publicId != null && !publicId.isEmpty()) {
+                                                cloudinaryService.deleteFile(publicId);
+                                                System.out.println("Successfully deleted file from Cloudinary: "
+                                                                + publicId);
+                                        } else {
+                                                System.out.println("Could not extract public_id from URL: " + fileUrl);
+                                        }
+                                } catch (Exception e) {
+                                        System.err.println("Failed to delete file from Cloudinary: " + e.getMessage());
+                                        e.printStackTrace();
+                                }
+
+                                // Code cũ
+                                /*
+                                 * // Note: For proper Cloudinary deletion, we would need the public_id
+                                 * // Since we don't store public_id in the Image entity, we cannot delete from
+                                 * // Cloudinary
+                                 * // Consider adding a public_id field to the Image entity for proper cleanup
+                                 * System.out.
+                                 * println("Cloudinary file deletion skipped - public_id not available: "
+                                 * + fileUrl);
+                                 */
+                        } else if (fileUrl != null && fileUrl.startsWith("/uploads/")) {
+                                // Handle local files (legacy support)
                                 long count = imageJpaRepository.countByUrl(fileUrl);
                                 if (count == 0) {
                                         String fileName = fileUrl.substring("/uploads/".length());
@@ -772,7 +948,45 @@ public class RoomService {
                 } catch (java.io.IOException e) {
                         e.printStackTrace();
                 }
+        }
 
+        /**
+         * Extract public_id from Cloudinary URL
+         * URL format: /cloudname/image/upload/v1234567890/folder/filename.jpg
+         * public_id: folder/filename (without extension)
+         */
+        private String extractPublicIdFromUrl(String cloudinaryUrl) {
+                try {
+                        if (cloudinaryUrl == null || !cloudinaryUrl.contains("/upload/")) {
+                                return null;
+                        }
+
+                        // Split by "/upload/" and take the part after it
+                        String[] parts = cloudinaryUrl.split("/upload/");
+                        if (parts.length < 2) {
+                                return null;
+                        }
+
+                        String afterUpload = parts[1];
+
+                        // Remove version (v1234567890) if present
+                        if (afterUpload.startsWith("v") && afterUpload.contains("/")) {
+                                int firstSlash = afterUpload.indexOf("/");
+                                afterUpload = afterUpload.substring(firstSlash + 1);
+                        }
+
+                        // Remove file extension
+                        int lastDot = afterUpload.lastIndexOf(".");
+                        if (lastDot > 0) {
+                                afterUpload = afterUpload.substring(0, lastDot);
+                        }
+
+                        return afterUpload;
+                } catch (Exception e) {
+                        System.err.println("Error extracting public_id from URL: " + cloudinaryUrl + " - "
+                                        + e.getMessage());
+                        return null;
+                }
         }
 
         public void sendAdminMailToLandlord(String email, String subject, String message, MultipartFile file) {
@@ -946,6 +1160,27 @@ public class RoomService {
                                                 .imageUrl(projection.getImageUrl())
                                                 .build())
                                 .collect(Collectors.toList());
+
+        }
+
+        /**
+         * Generate unique 8-digit transaction code using timestamp and user ID
+         * 
+         * @param userId User ID for uniqueness (prefix parameter kept for compatibility
+         *               but not used)
+         * @return Unique 8-digit transaction code
+         */
+        private String generateUniqueTransactionCode(String unusedPrefix, UUID userId) {
+                // Use last 4 digits of timestamp for time uniqueness
+                long timestamp = System.currentTimeMillis();
+                String timestampSuffix = String.valueOf(timestamp).substring(String.valueOf(timestamp).length() - 4);
+
+                // Use 4 digits from user ID hash for user uniqueness
+                int userIdHash = Math.abs(userId.toString().hashCode());
+                String userIdSuffix = String.format("%04d", userIdHash % 10000);
+
+                // Combine to create 8-digit code (no prefix)
+                return timestampSuffix + userIdSuffix;
 
         }
 }

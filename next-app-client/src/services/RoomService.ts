@@ -192,3 +192,17 @@ export async function getRecentRooms() {
     return null;
   }
 }
+//------ landlord detail by room id ------//
+export async function getLandlordByRoomId(roomId: string) {
+  try {
+    const response = await fetch(`${API_URL}/rooms/landlord-room/${roomId}`);
+    if (!response.ok) {
+      const data = await response.json();
+      throw new Error(data.message || "Failed to fetch landlord details");
+    }
+    return response.json();
+  } catch (error) {
+    console.error("Error fetching landlord details:", error);
+    return null;
+  }
+}

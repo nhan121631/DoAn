@@ -5,17 +5,19 @@ import type { RoomDetail, RoomPageResponseDto } from "../types/type";
 import type { MutationConfig } from "../lib/react-query";
 
 //======get all rooms======//
-export const getAllRooms = (page: number, size: number): Promise<RoomPageResponseDto> => {
-  return apiClient.get(
-      `/rooms/by-admin/paging?page=${page}&size=${size}`
-    );
+export const getAllRooms = (page: number, size: number, sortField?:string, sortOrder?:string): Promise<RoomPageResponseDto> => {
+  const url = `/rooms/by-admin/paging?page=${page}&size=${size}`;
+  if (sortField && sortOrder) {
+    return apiClient.get(`${url}&sortField=${sortField}&sortOrder=${sortOrder}`);
+  }
+  return apiClient.get(url);
 }
 
 
-export const getRoomQueryOptions = (page: number, size: number) => {
+export const getRoomQueryOptions = (page: number, size: number, sortField?:string, sortOrder?:string) => {
   return queryOptions({
-    queryKey: ['getRooms', page, size] as const,
-    queryFn: () => getAllRooms(page, size),
+    queryKey: ['getRooms', page, size, sortField, sortOrder] as const,
+    queryFn: () => getAllRooms(page, size, sortField, sortOrder),
   });
 };
 

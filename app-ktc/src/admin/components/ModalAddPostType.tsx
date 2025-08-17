@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Modal, Form, Input, InputNumber } from "antd";
+import { useEffect } from "react";
 
 interface ModelCreatePostTypeProps {
   open: boolean;
@@ -16,6 +17,11 @@ const ModelCreatePostType: React.FC<ModelCreatePostTypeProps> = ({
   handleCreate,
   errorMessage,
 }) => {
+  useEffect(() => {
+    if (open) {
+      form.resetFields();
+    }
+  }, [open, form]);
   return (
     <Modal
       title="Create Post Type"
@@ -27,7 +33,16 @@ const ModelCreatePostType: React.FC<ModelCreatePostTypeProps> = ({
       {errorMessage && (
         <div style={{ color: "red", marginBottom: 12 }}>{errorMessage}</div>
       )}
-      <Form form={form} layout="vertical">
+      <Form
+        form={form}
+        layout="vertical"
+        initialValues={{
+          code: null,
+          name: null,
+          pricePerDay: null,
+          description: null,
+        }}
+      >
         <Form.Item
           label="Code"
           name="code"

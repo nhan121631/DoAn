@@ -39,7 +39,12 @@ const defaultColumns: ColumnsType<any> = [
     render: (amount: number, record: any) => (
       <span
         style={{
-          color: record.transactionType === 0 ? "#ef4444" : "#2563eb",
+          color:
+            record.transactionType === 0
+              ? "#ef4444"
+              : record.transactionType === 3
+              ? "#f59e42"
+              : "#2563eb",
           fontWeight: 600,
         }}
       >

@@ -1,17 +1,20 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import { Button, Table, Tag, Form, Space } from "antd";
+import { Button, Table, Tag, Form, Space, message } from "antd";
 import ModalPayment from "../components/rental-history/ModalPayment";
 import RequestModal from "../components/rental-history/RequestModal";
 import { useEffect, useState } from "react";
 import React from "react";
 import { IoMdAddCircleOutline } from "react-icons/io";
 import { userFetchBookings } from "@/services/BookingService";
+import { RequirementRequestRoomDto } from "@/types/types";
+import { createRequest } from "@/services/Requirements";
 
 function useRentalStatusModal() {
   const [visible, setVisible] = useState(false);
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
   const [confirmLoading, setConfirmLoading] = useState(false);
+  const [selectedIdRoom, setSelectedIdRoom] = useState<string | null>(null);
 
   return {
     visible,
@@ -20,6 +23,8 @@ function useRentalStatusModal() {
     setSelectedKey,
     confirmLoading,
     setConfirmLoading,
+    selectedIdRoom,
+    setSelectedIdRoom,
   };
 }
 
@@ -28,6 +33,7 @@ interface RentalData {
   name_landlord: string;
   phone_landlord: string;
   room: string;
+  idRoom: string;
   address: string;
   rentalDate: string;
   expires: string;
@@ -46,6 +52,7 @@ function RentalHistory() {
   });
   const [loading, setLoading] = useState(false);
   const modal = useRentalStatusModal();
+  const [messageApi, contextHolder] = message.useMessage();
 
   const mapBookingToRentalData = (booking: any): RentalData => {
     const address = booking.room.address;
@@ -55,6 +62,7 @@ function RentalHistory() {
       name_landlord: booking.room.ownerName,
       phone_landlord: booking.room.ownerPhone,
       room: booking.room.title,
+      idRoom: booking.room.roomId,
       address: fullAddress,
       rentalDate: booking.rentalDate
         ? new Date(booking.rentalDate).toISOString().slice(0, 10)
@@ -79,7 +87,6 @@ function RentalHistory() {
       const total = response.totalRecords || bookings.length;
       setTableData(bookings.map(mapBookingToRentalData));
       setPagination({ current: page, pageSize, total });
-      console.log("Fetched bookings:", response);
     } catch (error) {
       console.error("Failed to fetch bookings:", error);
     } finally {
@@ -108,10 +115,33 @@ function RentalHistory() {
     form.resetFields();
   };
 
-  const handleFinish = () => {
-    setOpen(false);
-    setFieldValue(null);
-    form.resetFields();
+  const handleFinish = async (request: RequirementRequestRoomDto) => {
+    try {
+      console.log("Submitting request:", request);
+      await createRequest(request);
+
+      messageApi.success({
+        content: "Request submitted successfully",
+        duration: 2,
+      });
+      setOpen(false);
+      setFieldValue(null);
+      form.resetFields();
+    } catch (error: any) {
+      let errorMsg = "Failed to submit request";
+      // Nếu dùng fetch, error có thể là object trả về từ response.json()
+      if (error?.message) {
+        if (Array.isArray(error.message)) {
+          errorMsg = error.message[0];
+        } else {
+          errorMsg = error.message;
+        }
+      }
+      messageApi.error({
+        content: errorMsg,
+        duration: 3,
+      });
+    }
   };
 
   const handleAccept = (key: string) => {
@@ -256,6 +286,8 @@ function RentalHistory() {
               if (record.status === 4) {
                 setFieldValue(record);
                 setModalType("add");
+                modal.setSelectedKey(record.key);
+                modal.setSelectedIdRoom(record.idRoom);
                 setOpen(true);
               }
             }}
@@ -289,12 +321,12 @@ function RentalHistory() {
         }
         return <Tag color="green">Active</Tag>;
       },
-      
-    }
+    },
   ];
 
   return (
     <div style={{ padding: 24 }}>
+      {contextHolder}
       <h2 className="text-xl font-bold mb-4 dark:!text-white">
         Rental History
       </h2>
@@ -318,6 +350,7 @@ function RentalHistory() {
       />
       {/* Request Modal moved to component */}
       <RequestModal
+        id={modal.selectedIdRoom}
         open={open}
         onCancel={onCancel}
         onFinish={handleFinish}
@@ -325,6 +358,7 @@ function RentalHistory() {
         fieldValue={fieldValue}
         modalType={modalType}
       />
+      ;
     </div>
   );
 }

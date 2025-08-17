@@ -32,11 +32,20 @@ const RoomDetailModal: React.FC<RoomDetailModalProps> = ({
   //   }
   // }, [roomId, open]);
 
-  const { data, isLoading } = useQuery(
-    roomId
-      ? getRoomByIdQueryOptions(roomId)
-      : { queryKey: ["getRoomById", ""], enabled: false }
-  );
+  // const { data, isLoading } = useQuery(
+  //   roomId
+  //     ? getRoomByIdQueryOptions(roomId)
+  //     : { queryKey: ["getRoomById", ""], enabled: false }
+  // );
+
+  const queryOptions = getRoomByIdQueryOptions(roomId || "");
+  // Only add enabled if roomId exists, otherwise don't run query
+  if (roomId) {
+    queryOptions.enabled = true;
+  } else {
+    queryOptions.enabled = false;
+  }
+  const { data, isLoading } = useQuery(queryOptions);
 
   return (
     <Modal

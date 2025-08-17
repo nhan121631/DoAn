@@ -126,7 +126,8 @@ public class TransactionService {
     }
 
     // Service
-    public PaginationTransactionResponseDto getTransactionsByUserIdAndDateRange(UUID userId, int page, int size, String startDateStr, String endDateStr) {
+    public PaginationTransactionResponseDto getTransactionsByUserIdAndDateRange(UUID userId, int page, int size,
+            String startDateStr, String endDateStr) {
         Date startDate = null;
         Date endDate = null;
         SimpleDateFormat sdfFull = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
@@ -147,7 +148,8 @@ public class TransactionService {
         }
 
         Pageable pageable = PageRequest.of(page, size);
-        Page<Transaction> transactionPage = transactionsJpaRepository.findAllByUserIdAndDateRange(userId, startDate, endDate, pageable);
+        Page<Transaction> transactionPage = transactionsJpaRepository.findAllByUserIdAndDateRange(userId, startDate,
+                endDate, pageable);
 
         List<TransactionResponseDto> transactionDtos = transactionPage.getContent().stream()
                 .map(this::convertToDto)
@@ -162,5 +164,9 @@ public class TransactionService {
                 .hasNext(transactionPage.hasNext())
                 .hasPrevious(transactionPage.hasPrevious())
                 .build();
+    }
+
+    public boolean existsByTransactionCode(String transactionCode) {
+        return transactionsJpaRepository.existsByTransactionCode(transactionCode);
     }
 }
