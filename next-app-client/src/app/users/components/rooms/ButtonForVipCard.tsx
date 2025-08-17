@@ -51,45 +51,50 @@ export function ButtonForVipCard({ room, onFavoriteChange }: ButtonFavoriteProps
 
 
   const handleFavorite = async () => {
+    if (loading) return;
     if (!session) {
       router.push("/auth/login");
       return;
     }
-  try {
-    const res = await fetch(
-      `/api/favorites/rooms/${room.id}`,
-      { method: isFavorite ? "DELETE" : "POST" }
-    );
+    setLoading(true);
+    try {
+      const res = await fetch(
+        `/api/favorites/rooms/${room.id}`,
+        { method: isFavorite ? "DELETE" : "POST" }
+      );
 
-    if (res.ok) {
-      if (isFavorite) {
-        removeFavorite(room.id);
-        if (onFavoriteChange) onFavoriteChange(room.id);
-        messageApi.success("Removed from favorites");
+      if (res.ok) {
+        if (isFavorite) {
+          removeFavorite(room.id);
+          if (onFavoriteChange) onFavoriteChange(room.id);
+          messageApi.success("Removed from favorites");
+        } else {
+          addFavorite(room.id);
+          messageApi.success("Added to favorites");
+        }
       } else {
-        addFavorite(room.id);
-        messageApi.success("Added to favorites");
+        throw new Error("Failed to update favorite status");
       }
-    } else {
-      throw new Error("Failed to update favorite status");
+    } catch (error) {
+      messageApi.error("Failed to update favorite status");
+    } finally {
+      setLoading(false);
     }
-  } catch (error) {
-    messageApi.error("Failed to update favorite status");
-  }
-};
+  };
 
   return (
     <>
       {contextHolder}
       <button
-      aria-label="Favorite"
-      className={`transition-colors ${isFavorite ? "text-red-500" : "text-gray-400 hover:text-red-500"}`}
-      onClick={handleFavorite}
-      disabled={loading}
-      type="button"
-    >
-      <FaHeart size={22} />
-    </button>
+        aria-label="Favorite"
+        className={`transition-colors ${isFavorite ? "text-red-500" : "text-gray-400 hover:text-red-500"} ${loading ? "opacity-60 cursor-not-allowed" : ""}`}
+        onClick={handleFavorite}
+        disabled={loading}
+        type="button"
+      >
+        <FaHeart size={22} />
+        {loading && <span className="ml-1 animate-spin text-xs">⏳</span>}
+      </button>
       <button
         className={`flex items-center justify-center gap-1 px-5 py-2 rounded-full transition 
       ${

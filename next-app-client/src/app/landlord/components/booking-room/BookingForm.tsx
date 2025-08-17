@@ -10,7 +10,7 @@ import {
 import { createBooking } from "@/services/BookingService";
 import dayjs, { Dayjs } from "dayjs";
 import { redirect, useRouter } from "next/navigation";
-import { getServerSession } from "next-auth";
+// import { getServerSession } from "next-auth";
 import { useSession } from "next-auth/react";
 
 interface BookingFormProps {

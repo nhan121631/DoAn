@@ -3,11 +3,11 @@
 import { useEffect, useState, useCallback } from "react";
 import RoomVipCard from "@/app/users/components/rooms/RoomVipCard";
 import RoomCard from "@/app/users/components/rooms/RoomCard";
-import { useFavoriteStore } from "@/app/stores/favoriteStore";
 import { RoomInUser } from "@/types/types";
+import { useFavoriteStore } from "@/stores/favoriteStore";
 
 export default function FavoriteRoomList() {
-  const { setFavoriteRoomIds, favoriteRoomIds, removeFavorite } = useFavoriteStore();
+  const { setFavoriteRoomIds, favoriteRoomIds } = useFavoriteStore();
   const [rooms, setRooms] = useState<RoomInUser[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);

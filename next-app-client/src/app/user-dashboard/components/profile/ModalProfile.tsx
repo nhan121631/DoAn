@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { Modal, Form, Input, Upload, Button, Select } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import Image from "next/image";
-import { FaUser, FaMapMarkerAlt } from "react-icons/fa";
+import { FaUser } from "react-icons/fa";
 import { IoIosPhonePortrait } from "react-icons/io";
 import { MdOutlineMail } from "react-icons/md";
 import type { UploadChangeParam } from "antd/es/upload";

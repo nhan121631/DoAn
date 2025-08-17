@@ -2,7 +2,7 @@
 
 import { PaginatedResponse, Requirement, RequirementDetail, RequirementRequestRoomDto, UpdateRequestRoomDto } from "@/types/types";
 import { API_URL } from "./Constant";
-import { Update } from "next/dist/build/swc/types";
+// import { Update } from "next/dist/build/swc/types";
 
 
 export async function createRequest(data: RequirementRequestRoomDto): Promise<RequirementRequestRoomDto> {
