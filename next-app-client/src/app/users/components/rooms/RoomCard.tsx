@@ -11,12 +11,16 @@ export interface RoomCardProps {
   room: RoomInUser;
   isForSale?: boolean;
   isFeatured?: boolean;
+  isFavorite?: boolean;
+  onFavoriteChange?: (id: string) => void;
 }
 
 const RoomCard: React.FC<RoomCardProps> = ({
   room,
   isForSale = false,
   isFeatured = false,
+  isFavorite = false,
+  onFavoriteChange,
 }) => {
   return (
     <div className="rounded-2xl overflow-hidden shadow-lg bg-white relative group w-[300px] h-[300px]">
@@ -24,7 +28,9 @@ const RoomCard: React.FC<RoomCardProps> = ({
       <div className="absolute inset-0 z-20 transition-opacity duration-300 opacity-0 pointer-events-none bg-black/10 group-hover:opacity-100" />
       {/* Button hover center */}
       <div className="absolute z-40 transition-all duration-300 -translate-x-1/2 -translate-y-1/2 opacity-0 left-1/2 top-1/2 group-hover:opacity-100">
-        <RoomCartActions room={room} />
+        {/* <RoomCartActions room={room} /> */}
+        <RoomCartActions room={room} isFavorite={isFavorite} onFavoriteChange={onFavoriteChange}/>
+
       </div>
       {/* Ảnh nền */}
       <div className="relative w-full h-full pointer-events-none select-none">
@@ -84,3 +90,4 @@ const RoomCard: React.FC<RoomCardProps> = ({
 };
 
 export default RoomCard;
+

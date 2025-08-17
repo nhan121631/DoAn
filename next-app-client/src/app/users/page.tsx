@@ -1,4 +1,4 @@
-import { SearchParamsType } from "@/types/types";
+// import { SearchParamsType } from "@/types/types";
 import BackToTop from "./components/BackToTop";
 import Chatbot from "./components/Chatbot";
 import CompareRoom from "./components/CompareRoom";

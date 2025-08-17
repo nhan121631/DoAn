@@ -353,7 +353,7 @@ const ManageContractsInteractive: React.FC = () => {
 
   return (
     <div className="flex flex-col flex-1">
-      <div className="flex justify-between items-center mt-2 mb-2">
+      <div className="flex items-center justify-between mt-2 mb-2">
         <Button
           type="primary"
           className="mr-4"
@@ -400,7 +400,7 @@ const ManageContractsInteractive: React.FC = () => {
       >
         {/* Always show a generic placeholder image */}
         <div className="mt-4 text-center">
-          <h4 className="font-semibold mb-2">Contract File:</h4>
+          <h4 className="mb-2 font-semibold">Contract File:</h4>
           <a
             href="https://cdn.luatminhkhue.vn/lmk/articles/18/91724/quy-dinh-ve-ngon-ngu-hop-dong---91724.jpg"
             target="_blank"
@@ -411,7 +411,7 @@ const ManageContractsInteractive: React.FC = () => {
               alt="Quy định về ngôn ngữ hợp đồng"
               width={600}
               height={400}
-              className="rounded-md shadow-md mx-auto"
+              className="mx-auto rounded-md shadow-md"
             />
           </a>
         </div>

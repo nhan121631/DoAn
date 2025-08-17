@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import {
@@ -17,6 +18,16 @@ import RoomVipCard from "../rooms/RoomVipCard";
 
 import NoLookingForFilter from "../Filter/NoLookingForFilter";
 
+import { getFavoriteRoomIds } from "@/services/FavoriteService";
+
+
+
+
+
+  // Lấy danh sách ID yêu thích trên Server
+  const initialFavoriteIds = await getFavoriteRoomIds();
+
+
 export interface RentalRoomsSearchParams {
   page?: string | string[];
   pageNormal?: string | string[];
@@ -32,6 +43,8 @@ export interface RentalRoomsSearchParams {
   [key: string]: string | string[] | undefined;
 }
 
+
+
 export default async function RentalRooms({
   searchParams,
 }: {
@@ -41,9 +54,14 @@ export default async function RentalRooms({
 
   const params: RentalRoomsSearchParams = searchParams ? searchParams : {};
 
+
   // Helper ép về string
   const getString = (v: string | string[] | undefined) =>
     Array.isArray(v) ? v[0] : v ?? "";
+
+    
+
+  
 
   const provinceId = getString(params.provinceId);
   const districtId = getString(params.districtId);
@@ -146,6 +164,9 @@ export default async function RentalRooms({
                     room={room}
                     isForSale={false}
                     isFeatured={false}
+                  
+          //           isFavorite={favoriteRoomIds.includes(room.id)}
+          // onFavoriteChange={handleFavoriteChange}
                   />
                 ))}
               </div>
@@ -168,7 +189,7 @@ export default async function RentalRooms({
 
                 {/* Page Info */}
                 <div className="flex flex-col items-center px-4">
-                  <span className="text-base text-gray-700 font-semibold">
+                  <span className="text-base font-semibold text-gray-700">
                     Page <span className="text-blue-600">{pageSearch + 1}</span>{" "}
                     /{" "}
                     <span className="text-blue-600">
@@ -215,7 +236,9 @@ export default async function RentalRooms({
               </h3>
               <div className="flex flex-col items-center w-full gap-4">
                 {roomVips.data.map((room, index) => (
-                  <RoomVipCard key={index} room={room} />
+                  // <RoomVipCard key={index} room={room} />
+                  <RoomVipCard key={index} room={room}  isFavorite={initialFavoriteIds.includes(room.id)}/>
+// isFavorite={false}
                 ))}
                 <div className="flex items-center justify-center gap-4 mt-8">
                   {/* Previous Button */}
@@ -235,7 +258,7 @@ export default async function RentalRooms({
 
                   {/* Page Info */}
                   <div className="flex flex-col items-center px-4">
-                    <span className="text-base text-gray-700 font-semibold">
+                    <span className="text-base font-semibold text-gray-700">
                       Page <span className="text-blue-600">{page + 1}</span> /{" "}
                       <span className="text-blue-600">
                         {roomVips.totalPages}
@@ -294,6 +317,8 @@ export default async function RentalRooms({
                 room={room}
                 isForSale={false}
                 isFeatured={false}
+                isFavorite={initialFavoriteIds.includes(room.id)}
+                
               />
             ))}
           </div>
@@ -315,7 +340,7 @@ export default async function RentalRooms({
 
             {/* Page Info */}
             <div className="flex flex-col items-center px-4">
-              <span className="text-base text-gray-700 font-semibold">
+              <span className="text-base font-semibold text-gray-700">
                 Page <span className="text-blue-600">{page_normal + 1}</span> /{" "}
                 <span className="text-blue-600">{roomNormals.totalPages}</span>
               </span>
@@ -344,3 +369,4 @@ export default async function RentalRooms({
     </>
   );
 }
+

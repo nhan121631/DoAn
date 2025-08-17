@@ -1,5 +1,5 @@
 import Footer from "../users/components/Footer";
-import RightSidebar from "../users/components/RightSidebar";
+// import RightSidebar from "../users/components/RightSidebar";
 import HeaderDetail from "./Header-detail";
 
 interface DetailLayoutProps {

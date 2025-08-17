@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+// /* eslint-disable @typescript-eslint/no-explicit-any */
 import Image from "next/image";
 import React from "react";
 import { FaMapMarkerAlt, FaUser } from "react-icons/fa";

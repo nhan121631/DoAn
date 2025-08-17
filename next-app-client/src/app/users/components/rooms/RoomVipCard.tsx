@@ -7,9 +7,13 @@ import RoomCartActionsWrapper from "./RoomCardActionsWrapper";
 
 interface RoomVipCardProps {
   room: RoomInUser;
+  isFavorite: boolean;
+  onFavoriteChange?: (id: string) => void;
 }
 
-export default function RoomVipCard({ room }: RoomVipCardProps) {
+
+//, isFavorite = false, onFavoriteChange
+export default function RoomVipCard({ room, isFavorite, onFavoriteChange }: RoomVipCardProps) {
   // Xử lý ngày đăng bài
   // function getPostDateLabel(postStartDate: string) {
   //   if (!postStartDate) return "";
@@ -136,9 +140,12 @@ export default function RoomVipCard({ room }: RoomVipCardProps) {
               ? room.landlord.landlordProfile.phoneNumber
               : room.landlord.landlordProfile.email}
           </span>
-          <ButtonForVipCard room={room} />
+          {/* <ButtonForVipCard room={room}/> */}
+          <ButtonForVipCard room={room} isFavorite={isFavorite} onFavoriteChange={onFavoriteChange} />
+
         </div>
       </div>
     </div>
   );
 }
+

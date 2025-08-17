@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import VnpayResult from "@/app/landlord/components/payment/VnpayResult";
 import { formatCurrency } from "@/lib/vnpay-utils";
 // import { mapPaymentDataToTransactionData } from "@/services/PaymentServive";
-import { API_URL } from "@/services/Constant";
+// import { API_URL } from "@/services/Constant";
 import { confirmPayment } from "@/services/PaymentServive";
 
 interface PaymentData {

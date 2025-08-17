@@ -1,9 +1,10 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { updateRequest } from "@/services/Requirements";
 import {
   PaginatedResponse,
-  Requirement,
+  // Requirement,
   RequirementDetail,
   UpdateRequestRoomDto,
 } from "@/types/types";
@@ -43,7 +44,7 @@ const RequestEditModalContent: React.FC<{
     onSubmit(values);
   };
 
-  const handleRoomNameChange = (value: string) => {};
+  // const handleRoomNameChange = (value: string) => {};
 
   return (
     <Modal
