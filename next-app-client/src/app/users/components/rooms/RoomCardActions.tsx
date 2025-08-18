@@ -87,12 +87,13 @@ export default function RoomCartActions({ room, onFavoriteChange }: RoomCardProp
     <>
       {contextHolder}
       <div className="flex gap-2">
+        {/* Favorite Button */}
         <button
-          className={`flex items-center gap-1 px-2 py-1.5 text-sm font-semibold rounded-full shadow bg-white/90 ${
-            isFavorite ? "text-red-500" : "text-gray-400 hover:text-red-500"
-          } ${loadingFavorite ? "opacity-60 cursor-not-allowed" : ""}`}
+          className={`flex items-center gap-1 px-2.5 py-1.5 text-base font-semibold rounded-full shadow bg-white/90 border border-gray-200 focus:ring-2 focus:ring-red-300 transition-all duration-150
+            ${isFavorite ? "text-red-500 bg-red-50 border-red-200" : "text-gray-400 hover:text-red-500 hover:bg-red-50"}
+            ${loadingFavorite ? "opacity-60 cursor-not-allowed" : "hover:scale-105 active:scale-95"}`}
           tabIndex={0}
-          title="Add to favorites"
+          title={isFavorite ? "Bỏ yêu thích" : "Thêm vào yêu thích"}
           onClick={handleFavorite}
           type="button"
           disabled={loadingFavorite}
@@ -102,26 +103,26 @@ export default function RoomCartActions({ room, onFavoriteChange }: RoomCardProp
             <span className="ml-1 animate-spin text-xs">⏳</span>
           )}
         </button>
+        {/* Compare Button */}
         <button
-          className={`flex items-center justify-center gap-1 px-3 py-1.5 text-sm transition rounded-full
-            ${
-              isCompared
-                ? "bg-gray-200 text-gray-400 opacity-60 cursor-not-allowed"
-                : "bg-blue-500 text-white hover:bg-blue-600 active:bg-blue-700"
-            }`}
+          className={`flex items-center justify-center gap-1 px-3 py-1.5 text-base font-semibold rounded-full border transition-all duration-150
+            ${isCompared
+              ? "bg-gray-100 text-gray-400 border-gray-200 opacity-60 cursor-not-allowed"
+              : "bg-blue-500 text-white border-blue-500 hover:bg-white hover:text-blue-600 hover:border-blue-400 active:scale-95"}
+            focus:ring-2 focus:ring-blue-300`}
           onClick={handleCompare}
           disabled={isCompared}
           type="button"
         >
-          {isCompared ? <FaRegCheckCircle /> : <IoIosAddCircleOutline />}{" "}
-          Compare
+          {isCompared ? <FaRegCheckCircle /> : <IoIosAddCircleOutline />} Compare
         </button>
+        {/* Detail Button */}
         <button
-          className="px-3 py-1.5 text-sm font-semibold text-white rounded-full shadow bg-amber-600 hover:bg-amber-700 focus:outline-none whitespace-nowrap"
+          className="px-3 py-1.5 text-base font-semibold text-white rounded-full shadow bg-amber-600 hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-300 whitespace-nowrap transition-all duration-150 hover:scale-105 active:scale-95"
           onClick={handleClick}
           tabIndex={0}
         >
-          See Detail
+          See Details
         </button>
       </div>
     </>

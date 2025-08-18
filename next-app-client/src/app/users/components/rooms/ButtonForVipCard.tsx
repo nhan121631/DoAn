@@ -12,16 +12,17 @@ import { IoIosAddCircleOutline } from "react-icons/io";
 import { useFavoriteStore } from "@/stores/favoriteStore";
 import { useCompareStore } from "@/stores/CompareStore";
 
-
 interface ButtonFavoriteProps {
   onClick?: () => void;
   room: RoomInUser;
   isFavorite?: boolean;
   onFavoriteChange?: (id: string) => void;
-
 }
 
-export function ButtonForVipCard({ room, onFavoriteChange }: ButtonFavoriteProps) {
+export function ButtonForVipCard({
+  room,
+  onFavoriteChange,
+}: ButtonFavoriteProps) {
   const { items, addItem } = useCompareStore((state) => state);
   const [isCompared, setIsCompared] = useState(false);
   const [messageApi, contextHolder] = message.useMessage();
@@ -29,7 +30,7 @@ export function ButtonForVipCard({ room, onFavoriteChange }: ButtonFavoriteProps
 
   const { data: session } = useSession();
   const router = useRouter();
-  
+
   const { favoriteRoomIds, addFavorite, removeFavorite } = useFavoriteStore();
   const isFavorite = favoriteRoomIds.has(room.id);
 
@@ -49,7 +50,6 @@ export function ButtonForVipCard({ room, onFavoriteChange }: ButtonFavoriteProps
     setIsCompared(items.some((item) => item.room.id === room.id));
   }, [items, room.id]);
 
-
   const handleFavorite = async () => {
     if (loading) return;
     if (!session) {
@@ -58,10 +58,9 @@ export function ButtonForVipCard({ room, onFavoriteChange }: ButtonFavoriteProps
     }
     setLoading(true);
     try {
-      const res = await fetch(
-        `/api/favorites/rooms/${room.id}`,
-        { method: isFavorite ? "DELETE" : "POST" }
-      );
+      const res = await fetch(`/api/favorites/rooms/${room.id}`, {
+        method: isFavorite ? "DELETE" : "POST",
+      });
 
       if (res.ok) {
         if (isFavorite) {
@@ -87,28 +86,44 @@ export function ButtonForVipCard({ room, onFavoriteChange }: ButtonFavoriteProps
       {contextHolder}
       <button
         aria-label="Favorite"
-        className={`transition-colors ${isFavorite ? "text-red-500" : "text-gray-400 hover:text-red-500"} ${loading ? "opacity-60 cursor-not-allowed" : ""}`}
+        className={`flex items-center justify-center rounded-full w-11 h-11 shadow-sm border border-gray-200 transition-all duration-200
+          ${
+            isFavorite
+              ? "bg-rose-100 text-rose-500 border-rose-200"
+              : "bg-white text-gray-400 hover:text-rose-500 hover:bg-rose-50 hover:border-rose-300"
+          }
+          ${loading ? "opacity-60 cursor-not-allowed" : "active:scale-95"}
+        `}
         onClick={handleFavorite}
         disabled={loading}
         type="button"
+        style={{ boxShadow: isFavorite ? "0 2px 8px 0 #fca5a533" : undefined }}
       >
-        <FaHeart size={22} />
-        {loading && <span className="ml-1 text-xs animate-spin">⏳</span>}
+        <FaHeart size={24} />
+        {loading && <span className="ml-2 text-xs animate-spin">⏳</span>}
       </button>
       <button
-        className={`flex items-center justify-center gap-1 px-5 py-2 rounded-full transition 
-      ${
-        isCompared
-          ? "bg-gray-200 text-gray-400 opacity-60 cursor-not-allowed"
-          : "bg-blue-500 text-white hover:bg-blue-600 active:bg-blue-700"
-      }`}
+        className={`flex items-center justify-center gap-2 px-5 py-2 rounded-full shadow-sm border border-gray-200 font-semibold text-base transition-all duration-200
+          ${
+            isCompared
+              ? "bg-gray-100 text-gray-400 border-gray-200 opacity-60 cursor-not-allowed"
+              : "bg-blue-500 text-white border-blue-500 hover:bg-white hover:text-blue-600 hover:border-blue-400 active:scale-95"
+          }
+        `}
         onClick={handleCompare}
         disabled={isCompared}
         type="button"
+        style={{ minWidth: 110 }}
       >
-        {isCompared ? <FaRegCheckCircle /> : <IoIosAddCircleOutline />} Compare
+        <span className="flex items-center">
+          {isCompared ? (
+            <FaRegCheckCircle size={20} />
+          ) : (
+            <IoIosAddCircleOutline size={22} />
+          )}
+        </span>
+        <span>Compare</span>
       </button>
     </>
   );
 }
-
