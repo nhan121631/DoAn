@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { MdPhone, MdMessage } from "react-icons/md";
+import { MdPhone, MdMessage, MdEmail } from "react-icons/md";
 import { FaRegBookmark, FaBookmark, FaTimes } from "react-icons/fa";
 import { IoShareSocialOutline, IoWarningOutline } from "react-icons/io5";
 import { getLandlordByRoomId } from "@/services/RoomService";
@@ -124,10 +124,14 @@ export default function UserInfoCard({ id }: { id: string }) {
         <Link
           href={`tel:${landlord.phone}` || `mailto:${landlord.email}`}
           className={`${
-            landlord.phone ? "bg-green-500 hover:bg-green-600" : "bg-gray-300"
+            landlord.phone ? "bg-green-500 hover:bg-green-600" : "bg-gray-500"
           } text-white font-semibold py-3 rounded-lg shadow-md flex items-center justify-center gap-2 transition duration-300`}
         >
-          <MdPhone className="h-5 w-5" />
+          {landlord.phone ? (
+            <MdPhone className="h-5 w-5" />
+          ) : (
+            <MdEmail className="h-5 w-5" />
+          )}
           {landlord.phone || landlord.email}
         </Link>
         <Link
