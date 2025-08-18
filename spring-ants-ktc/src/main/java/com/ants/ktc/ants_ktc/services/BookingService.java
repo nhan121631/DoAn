@@ -189,6 +189,10 @@ public class BookingService {
                         // Landlord từ 0 -> 1 (accept) hoặc 0 -> 2 (reject)
                         if (currentStatus == 0 && newStatus == 1) {
                                 booking.setStatus(newStatus);
+
+                                Room room = booking.getRoom();
+                                room.setAvailable(0);
+                                roomJpaRepository.save(room);
                                 message = "Booking accepted successfully";
                         } else if (currentStatus == 0 && newStatus == 2) {
                                 booking.setStatus(newStatus);
