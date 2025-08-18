@@ -93,7 +93,7 @@ export function ButtonForVipCard({ room, onFavoriteChange }: ButtonFavoriteProps
         type="button"
       >
         <FaHeart size={22} />
-        {loading && <span className="ml-1 animate-spin text-xs">⏳</span>}
+        {loading && <span className="ml-1 text-xs animate-spin">⏳</span>}
       </button>
       <button
         className={`flex items-center justify-center gap-1 px-5 py-2 rounded-full transition 

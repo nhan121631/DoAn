@@ -1,7 +1,6 @@
 package com.ants.ktc.ants_ktc.repositories;
 
 import java.sql.Date;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -213,16 +212,16 @@ public interface RoomJpaRepository extends JpaRepository<Room, UUID> {
                         @Param("wardId") Long wardId,
                         Pageable pageable);
 
-@Query(value = "SELECT LOWER(HEX(r.id)) AS id, r.title AS title, r.price_month AS priceMonth, r.post_start_date AS postStartDate, " +
-               "(SELECT i.url FROM images i WHERE i.room_id = r.id ORDER BY i.id ASC LIMIT 1) AS imageUrl " +
-               "FROM rooms r " +
-               "WHERE r.available = 0 " +
-               "AND r.post_end_date > CURRENT_DATE " +
-               "AND r.hidden = 0 " +
-               "AND r.is_removed = 0 " +
-               "AND r.approval = 1 " +
-               "AND r.post_start_date >= :limitday",
-       nativeQuery = true)
-List<RoomNewProjection> findRecentRooms(@Param("limitday") Date limitday, Pageable pageable);
+        @Query(value = "SELECT LOWER(HEX(r.id)) AS id, r.title AS title, r.price_month AS priceMonth, r.post_start_date AS postStartDate, "
+                        +
+                        "(SELECT i.url FROM images i WHERE i.room_id = r.id ORDER BY i.id ASC LIMIT 1) AS imageUrl " +
+                        "FROM rooms r " +
+                        "WHERE r.available = 0 " +
+                        "AND r.post_end_date > CURRENT_DATE " +
+                        "AND r.hidden = 0 " +
+                        "AND r.is_removed = 0 " +
+                        "AND r.approval = 1 " +
+                        "AND r.post_start_date >= :limitday", nativeQuery = true)
+        List<RoomNewProjection> findRecentRooms(@Param("limitday") Date limitday, Pageable pageable);
 
 }

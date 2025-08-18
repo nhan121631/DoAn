@@ -75,6 +75,7 @@ export default function RoomCartActions({ room, onFavoriteChange }: RoomCardProp
       } else {
         throw new Error("Failed to update favorite status");
       }
+
     } catch {
       messageApi.error("Failed to update favorite status");
     } finally {

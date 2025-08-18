@@ -16,7 +16,6 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     if (!roomId) {
       return NextResponse.json({ message: "Missing roomId parameter" }, { status: 400 })
     }
-
     const response = await fetch(`${API_URL}/favorites/rooms/${roomId}`, {
       method: "POST",
       headers: {
@@ -50,7 +49,6 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
     if (!roomId) {
       return NextResponse.json({ message: "Missing roomId parameter" }, { status: 400 })
     }
-
     const response = await fetch(`${API_URL}/favorites/rooms/${roomId}`, {
       method: "DELETE",
       headers: {
