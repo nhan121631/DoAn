@@ -5,7 +5,7 @@ import { URL_IMAGE } from "@/services/Constant";
 import { RoomInUser } from "@/types/types";
 import { FaMapMarkerAlt } from "react-icons/fa";
 import { PiRuler } from "react-icons/pi";
-import RoomCartActions from "./RoomCardActions";
+import RoomCardActions from "./RoomCardActions";
 
 export interface RoomCardProps {
   room: RoomInUser;
@@ -29,13 +29,13 @@ const RoomCard: React.FC<RoomCardProps> = ({
       {/* Button hover center */}
       <div className="absolute z-40 transition-all duration-300 -translate-x-1/2 -translate-y-1/2 opacity-0 left-1/2 top-1/2 group-hover:opacity-100">
         {/* <RoomCartActions room={room} /> */}
-        <RoomCartActions room={room} isFavorite={isFavorite} onFavoriteChange={onFavoriteChange}/>
+        <RoomCardActions room={room} isFavorite={isFavorite} onFavoriteChange={onFavoriteChange}/>
 
       </div>
       {/* Ảnh nền */}
       <div className="relative w-full h-full pointer-events-none select-none">
         <Image
-          src={URL_IMAGE + room.images?.[0]?.url || "/placeholder.jpg"}
+          src={URL_IMAGE + room.images?.[0]?.url || "/images/room-placeholder.jpg"}
           alt={room.title}
           fill
           className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-105"

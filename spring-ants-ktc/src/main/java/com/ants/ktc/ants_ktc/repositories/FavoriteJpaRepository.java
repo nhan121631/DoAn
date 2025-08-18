@@ -17,7 +17,10 @@ public interface FavoriteJpaRepository extends JpaRepository<Favorite, UUID> {
 
     void deleteByUserIdAndRoomId(UUID userId, UUID roomId);
 
-    @Query("SELECT f FROM Favorite f JOIN FETCH f.room WHERE f.user.id = :userId")
+    // @Query("SELECT f FROM Favorite f JOIN FETCH f.room WHERE f.user.id =
+    // :userId")
+    // Page<Favorite> findByUserIdWithRoom(@Param("userId") UUID userId, Pageable
+    // pageable);
+    @Query("SELECT f FROM Favorite f JOIN FETCH f.room WHERE f.user.id = :userId ORDER BY f.createdDate DESC")
     Page<Favorite> findByUserIdWithRoom(@Param("userId") UUID userId, Pageable pageable);
-
 }
