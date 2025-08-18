@@ -8,7 +8,10 @@ import { FaRegBookmark, FaBookmark, FaTimes } from "react-icons/fa";
 import { IoShareSocialOutline, IoWarningOutline } from "react-icons/io5";
 import { getLandlordByRoomId } from "@/services/RoomService";
 import { LandlordDetailByRoom } from "@/types/types";
-import { URL_IMAGE } from "@/services/Constant";
+import { API_URL, URL_IMAGE } from "@/services/Constant";
+import ChatClient from "@/app/components/chat/ChatClient";
+import { useSession } from "next-auth/react";
+import useWebSocket from "@/app/components/chat/useWebSocket";
 
 export default function UserInfoCard({ id }: { id: string }) {
   const [isSaved, setIsSaved] = useState(false);
@@ -20,8 +23,35 @@ export default function UserInfoCard({ id }: { id: string }) {
   const [contactName, setContactName] = useState("");
   const [contactPhone, setContactPhone] = useState("");
   const [landlord, setLandlord] = useState<LandlordDetailByRoom | null>(null);
+  const [showChat, setShowChat] = useState(false);
+  const { data: session } = useSession();
 
   const currentPostUrl = `http://localhost:3000/detail/${id}`;
+
+  // const { messages, sendMessage: wsSendMessage } = useWebSocket(
+  //   session?.user?.id || ""
+  // );
+
+  // // Gửi tin nhắn: chỉ gửi qua WebSocket, không thêm local vào state (chỉ render khi nhận từ server)
+  // const handleSendMessage = (toUserId: string, message: string) => {
+  //   wsSendMessage(toUserId, message);
+  // };
+  const [onlineUsers, setOnlineUsers] = useState<string[]>([]);
+  useEffect(() => {
+    async function fetchUsers() {
+      try {
+        const res = await fetch(`${API_URL}/online-users`);
+        const data = await res.json();
+
+        setOnlineUsers(data);
+      } catch (e) {
+        setOnlineUsers([]);
+      }
+    }
+    fetchUsers();
+    const interval = setInterval(fetchUsers, 3000); // Cập nhật mỗi 3s
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     async function fetchData() {
@@ -96,6 +126,8 @@ export default function UserInfoCard({ id }: { id: string }) {
       setShowReportModal(false);
     }
   };
+  console.log("landlord_id: ", landlord.id);
+  console.log("onlineUsers: ", onlineUsers);
 
   return (
     <div className="bg-white rounded-xl shadow-lg py-15 px-6 min-h-96 flex flex-col items-center text-center">
@@ -110,13 +142,23 @@ export default function UserInfoCard({ id }: { id: string }) {
       <h3 className="text-xl font-bold mt-4 text-gray-800">
         {landlord.fullName}
       </h3>
-      <p className="text-sm text-green-600 flex items-center gap-1 mt-1">
-        <span className="relative flex h-2 w-2">
-          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-          <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-        </span>
-        Active
-      </p>
+      {onlineUsers.includes(landlord.id) ? (
+        <p className="text-sm text-green-600 flex items-center gap-1 mt-1">
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+          </span>
+          Active
+        </p>
+      ) : (
+        <p className="text-sm text-red-600 flex items-center gap-1 mt-1">
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+          </span>
+          Offline
+        </p>
+      )}
       <p className="text-xs text-gray-500 mt-1">
         {landlord.amountPost} Post - Joined since: {landlord.createDate}
       </p>
@@ -134,7 +176,7 @@ export default function UserInfoCard({ id }: { id: string }) {
           )}
           {landlord.phone || landlord.email}
         </Link>
-        <Link
+        {/* <Link
           href={
             `https://zalo.me/${landlord.phone}` || `mailto:${landlord.email}`
           }
@@ -144,7 +186,37 @@ export default function UserInfoCard({ id }: { id: string }) {
         >
           <MdMessage className="h-5 w-5" />
           Chat with Zalo
-        </Link>
+        </Link> */}
+        <button
+          onClick={() => setShowChat(true)}
+          className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 rounded-lg shadow-md flex items-center justify-center gap-2 transition duration-300"
+        >
+          Chat with landlord
+        </button>
+        {showChat && (
+          <div
+            className="fixed bottom-6 right-6 z-50 flex items-end"
+            style={{ pointerEvents: "none" }}
+          >
+            <div
+              className=" rounded-xl shadow-2xl p-0 max-w-sm w-[500px] relative "
+              style={{ pointerEvents: "auto" }}
+            >
+              <button
+                className="absolute top-6 right-4 text-gray-500 hover:text-gray-800 text-4xl"
+                onClick={() => setShowChat(false)}
+              >
+                &times;
+              </button>
+              <ChatClient
+                userId={session?.user?.id ? String(session.user.id) : ""}
+                defaultToUserId={landlord.id ? String(landlord.id) : ""}
+                defaultToUserName={landlord.fullName}
+                // sendMessage={handleSendMessage}
+              />
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="flex justify-around w-full mt-6 text-gray-600 text-sm">
