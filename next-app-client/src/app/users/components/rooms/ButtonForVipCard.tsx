@@ -11,7 +11,6 @@ import { IoIosAddCircleOutline } from "react-icons/io";
 import { useFavoriteStore } from "@/stores/FavoriteStore";
 import { useCompareStore } from "@/stores/CompareStore";
 
-
 interface ButtonFavoriteProps {
   onClick?: () => void;
   room: RoomInUser;
@@ -29,7 +28,7 @@ export function ButtonForVipCard({ room, onFavoriteChange, showHeartOnly }: Butt
 
   const { data: session } = useSession();
   const router = useRouter();
-  
+
   const { favoriteRoomIds, addFavorite, removeFavorite } = useFavoriteStore();
   const isFavorite = favoriteRoomIds.has(room.id);
 
@@ -48,7 +47,6 @@ export function ButtonForVipCard({ room, onFavoriteChange, showHeartOnly }: Butt
   useEffect(() => {
     setIsCompared(items.some((item) => item.room.id === room.id));
   }, [items, room.id]);
-
 
   const handleFavorite = async () => {
     if (!session) {
@@ -112,17 +110,26 @@ if (showHeartOnly) {
       <FaHeart size={22} />
     </button>
       <button
-        className={`flex items-center justify-center gap-1 px-5 py-2 rounded-full transition 
-      ${
-        isCompared
-          ? "bg-gray-200 text-gray-400 opacity-60 cursor-not-allowed"
-          : "bg-blue-500 text-white hover:bg-blue-600 active:bg-blue-700"
-      }`}
+        className={`flex items-center justify-center gap-2 px-5 py-2 rounded-full shadow-sm border border-gray-200 font-semibold text-base transition-all duration-200
+          ${
+            isCompared
+              ? "bg-gray-100 text-gray-400 border-gray-200 opacity-60 cursor-not-allowed"
+              : "bg-blue-500 text-white border-blue-500 hover:bg-white hover:text-blue-600 hover:border-blue-400 active:scale-95"
+          }
+        `}
         onClick={handleCompare}
         disabled={isCompared}
         type="button"
+        style={{ minWidth: 110 }}
       >
-        {isCompared ? <FaRegCheckCircle /> : <IoIosAddCircleOutline />} Compare
+        <span className="flex items-center">
+          {isCompared ? (
+            <FaRegCheckCircle size={20} />
+          ) : (
+            <IoIosAddCircleOutline size={22} />
+          )}
+        </span>
+        <span>Compare</span>
       </button>
     </>
   );

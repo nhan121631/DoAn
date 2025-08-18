@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import {
@@ -20,6 +19,7 @@ import NoLookingForFilter from "../Filter/NoLookingForFilter";
 
 // import { getFavoriteRoomIds } from "@/services/FavoriteService";
 import { getAllFavoriteIds } from "@/services/FavoriteService";
+import FilterForm from "../Filter/FilterForm";
 
 // Lấy danh sách ID yêu thích trên Server
 // const initialFavoriteIds = await getFavoriteRoomIds();
@@ -287,6 +287,9 @@ export default async function RentalRooms({
           <div className="hidden lg:block">
             <CardFilter />
           </div>
+          <div className="mt-3 hidden lg:block">
+            <FilterForm /> 
+          </div>
           <div className="w-[80%] lg:w-[300px]">
             <FeaturedListingsCard />
           </div>
@@ -312,6 +315,7 @@ export default async function RentalRooms({
                 isForSale={false}
                 isFeatured={false}
                 isFavorite={initialFavoriteIds.includes(room.id)}
+                custom={index}
               />
             ))}
           </div>

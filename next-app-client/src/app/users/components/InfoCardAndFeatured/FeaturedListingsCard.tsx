@@ -28,42 +28,46 @@ export default async function FeaturedListingsCard() {
     return `${Math.floor(diff / 86400)} days ago`;
   }
   return (
-    <div className="p-6 mt-6 border shadow-lg bg-sky-50 rounded-xl border-sky-400">
-      <h3 className="mb-4 text-xl font-bold text-red-600">Newest posts</h3>
-      <div className="flex flex-col gap-3">
+    <div className="p-5 mt-6 border shadow-lg bg-white rounded-xl border-sky-200 max-w-full overflow-hidden">
+      <h3 className="mb-4 text-xl font-bold text-red-600 flex items-center gap-2">
+        <svg width="20" height="20" fill="none" viewBox="0 0 20 20" className="text-red-400"><circle cx="10" cy="10" r="9" fill="#f87171" opacity="0.15"/><circle cx="10" cy="10" r="4" fill="#f87171"/></svg>
+        Newest posts
+      </h3>
+      <div className="flex flex-col gap-2 w-full">
         {featuredListings.map((listing, index) => (
           <React.Fragment key={listing.id}>
             <Link
               href={`/detail/${listing.id}`}
-              className="flex w-full gap-2 p-2 transition duration-200 rounded-lg hover:bg-sky-100"
+              className="flex w-full gap-2 p-2 transition duration-200 rounded-lg items-center group hover:bg-emerald-50 hover:shadow-md hover:border-emerald-200 border border-transparent focus-within:ring-2 focus-within:ring-emerald-300"
+              style={{ maxWidth: '100%' }}
             >
-              <div className="relative flex-shrink-0 w-24 h-24 overflow-hidden rounded-md">
+              <div className="relative flex-shrink-0 w-20 h-20 overflow-hidden rounded-md bg-gray-100 border border-gray-200">
                 <Image
                   src={`${URL_IMAGE}` + listing.imageUrl}
                   alt={listing.title}
                   fill
                   style={{ objectFit: "cover" }}
-                  sizes="(max-width: 640px) 100vw, 300px"
-                  className="rounded-md"
+                  sizes="(max-width: 640px) 100vw, 120px"
+                  className="rounded-md group-hover:scale-105 transition-transform duration-300"
                   priority
                 />
                 {listing.isHot && (
-                  <span className="absolute left-0 z-10 w-20 px-2 py-0 text-xs text-center text-white bg-red-600 shadow-md rounded-xs top-2">
-                    CHO THUÊ NHANH
+                  <span className="absolute left-0 z-10 w-16 px-2 py-0.5 text-xs text-center text-white bg-red-600 shadow rounded top-2 font-bold tracking-wide animate-pulse">
+                    HOT
                   </span>
                 )}
               </div>
-              <div className="flex flex-col justify-center flex-grow">
-                <p className="text-sm font-semibold text-gray-800 md:text-base line-clamp-2">
+              <div className="flex flex-col justify-center flex-grow min-w-0">
+                <p className="text-sm font-semibold text-gray-800 md:text-base line-clamp-2 group-hover:text-emerald-700 transition-colors duration-200">
                   {listing.title}
                 </p>
-                <p className="mt-1 text-[14px] font-semibold text-green-700 md:text-base">
+                <p className="mt-1 text-[15px] font-bold text-amber-700 md:text-base group-hover:text-amber-800 transition-colors duration-200">
                   {listing.priceMonth
                     ? Number(listing.priceMonth).toLocaleString("vi-VN")
                     : 0}
-                  ₫/month
+                  <span className="text-xs font-semibold text-gray-500 ml-1">₫/month</span>
                 </p>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-gray-500 group-hover:text-gray-700 transition-colors duration-200">
                   {listing.postStartDate
                     ? getRelativeTime(listing.postStartDate)
                     : ""}
@@ -71,7 +75,7 @@ export default async function FeaturedListingsCard() {
               </div>
             </Link>
             {index < featuredListings.length - 1 && (
-              <hr className="border-t border-gray-300" />
+              <hr className="border-t border-gray-200 mx-2" />
             )}
           </React.Fragment>
         ))}
