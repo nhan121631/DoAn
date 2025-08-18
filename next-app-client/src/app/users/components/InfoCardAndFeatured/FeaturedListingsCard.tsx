@@ -29,7 +29,7 @@ export default async function FeaturedListingsCard() {
   }
   return (
     <div className="p-6 mt-6 border shadow-lg bg-sky-50 rounded-xl border-sky-400">
-      <h3 className="mb-4 text-xl font-bold text-gray-800">Newest posts</h3>
+      <h3 className="mb-4 text-xl font-bold text-red-600">Newest posts</h3>
       <div className="flex flex-col gap-3">
         {featuredListings.map((listing, index) => (
           <React.Fragment key={listing.id}>

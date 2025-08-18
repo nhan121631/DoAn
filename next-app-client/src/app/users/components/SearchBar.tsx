@@ -105,11 +105,12 @@ export default function SearchBar() {
                   value={inputValue}
                   onChange={handleSearchChange}
                   onFocus={() => setShowSuggest(true)}
+                  autoComplete="off"
                   placeholder="Enter Keyword"
                 />
                 {showSuggest && (loading || textSearchs.length > 0) && (
                   <ul
-                    className="absolute left-0 md:left-0 bg-white border rounded shadow-lg z-50 max-h-60 overflow-auto w-full md:w-[400px] scrollbar-hide"
+                    className="absolute left-0 md:left-14 bg-white border rounded shadow-lg z-50 max-h-60 overflow-auto w-full md:w-[400px] scrollbar-hide"
                     style={{ top: "100%", marginTop: 0 }}
                   >
                     {textSearchs.map((item, idx) => (

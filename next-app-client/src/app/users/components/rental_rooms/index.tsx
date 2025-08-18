@@ -21,15 +21,9 @@ import NoLookingForFilter from "../Filter/NoLookingForFilter";
 // import { getFavoriteRoomIds } from "@/services/FavoriteService";
 import { getAllFavoriteIds } from "@/services/FavoriteService";
 
-
-
-
-
-  // Lấy danh sách ID yêu thích trên Server
-  // const initialFavoriteIds = await getFavoriteRoomIds();
-  const initialFavoriteIds = await getAllFavoriteIds();
-
-
+// Lấy danh sách ID yêu thích trên Server
+// const initialFavoriteIds = await getFavoriteRoomIds();
+const initialFavoriteIds = await getAllFavoriteIds();
 
 export interface RentalRoomsSearchParams {
   page?: string | string[];
@@ -46,8 +40,6 @@ export interface RentalRoomsSearchParams {
   [key: string]: string | string[] | undefined;
 }
 
-
-
 export default async function RentalRooms({
   searchParams,
 }: {
@@ -57,14 +49,9 @@ export default async function RentalRooms({
 
   const params: RentalRoomsSearchParams = searchParams ? searchParams : {};
 
-
   // Helper ép về string
   const getString = (v: string | string[] | undefined) =>
     Array.isArray(v) ? v[0] : v ?? "";
-
-    
-
-  
 
   const provinceId = getString(params.provinceId);
   const districtId = getString(params.districtId);
@@ -92,7 +79,7 @@ export default async function RentalRooms({
   let filteredRooms: PaginatedResponse<RoomInUser> | null = null;
   let roomVips: PaginatedResponse<RoomInUser> | null = null;
   let roomNormals: PaginatedResponse<RoomInUser> | null = null;
-  const sizeSearch = 2;
+  const sizeSearch = 6;
   const pageSearch = Number(params?.pageSearch ?? 0);
   const size = 4;
   const page = Number(params?.page ?? 0);
@@ -167,9 +154,9 @@ export default async function RentalRooms({
                     room={room}
                     isForSale={false}
                     isFeatured={false}
-                  
-          //           isFavorite={favoriteRoomIds.includes(room.id)}
-          // onFavoriteChange={handleFavoriteChange}
+
+                    //           isFavorite={favoriteRoomIds.includes(room.id)}
+                    // onFavoriteChange={handleFavoriteChange}
                   />
                 ))}
               </div>
@@ -240,8 +227,12 @@ export default async function RentalRooms({
               <div className="flex flex-col items-center w-full gap-4">
                 {roomVips.data.map((room, index) => (
                   // <RoomVipCard key={index} room={room} />
-                  <RoomVipCard key={index} room={room}  isFavorite={initialFavoriteIds.includes(room.id)}/>
-// isFavorite={false}
+                  <RoomVipCard
+                    key={index}
+                    room={room}
+                    isFavorite={initialFavoriteIds.includes(room.id)}
+                  />
+                  // isFavorite={false}
                 ))}
                 <div className="flex items-center justify-center gap-4 mt-8">
                   {/* Previous Button */}
@@ -321,7 +312,6 @@ export default async function RentalRooms({
                 isForSale={false}
                 isFeatured={false}
                 isFavorite={initialFavoriteIds.includes(room.id)}
-                
               />
             ))}
           </div>
@@ -372,4 +362,3 @@ export default async function RentalRooms({
     </>
   );
 }
-
