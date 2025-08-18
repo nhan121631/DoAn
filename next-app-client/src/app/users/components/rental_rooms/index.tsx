@@ -18,14 +18,17 @@ import RoomVipCard from "../rooms/RoomVipCard";
 
 import NoLookingForFilter from "../Filter/NoLookingForFilter";
 
-import { getFavoriteRoomIds } from "@/services/FavoriteService";
+// import { getFavoriteRoomIds } from "@/services/FavoriteService";
+import { getAllFavoriteIds } from "@/services/FavoriteService";
 
 
 
 
 
   // Lấy danh sách ID yêu thích trên Server
-  const initialFavoriteIds = await getFavoriteRoomIds();
+  // const initialFavoriteIds = await getFavoriteRoomIds();
+  const initialFavoriteIds = await getAllFavoriteIds();
+
 
 
 export interface RentalRoomsSearchParams {
