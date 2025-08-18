@@ -30,7 +30,7 @@ const RoomCard: React.FC<RoomCardProps> = ({
     <motion.div
       initial={{ opacity: 0, y: 18 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.15 }}
+      viewport={{ amount: 0.15 }} // once: true để chỉ chạy một lần khi vào view
       transition={{ duration: 0.7, ease: "easeOut", delay: custom * 0.19 }}
       className="rounded-2xl overflow-hidden shadow-lg bg-white relative group w-[320px] h-[370px] border border-gray-100 hover:shadow-2xl hover:-translate-y-1 hover:scale-[1.015] transition-all duration-300 cursor-pointer focus-within:ring-2 focus-within:ring-amber-400"
       style={{ willChange: "transform, box-shadow, border-color, background" }}
