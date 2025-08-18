@@ -49,7 +49,6 @@ const RoomCard: React.FC<RoomCardProps> = ({
       <div className="relative w-full h-[60%] min-h-[180px] max-h-[220px] select-none">
         <Image
           src={room.images?.[0]?.url ? URL_IMAGE + room.images[0].url : "/placeholder.jpg"}
-          src={URL_IMAGE + room.images?.[0]?.url || "/images/room-placeholder.jpg"}
           alt={room.title}
           fill
           className="object-cover w-full h-full transition-transform duration-300"  
@@ -73,7 +72,7 @@ const RoomCard: React.FC<RoomCardProps> = ({
         {/* Nút action luôn hiển thị, nổi bật */}
         <div className="absolute z-40 right-3 bottom-3">
           <div>
-            <RoomCartActions room={room} isFavorite={isFavorite} onFavoriteChange={onFavoriteChange} />
+            <RoomCardActions room={room} isFavorite={isFavorite} onFavoriteChange={onFavoriteChange} />
           </div>
         </div>
       </div>
