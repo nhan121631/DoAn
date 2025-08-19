@@ -95,6 +95,13 @@ public class MessagesService {
                                 ? other.getProfile().getFullName()
                                 : other.getUsername();
                 map.put("name", name);
+
+                // Đếm số tin nhắn chưa đọc từ user này gửi tới userId
+                int unreadCount = messagesRepository
+                        .findByFromUser_IdAndToUser_IdAndIsReadFalse(other.getId(), userId)
+                        .size();
+                map.put("unreadCount", unreadCount);
+
                 result.add(map);
             }
         });

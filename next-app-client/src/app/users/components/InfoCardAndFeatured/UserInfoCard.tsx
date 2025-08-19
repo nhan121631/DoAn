@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { MdPhone, MdMessage, MdEmail } from "react-icons/md";
+import { MdPhone, MdEmail } from "react-icons/md";
 import { FaRegBookmark, FaBookmark, FaTimes } from "react-icons/fa";
 import { IoShareSocialOutline, IoWarningOutline } from "react-icons/io5";
 import { getLandlordByRoomId } from "@/services/RoomService";
@@ -11,7 +11,7 @@ import { LandlordDetailByRoom } from "@/types/types";
 import { API_URL, URL_IMAGE } from "@/services/Constant";
 import ChatClient from "@/app/components/chat/ChatClient";
 import { useSession } from "next-auth/react";
-import useWebSocket from "@/app/components/chat/useWebSocket";
+import { redirect } from "next/navigation";
 
 export default function UserInfoCard({ id }: { id: string }) {
   const [isSaved, setIsSaved] = useState(false);
@@ -188,7 +188,12 @@ export default function UserInfoCard({ id }: { id: string }) {
           Chat with Zalo
         </Link> */}
         <button
-          onClick={() => setShowChat(true)}
+          onClick={() => {
+            if (!session?.user?.id) {
+              redirect("/auth/login");
+            }
+            setShowChat(true);
+          }}
           className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 rounded-lg shadow-md flex items-center justify-center gap-2 transition duration-300"
         >
           Chat with landlord
@@ -199,11 +204,11 @@ export default function UserInfoCard({ id }: { id: string }) {
             style={{ pointerEvents: "none" }}
           >
             <div
-              className=" rounded-xl shadow-2xl p-0 max-w-sm w-[500px] relative "
+              className=" rounded-xl shadow-2xl p-0 max-w-sm w-[600px] relative "
               style={{ pointerEvents: "auto" }}
             >
               <button
-                className="absolute top-6 right-4 text-gray-500 hover:text-gray-800 text-4xl"
+                className="absolute top-4 right-6 text-gray-500 hover:text-gray-800 text-4xl z-50"
                 onClick={() => setShowChat(false)}
               >
                 &times;
@@ -234,7 +239,9 @@ export default function UserInfoCard({ id }: { id: string }) {
           {isSaved ? "Tin đã lưu" : "Lưu tin"}
         </button>
         <button
-          onClick={() => setShowShareModal(true)}
+          onClick={() => {
+            setShowShareModal(true);
+          }}
           className="flex flex-col items-center hover:text-blue-600 transition w-28"
         >
           <IoShareSocialOutline className="h-6 w-6" />

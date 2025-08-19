@@ -1,6 +1,7 @@
+// Fixed version - giải quyết vấn đề realtime khi click sidebar
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import ChatClient from "@/app/components/chat/ChatClient";
 import LandlordChatAutoOpen from "./LandlordChatAutoOpen";
 import { useSession } from "next-auth/react";
@@ -11,6 +12,7 @@ interface ChatUser {
   id: string;
   name?: string;
   lastMessageTime?: Date;
+  unreadCount?: number;
 }
 
 interface ParsedMessage {
@@ -24,6 +26,7 @@ interface ParsedMessage {
 export default function LandlordManageChatPage() {
   const { data: session } = useSession();
   const landlordId = (session?.user?.id ?? "") + "";
+  const [readUserIds, setReadUserIds] = useState<string[]>([]);
 
   const [userList, setUserList] = useState<ChatUser[]>([]);
   const [selectedUserId, setSelectedUserId] = useState<string>("");
@@ -35,7 +38,10 @@ export default function LandlordManageChatPage() {
   const landlordSelectedRef = useRef(false);
   const { messages, sendMessage: wsSendMessage } = useWebSocket(landlordId);
 
-  // Helper function to parse messages safely
+  // Sử dụng useRef để tránh re-render khi click sidebar
+  const processedMessagesRef = useRef(new Set<string>());
+
+  // Helper function to parse messages safely - memoized
   const parseMessage = useCallback((raw: any): ParsedMessage | null => {
     try {
       const obj = typeof raw === "string" ? JSON.parse(raw) : raw;
@@ -45,9 +51,14 @@ export default function LandlordManageChatPage() {
     }
   }, []);
 
-  // Helper function to update user list
+  // Helper function to update user list - optimized
   const updateUserList = useCallback(
-    (userId: string, userName?: string, lastMessageTime?: Date) => {
+    (
+      userId: string,
+      userName?: string,
+      lastMessageTime?: Date,
+      unreadCount?: number
+    ) => {
       if (!userId || userId === landlordId) return;
 
       setUserList((prev) => {
@@ -57,19 +68,31 @@ export default function LandlordManageChatPage() {
           const existing = prev[existingUserIndex];
           const newName = userName || existing.name || userId;
           const newTime = lastMessageTime || existing.lastMessageTime;
-          // Only update if something actually changed
+          const newUnread =
+            typeof unreadCount === "number"
+              ? unreadCount
+              : existing.unreadCount;
+
+          // Chỉ update nếu có thay đổi thực sự
           const existingTime = existing.lastMessageTime
             ? +existing.lastMessageTime
             : 0;
           const compareTime = newTime ? +newTime : 0;
-          if (existing.name === newName && existingTime === compareTime) {
-            return prev;
+
+          if (
+            existing.name === newName &&
+            existingTime === compareTime &&
+            existing.unreadCount === newUnread
+          ) {
+            return prev; // Không thay đổi state -> không trigger re-render
           }
+
           const updatedList = [...prev];
           updatedList[existingUserIndex] = {
             ...existing,
             name: newName,
             lastMessageTime: newTime,
+            unreadCount: newUnread,
           };
           return updatedList;
         } else {
@@ -80,6 +103,7 @@ export default function LandlordManageChatPage() {
               id: userId,
               name: userName || userId,
               lastMessageTime: lastMessageTime || new Date(),
+              unreadCount: typeof unreadCount === "number" ? unreadCount : 0,
             },
           ];
         }
@@ -88,50 +112,78 @@ export default function LandlordManageChatPage() {
     [landlordId]
   );
 
-  // Process WebSocket messages
-  useEffect(() => {
-    if (!Array.isArray(messages)) return;
+  // FIX: Tách riêng việc xử lý messages để tránh conflict với click events
+  const processWebSocketMessages = useCallback(() => {
+    if (!Array.isArray(messages) || messages.length === 0) return;
+
+    // Batch process messages để giảm số lần re-render
+    const messagesToProcess = messages.filter((raw) => {
+      const messageId = typeof raw === "string" ? raw : JSON.stringify(raw);
+      return !processedMessagesRef.current.has(messageId);
+    });
+
+    if (messagesToProcess.length === 0) return;
 
     setUserList((prev) => {
-      // Build a map of userId -> lastMessageTime
       const lastTimes = new Map<string, Date>();
       prev.forEach((u) => {
         if (u.lastMessageTime) lastTimes.set(u.id, u.lastMessageTime);
       });
-      let changed = false;
+
       let next = [...prev];
-      messages.forEach((raw) => {
+      let changed = false;
+
+      messagesToProcess.forEach((raw) => {
+        const messageId = typeof raw === "string" ? raw : JSON.stringify(raw);
+        processedMessagesRef.current.add(messageId);
+
         const parsedMessage = parseMessage(raw);
-        if (!parsedMessage?.fromUserId) return;
+        if (
+          !parsedMessage?.fromUserId ||
+          parsedMessage.fromUserId === landlordId
+        )
+          return;
+
         const userId = parsedMessage.fromUserId;
         const userName = parsedMessage.fromUserName;
         const messageTime = parsedMessage.timestamp
           ? new Date(parsedMessage.timestamp)
           : new Date();
+
         const lastTime = lastTimes.get(userId);
-        if (!lastTime || messageTime > lastTime) {
-          // Update or add user
-          const idx = next.findIndex((u) => u.id === userId);
-          if (idx >= 0) {
-            next[idx] = {
-              ...next[idx],
-              name: userName || next[idx].name || userId,
-              lastMessageTime: messageTime,
-            };
-          } else {
-            next.push({
-              id: userId,
-              name: userName || userId,
-              lastMessageTime: messageTime,
-            });
-          }
+        const idx = next.findIndex((u) => u.id === userId);
+
+        if (idx === -1) {
+          next.push({
+            id: userId,
+            name: userName || userId,
+            lastMessageTime: messageTime,
+          });
+          lastTimes.set(userId, messageTime);
+          changed = true;
+        } else if (!lastTime || messageTime > lastTime) {
+          next[idx] = {
+            ...next[idx],
+            name: userName || next[idx].name || userId,
+            lastMessageTime: messageTime,
+          };
           lastTimes.set(userId, messageTime);
           changed = true;
         }
       });
+
       return changed ? next : prev;
     });
-  }, [messages, parseMessage]);
+  }, [messages, parseMessage, landlordId]);
+
+  // FIX: Sử dụng setTimeout để delay xử lý messages, tránh conflict với UI events
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      processWebSocketMessages();
+    }, 100); // Delay ngắn để UI events hoàn thành trước
+
+    return () => clearTimeout(timeoutId);
+  }, [processWebSocketMessages]);
 
   // Load initial user list
   useEffect(() => {
@@ -155,6 +207,7 @@ export default function LandlordManageChatPage() {
               lastMessageTime: user.lastMessageTime
                 ? new Date(user.lastMessageTime)
                 : new Date(),
+              unreadCount: user.unreadCount || 0,
             }))
           );
         } else {
@@ -171,8 +224,8 @@ export default function LandlordManageChatPage() {
       });
   }, [landlordId]);
 
-  // Calculate unread user IDs with better type safety
-  const unreadUserIds = useCallback(() => {
+  // Memoize unread calculation để tránh re-calculate không cần thiết
+  const currentUnreadUserIds = useMemo(() => {
     if (!Array.isArray(messages)) return [];
 
     const landlordIdStr = String(landlordId).trim();
@@ -185,29 +238,33 @@ export default function LandlordManageChatPage() {
       const toId = String(parsedMessage.toUserId || "").trim();
       const fromId = String(parsedMessage.fromUserId || "").trim();
 
-      // Only count messages sent to landlord that are unread and not from landlord
       if (
         toId === landlordIdStr &&
         fromId &&
         fromId !== landlordIdStr &&
-        parsedMessage.isRead !== true
+        parsedMessage.isRead !== true &&
+        !readUserIds.includes(fromId)
       ) {
         unreadIds.add(fromId);
       }
     });
 
     return Array.from(unreadIds);
-  }, [messages, landlordId, parseMessage]);
+  }, [messages, landlordId, parseMessage, readUserIds]);
 
-  const currentUnreadUserIds = unreadUserIds();
-
-  // Handle user selection
+  // FIX: Optimize user selection handler
   const handleUserSelect = useCallback(
     (user: ChatUser) => {
       setSelectedUserId(user.id);
+      setReadUserIds((prev) => {
+        if (prev.includes(user.id)) return prev;
+        return [...prev, user.id];
+      });
+
       landlordSelectedRef.current = true;
-      // Ensure user is in the list (defensive programming)
-      updateUserList(user.id, user.name);
+
+      // Khi click vào user, set unreadCount về 0 để mất highlight ngay trên frontend
+      updateUserList(user.id, user.name, undefined, 0);
     },
     [updateUserList]
   );
@@ -219,12 +276,14 @@ export default function LandlordManageChatPage() {
     }
   }, [selectedUserId]);
 
-  // Sort users by last message time (most recent first)
-  const sortedUserList = [...userList].sort((a, b) => {
-    const timeA = a.lastMessageTime?.getTime() || 0;
-    const timeB = b.lastMessageTime?.getTime() || 0;
-    return timeB - timeA;
-  });
+  // Memoize sorted user list để tránh re-sort không cần thiết
+  const sortedUserList = useMemo(() => {
+    return [...userList].sort((a, b) => {
+      const timeA = a.lastMessageTime?.getTime() || 0;
+      const timeB = b.lastMessageTime?.getTime() || 0;
+      return timeB - timeA;
+    });
+  }, [userList]);
 
   return (
     <div className="flex min-h-[calc(100vh-4rem)] bg-gradient-to-br from-slate-50 to-blue-50 dark:bg-gray-900">
@@ -297,7 +356,10 @@ export default function LandlordManageChatPage() {
           ) : (
             <div className="space-y-2 max-h-[calc(100vh-200px)] overflow-y-auto scrollbar-none">
               {sortedUserList.map((user, index) => {
-                const isUnread = currentUnreadUserIds.includes(user.id);
+                const isUnread =
+                  (typeof user.unreadCount === "number"
+                    ? user.unreadCount > 0
+                    : false) || currentUnreadUserIds.includes(user.id);
                 const isSelected = selectedUserId === user.id;
 
                 return (
@@ -371,12 +433,14 @@ export default function LandlordManageChatPage() {
                               }
                             `}
                             >
-                              {/* {user.lastMessageTime.toLocaleString("vi-VN", {
+                              {/* Uncomment nếu cần hiển thị thời gian
+                              {user.lastMessageTime.toLocaleString("vi-VN", {
                                 month: "short",
                                 day: "numeric",
                                 hour: "2-digit",
                                 minute: "2-digit",
-                              })} */}
+                              })} 
+                              */}
                             </p>
                           )}
                         </div>
@@ -478,16 +542,14 @@ export default function LandlordManageChatPage() {
           )}
         </div>
 
-        {/* Auto-open chat component */}
+        {/* Auto-open chat component - FIX: Thêm key để tránh stale closures */}
         <LandlordChatAutoOpen
+          key={`${selectedUserId}-${messages.length}`}
           messages={messages}
           landlordId={landlordId}
-          selectedUserId={selectedUserId}
           onUserMessage={(userId, userName) => {
             if (!userId) return;
-            if (!landlordSelectedRef.current && !selectedUserId) {
-              setSelectedUserId(userId);
-            }
+            // Chỉ update userList, không auto-switch chat
             updateUserList(userId, userName, new Date());
           }}
         />

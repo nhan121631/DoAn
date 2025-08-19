@@ -16,6 +16,7 @@ import com.ants.ktc.ants_ktc.services.MessagesService;
 import com.ants.ktc.ants_ktc.services.UserService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.transaction.annotation.Transactional;
 
 @Component
 @RestController
@@ -58,6 +59,7 @@ public class ChatHandler extends TextWebSocketHandler {
         }
     }
 
+    @Transactional
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
         try {
