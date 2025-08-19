@@ -33,8 +33,8 @@ public class User extends BaseEntity {
     @Column(name = "resetpasswordcode")
     private String resetPasswordCode;
 
-    @Column(name="resetpasswordcodecreationtime")
-	private LocalDateTime resetPasswordCodeCreationTime;
+    @Column(name = "resetpasswordcodecreationtime")
+    private LocalDateTime resetPasswordCodeCreationTime;
 
     @Column(name = "is_active", nullable = false, columnDefinition = "int default 0")
     private int isActive;
@@ -48,6 +48,13 @@ public class User extends BaseEntity {
 
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     private List<Booking> bookings;
+
+    // Quan hệ với Messages
+    @OneToMany(mappedBy = "fromUser", fetch = FetchType.LAZY)
+    private List<Messages> sentMessages;
+
+    @OneToMany(mappedBy = "toUser", fetch = FetchType.LAZY)
+    private List<Messages> receivedMessages;
 
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "wallet_id", referencedColumnName = "id")

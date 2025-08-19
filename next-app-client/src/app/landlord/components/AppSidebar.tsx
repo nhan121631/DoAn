@@ -40,6 +40,7 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
     "/landlord/manage-comments": "8",
     "/landlord/add-funds": "9",
     "/landlord/payment-history": "10",
+    "/landlord/manage-chat": "11",
   };
 
   // const selectedKey = pathToKey[pathname] || "1";
@@ -261,6 +262,22 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
             label: (
               <Link href="/landlord/payment-history">Transaction History</Link>
             ),
+          },
+          {
+            key: "11",
+            icon: (
+              <span
+                style={{
+                  fontSize: 18,
+                  marginRight: 4,
+                  display: "inline-flex",
+                  alignItems: "center",
+                }}
+              >
+                <ImProfile />
+              </span>
+            ),
+            label: <Link href="/landlord/manage-chat">Chat Management</Link>,
           },
         ]}
       />
