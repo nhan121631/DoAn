@@ -152,6 +152,7 @@ export type RoomInUser = {
   images: Image[];
   landlord: Landlord;
   isVip?: boolean;
+  mainImage?: string;
 };
 export type LandlordProfile = {
   id: string;
@@ -160,6 +161,7 @@ export type LandlordProfile = {
   phoneNumber: string;
   avatar: string;
 };
+
 
 export type RequirementRequestRoomDto ={
   userId: string;
