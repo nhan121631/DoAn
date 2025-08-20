@@ -1,12 +1,12 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
-import "leaflet/dist/leaflet.css";
-import { getRoomsInMap } from "@/services/RoomService";
-import { URL_IMAGE } from "@/services/Constant";
-import Link from "next/link";
+import { useState } from "react";
+import HeaderUserDashboard from "../user-dashboard/components/HeaderUserDashboard";
+import Footer from "../users/components/Footer";
+import MapRoom from "./components/Map";
+import RoomCard from "./components/CardRoomMap";
 
-type Room = {
+export interface RoomMap {
   id: string;
   title: string;
   imageUrl: string;
@@ -16,256 +16,140 @@ type Room = {
   fullAddress: string;
   lng: number;
   lat: number;
-};
+}
 
-export default function Page() {
-  const [zoom, setZoom] = useState(13);
-  const [isClient, setIsClient] = useState(false);
-  const [center, setCenter] = useState<[number, number]>([10.7769, 106.7009]);
-  const [rooms, setRooms] = useState<Room[]>([]);
-
-  useEffect(() => {
-    setIsClient(true);
-    if (typeof window !== "undefined" && navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        async (pos) => {
-          setCenter([pos.coords.latitude, pos.coords.longitude]);
-          const rooms = await getRoomsInMap(
-            pos.coords.latitude,
-            pos.coords.longitude,
-            10
-          );
-          setRooms(rooms);
-        },
-        () => {
-          setCenter([10.7769, 106.7009]);
-        }
-      );
-    }
-  }, []);
-
-  if (!isClient) return <div>Đang tải bản đồ...</div>;
-
-  const { divIcon, Icon } = require("leaflet");
-  const {
-    MapContainer,
-    Marker,
-    Popup,
-    TileLayer,
-    useMapEvents,
-    useMap,
-  } = require("react-leaflet");
-
-  function ZoomListener({ setZoom }: { setZoom: (z: number) => void }) {
-    useMapEvents({
-      zoomend: (e: any) => setZoom(e.target.getZoom()),
-      load: (e: any) => setZoom(e.target.getZoom()),
-    });
-    return null;
-  }
-
-  const dotIcon = new Icon({
-    iconUrl:
-      "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16'><circle cx='8' cy='8' r='6' fill='%2300bdb7' stroke='white' stroke-width='2'/></svg>",
-    iconSize: [16, 16],
-    iconAnchor: [8, 8],
-  });
-
-  const createCustomIcon = (label: string, vip?: boolean) => {
-    return divIcon({
-      className: "",
-      html: `
-        <div style="
-          display: inline-flex;
-          align-items: center;
-          background: #222;
-          color: white;
-          padding: 4px 8px;
-          border-radius: 6px;
-          font-size: 13px;
-          font-weight: bold;
-          white-space: nowrap;
-          box-shadow: 0 1px 4px rgba(0,0,0,0.3);
-        ">
-          <span>${label}</span>
-          ${
-            vip
-              ? `<span style="
-                  background-color: #00bdb7;
-                  color: white;
-                  padding: 0 6px;
-                  margin-left: 6px;
-                  border-radius: 4px;
-                  font-size: 11px;
-                ">VIP</span>`
-              : ""
-          }
-        </div>
-      `,
-      iconAnchor: [20, 40],
-    });
-  };
-
-  function MoveMapToCenterOnce({ center }: { center: [number, number] }) {
-    const map = useMap();
-    const hasSetView = useRef(false);
-
-    useEffect(() => {
-      if (!hasSetView.current) {
-        map.setView(center);
-        hasSetView.current = true;
-      }
-    }, [center, map]);
-
-    return null;
-  }
-
-  function groupRoomsByLocation(rooms: Room[]) {
-    const groups = new Map<string, Room[]>();
-
-    for (const room of rooms) {
-      const key = `${room.lat.toFixed(6)}_${room.lng.toFixed(6)}`;
-      if (!groups.has(key)) groups.set(key, []);
-      groups.get(key)?.push(room);
-    }
-
-    return Array.from(groups.entries()).map(([key, group]) => ({
-      lat: group[0].lat,
-      lng: group[0].lng,
-      rooms: group,
-    }));
-  }
-
-  // Component lắng nghe sự kiện click trên bản đồ
-  function MapClickHandler() {
-    useMapEvents({
-      click: async (e: any) => {
-        const lat = e.latlng.lat;
-        const lng = e.latlng.lng;
-        setCenter([lat, lng]);
-        const rooms = await getRoomsInMap(lat, lng, 10);
-        setRooms(rooms);
-      },
-    });
-    return null;
-  }
+export default function RoomMapPage() {
+  const [rooms, setRooms] = useState<RoomMap[]>([]);
+  const [view, setView] = useState<"room" | "map">("room");
 
   return (
-    <MapContainer
-      center={center}
-      zoom={zoom}
-      style={{ height: "600px", width: "100%" }}
-    >
-      <MoveMapToCenterOnce center={center} />
-      <ZoomListener setZoom={setZoom} />
-      <MapClickHandler />
-      <TileLayer
-        url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
-        attribution='&copy; <a href="https://carto.com/">CartoDB</a>'
-      />
+    <div className="min-h-screen flex flex-col">
+      <HeaderUserDashboard />
 
-      {groupRoomsByLocation(rooms).map((group, index) => {
-        const isVIP = group.rooms.some((r) => r.postType === "Post VIP");
-        const label =
-          group.rooms.length > 1
-            ? `${group.rooms.length} phòng`
-            : group.rooms[0].priceMonth.toLocaleString("vi-VN") + " đ";
+      {/* Responsive toggle for mobile */}
+      <div className="block lg:hidden w-full bg-white z-99 sticky top-0">
+        <div className="flex justify-center gap-1 py-2">
+          <div className="relative flex bg-gray-100 rounded-full p-1 shadow-inner">
+            {/* Background slider animation */}
+            <div
+              className={`absolute top-1 bottom-1 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full shadow-lg transition-all duration-300 ease-in-out ${
+                view === "room"
+                  ? "left-1 w-[calc(50%-4px)]"
+                  : "left-[calc(50%+2px)] w-[calc(50%-4px)]"
+              }`}
+            />
 
-        return (
-          <Marker
-            key={index}
-            position={[group.lat, group.lng]}
-            icon={
-              zoom >= 15 || group.rooms.length > 1
-                ? createCustomIcon(label, isVIP)
-                : dotIcon
-            }
+            <button
+              className={`relative z-10 px-6 py-2.5 rounded-full font-semibold transition-all duration-300 ease-in-out flex items-center gap-2 min-w-[120px] justify-center hover:scale-105 active:scale-95 ${
+                view === "room"
+                  ? "text-white shadow-sm"
+                  : "text-gray-700 hover:text-blue-600"
+              }`}
+              onClick={() => setView("room")}
+            >
+              <span className="transform transition-transform duration-200 group-hover:scale-110">
+                📋
+              </span>
+              <span className="font-medium">Danh sách</span>
+            </button>
+
+            <button
+              className={`relative z-10 px-6 py-2.5 rounded-full font-semibold transition-all duration-300 ease-in-out flex items-center gap-2 min-w-[120px] justify-center hover:scale-105 active:scale-95 ${
+                view === "map"
+                  ? "text-white shadow-sm"
+                  : "text-gray-700 hover:text-blue-600"
+              }`}
+              onClick={() => setView("map")}
+            >
+              <span className="transform transition-transform duration-200 group-hover:scale-110">
+                🗺️
+              </span>
+              <span className="font-medium">Bản đồ</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Main content */}
+      <div className="flex justify-center items-center flex-1 w-full h-full py-4">
+        <div className="flex gap-4 w-[1300px] h-full lg:flex-row flex-col">
+          {/* Room List */}
+          <div
+            className={`flex flex-1 flex-col ${
+              view === "map" ? "hidden" : ""
+            } lg:block`}
           >
-            <Popup maxWidth={300}>
-              <div
-                style={{
-                  maxHeight: "250px",
-                  overflowY: "auto",
-                  maxWidth: "280px",
-                }}
-              >
-                {group.rooms.map((room) => (
-                  <div
-                    key={room.id}
-                    style={{
-                      display: "flex",
-                      marginBottom: "10px",
-                      borderBottom: "1px solid #eee",
-                      paddingBottom: "6px",
-                    }}
-                  >
-                    <div style={{ position: "relative", marginRight: "8px" }}>
-                      <img
-                        src={URL_IMAGE + room.imageUrl}
-                        alt={room.title}
-                        style={{
-                          width: "70px",
-                          height: "70px",
-                          objectFit: "cover",
-                          borderRadius: "4px",
-                        }}
+            <div className="flex-shrink-0 mb-4">
+              <h1 className="text-xl font-semibold text-gray-900">
+                Danh sách phòng {rooms.length > 0 && `(${rooms.length})`}
+              </h1>
+            </div>
+
+            <div
+              className="flex-1 overflow-y-auto space-y-3 pr-2"
+              style={{
+                maxHeight: "calc(100vh - 140px)",
+              }}
+            >
+              {rooms.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-full text-center text-gray-500 py-20">
+                  <div className="mb-6">
+                    <svg
+                      className="mx-auto h-16 w-16 text-gray-300"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={1}
+                        d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-4m-5 0H9m11 0a2 2 0 01-2 2H5a2 2 0 01-2-2m0 0V9a2 2 0 012-2h2m0 0V5a2 2 0 012-2h4a2 2 0 012 2v2M7 7h10m-5 3v8m0 0l-3-3m3 3l3-3"
                       />
-                      {room.postType === "Post VIP" && (
-                        <div
-                          style={{
-                            position: "absolute",
-                            top: "4px",
-                            left: "4px",
-                            backgroundColor: "#00bdb7",
-                            color: "white",
-                            padding: "2px 6px",
-                            fontSize: "11px",
-                            borderRadius: "4px",
-                            fontWeight: "bold",
-                          }}
-                        >
-                          VIP
-                        </div>
-                      )}
-                    </div>
-                    <div style={{ flex: 1 }}>
-                      <Link
-                        href={`/detail/${room.id}`}
-                        style={{
-                          fontSize: "13px",
-                          fontWeight: 600,
-                          lineHeight: "1.3",
-                          overflow: "hidden",
-                          display: "-webkit-box",
-                          WebkitLineClamp: 2,
-                          WebkitBoxOrient: "vertical",
-                          color: "#007bff",
-                          textDecoration: "none",
-                        }}
-                      >
-                        {room.title}
-                      </Link>
-                      <div
-                        style={{
-                          color: "#e53935",
-                          fontWeight: 600,
-                          margin: "4px 0",
-                          fontSize: "13px",
-                        }}
-                      >
-                        {room.priceMonth.toLocaleString("vi-VN")} triệu/tháng
-                      </div>
-                      <div style={{ fontSize: "12px", color: "#555" }}>
-                        📐 {room.area} m²
-                      </div>
-                    </div>
+                    </svg>
                   </div>
-                ))}
-              </div>
-            </Popup>
-          </Marker>
-        );
-      })}
-    </MapContainer>
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">
+                    Không có phòng nào được tìm thấy
+                  </h3>
+                  <p className="text-sm text-gray-500 max-w-sm">
+                    Thử di chuyển và zoom trên bản đồ để tìm kiếm các phòng trọ
+                    có sẵn trong khu vực
+                  </p>
+                </div>
+              ) : (
+                rooms.map((room) => (
+                  <RoomCard
+                    key={room.id}
+                    id={room.id}
+                    title={room.title}
+                    price={room.priceMonth}
+                    area={room.area}
+                    location={room.fullAddress}
+                    imageUrl={room.imageUrl}
+                    postType={room.postType}
+                    onFavorite={() => console.log(`Favorited room ${room.id}`)}
+                    onClick={() => console.log(`Clicked room ${room.id}`)}
+                  />
+                ))
+              )}
+            </div>
+          </div>
+
+          {/* Map */}
+          <div className={`flex-1 ${view === "room" ? "hidden" : ""} lg:block`}>
+            <div
+              className="w-full overflow-hidden shadow-lg border border-gray-200"
+              style={{
+                height: "calc(100vh - 140px)",
+              }}
+            >
+              <MapRoom onRoomClick={(room: RoomMap[]) => setRooms(room)} />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <Footer />
+    </div>
   );
 }
