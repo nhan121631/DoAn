@@ -2,40 +2,42 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import "leaflet/dist/leaflet.css";
+import { getRoomsInMap } from "@/services/RoomService";
+import { URL_IMAGE } from "@/services/Constant";
+import Link from "next/link";
 
 type Room = {
-  id: number;
-  lat: number;
+  id: string;
+  title: string;
+  imageUrl: string;
+  area: number;
+  priceMonth: number;
+  postType: string;
+  fullAddress: string;
   lng: number;
-  price: string;
-  vip: boolean;
+  lat: number;
 };
-
-// Dữ liệu mẫu có vị trí trùng nhau
-const rooms: Room[] = [
-  { id: 1, lat: 10.7769, lng: 106.7009, price: "3 triệu", vip: true },
-  { id: 2, lat: 10.7626, lng: 106.6602, price: "4.5 triệu", vip: false },
-  { id: 3, lat: 10.754, lng: 106.6533, price: "7 triệu", vip: true },
-  { id: 4, lat: 15.98042, lng: 108.24966, price: "2 triệu", vip: false },
-  { id: 5, lat: 15.98042, lng: 108.24966, price: "5 triệu", vip: true },
-  { id: 6, lat: 15.98042, lng: 108.24966, price: "6 triệu", vip: true },
-];
 
 export default function Page() {
   const [zoom, setZoom] = useState(13);
   const [isClient, setIsClient] = useState(false);
   const [center, setCenter] = useState<[number, number]>([10.7769, 106.7009]);
+  const [rooms, setRooms] = useState<Room[]>([]);
 
   useEffect(() => {
     setIsClient(true);
     if (typeof window !== "undefined" && navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        (pos) => {
+        async (pos) => {
           setCenter([pos.coords.latitude, pos.coords.longitude]);
-          console.log("Vị trí hiện tại:", pos.coords);
+          const rooms = await getRoomsInMap(
+            pos.coords.latitude,
+            pos.coords.longitude,
+            10
+          );
+          setRooms(rooms);
         },
         () => {
-          // Không lấy được vị trí: giữ mặc định
           setCenter([10.7769, 106.7009]);
         }
       );
@@ -54,7 +56,6 @@ export default function Page() {
     useMap,
   } = require("react-leaflet");
 
-  // Lắng nghe zoom để thay đổi icon
   function ZoomListener({ setZoom }: { setZoom: (z: number) => void }) {
     useMapEvents({
       zoomend: (e: any) => setZoom(e.target.getZoom()),
@@ -63,7 +64,6 @@ export default function Page() {
     return null;
   }
 
-  // Icon chấm nhỏ khi zoom thấp
   const dotIcon = new Icon({
     iconUrl:
       "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16'><circle cx='8' cy='8' r='6' fill='%2300bdb7' stroke='white' stroke-width='2'/></svg>",
@@ -71,8 +71,7 @@ export default function Page() {
     iconAnchor: [8, 8],
   });
 
-  // Icon hiển thị giá & VIP
-  const createCustomIcon = (price: string, vip?: boolean) => {
+  const createCustomIcon = (label: string, vip?: boolean) => {
     return divIcon({
       className: "",
       html: `
@@ -88,7 +87,7 @@ export default function Page() {
           white-space: nowrap;
           box-shadow: 0 1px 4px rgba(0,0,0,0.3);
         ">
-          <span>${price}</span>
+          <span>${label}</span>
           ${
             vip
               ? `<span style="
@@ -107,7 +106,6 @@ export default function Page() {
     });
   };
 
-  // ✅ Chỉ set center 1 lần duy nhất khi khởi tạo
   function MoveMapToCenterOnce({ center }: { center: [number, number] }) {
     const map = useMap();
     const hasSetView = useRef(false);
@@ -122,26 +120,34 @@ export default function Page() {
     return null;
   }
 
-  // ✅ Dàn trải các marker bị trùng
-  function spreadMarkers(rooms: Room[]) {
-    const seen = new Map<string, number>();
-    const offset = 0.00008;
+  function groupRoomsByLocation(rooms: Room[]) {
+    const groups = new Map<string, Room[]>();
 
-    return rooms.map((room) => {
+    for (const room of rooms) {
       const key = `${room.lat.toFixed(6)}_${room.lng.toFixed(6)}`;
-      const count = seen.get(key) || 0;
-      seen.set(key, count + 1);
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key)?.push(room);
+    }
 
-      const angle = (count * 45 * Math.PI) / 180;
-      const latOffset = Math.cos(angle) * offset;
-      const lngOffset = Math.sin(angle) * offset;
+    return Array.from(groups.entries()).map(([key, group]) => ({
+      lat: group[0].lat,
+      lng: group[0].lng,
+      rooms: group,
+    }));
+  }
 
-      return {
-        ...room,
-        lat: room.lat + latOffset,
-        lng: room.lng + lngOffset,
-      };
+  // Component lắng nghe sự kiện click trên bản đồ
+  function MapClickHandler() {
+    useMapEvents({
+      click: async (e: any) => {
+        const lat = e.latlng.lat;
+        const lng = e.latlng.lng;
+        setCenter([lat, lng]);
+        const rooms = await getRoomsInMap(lat, lng, 10);
+        setRooms(rooms);
+      },
     });
+    return null;
   }
 
   return (
@@ -152,30 +158,114 @@ export default function Page() {
     >
       <MoveMapToCenterOnce center={center} />
       <ZoomListener setZoom={setZoom} />
+      <MapClickHandler />
       <TileLayer
         url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
         attribution='&copy; <a href="https://carto.com/">CartoDB</a>'
       />
 
-      {spreadMarkers(rooms).map((room) => (
-        <Marker
-          key={room.id}
-          position={[room.lat, room.lng]}
-          icon={
-            room.vip
-              ? createCustomIcon(room.price, true)
-              : zoom >= 15
-              ? createCustomIcon(room.price)
-              : dotIcon
-          }
-        >
-          <Popup>
-            <strong>{room.price}</strong>
-            <br />
-            {room.vip ? "Phòng VIP" : "Phòng thường"}
-          </Popup>
-        </Marker>
-      ))}
+      {groupRoomsByLocation(rooms).map((group, index) => {
+        const isVIP = group.rooms.some((r) => r.postType === "Post VIP");
+        const label =
+          group.rooms.length > 1
+            ? `${group.rooms.length} phòng`
+            : group.rooms[0].priceMonth.toLocaleString("vi-VN") + " đ";
+
+        return (
+          <Marker
+            key={index}
+            position={[group.lat, group.lng]}
+            icon={
+              zoom >= 15 || group.rooms.length > 1
+                ? createCustomIcon(label, isVIP)
+                : dotIcon
+            }
+          >
+            <Popup maxWidth={300}>
+              <div
+                style={{
+                  maxHeight: "250px",
+                  overflowY: "auto",
+                  maxWidth: "280px",
+                }}
+              >
+                {group.rooms.map((room) => (
+                  <div
+                    key={room.id}
+                    style={{
+                      display: "flex",
+                      marginBottom: "10px",
+                      borderBottom: "1px solid #eee",
+                      paddingBottom: "6px",
+                    }}
+                  >
+                    <div style={{ position: "relative", marginRight: "8px" }}>
+                      <img
+                        src={URL_IMAGE + room.imageUrl}
+                        alt={room.title}
+                        style={{
+                          width: "70px",
+                          height: "70px",
+                          objectFit: "cover",
+                          borderRadius: "4px",
+                        }}
+                      />
+                      {room.postType === "Post VIP" && (
+                        <div
+                          style={{
+                            position: "absolute",
+                            top: "4px",
+                            left: "4px",
+                            backgroundColor: "#00bdb7",
+                            color: "white",
+                            padding: "2px 6px",
+                            fontSize: "11px",
+                            borderRadius: "4px",
+                            fontWeight: "bold",
+                          }}
+                        >
+                          VIP
+                        </div>
+                      )}
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <Link
+                        href={`/detail/${room.id}`}
+                        style={{
+                          fontSize: "13px",
+                          fontWeight: 600,
+                          lineHeight: "1.3",
+                          overflow: "hidden",
+                          display: "-webkit-box",
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: "vertical",
+                          color: "#007bff",
+                          textDecoration: "none",
+                        }}
+                      >
+                        {room.title}
+                      </Link>
+                      <div
+                        style={{
+                          color: "#e53935",
+                          fontWeight: 600,
+                          margin: "4px 0",
+                          fontSize: "13px",
+                        }}
+                      >
+                        {room.priceMonth.toLocaleString("vi-VN")} triệu/tháng
+                      </div>
+                      <div style={{ fontSize: "12px", color: "#555" }}>
+                        📐 {room.area} m²
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </Popup>
+          </Marker>
+        );
+      })}
     </MapContainer>
   );
 }

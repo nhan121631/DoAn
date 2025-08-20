@@ -25,6 +25,7 @@ import com.ants.ktc.ants_ktc.dtos.room.PaginationRoomInUserResponseDto;
 import com.ants.ktc.ants_ktc.dtos.room.PaginationRoomResponseDto;
 import com.ants.ktc.ants_ktc.dtos.room.RoomApprovalProjectionDto;
 import com.ants.ktc.ants_ktc.dtos.room.RoomDeleteRequestDto;
+import com.ants.ktc.ants_ktc.dtos.room.RoomInMapResponse;
 import com.ants.ktc.ants_ktc.dtos.room.RoomRecentResponseDto;
 import com.ants.ktc.ants_ktc.dtos.room.RoomRequestCreateDto;
 import com.ants.ktc.ants_ktc.dtos.room.RoomRequestUpdateDto;
@@ -208,5 +209,14 @@ public class RoomController {
     public ResponseEntity<LandlordResponseByRoomDto> getLandlordByRoomId(@PathVariable("id") UUID roomId) {
         LandlordResponseByRoomDto landlord = userService.getLandlordInfoByRoomId(roomId);
         return ResponseEntity.ok(landlord);
+    }
+
+    @GetMapping("rooms-in-map")
+    public ResponseEntity<List<RoomInMapResponse>> getRoomsInMap(
+            @RequestParam(value = "lat") double lat,
+            @RequestParam(value = "lng") double lng,
+            @RequestParam(value = "radius", defaultValue = "15") double radius) {
+        List<RoomInMapResponse> rooms = roomService.findRoomInMapWithRadius(lat, lng, radius);
+        return ResponseEntity.ok(rooms);
     }
 }

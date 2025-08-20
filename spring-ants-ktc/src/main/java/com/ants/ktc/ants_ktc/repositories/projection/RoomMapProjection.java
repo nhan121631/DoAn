@@ -1,9 +1,7 @@
 package com.ants.ktc.ants_ktc.repositories.projection;
 
-import java.util.UUID;
-
 public interface RoomMapProjection {
-    UUID getId();
+    String getId();
 
     String getTitle();
 
