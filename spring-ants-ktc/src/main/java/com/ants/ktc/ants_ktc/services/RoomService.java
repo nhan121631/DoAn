@@ -101,6 +101,9 @@ public class RoomService {
         @Qualifier("imageRedisTemplate")
         private RedisTemplate<String, ImageUploadMessage> redisTemplate;
 
+        @Autowired
+        private LocationIQService locationIQService;
+
         private static final String IMAGE_UPLOAD_QUEUE = "image_upload_queue";
         private static final String TEMP_DIR_PREFIX = "room_images";
 
@@ -200,6 +203,15 @@ public class RoomService {
                                                 .name(conv.getName())
                                                 .build())
                                 .collect(Collectors.toList());
+        }
+
+        private String removePrefix(String text, String prefix) {
+                if (text == null)
+                        return null;
+                if (text.startsWith(prefix)) {
+                        return text.substring(prefix.length()).trim();
+                }
+                return text;
         }
 
         @Transactional
@@ -319,7 +331,22 @@ public class RoomService {
                 Ward ward = wardRepository.findById(requestDto.getAddress().getWardId())
                                 .orElseThrow(() -> new IllegalArgumentException("Ward Not Found"));
                 address.setWard(ward);
-                room.setAddress(address);
+                String fullAddress = requestDto.getAddress().getStreet() + ", " +
+                                removePrefix(ward.getName(), "Phường") + ", " +
+                                removePrefix(ward.getDistrict().getName(), "Quận") + ", " +
+                                removePrefix(ward.getDistrict().getProvince().getName(), "Thành phố");
+                try {
+                        LocationIQService.LatLng latLng = locationIQService.getCoordinates(fullAddress);
+                        if (latLng != null) {
+                                address.setLng(latLng.lng);
+                                address.setLat(latLng.lat);
+                        }
+
+                        room.setAddress(address);
+                } catch (Exception e) {
+                        throw new RuntimeException("Failed to get coordinates: " + e.getMessage(), e);
+                }
+                // set lng + lat
 
                 // Set tiện ích (convenients)
                 List<Convenient> convenients = convenientJpaRepository.findAllById(requestDto.getConvenientIds());
