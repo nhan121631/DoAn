@@ -13,12 +13,9 @@ export default function UsersLayout({ children }: UsersLayoutProps) {
     <div className="min-h-screen flex flex-col bg-[#f5f5f5]">
       <Header />
       {/* Banner/Slider */}
-      <Banner />
-      <div className="flex flex-row w-full max-w-full justify-center relative">
-        {/* <AdsBanner position="left" /> */}
+      {/* <Banner /> */}
         <main className="flex-1 mt-20 max-w-6xl mx-auto">{children}</main>
-        <AdsBanner position="right" />
-      </div>
+      <AdsBanner position="right" />
       <Footer />
     </div>
   );

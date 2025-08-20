@@ -98,6 +98,12 @@ public class RoomService {
         private CloudinaryService cloudinaryService;
 
         @Autowired
+        private ProfileService profileService;
+
+        @Autowired
+        private LocationIQService locationIQService;
+
+        @Autowired
         @Qualifier("imageRedisTemplate")
         private RedisTemplate<String, ImageUploadMessage> redisTemplate;
 
@@ -319,6 +325,10 @@ public class RoomService {
                 Ward ward = wardRepository.findById(requestDto.getAddress().getWardId())
                                 .orElseThrow(() -> new IllegalArgumentException("Ward Not Found"));
                 address.setWard(ward);
+
+                // Tự động geocode và cập nhật tọa độ cho address
+                // updateAddressCoordinates(address);
+
                 room.setAddress(address);
 
                 // Set tiện ích (convenients)
@@ -436,6 +446,10 @@ public class RoomService {
                 Ward ward = wardRepository.findById(request.getAddress().getWardId())
                                 .orElseThrow(() -> new IllegalArgumentException("Ward Not Found"));
                 address.setWard(ward);
+
+                // Tự động geocode và cập nhật tọa độ cho address
+                // updateAddressCoordinates(address);
+
                 room.setAddress(address);
 
                 // Set tiện ích (convenients)
@@ -1009,6 +1023,41 @@ public class RoomService {
                                 .build();
         }
 
+        // Code cũ - method không sắp xếp theo khoảng cách
+        /*
+         * public PaginationRoomInUserResponseDto getAllRoomInUser(int pageNumber, int
+         * pageSize, String code) {
+         * Pageable pageable = PageRequest.of(pageNumber, pageSize);
+         * Page<Room> roomPage = roomJpaRepository.findAllRoomInUser(code, pageable);
+         * 
+         * List<RoomInUserResponseDto> rooms = roomPage.getContent().stream()
+         * .map(room -> RoomInUserResponseDto.builder()
+         * .id(room.getId())
+         * .title(room.getTitle())
+         * .description(room.getDescription())
+         * .priceMonth(room.getPrice_month())
+         * .area(room.getArea())
+         * .postStartDate(room.getPost_start_date())
+         * .address(convertAddress(room.getAddress()))
+         * .images(convertImages(room.getImages()))
+         * .conveniences(convertConveniences(room.getConvenients()))
+         * .landlord(convertLandlord(room.getUser()))
+         * .build())
+         * .collect(Collectors.toList());
+         * 
+         * return PaginationRoomInUserResponseDto.builder()
+         * .data(rooms)
+         * .pageNumber(roomPage.getNumber())
+         * .pageSize(roomPage.getSize())
+         * .totalRecords(roomPage.getTotalElements())
+         * .totalPages(roomPage.getTotalPages())
+         * .hasNext(roomPage.hasNext())
+         * .hasPrevious(roomPage.hasPrevious())
+         * .build();
+         * }
+         */
+
+        // Method mới - không có userId (fallback)
         public PaginationRoomInUserResponseDto getAllRoomInUser(int pageNumber, int pageSize, String code) {
                 Pageable pageable = PageRequest.of(pageNumber, pageSize);
                 Page<Room> roomPage = roomJpaRepository.findAllRoomInUser(code, pageable);
@@ -1037,7 +1086,74 @@ public class RoomService {
                                 .hasNext(roomPage.hasNext())
                                 .hasPrevious(roomPage.hasPrevious())
                                 .build();
+        }
 
+        // Method mới - có userId để sắp xếp theo khoảng cách địa lý
+        public PaginationRoomInUserResponseDto getAllRoomInUserSortedByDistance(int pageNumber, int pageSize,
+                        String code, UUID userId) {
+                try {
+                        Double userLat = null;
+                        Double userLng = null;
+
+                        // Lấy tọa độ của user nếu có
+                        if (userId != null) {
+                                try {
+                                        com.ants.ktc.ants_ktc.entities.UserProfile userProfile = profileService
+                                                        .getUserProfileEntity(userId);
+                                        userLat = userProfile.getSearchLatitude();
+                                        userLng = userProfile.getSearchLongitude();
+                                } catch (Exception e) {
+                                        System.err.println("Could not get user coordinates for distance sorting: "
+                                                        + e.getMessage());
+                                        // Fallback về method cũ nếu không lấy được tọa độ
+                                        return getAllRoomInUser(pageNumber, pageSize, code);
+                                }
+                        }
+
+                        Pageable pageable = PageRequest.of(pageNumber, pageSize);
+                        Page<Room> roomPage;
+
+                        // Sử dụng query có sắp xếp theo khoảng cách nếu có tọa độ user
+                        if (userLat != null && userLng != null) {
+                                roomPage = roomJpaRepository.findAllRoomInUserSortedByDistance(code, userLat, userLng,
+                                                pageable);
+                        } else {
+                                // Fallback về query cơ bản nếu không có tọa độ
+                                roomPage = roomJpaRepository.findAllRoomInUser(code, pageable);
+                        }
+
+                        List<RoomInUserResponseDto> rooms = roomPage.getContent().stream()
+                                        .map(room -> RoomInUserResponseDto.builder()
+                                                        .id(room.getId())
+                                                        .title(room.getTitle())
+                                                        .description(room.getDescription())
+                                                        .priceMonth(room.getPrice_month())
+                                                        .area(room.getArea())
+                                                        .postStartDate(room.getPost_start_date())
+                                                        .address(convertAddress(room.getAddress()))
+                                                        .images(convertImages(room.getImages()))
+                                                        .conveniences(convertConveniences(room.getConvenients()))
+                                                        .landlord(convertLandlord(room.getUser()))
+                                                        .build())
+                                        .collect(Collectors.toList());
+
+                        return PaginationRoomInUserResponseDto.builder()
+                                        .data(rooms)
+                                        .pageNumber(roomPage.getNumber())
+                                        .pageSize(roomPage.getSize())
+                                        .totalRecords(roomPage.getTotalElements())
+                                        .totalPages(roomPage.getTotalPages())
+                                        .hasNext(roomPage.hasNext())
+                                        .hasPrevious(roomPage.hasPrevious())
+                                        .build();
+
+                } catch (Exception e) {
+                        System.err.println("Error in getAllRoomInUserSortedByDistance: " + e.getMessage());
+                        e.printStackTrace();
+
+                        // Fallback về method cơ bản nếu có lỗi
+                        return getAllRoomInUser(pageNumber, pageSize, code);
+                }
         }
 
         public PaginationRoomInUserResponseDto filterRooms(int pageNumber, int pageSize,
@@ -1161,6 +1277,393 @@ public class RoomService {
                                                 .build())
                                 .collect(Collectors.toList());
 
+        }
+
+        /**
+         * Lấy danh sách rooms được recommend cho user dựa trên preferences của họ
+         * (địa chỉ tìm kiếm và khoảng giá mong muốn)
+         * 
+         * @param userId     ID của user
+         * @param pageNumber Số trang
+         * @param pageSize   Kích thước trang
+         * @return Danh sách rooms được sắp xếp theo độ phù hợp
+         */
+        public PaginationRoomInUserResponseDto getRecommendedRooms(UUID userId, int pageNumber, int pageSize) {
+                try {
+                        // Lấy user profile để có preferences
+                        com.ants.ktc.ants_ktc.entities.UserProfile userProfile = profileService
+                                        .getUserProfileEntity(userId);
+
+                        Pageable pageable = PageRequest.of(pageNumber, pageSize);
+                        Page<Room> roomPage;
+
+                        // Nếu user có preferences về giá, filter theo giá trước
+                        if (userProfile.getDesiredMinPrice() != null || userProfile.getDesiredMaxPrice() != null) {
+                                Double minPrice = userProfile.getDesiredMinPrice();
+                                Double maxPrice = userProfile.getDesiredMaxPrice();
+
+                                // Nếu không set min/max thì dùng giá trị mặc định
+                                if (minPrice == null)
+                                        minPrice = 0.0;
+                                if (maxPrice == null)
+                                        maxPrice = Double.MAX_VALUE;
+
+                                roomPage = roomJpaRepository.findRoomsWithBasicFilter(
+                                                minPrice, maxPrice, null, null, null, null, null, pageable);
+                        } else {
+                                // Nếu không có preference về giá, lấy tất cả rooms
+                                roomPage = roomJpaRepository.findAllRoomInUser("", pageable);
+                        }
+
+                        // Sắp xếp rooms theo location score + price score
+                        List<RoomInUserResponseDto> recommendedRooms = roomPage.getContent().stream()
+                                        .map(room -> {
+                                                // Tính location score
+                                                String roomAddressString = buildFullAddressString(room.getAddress());
+                                                int locationScore = profileService.calculateLocationScore(userProfile,
+                                                                roomAddressString);
+
+                                                // Tính price score
+                                                int priceScore = calculatePriceScore(userProfile,
+                                                                room.getPrice_month());
+
+                                                // Tổng điểm recommendation = (location * 0.6 + price * 0.4)
+                                                double totalScore = (locationScore * 0.6) + (priceScore * 0.4);
+
+                                                // Convert to DTO và thêm score (có thể dùng để debug)
+                                                RoomInUserResponseDto dto = RoomInUserResponseDto.builder()
+                                                                .id(room.getId())
+                                                                .title(room.getTitle())
+                                                                .description(room.getDescription())
+                                                                .priceMonth(room.getPrice_month())
+                                                                .area(room.getArea())
+                                                                .postStartDate(room.getPost_start_date())
+                                                                .address(convertAddress(room.getAddress()))
+                                                                .images(convertImages(room.getImages()))
+                                                                .conveniences(convertConveniences(
+                                                                                room.getConvenients()))
+                                                                .landlord(convertLandlord(room.getUser()))
+                                                                .build();
+
+                                                return new RoomWithScore(dto, totalScore);
+                                        })
+                                        .sorted((r1, r2) -> Double.compare(r2.score, r1.score)) // Sắp xếp giảm dần theo
+                                                                                                // score
+                                        .map(rwS -> rwS.room)
+                                        .collect(Collectors.toList());
+
+                        return PaginationRoomInUserResponseDto.builder()
+                                        .data(recommendedRooms)
+                                        .pageNumber(roomPage.getNumber())
+                                        .pageSize(roomPage.getSize())
+                                        .totalRecords(roomPage.getTotalElements())
+                                        .totalPages(roomPage.getTotalPages())
+                                        .hasNext(roomPage.hasNext())
+                                        .hasPrevious(roomPage.hasPrevious())
+                                        .build();
+
+                } catch (Exception e) {
+                        System.err.println(
+                                        "Error getting recommended rooms for user " + userId + ": " + e.getMessage());
+                        e.printStackTrace();
+
+                        // Fallback: trả về rooms thông thường nếu có lỗi
+                        return getAllRoomInUser(pageNumber, pageSize, "");
+                }
+        }
+
+        /**
+         * Cải tiến method filterRooms để sử dụng user preferences khi có userId
+         * 
+         * @param pageNumber Số trang
+         * @param pageSize   Kích thước trang
+         * @param filterDto  Filter criteria
+         * @param userId     ID của user (optional) - nếu có sẽ dùng để recommend
+         * @return Danh sách rooms được filter và sorted theo preferences
+         */
+        public PaginationRoomInUserResponseDto filterRoomsWithRecommendation(int pageNumber, int pageSize,
+                        FilterRoomRequestDto filterDto, UUID userId) {
+
+                // Code cũ - logic filter cơ bản
+                /*
+                 * Pageable pageable = PageRequest.of(pageNumber, pageSize);
+                 * Page<Room> roomPage;
+                 * 
+                 * // Kiểm tra có convenient filter không
+                 * if (filterDto.getListConvenientIds() == null ||
+                 * filterDto.getListConvenientIds().isEmpty()) {
+                 * // KHÔNG CÓ CONVENIENT FILTER - dùng query cơ bản
+                 * roomPage = roomJpaRepository.findRoomsWithBasicFilter(
+                 * filterDto.getMinPrice(),
+                 * filterDto.getMaxPrice(),
+                 * filterDto.getMinArea(),
+                 * filterDto.getMaxArea(),
+                 * filterDto.getProvinceId(),
+                 * filterDto.getDistrictId(),
+                 * filterDto.getWardId(),
+                 * pageable);
+                 * } else {
+                 * // CÓ CONVENIENT FILTER - dùng 2 bước
+                 * // ... (logic cũ)
+                 * }
+                 */
+
+                // Logic mới với recommendation
+                try {
+                        final com.ants.ktc.ants_ktc.entities.UserProfile userProfile;
+                        if (userId != null) {
+                                try {
+                                        userProfile = profileService.getUserProfileEntity(userId);
+                                } catch (Exception e) {
+                                        System.err.println("Could not get user profile for recommendation: "
+                                                        + e.getMessage());
+                                        return filterRooms(pageNumber, pageSize, filterDto); // Fallback to old method
+                                }
+                        } else {
+                                userProfile = null;
+                        }
+
+                        Pageable pageable = PageRequest.of(pageNumber, pageSize);
+                        Page<Room> roomPage;
+
+                        // Kiểm tra có convenient filter không
+                        if (filterDto.getListConvenientIds() == null || filterDto.getListConvenientIds().isEmpty()) {
+                                // KHÔNG CÓ CONVENIENT FILTER - dùng query cơ bản
+                                roomPage = roomJpaRepository.findRoomsWithBasicFilter(
+                                                filterDto.getMinPrice(),
+                                                filterDto.getMaxPrice(),
+                                                filterDto.getMinArea(),
+                                                filterDto.getMaxArea(),
+                                                filterDto.getProvinceId(),
+                                                filterDto.getDistrictId(),
+                                                filterDto.getWardId(),
+                                                pageable);
+                        } else {
+                                // CÓ CONVENIENT FILTER - dùng 2 bước
+
+                                // Bước 1: Lấy room IDs thỏa mãn convenient requirements
+                                List<String> validRoomIdHex = roomJpaRepository.findRoomIdsByConvenientsHex(
+                                                filterDto.getListConvenientIds(),
+                                                filterDto.getListConvenientIds().size());
+
+                                List<UUID> validRoomIds = validRoomIdHex == null ? new ArrayList<>()
+                                                : validRoomIdHex.stream()
+                                                                .filter(s -> s != null && !s.isBlank())
+                                                                .map(s -> {
+                                                                        try {
+                                                                                return UUID.fromString(
+                                                                                                formatHexToUuid(s));
+                                                                        } catch (Exception e) {
+                                                                                return null;
+                                                                        }
+                                                                })
+                                                                .filter(u -> u != null)
+                                                                .collect(Collectors.toList());
+
+                                if (validRoomIds.isEmpty()) {
+                                        // Không có room nào thỏa mãn convenient -> trả về empty
+                                        roomPage = Page.empty(pageable);
+                                } else {
+                                        // Bước 2: Apply các filter khác với valid room IDs
+                                        roomPage = roomJpaRepository.findRoomsWithBasicFilterAndRoomIds(
+                                                        filterDto.getMinPrice(),
+                                                        filterDto.getMaxPrice(),
+                                                        filterDto.getMinArea(),
+                                                        filterDto.getMaxArea(),
+                                                        filterDto.getProvinceId(),
+                                                        filterDto.getDistrictId(),
+                                                        filterDto.getWardId(),
+                                                        validRoomIds,
+                                                        pageable);
+                                }
+                        }
+
+                        // Convert to response DTO và sort theo recommendation nếu có user profile
+                        List<RoomInUserResponseDto> rooms = roomPage.getContent().stream()
+                                        .map(room -> {
+                                                // Ensure no null name in convenients
+                                                List<Convenient> convenients = room.getConvenients();
+                                                if (convenients != null) {
+                                                        convenients.forEach(c -> {
+                                                                if (c.getName() == null)
+                                                                        c.setName("");
+                                                        });
+                                                }
+
+                                                RoomInUserResponseDto dto = RoomInUserResponseDto.builder()
+                                                                .id(room.getId())
+                                                                .title(room.getTitle())
+                                                                .description(room.getDescription())
+                                                                .priceMonth(room.getPrice_month())
+                                                                .area(room.getArea())
+                                                                .postStartDate(room.getPost_start_date())
+                                                                .address(convertAddress(room.getAddress()))
+                                                                .images(convertImages(room.getImages()))
+                                                                .conveniences(convertConveniences(
+                                                                                room.getConvenients()))
+                                                                .landlord(convertLandlord(room.getUser()))
+                                                                .build();
+
+                                                // Nếu có user profile, tính recommendation score
+                                                if (userProfile != null) {
+                                                        String roomAddressString = buildFullAddressString(
+                                                                        room.getAddress());
+                                                        int locationScore = profileService.calculateLocationScore(
+                                                                        userProfile, roomAddressString);
+                                                        int priceScore = calculatePriceScore(userProfile,
+                                                                        room.getPrice_month());
+                                                        double totalScore = (locationScore * 0.6) + (priceScore * 0.4);
+
+                                                        return new RoomWithScore(dto, totalScore);
+                                                } else {
+                                                        return new RoomWithScore(dto, 0.0); // No score if no user
+                                                                                            // profile
+                                                }
+                                        })
+                                        .sorted((r1, r2) -> userProfile != null ? Double.compare(r2.score, r1.score)
+                                                        : 0) // Sort by score nếu có user profile
+                                        .map(rwS -> rwS.room)
+                                        .collect(Collectors.toList());
+
+                        return PaginationRoomInUserResponseDto.builder()
+                                        .data(rooms)
+                                        .pageNumber(roomPage.getNumber())
+                                        .pageSize(roomPage.getSize())
+                                        .totalRecords(roomPage.getTotalElements())
+                                        .totalPages(roomPage.getTotalPages())
+                                        .hasNext(roomPage.hasNext())
+                                        .hasPrevious(roomPage.hasPrevious())
+                                        .build();
+
+                } catch (Exception e) {
+                        System.err.println("Error in filterRoomsWithRecommendation: " + e.getMessage());
+                        e.printStackTrace();
+
+                        // Fallback: sử dụng method filter cũ
+                        return filterRooms(pageNumber, pageSize, filterDto);
+                }
+        }
+
+        /**
+         * Helper class để lưu room cùng với recommendation score
+         */
+        private static class RoomWithScore {
+                final RoomInUserResponseDto room;
+                final double score;
+
+                RoomWithScore(RoomInUserResponseDto room, double score) {
+                        this.room = room;
+                        this.score = score;
+                }
+        }
+
+        /**
+         * Tính điểm price phù hợp dựa trên user preferences
+         * 
+         * @param userProfile User profile chứa desired price range
+         * @param roomPrice   Giá của room
+         * @return Điểm từ 0-100, cao hơn = phù hợp hơn
+         */
+        private int calculatePriceScore(com.ants.ktc.ants_ktc.entities.UserProfile userProfile, Double roomPrice) {
+                if (roomPrice == null)
+                        return 0;
+
+                Double desiredMin = userProfile.getDesiredMinPrice();
+                Double desiredMax = userProfile.getDesiredMaxPrice();
+
+                // Nếu user không set price preferences, return điểm trung bình
+                if (desiredMin == null && desiredMax == null) {
+                        return 50;
+                }
+
+                // Nếu chỉ set min
+                if (desiredMin != null && desiredMax == null) {
+                        if (roomPrice >= desiredMin) {
+                                // Trong range ưa thích, điểm cao
+                                if (roomPrice <= desiredMin * 1.2)
+                                        return 100; // Trong 120% min price
+                                if (roomPrice <= desiredMin * 1.5)
+                                        return 80; // Trong 150% min price
+                                if (roomPrice <= desiredMin * 2.0)
+                                        return 60; // Trong 200% min price
+                                return 40; // Quá đắt nhưng vẫn >= min
+                        } else {
+                                // Dưới min price, điểm thấp hơn
+                                return Math.max(20, (int) (roomPrice * 100 / desiredMin));
+                        }
+                }
+
+                // Nếu chỉ set max
+                if (desiredMin == null && desiredMax != null) {
+                        if (roomPrice <= desiredMax) {
+                                // Trong budget, điểm cao
+                                if (roomPrice >= desiredMax * 0.8)
+                                        return 100; // 80-100% của max budget
+                                if (roomPrice >= desiredMax * 0.6)
+                                        return 90; // 60-80% của max budget
+                                if (roomPrice >= desiredMax * 0.4)
+                                        return 80; // 40-60% của max budget
+                                return 70; // Dưới 40% budget (quá rẻ có thể không đạt chất lượng)
+                        } else {
+                                // Vượt budget, điểm rất thấp
+                                return Math.max(10, (int) (desiredMax * 100 / roomPrice));
+                        }
+                }
+
+                // Nếu set cả min và max
+                if (desiredMin != null && desiredMax != null) {
+                        if (roomPrice >= desiredMin && roomPrice <= desiredMax) {
+                                // Perfect match - trong khoảng mong muốn
+                                return 100;
+                        } else if (roomPrice < desiredMin) {
+                                // Dưới min
+                                if (roomPrice >= desiredMin * 0.8)
+                                        return 80; // Gần min
+                                return Math.max(20, (int) (roomPrice * 100 / desiredMin));
+                        } else {
+                                // Trên max
+                                if (roomPrice <= desiredMax * 1.2)
+                                        return 70; // Chỉ vượt 20%
+                                return Math.max(10, (int) (desiredMax * 100 / roomPrice));
+                        }
+                }
+
+                // Default case - không nên xảy ra
+                return 50;
+        }
+
+        /**
+         * Tạo chuỗi địa chỉ đầy đủ từ Address entity
+         * 
+         * @param address Address entity
+         * @return Chuỗi địa chỉ đầy đủ dạng "street, ward, district, province"
+         */
+        private String buildFullAddressString(Address address) {
+                if (address == null)
+                        return "";
+
+                StringBuilder addressBuilder = new StringBuilder();
+
+                if (address.getStreet() != null && !address.getStreet().trim().isEmpty()) {
+                        addressBuilder.append(address.getStreet().trim());
+                }
+
+                if (address.getWard() != null) {
+                        if (addressBuilder.length() > 0)
+                                addressBuilder.append(", ");
+                        addressBuilder.append(address.getWard().getName());
+
+                        if (address.getWard().getDistrict() != null) {
+                                addressBuilder.append(", ").append(address.getWard().getDistrict().getName());
+
+                                if (address.getWard().getDistrict().getProvince() != null) {
+                                        addressBuilder.append(", ").append(
+                                                        address.getWard().getDistrict().getProvince().getName());
+                                }
+                        }
+                }
+
+                return addressBuilder.toString();
         }
 
         /**

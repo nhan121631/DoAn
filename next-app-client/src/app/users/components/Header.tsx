@@ -38,19 +38,20 @@ export default function Header() {
       key: "logout",
       label: (
         <button
-          className="flex items-center justify-center gap-2 w-full text-left px-4 py-2 text-red-500 hover:bg-gray-100 dark:hover:bg-gray-700"
+          className="flex items-center justify-center gap-3 w-full text-left px-4 py-3 text-red-500 hover:bg-red-50 rounded-lg transition-colors duration-200 font-medium"
           onClick={() => {
             signOut({ callbackUrl: "/auth/login" });
           }}
         >
-          <IoIosLogOut className="text-2xl" /> Logout
+          <IoIosLogOut className="text-lg" />
+          Logout
         </button>
       ),
     },
   ];
 
   return (
-    <header className="h-[80px] absolute top-0 left-0 w-full flex items-center justify-between px-4 md:px-8 shadow-md z-50">
+    <header className="h-20 fixed top-0 left-0 w-full flex items-center justify-between px-6 lg:px-12 bg-white/95 backdrop-blur-md border-b border-gray-100 z-50 shadow-sm">
       {/* Logo */}
       <div className="flex items-center gap-2 overflow-hidden md:gap-4">
         <Image
@@ -59,18 +60,19 @@ export default function Header() {
           width={100}
           height={40}
           priority
-          className="object-contain w-auto max-h-full"
+          className="object-contain w-auto max-h-full brightness-20"
           style={{ width: "auto" }} // Đảm bảo giữ đúng tỷ lệ khi height thay đổi
         />
       </div>
 
-      <nav className="hidden md:block">
-        <ul className="flex gap-4 text-lg lg:gap-8">
+      {/* Desktop Navigation */}
+      <nav className="hidden lg:block">
+        <ul className="flex items-center gap-1">
           <li>
             <Link
               href="#home"
               onClick={(e) => handleSmoothScroll(e, "home")}
-              className="flex items-center gap-1 p-2 text-white transition duration-300 rounded-full cursor-pointer md:px-4 md:py-2 md:gap-2 hover:bg-white/30"
+              className="px-4 py-2 text-gray-700 font-medium rounded-lg hover:bg-gray-100 hover:text-gray-900 transition-all duration-200"
             >
               Home
             </Link>
@@ -79,7 +81,7 @@ export default function Header() {
             <Link
               href="#rental-rooms"
               onClick={(e) => handleSmoothScroll(e, "rental-rooms")}
-              className="flex items-center gap-1 p-2 text-white transition duration-300 rounded-full cursor-pointer md:px-4 md:py-2 md:gap-2 hover:bg-white/30"
+              className="px-4 py-2 text-gray-700 font-medium rounded-lg hover:bg-gray-100 hover:text-gray-900 transition-all duration-200"
             >
               Rental rooms
             </Link>
@@ -88,7 +90,7 @@ export default function Header() {
             <Link
               href="#landlords"
               onClick={(e) => handleSmoothScroll(e, "landlords")}
-              className="flex items-center gap-1 p-2 text-white transition duration-300 rounded-full cursor-pointer md:px-4 md:py-2 md:gap-2 hover:bg-white/30"
+              className="px-4 py-2 text-gray-700 font-medium rounded-lg hover:bg-gray-100 hover:text-gray-900 transition-all duration-200"
             >
               Landlords
             </Link>
@@ -97,7 +99,7 @@ export default function Header() {
             <Link
               href="#contact"
               onClick={(e) => handleSmoothScroll(e, "contact")}
-              className="flex items-center gap-1 p-2 text-white transition duration-300 rounded-full cursor-pointer md:px-4 md:py-2 md:gap-2 hover:bg-white/30"
+              className="px-4 py-2 text-gray-700 font-medium rounded-lg hover:bg-gray-100 hover:text-gray-900 transition-all duration-200"
             >
               Contact
             </Link>
@@ -105,125 +107,215 @@ export default function Header() {
         </ul>
       </nav>
 
-      <div className="flex items-center gap-2 md:gap-6">
+      {/* User Actions */}
+      <div className="flex items-center gap-3">
         {session ? (
           <>
+            {/* Dashboard Link */}
             <Link
               href="/user-dashboard"
-              className="flex items-center gap-1 p-2 text-white transition duration-300 rounded-full shadow cursor-pointer md:px-4 md:py-2 md:gap-2 hover:bg-white/30"
+              className="hidden md:flex items-center px-4 py-2 text-gray-700 font-medium rounded-lg hover:bg-gray-100 hover:text-gray-900 transition-all duration-200"
             >
-              {/* <AiOutlineUserAdd className="w-5 h-5" /> */}
-              <span className="hidden md:inline">Dashboard</span>
+              Dashboard
             </Link>
 
+            {/* User Dropdown */}
             <Dropdown
               menu={{ items }}
               trigger={["click"]}
               placement="bottomRight"
+              overlayClassName="mt-2"
             >
-              <div className="flex items-center gap-2 cursor-pointer">
-                <Avatar src="https://i.pravatar.cc/40" />
-                <span className="font-semibold text-white">
-                  Hi, {session.user?.userProfile?.fullName || "User"}
+              <div className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors duration-200">
+                <Avatar
+                  src="https://i.pravatar.cc/40"
+                  size={36}
+                  className="border border-gray-200"
+                />
+                <span className="hidden md:block font-medium text-gray-700 max-w-32 truncate">
+                  {session.user?.userProfile?.fullName || "User"}
                 </span>
               </div>
             </Dropdown>
           </>
         ) : (
           <>
+            {/* Register Link */}
             <Link
               href="/auth/register"
-              className="flex items-center gap-1 p-2 text-white transition duration-300 rounded-full shadow cursor-pointer md:px-4 md:py-2 md:gap-2 hover:bg-white/30"
+              className="hidden md:flex items-center gap-2 px-4 py-2 text-gray-600 font-medium rounded-lg hover:bg-gray-100 hover:text-gray-900 transition-all duration-200"
             >
-              <AiOutlineUserAdd className="w-5 h-5" />
-              <span className="hidden md:inline">Register</span>
+              <AiOutlineUserAdd className="w-4 h-4" />
+              Register
             </Link>
+
+            {/* Login Link */}
             <Link
               href="/auth/login"
-              className="flex items-center gap-1 p-2 text-white transition duration-300 rounded-full shadow cursor-pointer md:px-4 md:py-2 md:gap-2 hover:bg-white/30"
+              className="hidden md:flex items-center gap-2 px-4 py-2 text-gray-600 font-medium rounded-lg hover:bg-gray-100 hover:text-gray-900 transition-all duration-200"
             >
-              <IoLogInOutline className="w-5 h-5" />
-              <span className="hidden md:inline">Login</span>
+              <IoLogInOutline className="w-4 h-4" />
+              Login
             </Link>
+
+            {/* Create Post Button */}
             <Link
               href="/users/register"
-              className="flex items-center gap-1 p-2 transition duration-300 bg-white rounded-full shadow cursor-pointer hover:bg-gray-300 text-stone-900 md:px-4 md:py-2 md:gap-2"
+              className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white font-medium rounded-lg hover:bg-gray-800 transition-colors duration-200 shadow-sm"
             >
-              <FaRegEdit className="w-5 h-5" />
+              <FaRegEdit className="w-4 h-4" />
               <span className="hidden md:inline">Create Post</span>
+              <span className="md:hidden">Post</span>
             </Link>
           </>
         )}
 
-        <div className="md:hidden">
-          <button
-            onClick={toggleMobileMenu}
-            className="p-2 rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-yellow-400"
-            aria-label="Toggle navigation menu"
-          >
-            <RxHamburgerMenu className="w-6 h-6 text-white" />
-          </button>
-        </div>
+        {/* Mobile Menu Button */}
+        <button
+          onClick={toggleMobileMenu}
+          className="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200"
+          aria-label="Toggle navigation menu"
+        >
+          <RxHamburgerMenu className="w-5 h-5 text-gray-700" />
+        </button>
       </div>
+
+      {/* Mobile Menu Overlay */}
       {isMobileMenuOpen && (
         <div
-          className="fixed inset-0 z-30 bg-opacity-0 md:hidden"
+          className="fixed inset-0 z-30 bg-black/20 lg:hidden"
           onClick={toggleMobileMenu}
         ></div>
       )}
 
+      {/* Mobile Menu Sidebar */}
       <div
-        className={`fixed top-0 right-0 h-full w-1/2 md:hidden shadow-lg py-4 z-40 bg-white bg-opacity-70 transform transition-transform duration-300 ease-in-out ${
+        className={`fixed top-0 right-0 h-full w-80 max-w-sm lg:hidden bg-white shadow-xl z-40 transform transition-transform duration-300 ease-out ${
           isMobileMenuOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
-        <div className="flex justify-end px-4 py-2">
+        {/* Mobile Menu Header */}
+        <div className="flex items-center justify-between p-6 border-b border-gray-100">
+          <h2 className="text-lg font-semibold text-gray-900">Menu</h2>
           <button
             onClick={toggleMobileMenu}
-            className="text-2xl text-gray-700 hover:text-yellow-400"
+            className="p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200"
             aria-label="Close navigation menu"
           >
-            &times; {/* Close icon */}
+            <svg
+              className="w-5 h-5 text-gray-500"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
           </button>
         </div>
-        <ul className="flex flex-col items-start gap-4 px-4 text-lg">
-          <li className="w-full">
-            <Link
-              href="#home"
-              onClick={(e) => handleSmoothScroll(e, "home")}
-              className="block w-full px-4 py-2 text-left rounded-md hover:bg-amber-100"
-            >
-              Home
-            </Link>
-          </li>
-          <li className="w-full">
-            <Link
-              href="#rental-rooms"
-              onClick={(e) => handleSmoothScroll(e, "rental-rooms")}
-              className="block w-full px-4 py-2 text-left rounded-md hover:bg-amber-100"
-            >
-              Rental rooms
-            </Link>
-          </li>
-          <li className="w-full">
-            <Link
-              href="#landlords"
-              onClick={(e) => handleSmoothScroll(e, "landlords")}
-              className="block w-full px-4 py-2 text-left rounded-md hover:bg-amber-100"
-            >
-              Landlords
-            </Link>
-          </li>
-          <li className="w-full">
-            <Link
-              href="#contact"
-              onClick={(e) => handleSmoothScroll(e, "contact")}
-              className="block w-full px-4 py-2 text-left rounded-md hover:bg-amber-100"
-            >
-              Contact
-            </Link>
-          </li>
-        </ul>
+
+        {/* Mobile Menu Content */}
+        <div className="p-6">
+          {/* Navigation Links */}
+          <nav className="mb-8">
+            <ul className="space-y-2">
+              <li>
+                <Link
+                  href="#home"
+                  onClick={(e) => {
+                    handleSmoothScroll(e, "home");
+                    toggleMobileMenu();
+                  }}
+                  className="block px-4 py-3 text-gray-700 font-medium rounded-lg hover:bg-gray-100 transition-colors duration-200"
+                >
+                  Home
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="#rental-rooms"
+                  onClick={(e) => {
+                    handleSmoothScroll(e, "rental-rooms");
+                    toggleMobileMenu();
+                  }}
+                  className="block px-4 py-3 text-gray-700 font-medium rounded-lg hover:bg-gray-100 transition-colors duration-200"
+                >
+                  Rental rooms
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="#landlords"
+                  onClick={(e) => {
+                    handleSmoothScroll(e, "landlords");
+                    toggleMobileMenu();
+                  }}
+                  className="block px-4 py-3 text-gray-700 font-medium rounded-lg hover:bg-gray-100 transition-colors duration-200"
+                >
+                  Landlords
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="#contact"
+                  onClick={(e) => {
+                    handleSmoothScroll(e, "contact");
+                    toggleMobileMenu();
+                  }}
+                  className="block px-4 py-3 text-gray-700 font-medium rounded-lg hover:bg-gray-100 transition-colors duration-200"
+                >
+                  Contact
+                </Link>
+              </li>
+            </ul>
+          </nav>
+
+          {/* Mobile User Actions */}
+          {session ? (
+            <div className="space-y-3 pt-4 border-t border-gray-100">
+              <Link
+                href="/user-dashboard"
+                onClick={toggleMobileMenu}
+                className="flex items-center gap-3 px-4 py-3 text-gray-700 font-medium rounded-lg hover:bg-gray-100 transition-colors duration-200"
+              >
+                Dashboard
+              </Link>
+              <div className="flex items-center gap-3 px-4 py-3">
+                <Avatar
+                  src="https://i.pravatar.cc/40"
+                  size={32}
+                  className="border border-gray-200"
+                />
+                <span className="font-medium text-gray-700 truncate">
+                  {session.user?.userProfile?.fullName || "User"}
+                </span>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-3 pt-4 border-t border-gray-100">
+              <Link
+                href="/auth/register"
+                onClick={toggleMobileMenu}
+                className="flex items-center gap-3 px-4 py-3 text-gray-700 font-medium rounded-lg hover:bg-gray-100 transition-colors duration-200"
+              >
+                <AiOutlineUserAdd className="w-4 h-4" />
+                Register
+              </Link>
+              <Link
+                href="/auth/login"
+                onClick={toggleMobileMenu}
+                className="flex items-center gap-3 px-4 py-3 text-gray-700 font-medium rounded-lg hover:bg-gray-100 transition-colors duration-200"
+              >
+                <IoLogInOutline className="w-4 h-4" />
+                Login
+              </Link>
+            </div>
+          )}
+        </div>
       </div>
     </header>
   );
