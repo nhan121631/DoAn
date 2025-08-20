@@ -26,6 +26,18 @@ import com.ants.ktc.ants_ktc.repositories.address.WardJpaRepository;
 
 @Service
 public class ProfileService {
+
+        @Autowired
+        private LocationIQService locationIQService;
+        @Autowired
+        private ProfileJpaRepository profileJpaRepository;
+
+        @Autowired
+        private WardJpaRepository wardRepository;
+
+        @Autowired
+        private CloudinaryService cloudinaryService;
+
         private AddressResponseDto addressConvert(Address address) {
                 if (address == null)
                         return null;
@@ -53,14 +65,14 @@ public class ProfileService {
                                 .build();
         }
 
-        @Autowired
-        private ProfileJpaRepository profileJpaRepository;
-
-        @Autowired
-        private WardJpaRepository wardRepository;
-
-        @Autowired
-        private CloudinaryService cloudinaryService;
+        private String removePrefix(String text, String prefix) {
+                if (text == null)
+                        return null;
+                if (text.startsWith(prefix)) {
+                        return text.substring(prefix.length()).trim();
+                }
+                return text;
+        }
 
         @Autowired
         private UserJpaRepository userJpaRepository;
@@ -144,8 +156,24 @@ public class ProfileService {
                         Ward ward = wardRepository.findById(dto.getAddress().getWardId())
                                         .orElseThrow(() -> new RuntimeException("Ward Not Found"));
                         address.setWard(ward);
-                        profileJpaRepository.save(profile);
-                        addressDto = addressConvert(address);
+
+                        String fullAddress = dto.getAddress().getStreet() + ", " +
+                                        removePrefix(ward.getName(), "Phường") + ", " +
+                                        removePrefix(ward.getDistrict().getName(), "Quận") + ", " +
+                                        removePrefix(ward.getDistrict().getProvince().getName(), "Thành phố");
+                        try {
+                                LocationIQService.LatLng latLng = locationIQService.getCoordinates(fullAddress);
+
+                                if (latLng != null) {
+                                        address.setLng(latLng.lng);
+                                        address.setLat(latLng.lat);
+                                }
+
+                                profileJpaRepository.save(profile);
+                                addressDto = addressConvert(address);
+                        } catch (Exception e) {
+                                throw new RuntimeException("Failed to get coordinates: " + e.getMessage(), e);
+                        }
                 } else {
                         profileJpaRepository.save(profile);
                         Address address = profile.getAddress();

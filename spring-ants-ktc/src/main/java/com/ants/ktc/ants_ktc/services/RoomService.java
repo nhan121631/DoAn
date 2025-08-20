@@ -208,6 +208,15 @@ public class RoomService {
                                 .collect(Collectors.toList());
         }
 
+        private String removePrefix(String text, String prefix) {
+                if (text == null)
+                        return null;
+                if (text.startsWith(prefix)) {
+                        return text.substring(prefix.length()).trim();
+                }
+                return text;
+        }
+
         @Transactional
         public RoomResponseDto createRoom(List<MultipartFile> files, RoomRequestCreateDto requestDto) {
                 Room room = new Room();
@@ -325,11 +334,22 @@ public class RoomService {
                 Ward ward = wardRepository.findById(requestDto.getAddress().getWardId())
                                 .orElseThrow(() -> new IllegalArgumentException("Ward Not Found"));
                 address.setWard(ward);
+                String fullAddress = requestDto.getAddress().getStreet() + ", " +
+                                removePrefix(ward.getName(), "Phường") + ", " +
+                                removePrefix(ward.getDistrict().getName(), "Quận") + ", " +
+                                removePrefix(ward.getDistrict().getProvince().getName(), "Thành phố");
+                try {
+                        LocationIQService.LatLng latLng = locationIQService.getCoordinates(fullAddress);
+                        if (latLng != null) {
+                                address.setLng(latLng.lng);
+                                address.setLat(latLng.lat);
+                        }
 
-                // Tự động geocode và cập nhật tọa độ cho address
-                // updateAddressCoordinates(address);
-
-                room.setAddress(address);
+                        room.setAddress(address);
+                } catch (Exception e) {
+                        throw new RuntimeException("Failed to get coordinates: " + e.getMessage(), e);
+                }
+                // set lng + lat
 
                 // Set tiện ích (convenients)
                 List<Convenient> convenients = convenientJpaRepository.findAllById(requestDto.getConvenientIds());
@@ -446,11 +466,21 @@ public class RoomService {
                 Ward ward = wardRepository.findById(request.getAddress().getWardId())
                                 .orElseThrow(() -> new IllegalArgumentException("Ward Not Found"));
                 address.setWard(ward);
+                String fullAddress = request.getAddress().getStreet() + ", " +
+                                removePrefix(ward.getName(), "Phường") + ", " +
+                                removePrefix(ward.getDistrict().getName(), "Quận") + ", " +
+                                removePrefix(ward.getDistrict().getProvince().getName(), "Thành phố");
+                try {
+                        LocationIQService.LatLng latLng = locationIQService.getCoordinates(fullAddress);
+                        if (latLng != null) {
+                                address.setLng(latLng.lng);
+                                address.setLat(latLng.lat);
+                        }
 
-                // Tự động geocode và cập nhật tọa độ cho address
-                // updateAddressCoordinates(address);
-
-                room.setAddress(address);
+                        room.setAddress(address);
+                } catch (Exception e) {
+                        throw new RuntimeException("Failed to get coordinates: " + e.getMessage(), e);
+                }
 
                 // Set tiện ích (convenients)
                 List<Convenient> convenients = convenientJpaRepository.findAllById(request.getConvenientIds());
