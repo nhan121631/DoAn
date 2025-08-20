@@ -463,7 +463,21 @@ public class RoomService {
                 Ward ward = wardRepository.findById(request.getAddress().getWardId())
                                 .orElseThrow(() -> new IllegalArgumentException("Ward Not Found"));
                 address.setWard(ward);
-                room.setAddress(address);
+                String fullAddress = request.getAddress().getStreet() + ", " +
+                                removePrefix(ward.getName(), "Phường") + ", " +
+                                removePrefix(ward.getDistrict().getName(), "Quận") + ", " +
+                                removePrefix(ward.getDistrict().getProvince().getName(), "Thành phố");
+                try {
+                        LocationIQService.LatLng latLng = locationIQService.getCoordinates(fullAddress);
+                        if (latLng != null) {
+                                address.setLng(latLng.lng);
+                                address.setLat(latLng.lat);
+                        }
+
+                        room.setAddress(address);
+                } catch (Exception e) {
+                        throw new RuntimeException("Failed to get coordinates: " + e.getMessage(), e);
+                }
 
                 // Set tiện ích (convenients)
                 List<Convenient> convenients = convenientJpaRepository.findAllById(request.getConvenientIds());
