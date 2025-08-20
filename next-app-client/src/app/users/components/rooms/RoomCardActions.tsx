@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { FaHeart, FaRegCheckCircle } from "react-icons/fa";
 import { IoIosAddCircleOutline } from "react-icons/io";
-import { useFavoriteStore } from "@/stores/favoriteStore";
+import { useFavoriteStore } from "@/stores/FavoriteStore";
 import { useCompareStore } from "@/stores/CompareStore";
 
 
@@ -15,9 +15,10 @@ export interface RoomCardProps {
   room: RoomInUser;
   isFavorite?: boolean;
   onFavoriteChange?: (id: string) => void;
+  showHeartOnly?: boolean;
 }
 
-export default function RoomCartActions({ room, onFavoriteChange }: RoomCardProps) {
+export default function RoomCartActions({ room, onFavoriteChange, showHeartOnly }: RoomCardProps) {
   const router = useRouter();
   const handleClick = () => {
     router.push(`/detail/${room.id}`);
@@ -51,7 +52,6 @@ export default function RoomCartActions({ room, onFavoriteChange }: RoomCardProp
 
 
   const handleFavorite = async () => {
-    if (loadingFavorite) return;
     if (!session) {
       router.push("/auth/login");
       return;
@@ -75,13 +75,30 @@ export default function RoomCartActions({ room, onFavoriteChange }: RoomCardProp
       } else {
         throw new Error("Failed to update favorite status");
       }
-
-    } catch {
+    } catch (error) {
       messageApi.error("Failed to update favorite status");
     } finally {
       setLoadingFavorite(false);
     }
   };
+  if (showHeartOnly) {
+    return (
+      <>
+        {contextHolder}
+        <button
+          aria-label="Favorite"
+          className={`transition-colors p-2 rounded-full bg-white/70 backdrop-blur-sm
+          ${isFavorite ? "text-red-500" : "text-gray-400 hover:text-red-500"} 
+          ${loadingFavorite ? "opacity-60 cursor-not-allowed" : ""}`}
+          onClick={handleFavorite}
+          disabled={loadingFavorite}
+          type="button"
+        >
+          <FaHeart className="text-base" />
+        </button>
+      </>
+    );
+  }
 
   return (
     <>
@@ -99,9 +116,6 @@ export default function RoomCartActions({ room, onFavoriteChange }: RoomCardProp
           disabled={loadingFavorite}
         >
           <FaHeart className="text-base" />
-          {loadingFavorite && (
-            <span className="ml-1 animate-spin text-xs">⏳</span>
-          )}
         </button>
         {/* Compare Button */}
         <button
