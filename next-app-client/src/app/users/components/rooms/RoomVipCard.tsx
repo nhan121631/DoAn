@@ -63,7 +63,7 @@ export default function RoomVipCard({
       style={{ willChange: "transform, box-shadow, border-color, background" }}
     >
     <div
-      className="rounded-2xl overflow-hidden shadow-lg bg-white border border-gray-200 mx-auto w-full max-w-[850px] min-w-[320px] transition-all duration-300 group/card flex flex-col sm:flex-row sm:items-stretch relative cursor-pointer hover:shadow-2xl hover:border-emerald-400 hover:scale-[1.015]"
+      className="rounded-2xl overflow-hidden shadow-lg bg-white border border-gray-200 mx-auto w-[790px] min-w-[320px] transition-all duration-300 group/card flex flex-col sm:flex-row sm:items-stretch relative cursor-pointer hover:shadow-2xl hover:border-emerald-400 hover:scale-[1.015]"
       style={{ willChange: 'transform, box-shadow, border-color, background' }}
     >
       {/* IMAGE SECTION */}

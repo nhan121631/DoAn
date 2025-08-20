@@ -224,4 +224,47 @@ public interface RoomJpaRepository extends JpaRepository<Room, UUID> {
                         "AND r.post_start_date >= :limitday", nativeQuery = true)
         List<RoomNewProjection> findRecentRooms(@Param("limitday") Date limitday, Pageable pageable);
 
+        @Query("""
+                        SELECT r FROM Room r
+                        JOIN FETCH r.address a
+                        JOIN FETCH a.ward w
+                        JOIN FETCH w.district d
+                        JOIN FETCH d.province p
+                        LEFT JOIN FETCH r.user u
+                        LEFT JOIN FETCH u.profile up
+                        WHERE r.available = 0
+                        AND r.approval = 1
+                        AND r.hidden = 0
+                        AND r.isRemoved = 0
+                        AND (:minPrice IS NULL OR r.price_month >= :minPrice)
+                        AND (:maxPrice IS NULL OR r.price_month <= :maxPrice)
+                        AND p.name IN :provinces
+                        AND r.id NOT IN (
+                            SELECT f.room.id FROM Favorite f WHERE f.user.id = :excludeUserId
+                        )
+                        ORDER BY
+                            CASE
+                                WHEN w.name IN :wards THEN 1
+                                WHEN d.name IN :districts THEN 2
+                                ELSE 3
+                            END,
+                            ABS(r.price_month - (:minPrice + :maxPrice) / 2),
+                            CASE
+                                WHEN (:minArea IS NULL OR :maxArea IS NULL) THEN 0
+                                WHEN r.area BETWEEN :minArea AND :maxArea THEN 0
+                                ELSE ABS(r.area - (:minArea + :maxArea) / 2)
+                            END,
+                            r.createdDate DESC
+                        """)
+        List<Room> findSuggestedRoomsFlexible(
+                        @Param("minPrice") Double minPrice,
+                        @Param("maxPrice") Double maxPrice,
+                        @Param("minArea") Double minArea,
+                        @Param("maxArea") Double maxArea,
+                        @Param("provinces") List<String> provinces,
+                        @Param("districts") List<String> districts,
+                        @Param("wards") List<String> wards,
+                        @Param("excludeUserId") UUID excludeUserId,
+                        Pageable pageable);
+
 }

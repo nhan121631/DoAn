@@ -64,7 +64,6 @@ export default async function RentalRooms({
   const listConvenientIds = listConvenientIdsRaw
     ? listConvenientIdsRaw.split(",")
     : [];
-
   const filters = {
     provinceId,
     districtId,
@@ -288,7 +287,7 @@ export default async function RentalRooms({
             <CardFilter />
           </div>
           <div className="mt-3 hidden lg:block">
-            <FilterForm /> 
+            <FilterForm />
           </div>
           <div className="w-[80%] lg:w-[300px]">
             <FeaturedListingsCard />

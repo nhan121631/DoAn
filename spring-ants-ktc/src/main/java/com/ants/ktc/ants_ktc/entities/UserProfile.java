@@ -50,6 +50,22 @@ public class UserProfile extends BaseEntity {
     @JoinColumn(name = "address_id", referencedColumnName = "id")
     private Address address;
 
+    @Column(name = "search_address", length = 500)
+    private String searchAddress;
+
+    // Lưu tọa độ đã geocoded (để tránh gọi Google API nhiều lần)
+    @Column(name = "search_latitude")
+    private Double searchLatitude;
+    
+    @Column(name = "search_longitude")
+    private Double searchLongitude;
+
+    @Column(name = "desired_min_price")
+    private Double desiredMinPrice;
+
+    @Column(name = "desired_max_price")
+    private Double desiredMaxPrice;
+
     @OneToOne(mappedBy = "profile", fetch = FetchType.LAZY)
     private User user;
 

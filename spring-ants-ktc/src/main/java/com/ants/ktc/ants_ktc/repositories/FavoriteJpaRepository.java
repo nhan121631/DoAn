@@ -1,5 +1,6 @@
 package com.ants.ktc.ants_ktc.repositories;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.data.domain.Page;
@@ -10,6 +11,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.ants.ktc.ants_ktc.entities.Favorite;
+import com.ants.ktc.ants_ktc.entities.User;
 
 @Repository
 public interface FavoriteJpaRepository extends JpaRepository<Favorite, UUID> {
@@ -19,5 +21,8 @@ public interface FavoriteJpaRepository extends JpaRepository<Favorite, UUID> {
 
     @Query("SELECT f FROM Favorite f JOIN FETCH f.room WHERE f.user.id = :userId")
     Page<Favorite> findByUserIdWithRoom(@Param("userId") UUID userId, Pageable pageable);
+
+    @Query("SELECT DISTINCT f.user FROM Favorite f WHERE f.user.profile.email IS NOT NULL")
+    List<User> findUsersWithFavorites();
 
 }

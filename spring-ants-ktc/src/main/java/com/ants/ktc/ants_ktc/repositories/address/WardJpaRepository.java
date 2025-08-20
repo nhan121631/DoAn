@@ -17,4 +17,9 @@ public interface WardJpaRepository extends JpaRepository<Ward, Long> {
     @EntityGraph(attributePaths = { "district", "district.province" })
     Optional<Ward> findById(Long id);
 
+    // Thêm methods để tìm ward đầu tiên theo district và province
+    Ward findFirstByDistrictId(Long districtId);
+
+    Ward findFirstByDistrictProvinceId(Long provinceId);
+
 }

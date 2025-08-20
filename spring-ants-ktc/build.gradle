@@ -47,6 +47,11 @@ dependencies {
  	// Cloudinary dependencies
 	implementation 'com.cloudinary:cloudinary-http44:1.37.0'
 
+	// google map 
+	implementation 'com.google.maps:google-maps-services:0.18.1'
+	implementation 'org.json:json:20230227'
+
+
 	compileOnly 'org.projectlombok:lombok'
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	runtimeOnly 'com.mysql:mysql-connector-j'
