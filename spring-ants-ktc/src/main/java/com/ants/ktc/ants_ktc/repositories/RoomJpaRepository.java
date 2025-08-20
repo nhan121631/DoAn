@@ -20,6 +20,7 @@ import com.ants.ktc.ants_ktc.repositories.projection.RoomByAdminPagingProjection
 import com.ants.ktc.ants_ktc.repositories.projection.RoomByLandlordPagingProjection;
 import com.ants.ktc.ants_ktc.repositories.projection.RoomDeleteProjection;
 import com.ants.ktc.ants_ktc.repositories.projection.RoomHiddenProjection;
+import com.ants.ktc.ants_ktc.repositories.projection.RoomMapProjection;
 import com.ants.ktc.ants_ktc.repositories.projection.RoomNewProjection;
 
 @Repository
@@ -223,5 +224,35 @@ public interface RoomJpaRepository extends JpaRepository<Room, UUID> {
                         "AND r.approval = 1 " +
                         "AND r.post_start_date >= :limitday", nativeQuery = true)
         List<RoomNewProjection> findRecentRooms(@Param("limitday") Date limitday, Pageable pageable);
+
+        @Query(value = "SELECT " +
+                        "LOWER(HEX(r.id)) AS id, " +
+                        "r.title AS title, " +
+                        "(SELECT i.url FROM images i WHERE i.room_id = r.id ORDER BY i.id ASC LIMIT 1) AS imageUrl, " +
+                        "r.area AS area, " +
+                        "r.price_month AS priceMonth, " +
+                        "pt.name AS postType, " +
+                        "CONCAT(a.detail, ', ', w.name, ', ', d.name, ', ', p.name) AS fullAddress, " +
+                        "a.lng AS lng, " +
+                        "a.lat AS lat, " +
+                        "(6371 * acos( cos(radians(:centerLat)) * cos(radians(a.lat)) * cos(radians(a.lng) - radians(:centerLng)) + sin(radians(:centerLat)) * sin(radians(a.lat)) )) AS distance "
+                        +
+                        "FROM rooms r " +
+                        "JOIN addresses a ON r.address_id = a.id " +
+                        "JOIN wards w ON a.ward_id = w.id " +
+                        "JOIN districts d ON w.district_id = d.id " +
+                        "JOIN provinces p ON d.province_id = p.id " +
+                        "JOIN post_types pt ON r.post_type_id = pt.id " +
+                        "WHERE r.available = 0 " +
+                        "AND r.post_end_date > CURRENT_DATE " +
+                        "AND r.hidden = 0 " +
+                        "AND r.is_removed = 0 " +
+                        "AND r.approval = 1 " +
+                        "HAVING distance <= :radiusKm " +
+                        "ORDER BY distance", nativeQuery = true)
+        List<RoomMapProjection> findRoomInMapWithRadius(
+                        @Param("centerLat") double centerLat,
+                        @Param("centerLng") double centerLng,
+                        @Param("radiusKm") double radiusKm);
 
 }
