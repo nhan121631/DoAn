@@ -4,11 +4,10 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.net.URI;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.UUID;
+import java.util.*;
 
+import com.ants.ktc.ants_ktc.dtos.user.UserNameResponseDto;
+import com.ants.ktc.ants_ktc.repositories.projection.UserProfileProjection;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
@@ -74,6 +73,8 @@ public class UserService {
         private final RestTemplate restTemplate = new RestTemplate();
 
         // ...existing code...
+
+
 
         private AddressResponseDto convertAddressDto(Address address) {
                 if (address == null || address.getWard() == null)

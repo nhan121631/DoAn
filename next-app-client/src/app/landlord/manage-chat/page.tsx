@@ -122,53 +122,57 @@ export default function LandlordManageChatPage() {
   );
 
   useEffect(() => {
-    const q = query(collection(db, "messages"), orderBy("createdAt", "asc"));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      // Lấy tất cả các tin nhắn mà landlord là sender hoặc recipient
-      const messages = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        text: doc.data().text,
-        senderId: doc.data().senderId,
-        recipientId: doc.data().recipientId,
-        createdAt: doc.data().createdAt
-          ? new Date(doc.data().createdAt.seconds * 1000)
-          : null,
-      }));
+  if (!landlordId) return;
 
-      // Tìm tất cả userId đã từng chat với landlord (khác landlordId)
-      const userIds = new Set<string>();
-      messages.forEach((msg) => {
-        if (msg.senderId === landlordId && msg.recipientId && msg.recipientId !== landlordId) {
-          userIds.add(msg.recipientId);
-        }
-        if (msg.recipientId === landlordId && msg.senderId && msg.senderId !== landlordId) {
-          userIds.add(msg.senderId);
-        }
-      });
+  const q = query(collection(db, "messages"), orderBy("createdAt", "asc"));
+  const unsubscribe = onSnapshot(q, (snapshot) => {
+    // Lấy tất cả tin nhắn có landlord liên quan
+    const listUser = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      text: doc.data().text,
+      senderId: doc.data().senderId,
+      recipientId: doc.data().recipientId,
+      createdAt: doc.data().createdAt
+        ? new Date(doc.data().createdAt.seconds * 1000)
+        : null,
+    }))
+    .filter(
+      (msg) =>
+        msg.senderId === landlordId || msg.recipientId === landlordId
+    );
 
-      // Tạo danh sách user
-      const userListFirestore: ChatUser[] = Array.from(userIds).map((userId) => {
-        // Tìm tin nhắn cuối cùng với user này
-        const lastMsg = messages.filter(
-          (msg) =>
-            (msg.senderId === userId && msg.recipientId === landlordId) ||
-            (msg.senderId === landlordId && msg.recipientId === userId)
-        ).sort((a, b) => (b.createdAt?.getTime() || 0) - (a.createdAt?.getTime() || 0))[0];
-        return {
-          id: userId,
-          name: userId,
-          lastMessageTime: lastMsg?.createdAt || new Date(),
+    // Lấy ra danh sách unique userId khác landlord
+    const usersMap: Record<string, ChatUser> = {};
+
+    listUser.forEach((msg) => {
+      const otherId =
+        msg.senderId === landlordId ? msg.recipientId : msg.senderId;
+      if (!otherId) return;
+
+      if (!usersMap[otherId]) {
+        usersMap[otherId] = {
+          id: otherId,
+          name: otherId,
+          lastMessageTime: msg.createdAt || new Date(),
           unreadCount: 0,
         };
-      });
-      setUserList((prev) => {
-        // Gộp với userList cũ nếu cần
-        const merged = [...userListFirestore];
-        return merged;
-      });
+      } else {
+        // update lastMessageTime mới nhất
+        if (
+          msg.createdAt &&
+          (!usersMap[otherId].lastMessageTime ||
+            msg.createdAt > usersMap[otherId].lastMessageTime!)
+        ) {
+          usersMap[otherId].lastMessageTime = msg.createdAt;
+        }
+      }
     });
-    return () => unsubscribe();
-  }, [landlordId]);
+
+    setUserList(Object.values(usersMap));
+  });
+
+  return () => unsubscribe();
+}, [landlordId]);
 
   // FIX: Tách riêng việc xử lý messages để tránh conflict với click events
   const processWebSocketMessages = useCallback(() => {

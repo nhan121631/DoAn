@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import com.ants.ktc.ants_ktc.repositories.projection.UserProfileProjection;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -17,6 +18,14 @@ import com.ants.ktc.ants_ktc.repositories.projection.LandLordProjectionByRoom;
 
 @Repository
 public interface UserJpaRepository extends JpaRepository<User, UUID> {
+    @Query("""
+        SELECT u.id AS id, p.fullName AS fullName
+        FROM User u
+        JOIN u.profile p
+        WHERE u.id = :id
+       """)
+    Optional<UserProfileProjection> findFullNameById(@Param("id") UUID id);
+
     @Query("""
                 SELECT u FROM User u
                 LEFT JOIN FETCH u.profile p
