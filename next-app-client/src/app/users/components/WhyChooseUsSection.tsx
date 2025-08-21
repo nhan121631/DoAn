@@ -2,7 +2,7 @@ import Image from "next/image";
 
 export default function WhyChooseUsSection() {
   return (
-    <div className="flex flex-col items-center w-full px-4 py-24 mt-10 bg-white">
+    <div className="flex flex-col items-center w-full px-4 py-24 mt-10 bg-gray-50">
       <div className="flex flex-col items-center max-w-2xl mx-auto">
         <h2 className="mb-6 text-3xl font-bold text-center">Why Choose Us</h2>
         <span className="leading-relaxed text-center text-gray-600">

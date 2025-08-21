@@ -51,7 +51,7 @@
 //           src={room.images?.[0]?.url ? URL_IMAGE + room.images[0].url : "/placeholder.jpg"}
 //           alt={room.title}
 //           fill
-//           className="object-cover w-full h-full transition-transform duration-300"  
+//           className="object-cover w-full h-full transition-transform duration-300"
 //           sizes="(max-width: 640px) 100vw, 447px"
 //           priority
 //         />
@@ -113,7 +113,7 @@
 
 // export default RoomCard;
 
-'use client';
+"use client";
 
 import Image from "next/image";
 import React from "react";
@@ -145,19 +145,23 @@ const RoomCard: React.FC<RoomCardProps> = ({
     <motion.div
       initial={{ opacity: 0, y: 18 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once:true, amount: 0.15 }} // once: true để chỉ chạy một lần khi vào view
+      viewport={{ once: true, amount: 0.15 }} // once: true để chỉ chạy một lần khi vào view
       transition={{ duration: 0.7, ease: "easeOut", delay: custom * 0.19 }}
-      className="rounded-2xl overflow-hidden shadow-lg bg-white relative group w-[320px] h-[370px] border border-gray-100 hover:shadow-2xl hover:-translate-y-1 hover:scale-[1.015] transition-all duration-300 cursor-pointer focus-within:ring-2 focus-within:ring-amber-400"
+      className="rounded-lg overflow-hidden shadow-lg bg-white relative group w-[320px] h-[370px] border border-gray-100 hover:shadow-2xl hover:-translate-y-1 hover:scale-[1.015] transition-all duration-300 cursor-pointer focus-within:ring-2 focus-within:ring-amber-400"
       style={{ willChange: "transform, box-shadow, border-color, background" }}
       custom={custom}
     >
       {/* Ảnh nền */}
       <div className="relative w-full h-[60%] min-h-[180px] max-h-[220px] select-none">
         <Image
-          src={room.images?.[0]?.url ? URL_IMAGE + room.images[0].url : "/placeholder.jpg"}
+          src={
+            room.images?.[0]?.url
+              ? URL_IMAGE + room.images[0].url
+              : "/placeholder.jpg"
+          }
           alt={room.title}
           fill
-          className="object-cover w-full h-full transition-transform duration-300"  
+          className="object-cover w-full h-full transition-transform duration-300"
           sizes="(max-width: 640px) 100vw, 447px"
           priority
         />
@@ -178,7 +182,11 @@ const RoomCard: React.FC<RoomCardProps> = ({
         {/* Nút action luôn hiển thị, nổi bật */}
         <div className="absolute z-40 right-3 bottom-3">
           <div>
-            <RoomCardActions room={room} isFavorite={isFavorite} onFavoriteChange={onFavoriteChange} />
+            <RoomCardActions
+              room={room}
+              isFavorite={isFavorite}
+              onFavoriteChange={onFavoriteChange}
+            />
           </div>
         </div>
       </div>

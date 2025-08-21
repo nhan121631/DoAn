@@ -1,6 +1,6 @@
 "use client";
-import HeaderDetail from "../detail/Header-detail";
 import { useCompareStore } from "../../stores/CompareStore";
+import HeaderUserDashboard from "../user-dashboard/components/HeaderUserDashboard";
 import ListingComparisonDisplay from "../users/components/compare/ListingComparisonDisplay";
 import Footer from "../users/components/Footer";
 
@@ -9,7 +9,7 @@ export default function ComparePage() {
   return (
     <div className="flex flex-col min-h-screen">
       {/* Header for the comparison page */}
-      <HeaderDetail />
+      <HeaderUserDashboard />
 
       <main className="flex-grow pt-[80px] p-4 bg-gray-50">
         {" "}
