@@ -322,7 +322,7 @@ public interface RoomJpaRepository extends JpaRepository<Room, UUID> {
                         "r.area AS area, " +
                         "r.price_month AS priceMonth, " +
                         "pt.name AS postType, " +
-                        "CONCAT(a.detail, ', ', w.name, ', ', d.name, ', ', p.name) AS fullAddress, " +
+                        "CONCAT(a.name_street, ', ', w.name, ', ', d.name, ', ', p.name) AS fullAddress, " +
                         "a.lng AS lng, " +
                         "a.lat AS lat, " +
                         "(6371 * acos( cos(radians(:centerLat)) * cos(radians(a.lat)) * cos(radians(a.lng) - radians(:centerLng)) + sin(radians(:centerLat)) * sin(radians(a.lat)) )) AS distance "
@@ -332,7 +332,7 @@ public interface RoomJpaRepository extends JpaRepository<Room, UUID> {
                         "JOIN wards w ON a.ward_id = w.id " +
                         "JOIN districts d ON w.district_id = d.id " +
                         "JOIN provinces p ON d.province_id = p.id " +
-                        "JOIN post_types pt ON r.post_type_id = pt.id " +
+                        "JOIN post_type pt ON r.post_type_id = pt.id " +
                         "WHERE r.available = 0 " +
                         "AND r.post_end_date > CURRENT_DATE " +
                         "AND r.hidden = 0 " +

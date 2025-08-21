@@ -1,8 +1,7 @@
 import * as React from "react";
-import Banner from "./components/Banner";
 import Footer from "./components/Footer";
-import Header from "./components/Header";
 import AdsBanner from "./components/ads/AdsBanner";
+import HeaderUserDashboard from "../user-dashboard/components/HeaderUserDashboard";
 
 type UsersLayoutProps = {
   children: React.ReactNode;
@@ -11,11 +10,16 @@ type UsersLayoutProps = {
 export default function UsersLayout({ children }: UsersLayoutProps) {
   return (
     <div className="min-h-screen flex flex-col bg-[#f5f5f5]">
-      <Header />
+      <HeaderUserDashboard />
+
       {/* Banner/Slider */}
-      <Banner />
+      {/* <Banner /> */}
+      <div className="flex flex-row w-full max-w-full justify-center relative">
+        {/* <AdsBanner position="left" /> */}
         <main className="flex-1 mt-20 max-w-6xl mx-auto">{children}</main>
-      <AdsBanner position="right" />
+        <AdsBanner position="right" />
+      </div>
+
       <Footer />
     </div>
   );

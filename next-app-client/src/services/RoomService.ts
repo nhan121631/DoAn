@@ -220,3 +220,20 @@ export async function getLandlordByRoomId(roomId: string) {
     return null;
   }
 }
+
+//------ room in map response ------//
+export async function getRoomsInMap(lat: number, lng: number, radius: number) {
+  try {
+    const response = await fetch(
+      `${API_URL}/rooms/rooms-in-map?lat=${lat}&lng=${lng}&radius=${radius}`
+    );
+    if (!response.ok) {
+      const data = await response.json();
+      throw new Error(data.message || "Failed to fetch rooms in map");
+    }
+    return response.json();
+  } catch (error) {
+    console.error("Error fetching rooms in map:", error);
+    return null;
+  }
+}

@@ -36,6 +36,7 @@ import com.ants.ktc.ants_ktc.dtos.room.PaginationRoomResponseDto;
 import com.ants.ktc.ants_ktc.dtos.room.RoomAdminResponseProjectionDto;
 import com.ants.ktc.ants_ktc.dtos.room.RoomApprovalProjectionDto;
 import com.ants.ktc.ants_ktc.dtos.room.RoomDeleteRequestDto;
+import com.ants.ktc.ants_ktc.dtos.room.RoomInMapResponse;
 import com.ants.ktc.ants_ktc.dtos.room.RoomInUserResponseDto;
 import com.ants.ktc.ants_ktc.dtos.room.RoomRecentResponseDto;
 import com.ants.ktc.ants_ktc.dtos.room.RoomRequestCreateDto;
@@ -66,6 +67,7 @@ import com.ants.ktc.ants_ktc.repositories.address.WardJpaRepository;
 import com.ants.ktc.ants_ktc.repositories.projection.RoomApprovalProjection;
 import com.ants.ktc.ants_ktc.repositories.projection.RoomByAdminPagingProjection;
 import com.ants.ktc.ants_ktc.repositories.projection.RoomByLandlordPagingProjection;
+import com.ants.ktc.ants_ktc.repositories.projection.RoomMapProjection;
 import com.ants.ktc.ants_ktc.repositories.projection.RoomNewProjection;
 
 @Service
@@ -1572,6 +1574,25 @@ public class RoomService {
                 return addressBuilder.toString();
         }
 
+        public List<RoomInMapResponse> findRoomInMapWithRadius(double centerLat, double centerLng, double radiusKm) {
+                List<RoomMapProjection> rooms = roomJpaRepository.findRoomInMapWithRadius(centerLat, centerLng,
+                                radiusKm);
+                return rooms.stream()
+                                .map(room -> RoomInMapResponse.builder()
+                                                .id(UUID.fromString(formatHexToUuid(room.getId())))
+                                                .title(room.getTitle())
+                                                .imageUrl(room.getImageUrl())
+                                                .area(room.getArea())
+                                                .priceMonth(room.getPriceMonth())
+                                                .postType(room.getPostType())
+                                                .fullAddress(room.getFullAddress())
+                                                .lng(room.getLng())
+                                                .lat(room.getLat())
+                                                .build())
+                                .collect(Collectors.toList());
+        }
+
+        // Generate unique 8-digit transaction code using timestamp and user ID
         private String generateUniqueTransactionCode(String unusedPrefix, UUID userId) {
                 // Use last 4 digits of timestamp for time uniqueness
                 long timestamp = System.currentTimeMillis();
