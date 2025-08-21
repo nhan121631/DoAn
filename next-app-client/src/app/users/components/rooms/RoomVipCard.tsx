@@ -1,6 +1,5 @@
 "use client";
 
-import { motion } from "framer-motion";
 import { URL_IMAGE } from "@/services/Constant";
 import { RoomInUser } from "@/types/types";
 import Image from "next/image";
@@ -37,17 +36,14 @@ export default function RoomVipCard({
   const showConveniences = conveniences.slice(0, maxShow);
   const moreCount = conveniences.length - maxShow;
 
+  // BỎ motion, chỉ trả về div thường
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 30 }} // mờ, trượt nhẹ lên
-      whileInView={{ opacity: 1, y: 0 }}  // hiện, về đúng vị trí
-      viewport={{ once:true, amount: 0.18 }} // once: true để chỉ chạy một lần khi vào view
-      transition={{ duration: 0.85, ease: [0.22, 0.61, 0.36, 1] }} // cubic-bezier mượt
-      className=" hover:border-emerald-400"
+    <div
+      className="hover:border-emerald-400"
       style={{ willChange: "transform, box-shadow, border-color, background" }}
     >
       <div
-        className=" overflow-hidden shadow-lg bg-white border border-slate-200 mx-auto w-[790px] min-w-[320px] transition-all duration-300 group/card flex flex-col sm:flex-row sm:items-stretch relative cursor-pointer hover:shadow-2xl hover:border-blue-400 hover:scale-[1.015]"
+        className="overflow-hidden shadow-lg bg-white border border-slate-200 mx-auto w-[790px] min-w-[320px] transition-all duration-300 group/card flex flex-col sm:flex-row sm:items-stretch relative cursor-pointer hover:shadow-2xl hover:border-blue-400 hover:scale-[1.015]"
         style={{
           willChange: "transform, box-shadow, border-color, background",
         }}
@@ -279,6 +275,6 @@ export default function RoomVipCard({
           </div>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }

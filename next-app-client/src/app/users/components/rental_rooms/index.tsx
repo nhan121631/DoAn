@@ -311,7 +311,7 @@ export default async function RentalRooms({
                 isForSale={false}
                 isFeatured={false}
                 isFavorite={initialFavoriteIds.includes(room.id)}
-                custom={index}
+                // custom={index}
               />
             ))}
           </div>
