@@ -20,6 +20,8 @@ import NoLookingForFilter from "../Filter/NoLookingForFilter";
 // import { getFavoriteRoomIds } from "@/services/FavoriteService";
 import { getAllFavoriteIds } from "@/services/FavoriteService";
 import FilterForm from "../Filter/FilterForm";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
 // Lấy danh sách ID yêu thích trên Server
 // const initialFavoriteIds = await getFavoriteRoomIds();
@@ -45,7 +47,9 @@ export default async function RentalRooms({
 }: {
   searchParams?: RentalRoomsSearchParams;
 }) {
-  // Đã thay thế khai báo params bằng kiểu RentalRoomsSearchParams phía dưới
+  // Get session for user-specific sorting
+  const session = await getServerSession(authOptions);
+  const userId = session?.user?.id;
 
   const params: RentalRoomsSearchParams = searchParams ? searchParams : {};
 
@@ -92,11 +96,13 @@ export default async function RentalRooms({
     )) as PaginatedResponse<RoomInUser>;
     roomVips = (await getRoomVipUser(
       page,
-      size
+      size,
+      userId
     )) as PaginatedResponse<RoomInUser>;
     roomNormals = (await getRoomNormalUser(
       page_normal,
-      size_normal
+      size_normal,
+      userId
     )) as PaginatedResponse<RoomInUser>;
   } catch (e) {
     console.error("Error fetching rental rooms:", e);
@@ -107,7 +113,7 @@ export default async function RentalRooms({
   if (!filteredRooms || !roomVips || !roomNormals) {
     return notFound();
   }
-  const isEmptyFilter = Object.entries(filters).every(([_, value]) => {
+  const isEmptyFilter = Object.entries(filters).every(([, value]) => {
     if (Array.isArray(value)) return value.length === 0;
     return value === undefined || value === null || value === "";
   });

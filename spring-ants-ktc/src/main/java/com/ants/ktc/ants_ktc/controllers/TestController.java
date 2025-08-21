@@ -37,16 +37,4 @@ public class TestController {
                     .body("Error sending suggestions: " + e.getMessage());
         }
     }
-
-    @PostMapping("/debug-query")
-    public ResponseEntity<String> debugQueryForUser(@RequestParam(value = "username") String username) {
-        try {
-            roomSuggestionService.debugQueryForUser(username);
-            return ResponseEntity
-                    .ok("Debug query completed for user: " + username + ". Check console logs for details.");
-        } catch (Exception e) {
-            return ResponseEntity.badRequest()
-                    .body("Error in debug query: " + e.getMessage());
-        }
-    }
 }

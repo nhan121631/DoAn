@@ -174,18 +174,38 @@ public class RoomController {
     @GetMapping("allroom-vip")
     public ResponseEntity<PaginationRoomInUserResponseDto> getRoomVipPaginated(
             @RequestParam(name = "page", defaultValue = "0") int pageNumber,
-            @RequestParam(name = "size", defaultValue = "5") int pageSize) {
+            @RequestParam(name = "size", defaultValue = "5") int pageSize,
+            @RequestParam(name = "userId", required = false) UUID userId) {
         String code = "VIP";
-        PaginationRoomInUserResponseDto response = roomService.getAllRoomInUser(pageNumber, pageSize, code);
+        PaginationRoomInUserResponseDto response;
+
+        // Nếu có userId, sử dụng sorting theo khoảng cách
+        if (userId != null) {
+            response = roomService.getAllRoomInUserSortedByDistance(pageNumber, pageSize, code, userId);
+        } else {
+            // Fallback về method cũ nếu không có userId
+            response = roomService.getAllRoomInUser(pageNumber, pageSize, code);
+        }
+
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("allroom-normal")
     public ResponseEntity<PaginationRoomInUserResponseDto> getRoomNormalPaginated(
             @RequestParam(name = "page", defaultValue = "0") int pageNumber,
-            @RequestParam(name = "size", defaultValue = "5") int pageSize) {
+            @RequestParam(name = "size", defaultValue = "5") int pageSize,
+            @RequestParam(name = "userId", required = false) UUID userId) {
         String code = "NORMAL";
-        PaginationRoomInUserResponseDto response = roomService.getAllRoomInUser(pageNumber, pageSize, code);
+        PaginationRoomInUserResponseDto response;
+
+        // Nếu có userId, sử dụng sorting theo khoảng cách
+        if (userId != null) {
+            response = roomService.getAllRoomInUserSortedByDistance(pageNumber, pageSize, code, userId);
+        } else {
+            // Fallback về method cũ nếu không có userId
+            response = roomService.getAllRoomInUser(pageNumber, pageSize, code);
+        }
+
         return ResponseEntity.ok(response);
     }
 

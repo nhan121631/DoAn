@@ -22,6 +22,7 @@ import com.ants.ktc.ants_ktc.repositories.projection.RoomDeleteProjection;
 import com.ants.ktc.ants_ktc.repositories.projection.RoomHiddenProjection;
 import com.ants.ktc.ants_ktc.repositories.projection.RoomMapProjection;
 import com.ants.ktc.ants_ktc.repositories.projection.RoomNewProjection;
+import com.ants.ktc.ants_ktc.repositories.projection.RoomSuggestionProjection;
 
 @Repository
 public interface RoomJpaRepository extends JpaRepository<Room, UUID> {
@@ -150,12 +151,12 @@ public interface RoomJpaRepository extends JpaRepository<Room, UUID> {
             "ORDER BY " +
             "CASE " +
             "  WHEN :userLat IS NULL OR :userLng IS NULL OR a.lat IS NULL OR a.lng IS NULL " +
-            "  THEN 999999 " + // Đẩy rooms không có tọa độ xuống cuối
+            "  THEN 999999 " +
             "  ELSE (6371 * ACOS(COS(RADIANS(:userLat)) * COS(RADIANS(a.lat)) * " +
             "       COS(RADIANS(a.lng) - RADIANS(:userLng)) + " +
             "       SIN(RADIANS(:userLat)) * SIN(RADIANS(a.lat)))) " +
             "END ASC, " +
-            "r.createdAt DESC") // Sắp xếp phụ theo ngày tạo nếu cùng khoảng cách
+            "r.createdDate DESC")
     Page<Room> findAllRoomInUserSortedByDistance(
             @Param("code") String code,
             @Param("userLat") Double userLat,
@@ -174,7 +175,7 @@ public interface RoomJpaRepository extends JpaRepository<Room, UUID> {
             "WHERE r.available = 0 AND p.code LIKE :code " +
             "AND r.post_end_date > CURRENT_DATE " +
             "AND r.hidden = 0 AND r.isRemoved = 0 AND r.approval = 1 " +
-            "ORDER BY r.createdAt DESC")
+            "ORDER BY r.createdDate DESC")
     Page<Room> findAllRoomInUser(@Param("code") String code, Pageable pageable);
 
     @Query(" SELECT COUNT(r) FROM Room r WHERE approval = 1 and isRemoved = 0")
@@ -343,5 +344,107 @@ public interface RoomJpaRepository extends JpaRepository<Room, UUID> {
                         @Param("centerLat") double centerLat,
                         @Param("centerLng") double centerLng,
                         @Param("radiusKm") double radiusKm);
+
+    @Query(value = "SELECT " +
+            "CONCAT(SUBSTR(LOWER(HEX(r.id)), 1, 8), '-', SUBSTR(LOWER(HEX(r.id)), 9, 4), '-', SUBSTR(LOWER(HEX(r.id)), 13, 4), '-', SUBSTR(LOWER(HEX(r.id)), 17, 4), '-', SUBSTR(LOWER(HEX(r.id)), 21, 12)) AS id, "
+            +
+            "r.title AS title, " +
+            // "(SELECT i.url FROM images i WHERE i.room_id = r.id ORDER BY i.id ASC LIMIT
+            // 1) AS imageUrl, " +
+            "r.area AS area, " +
+            "r.price_month AS priceMonth, " +
+            "pt.name AS postType, " +
+            "CONCAT(a.name_street, ', ', w.name, ', ', d.name, ', ', p.name) AS fullAddress, " +
+            "a.lng AS lng, " +
+            "a.lat AS lat, " +
+            "(6371 * acos( cos(radians(:centerLat)) * cos(radians(a.lat)) * cos(radians(a.lng) - radians(:centerLng)) + sin(radians(:centerLat)) * sin(radians(a.lat)) )) AS distance, "
+            +
+            "r.description AS description, " +
+            "COALESCE(up.full_name, u.username) AS landlordName, " +
+            "up.email AS landlordEmail, " +
+            "up.phone_number AS landlordPhone " +
+            "FROM rooms r " +
+            "JOIN addresses a ON r.address_id = a.id " +
+            "JOIN wards w ON a.ward_id = w.id " +
+            "JOIN districts d ON w.district_id = d.id " +
+            "JOIN provinces p ON d.province_id = p.id " +
+            "JOIN post_type pt ON r.post_type_id = pt.id " +
+            "JOIN users u ON r.user_id = u.id " +
+            "LEFT JOIN user_profiles up ON u.profile_id = up.id " +
+            "WHERE r.available = 0 " +
+            "AND r.post_end_date > CURRENT_DATE " +
+            "AND r.hidden = 0 " +
+            "AND r.is_removed = 0 " +
+            "AND r.approval = 1 " +
+            "HAVING distance <= :radiusKm " +
+            "ORDER BY distance", nativeQuery = true)
+    List<RoomSuggestionProjection> findRoomSuggestionsWithRadius(
+            @Param("centerLat") double centerLat,
+            @Param("centerLng") double centerLng,
+            @Param("radiusKm") double radiusKm);
+
+    // Combined query: radius + favorite-based criteria
+    @Query(value = "SELECT " +
+            "CONCAT(SUBSTR(LOWER(HEX(r.id)), 1, 8), '-', SUBSTR(LOWER(HEX(r.id)), 9, 4), '-', SUBSTR(LOWER(HEX(r.id)), 13, 4), '-', SUBSTR(LOWER(HEX(r.id)), 17, 4), '-', SUBSTR(LOWER(HEX(r.id)), 21, 12)) AS id, "
+            +
+            "r.title AS title, " +
+            // "(SELECT i.url FROM images i WHERE i.room_id = r.id ORDER BY i.id ASC LIMIT
+            // 1) AS imageUrl, " +
+            "r.area AS area, " +
+            "r.price_month AS priceMonth, " +
+            "pt.name AS postType, " +
+            "CONCAT(a.name_street, ', ', w.name, ', ', d.name, ', ', p.name) AS fullAddress, " +
+            "a.lng AS lng, " +
+            "a.lat AS lat, " +
+            "(6371 * acos( cos(radians(:centerLat)) * cos(radians(a.lat)) * cos(radians(a.lng) - radians(:centerLng)) + sin(radians(:centerLat)) * sin(radians(a.lat)) )) AS distance, "
+            +
+            "r.description AS description, " +
+            "COALESCE(up.full_name, u.username) AS landlordName, " +
+            "up.email AS landlordEmail, " +
+            "up.phone_number AS landlordPhone, " +
+            "CASE " +
+            "    WHEN w.name IN (:wards) THEN 1 " +
+            "    WHEN d.name IN (:districts) THEN 2 " +
+            "    WHEN p.name IN (:provinces) THEN 3 " +
+            "    ELSE 4 " +
+            "END AS locationScore, " +
+            "ABS(r.price_month - :avgPrice) AS priceScore, " +
+            "CASE " +
+            "    WHEN :minArea IS NULL OR :maxArea IS NULL THEN 0 " +
+            "    WHEN r.area BETWEEN :minArea AND :maxArea THEN 0 " +
+            "    ELSE ABS(r.area - (:minArea + :maxArea) / 2) " +
+            "END AS areaScore " +
+            "FROM rooms r " +
+            "JOIN addresses a ON r.address_id = a.id " +
+            "JOIN wards w ON a.ward_id = w.id " +
+            "JOIN districts d ON w.district_id = d.id " +
+            "JOIN provinces p ON d.province_id = p.id " +
+            "JOIN post_type pt ON r.post_type_id = pt.id " +
+            "JOIN users u ON r.user_id = u.id " +
+            "LEFT JOIN user_profiles up ON u.profile_id = up.id " +
+            "LEFT JOIN favorites f ON r.id = f.room_id AND f.user_id = UNHEX(REPLACE(:excludeUserId, '-', '')) " +
+            "WHERE r.available = 0 " +
+            "AND r.post_end_date > CURRENT_DATE " +
+            "AND r.hidden = 0 " +
+            "AND r.is_removed = 0 " +
+            "AND r.approval = 1 " +
+            "AND (:minPrice IS NULL OR r.price_month >= :minPrice) " +
+            "AND (:maxPrice IS NULL OR r.price_month <= :maxPrice) " +
+            "AND f.id IS NULL " + // Exclude user's favorites
+            "HAVING distance <= :radiusKm " +
+            "ORDER BY locationScore ASC, distance ASC, priceScore ASC, areaScore ASC, r.createddate DESC", nativeQuery = true)
+    List<RoomSuggestionProjection> findRoomSuggestionsWithRadiusAndCriteria(
+            @Param("centerLat") double centerLat,
+            @Param("centerLng") double centerLng,
+            @Param("radiusKm") double radiusKm,
+            @Param("minPrice") Double minPrice,
+            @Param("maxPrice") Double maxPrice,
+            @Param("avgPrice") double avgPrice,
+            @Param("minArea") Double minArea,
+            @Param("maxArea") Double maxArea,
+            @Param("provinces") List<String> provinces,
+            @Param("districts") List<String> districts,
+            @Param("wards") List<String> wards,
+            @Param("excludeUserId") String excludeUserId);
 
 }

@@ -29,6 +29,7 @@ public class ProfileService {
 
         @Autowired
         private LocationIQService locationIQService;
+
         @Autowired
         private ProfileJpaRepository profileJpaRepository;
 
@@ -37,6 +38,9 @@ public class ProfileService {
 
         @Autowired
         private CloudinaryService cloudinaryService;
+
+        @Autowired
+        private UserJpaRepository userJpaRepository;
 
         private AddressResponseDto addressConvert(Address address) {
                 if (address == null)
@@ -73,15 +77,6 @@ public class ProfileService {
                 }
                 return text;
         }
-
-        @Autowired
-        private UserJpaRepository userJpaRepository;
-
-        @Autowired
-        private LocationIQService locationIQService;
-
-        // @Autowired
-        // private MapboxService mapboxService;
 
         public UserProfileResponseDto updateProfile(MultipartFile avatar, ProfileUpdateRequestDto dto)
                         throws IOException {
@@ -229,18 +224,6 @@ public class ProfileService {
                 if (!Objects.equals(oldSearchAddress, dto.getSearchAddress())) {
                         if (dto.getSearchAddress() != null && !dto.getSearchAddress().trim().isEmpty()) {
                                 try {
-                                        // Gọi Mapbox Geocoding API để lấy tọa độ
-                                        // MapboxService.LatLng coordinates = mapboxService
-                                        // .getCoordinates(dto.getSearchAddress());
-                                        // profile.setSearchLatitude(coordinates.lat);
-                                        // profile.setSearchLongitude(coordinates.lng);
-                                        // System.out.println("Successfully geocoded address using Mapbox: "
-                                        // + dto.getSearchAddress() +
-                                        // " -> Lat: " + coordinates.lat + ", Lng: " + coordinates.lng +
-                                        // ", Place: " + coordinates.placeName);
-
-                                        // Code cũ
-
                                         LocationIQService.LatLng coordinates = locationIQService
                                                         .getCoordinates(dto.getSearchAddress());
                                         profile.setSearchLatitude(coordinates.lat);
@@ -253,24 +236,6 @@ public class ProfileService {
                                         // Nếu không geocode được, set null và log lỗi
                                         profile.setSearchLatitude(null);
                                         profile.setSearchLongitude(null);
-                                        // System.err.println("Failed to geocode address using Mapbox: "
-                                        // + dto.getSearchAddress() +
-                                        // ". Error: " + e.getMessage());
-
-                                        // // Kiểm tra nếu là lỗi API key của Mapbox
-                                        // if (e.getMessage().contains("401") || e.getMessage().contains("403") ||
-                                        // e.getMessage().contains("access token")) {
-                                        // System.err.println(
-                                        // "Mapbox access token invalid or missing. Address will be saved without
-                                        // coordinates.");
-                                        // System.err.println(
-                                        // "To fix this, please check your MAPBOX_ACCESS_TOKEN in environment
-                                        // variables.");
-                                        // System.err.println(
-                                        // "Get your free access token at: https://www.mapbox.com/");
-                                        // }
-
-                                        // Code cũ
 
                                         System.err.println("Failed to geocode address using LocationIQ: "
                                                         + dto.getSearchAddress() +
@@ -292,9 +257,6 @@ public class ProfileService {
                         }
                 }
 
-                profile.setDesiredMinPrice(dto.getDesiredMinPrice());
-                profile.setDesiredMaxPrice(dto.getDesiredMaxPrice());
-
                 profileJpaRepository.save(profile);
         }
 
@@ -302,7 +264,6 @@ public class ProfileService {
          * Lấy UserProfile entity (không phải DTO) để tính toán trong các service khác
          */
         public UserProfile getUserProfileEntity(UUID userId) {
-                // Query đúng theo quan hệ: user.id trong UserProfile
                 return profileJpaRepository.findByUserId(userId)
                                 .orElseThrow(() -> new IllegalArgumentException(
                                                 "Profile not found for user: " + userId));
@@ -323,16 +284,7 @@ public class ProfileService {
                 }
 
                 try {
-                        // // Geocode địa chỉ room để lấy tọa độ bằng Mapbox
-                        // MapboxService.LatLng roomCoordinates =
-                        // mapboxService.getCoordinates(roomAddressString);
-
-                        // // Tính khoảng cách Haversine giữa 2 điểm
-                        // return calculateHaversineDistance(userLatitude, userLongitude,
-                        // roomCoordinates.lat, roomCoordinates.lng);
-
-                        // Code cũ
-                        // Geocode địa chỉ room để lấy tọa độ
+                        // Tạo user address từ coordinates
                         LocationIQService.LatLng roomCoordinates = locationIQService.getCoordinates(roomAddressString);
 
                         // Tính khoảng cách Haversine giữa 2 điểm
@@ -470,15 +422,6 @@ public class ProfileService {
                         // Tạo user address từ coordinates
                         String userAddress = userLatitude + "," + userLongitude;
 
-                        // // Sử dụng Mapbox Directions API để tính khoảng cách đường đi thực tế
-                        // double distanceInMeters = mapboxService.getDistance(userAddress,
-                        // roomAddressString);
-
-                        // // Convert sang km
-                        // return distanceInMeters / 1000.0;
-
-                        // Code cũ
-
                         // Sử dụng LocationIQ Directions API để tính khoảng cách đường đi thực tế
                         long distanceInMeters = locationIQService.getDistance(userAddress, roomAddressString);
                         // Convert sang km
@@ -487,14 +430,6 @@ public class ProfileService {
                 } catch (Exception e) {
                         // Fallback to Haversine distance if Directions API fails
                         try {
-                                // // Sử dụng Mapbox để geocode room address
-                                // MapboxService.LatLng roomCoordinates =
-                                // mapboxService.getCoordinates(roomAddressString);
-                                // return calculateHaversineDistance(userLatitude, userLongitude,
-                                // roomCoordinates.lat, roomCoordinates.lng);
-
-                                // Code cũ
-
                                 LocationIQService.LatLng roomCoordinates = locationIQService
                                                 .getCoordinates(roomAddressString);
                                 return calculateHaversineDistance(userLatitude, userLongitude,

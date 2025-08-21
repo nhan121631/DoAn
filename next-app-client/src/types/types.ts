@@ -162,12 +162,11 @@ export type LandlordProfile = {
   avatar: string;
 };
 
-
-export type RequirementRequestRoomDto ={
+export type RequirementRequestRoomDto = {
   userId: string;
   roomId: string;
   description: string;
-}
+};
 
 export type UpdateRequestRoomDto = {
   id: string;
@@ -180,14 +179,14 @@ export type Landlord = {
 };
 
 export type LandlordDetailByRoom = {
-    id: string;
-    fullName: string;
-    email: string;
-    avatar: string;
-    amountPost: number;
-    phone: string;
-    createDate: string;
-}
+  id: string;
+  fullName: string;
+  email: string;
+  avatar: string;
+  amountPost: number;
+  phone: string;
+  createDate: string;
+};
 
 export type Requirement = {
   id: string;
@@ -195,16 +194,16 @@ export type Requirement = {
   roomId: string;
   description: string;
   status: 0 | 1 | 2; // 0 = pending, 1 = approved, 2 = rejected
-}
+};
 
-export type RequirementDetail ={
-        id: string;
-        roomTitle: string;
-        userName: string;
-        email: string;
-        description: string;
-        status: 0 | 1 | 2;
-}
+export type RequirementDetail = {
+  id: string;
+  roomTitle: string;
+  userName: string;
+  email: string;
+  description: string;
+  status: 0 | 1 | 2;
+};
 
 export type Reply = {
   sender: "admin" | "user";
@@ -277,11 +276,16 @@ export type LandlordPaymentInfo = {
   phoneNumber: string;
   email: string;
 };
-export type Roomname ={
-  name:string;
-  address:string
-}
+export type Roomname = {
+  name: string;
+  address: string;
+};
+
+// User Search Preferences
+export type UserSearchPreferences = {
+  searchAddress: string;
+  desiredMinPrice?: number;
+  desiredMaxPrice?: number;
+};
 
 export type SearchParamsType = { [key: string]: string | string[] | undefined };
-
-

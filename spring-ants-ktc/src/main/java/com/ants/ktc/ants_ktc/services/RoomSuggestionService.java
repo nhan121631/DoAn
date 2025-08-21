@@ -16,12 +16,13 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.ants.ktc.ants_ktc.dtos.room.RoomSuggestionInfoDto;
 import com.ants.ktc.ants_ktc.entities.Favorite;
 import com.ants.ktc.ants_ktc.entities.Room;
 import com.ants.ktc.ants_ktc.entities.User;
 import com.ants.ktc.ants_ktc.repositories.FavoriteJpaRepository;
 import com.ants.ktc.ants_ktc.repositories.RoomJpaRepository;
-import com.ants.ktc.ants_ktc.dtos.room.RoomSuggestionInfoDto;
+import com.ants.ktc.ants_ktc.repositories.projection.RoomSuggestionProjection;
 
 @Service
 public class RoomSuggestionService {
@@ -35,16 +36,14 @@ public class RoomSuggestionService {
     @Autowired
     private MailService mailService;
 
-    // @Autowired
-    // private GoogleMapsService googleMapsService;
-
     // Semaphore để giới hạn số lượng email gửi đồng thời (tránh spam)
     private final Semaphore emailSemaphore = new Semaphore(5); // Tối đa 5 email cùng lúc
 
     // @Scheduled(cron = "0 0 7 * * ?")
     // public void sendMorningSuggestions() {
-    //     System.out.println("[RoomSuggestionService] Starting morning room suggestions at 7:00 AM");
-    //     sendRoomSuggestionsToAllUsers();
+    // System.out.println("[RoomSuggestionService] Starting morning room suggestions
+    // at 7:00 AM");
+    // sendRoomSuggestionsToAllUsers();
     // }
 
     @Scheduled(cron = "0 0 19 * * ?")
@@ -122,7 +121,16 @@ public class RoomSuggestionService {
     @Transactional(readOnly = true)
     public List<RoomSuggestionInfoDto> findSuggestedRoomsForUser(User user) {
         try {
-            // Lấy danh sách phòng yêu thích của user
+            // Kiểm tra user có tọa độ search không
+            Double userLat = null;
+            Double userLng = null;
+
+            if (user.getProfile() != null) {
+                userLat = user.getProfile().getSearchLatitude();
+                userLng = user.getProfile().getSearchLongitude();
+            }
+
+            // Lấy danh sách phòng yêu thích của user để phân tích criteria
             List<Favorite> favorites = favoriteJpaRepository.findByUserIdWithRoom(user.getId(), Pageable.unpaged())
                     .getContent();
 
@@ -133,6 +141,54 @@ public class RoomSuggestionService {
 
             System.out.println("[RoomSuggestionService] User " + user.getUsername() + " has " + favorites.size()
                     + " favorite rooms");
+
+            // Phân tích pattern từ phòng yêu thích để có criteria
+            RoomCriteria criteria = analyzeFavoriteRoomsCriteria(favorites);
+
+            // Nếu có tọa độ, tìm phòng trong bán kính + match criteria
+            if (userLat != null && userLng != null) {
+                System.out.println("[RoomSuggestionService] User " + user.getUsername() +
+                        " has search coordinates: " + userLat + ", " + userLng +
+                        ", using combined radius + criteria search");
+
+                List<RoomSuggestionProjection> combinedResults = findRoomsWithRadiusAndCriteria(
+                        userLat, userLng, criteria, user.getId());
+
+                System.out.println("[RoomSuggestionService] Found " + combinedResults.size() +
+                        " rooms with combined criteria for user " + user.getUsername());
+
+                if (!combinedResults.isEmpty()) {
+                    // Convert RoomSuggestionProjection sang RoomSuggestionInfoDto với khoảng cách
+                    return combinedResults.stream()
+                            .map(roomProj -> convertSuggestionProjectionToSuggestionInfo(roomProj))
+                            .collect(Collectors.toList());
+                }
+
+                // Fallback: nếu không tìm thấy phòng nào với combined criteria,
+                // thử chỉ tìm theo bán kính (loại bỏ một số criteria)
+                System.out.println("[RoomSuggestionService] No rooms found with combined criteria, " +
+                        "trying radius-only search for user " + user.getUsername());
+
+                List<RoomSuggestionProjection> nearbyRooms = roomJpaRepository.findRoomSuggestionsWithRadius(
+                        userLat, userLng, 5.0);
+
+                if (nearbyRooms.isEmpty()) {
+                    System.out.println("[RoomSuggestionService] No rooms found within 5km, trying 10km radius...");
+                    nearbyRooms = roomJpaRepository.findRoomSuggestionsWithRadius(
+                            userLat, userLng, 10.0);
+                }
+
+                if (!nearbyRooms.isEmpty()) {
+                    return nearbyRooms.stream()
+                            .map(roomProj -> convertSuggestionProjectionToSuggestionInfo(roomProj))
+                            .collect(Collectors.toList());
+                }
+            }
+
+            // Nếu không có tọa độ hoặc không tìm thấy phòng trong bán kính,
+            // sử dụng logic cũ dựa trên yêu thích
+            System.out
+                    .println("[RoomSuggestionService] Using favorite-based suggestion for user " + user.getUsername());
 
             // In ra thông tin phòng yêu thích để debug
             for (Favorite fav : favorites) {
@@ -148,9 +204,6 @@ public class RoomSuggestionService {
                             ", Location: " + location);
                 }
             }
-
-            // Phân tích pattern từ phòng yêu thích
-            RoomCriteria criteria = analyzeFavoriteRoomsCriteria(favorites);
 
             // Tìm phòng phù hợp dựa trên criteria, loại trừ những phòng user đã yêu thích
             List<Room> suggestedRooms = findRoomsByCriteria(criteria, user.getId());
@@ -169,6 +222,47 @@ public class RoomSuggestionService {
         } catch (Exception e) {
             System.err.println("[RoomSuggestionService] Error finding suggestions for user " + user.getUsername() + ": "
                     + e.getMessage());
+            e.printStackTrace();
+            return Collections.emptyList();
+        }
+    }
+
+    /**
+     * Tìm phòng trong bán kính và match criteria yêu thích
+     */
+    private List<RoomSuggestionProjection> findRoomsWithRadiusAndCriteria(
+            Double userLat, Double userLng, RoomCriteria criteria, UUID excludeUserId) {
+
+        try {
+            // Chuẩn bị parameters cho query
+            double avgPrice = (criteria.getMinPrice() + criteria.getMaxPrice()) / 2;
+
+            // Thử tìm trong bán kính 5km trước
+            List<RoomSuggestionProjection> results = roomJpaRepository.findRoomSuggestionsWithRadiusAndCriteria(
+                    userLat, userLng, 5.0,
+                    criteria.getMinPrice(), criteria.getMaxPrice(), avgPrice,
+                    criteria.getMinArea(), criteria.getMaxArea(),
+                    criteria.getPreferredProvinces(),
+                    criteria.getPreferredDistricts(),
+                    criteria.getPreferredWards(),
+                    excludeUserId.toString());
+
+            // Nếu không có kết quả, thử bán kính 10km
+            if (results.isEmpty()) {
+                System.out.println("[RoomSuggestionService] No rooms found within 5km with criteria, trying 10km...");
+                results = roomJpaRepository.findRoomSuggestionsWithRadiusAndCriteria(
+                        userLat, userLng, 10.0,
+                        criteria.getMinPrice(), criteria.getMaxPrice(), avgPrice,
+                        criteria.getMinArea(), criteria.getMaxArea(),
+                        criteria.getPreferredProvinces(),
+                        criteria.getPreferredDistricts(),
+                        criteria.getPreferredWards(),
+                        excludeUserId.toString());
+            }
+
+            return results;
+        } catch (Exception e) {
+            System.err.println("[RoomSuggestionService] Error in findRoomsWithRadiusAndCriteria: " + e.getMessage());
             e.printStackTrace();
             return Collections.emptyList();
         }
@@ -287,80 +381,6 @@ public class RoomSuggestionService {
         }
     }
 
-    // Method debug để test query linh hoạt
-    public void debugQueryForUser(String username) {
-        try {
-            List<User> allUsers = favoriteJpaRepository.findUsersWithFavorites();
-            User targetUser = allUsers.stream()
-                    .filter(user -> user.getUsername().equals(username))
-                    .findFirst()
-                    .orElse(null);
-
-            if (targetUser != null) {
-                System.out.println("[DEBUG] === DEBUGGING QUERY FOR USER: " + username + " ===");
-
-                // 1. Test cơ bản: tìm tất cả phòng available
-                System.out.println("[DEBUG] 1. Testing basic available rooms...");
-                List<Room> allAvailableRooms = roomJpaRepository.findAll().stream()
-                        .filter(r -> r.getAvailable() == 0 && r.getApproval() == 1 &&
-                                r.getHidden() == 0 && r.getIsRemoved() == 0)
-                        .limit(5)
-                        .collect(Collectors.toList());
-                System.out.println("[DEBUG] Found " + allAvailableRooms.size() + " available rooms total");
-
-                // 2. Test từng criteria riêng biệt
-                List<Favorite> favorites = favoriteJpaRepository
-                        .findByUserIdWithRoom(targetUser.getId(), Pageable.unpaged()).getContent();
-                if (!favorites.isEmpty()) {
-                    RoomCriteria criteria = analyzeFavoriteRoomsCriteria(favorites);
-
-                    System.out.println("[DEBUG] 2. Testing price criteria only...");
-                    long priceMatches = allAvailableRooms.stream()
-                            .filter(r -> r.getPrice_month() >= criteria.getMinPrice() &&
-                                    r.getPrice_month() <= criteria.getMaxPrice())
-                            .count();
-                    System.out.println("[DEBUG] Rooms matching price: " + priceMatches);
-
-                    System.out.println("[DEBUG] 3. Testing area criteria only...");
-                    long areaMatches = allAvailableRooms.stream()
-                            .filter(r -> r.getArea() >= criteria.getMinArea() &&
-                                    r.getArea() <= criteria.getMaxArea())
-                            .count();
-                    System.out.println("[DEBUG] Rooms matching area: " + areaMatches);
-
-                    System.out.println("[DEBUG] 4. Testing location criteria only...");
-                    long locationMatches = allAvailableRooms.stream()
-                            .filter(r -> {
-                                if (r.getAddress() != null && r.getAddress().getWard() != null) {
-                                    String province = r.getAddress().getWard().getDistrict().getProvince().getName();
-                                    String district = r.getAddress().getWard().getDistrict().getName();
-                                    String ward = r.getAddress().getWard().getName();
-
-                                    return criteria.getPreferredProvinces().contains(province) ||
-                                            criteria.getPreferredDistricts().contains(district) ||
-                                            criteria.getPreferredWards().contains(ward);
-                                }
-                                return false;
-                            })
-                            .count();
-                    System.out.println("[DEBUG] Rooms matching location: " + locationMatches);
-
-                    System.out.println("[DEBUG] 5. Testing exclude favorites...");
-                    List<UUID> favoriteRoomIds = favorites.stream()
-                            .map(f -> f.getRoom().getId())
-                            .collect(Collectors.toList());
-                    System.out.println("[DEBUG] User has " + favoriteRoomIds.size() + " favorite rooms to exclude");
-                }
-
-            } else {
-                System.out.println("[DEBUG] User not found: " + username);
-            }
-        } catch (Exception e) {
-            System.err.println("[DEBUG] Error in debug query: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
-
     private List<String> getTopItems(List<String> items, int limit) {
         return items.stream()
                 .collect(Collectors.groupingBy(item -> item, Collectors.counting()))
@@ -455,7 +475,6 @@ public class RoomSuggestionService {
         String landlordName = "";
         String landlordEmail = "";
         String landlordPhone = "";
-        Double distanceKm = null;
 
         if (room.getAddress() != null) {
             StringBuilder addressBuilder = new StringBuilder();
@@ -483,32 +502,44 @@ public class RoomSuggestionService {
             landlordPhone = room.getUser().getProfile().getPhoneNumber();
         }
 
-        // Tính khoảng cách nếu user có địa chỉ và phòng có địa chỉ
-        if (userAddress != null && !userAddress.trim().isEmpty() &&
-                address != null && !address.trim().isEmpty()) {
-            try {
-                // long distanceMeters = googleMapsService.getDistance(userAddress, address);
-                // distanceKm = distanceMeters / 1000.0; // Chuyển từ meters sang km
-                // System.out.println("[RoomSuggestionService] Distance from user to room '" + room.getTitle() + "': " +
-                        // String.format("%.2f", distanceKm) + " km");
-            } catch (Exception e) {
-                System.out.println("[RoomSuggestionService] Could not calculate distance to room '" + room.getTitle()
-                        + "': " + e.getMessage());
-                distanceKm = null; // Không tính được khoảng cách
-            }
-        }
+        // Note: Khoảng cách không được tính trong method này vì chỉ dùng cho
+        // favorite-based suggestion
 
-        return new RoomSuggestionInfoDto(
-                room.getTitle(),
-                room.getPrice_month(),
-                room.getArea(),
-                address,
-                room.getDescription(),
-                landlordName,
-                landlordEmail,
-                landlordPhone
-                // distanceKm
-                );
+        RoomSuggestionInfoDto dto = new RoomSuggestionInfoDto();
+        dto.setId(room.getId());
+        dto.setTitle(room.getTitle());
+        dto.setPriceMonth(room.getPrice_month());
+        dto.setArea(room.getArea());
+        dto.setAddress(address);
+        dto.setDescription(room.getDescription());
+        dto.setLandlordName(landlordName);
+        dto.setLandlordEmail(landlordEmail);
+        dto.setLandlordPhone(landlordPhone);
+        dto.setDistanceKm(null); // distanceKm - không tính trong favorite-based suggestion
+
+        return dto;
+    }
+
+    /**
+     * Convert RoomSuggestionProjection (từ query findRoomSuggestionsWithRadius)
+     * sang
+     * RoomSuggestionInfoDto
+     * RoomSuggestionProjection đã có khoảng cách được tính sẵn
+     */
+    private RoomSuggestionInfoDto convertSuggestionProjectionToSuggestionInfo(RoomSuggestionProjection roomProj) {
+        RoomSuggestionInfoDto dto = new RoomSuggestionInfoDto();
+        dto.setId(roomProj.getId());
+        dto.setTitle(roomProj.getTitle());
+        dto.setPriceMonth(roomProj.getPriceMonth());
+        dto.setArea(roomProj.getArea());
+        dto.setAddress(roomProj.getFullAddress());
+        dto.setDescription(roomProj.getDescription());
+        dto.setLandlordName(roomProj.getLandlordName());
+        dto.setLandlordEmail(roomProj.getLandlordEmail());
+        dto.setLandlordPhone(roomProj.getLandlordPhone());
+        dto.setDistanceKm(roomProj.getDistance()); // Khoảng cách đã được tính trong query SQL
+
+        return dto;
     }
 
     // Inner class để chứa criteria tìm kiếm

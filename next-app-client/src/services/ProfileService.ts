@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { API_URL } from "./Constant";
+import { UserSearchPreferences } from "../types/types";
 
 export async function updateProfile(avatar: File | null, profile: string) {
   const formData = new FormData();
@@ -92,6 +93,48 @@ export async function updatePreferences(
 
   if (!response.ok) {
     let errorMsg = "Failed to update preferences";
+    try {
+      const contentType = response.headers.get("content-type");
+      if (contentType && contentType.includes("application/json")) {
+        const error = await response.json();
+        errorMsg = Array.isArray(error.message)
+          ? error.message[0]
+          : error.message || error.error || errorMsg;
+        console.error("API error (json):", error);
+      } else {
+        const text = await response.text();
+        errorMsg = text || errorMsg;
+        console.error("API error (text):", text);
+      }
+    } catch (e) {
+      console.error("Error parsing response:", e);
+    }
+    throw new Error(errorMsg);
+  }
+
+  return response.json();
+}
+
+export async function updateUserSearchPreferences(
+  userId: string,
+  preferences: UserSearchPreferences,
+  session: any
+) {
+  if (!session || !session.user) {
+    throw new Error("User is not authenticated");
+  }
+
+  const response = await fetch(`${API_URL}/profile/${userId}/preferences`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${session.user.accessToken}`,
+    },
+    body: JSON.stringify(preferences),
+  });
+
+  if (!response.ok) {
+    let errorMsg = "Failed to update search preferences";
     try {
       const contentType = response.headers.get("content-type");
       if (contentType && contentType.includes("application/json")) {

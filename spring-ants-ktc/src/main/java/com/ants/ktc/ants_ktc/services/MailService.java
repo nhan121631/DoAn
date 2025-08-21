@@ -98,6 +98,14 @@ public class MailService {
 
     StringBuilder roomsHtml = new StringBuilder();
     for (RoomSuggestionInfoDto room : suggestedRooms) {
+      // Tạo chuỗi hiển thị khoảng cách
+      String distanceInfo = "";
+      if (room.getDistanceKm() != null) {
+        distanceInfo = String.format(
+            "<span style='background: #e8f5e8; color: #2e7d2e; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold;'>🚗 %.1f km</span>",
+            room.getDistanceKm());
+      }
+
       roomsHtml.append(String.format(
           """
               <div style='border: 1px solid #ddd; border-radius: 8px; padding: 16px; margin: 16px 0; background: #fff;'>
@@ -105,25 +113,30 @@ public class MailService {
                 <div style='display: flex; flex-wrap: wrap; gap: 12px; margin: 8px 0;'>
                   <span style='background: #e3f2fd; color: #1976d2; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold;'>💰 %s VNĐ/tháng</span>
                   <span style='background: #f3e5f5; color: #7b1fa2; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold;'>📐 %.1f m²</span>
+                  %s
                 </div>
                 <p style='margin: 8px 0; color: #666; font-size: 14px;'><strong>📍 Địa chỉ:</strong> %s</p>
                 <p style='margin: 8px 0; color: #777; font-size: 13px; line-height: 1.4;'>%s</p>
                 <div style='margin-top: 12px; padding-top: 8px; border-top: 1px solid #eee;'>
                   <p style='margin: 4px 0; color: #555; font-size: 12px;'><strong>👤 Liên hệ:</strong> %s</p>
                   <p style='margin: 4px 0; color: #555; font-size: 12px;'><strong>📞 Điện thoại:</strong> %s</p>
+                  <a href='http://localhost:3000/detail/%s' style='display:inline-block;margin-top:8px;padding:6px 16px;background:#1976d2;color:#fff;border-radius:4px;text-decoration:none;font-size:13px;font-weight:bold;'>Xem chi tiết</a>
                 </div>
               </div>
               """,
           room.getTitle(),
           String.format("%,.0f", room.getPriceMonth()),
           room.getArea(),
+          distanceInfo, // Thêm thông tin khoảng cách
           room.getAddress(),
           room.getDescription() != null
               ? (room.getDescription().length() > 100 ? room.getDescription().substring(0, 100) + "..."
                   : room.getDescription())
               : "Không có mô tả",
           room.getLandlordName(),
-          room.getLandlordPhone() != null ? room.getLandlordPhone() : room.getLandlordEmail()));
+          room.getLandlordPhone() != null ? room.getLandlordPhone() : room.getLandlordEmail(),
+          room.getId() // Thêm id vào link chi tiết
+      ));
     }
 
     String html = String.format(

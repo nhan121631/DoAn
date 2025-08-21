@@ -1309,15 +1309,7 @@ public class RoomService {
 
         }
 
-        /**
-         * Lấy danh sách rooms được recommend cho user dựa trên preferences của họ
-         * (địa chỉ tìm kiếm và khoảng giá mong muốn)
-         * 
-         * @param userId     ID của user
-         * @param pageNumber Số trang
-         * @param pageSize   Kích thước trang
-         * @return Danh sách rooms được sắp xếp theo độ phù hợp
-         */
+        // Lấy danh sách rooms được recommend cho user dựa trên preferences của họ
         public PaginationRoomInUserResponseDto getRecommendedRooms(UUID userId, int pageNumber, int pageSize) {
                 try {
                         // Lấy user profile để có preferences
@@ -1327,23 +1319,7 @@ public class RoomService {
                         Pageable pageable = PageRequest.of(pageNumber, pageSize);
                         Page<Room> roomPage;
 
-                        // Nếu user có preferences về giá, filter theo giá trước
-                        if (userProfile.getDesiredMinPrice() != null || userProfile.getDesiredMaxPrice() != null) {
-                                Double minPrice = userProfile.getDesiredMinPrice();
-                                Double maxPrice = userProfile.getDesiredMaxPrice();
-
-                                // Nếu không set min/max thì dùng giá trị mặc định
-                                if (minPrice == null)
-                                        minPrice = 0.0;
-                                if (maxPrice == null)
-                                        maxPrice = Double.MAX_VALUE;
-
-                                roomPage = roomJpaRepository.findRoomsWithBasicFilter(
-                                                minPrice, maxPrice, null, null, null, null, null, pageable);
-                        } else {
-                                // Nếu không có preference về giá, lấy tất cả rooms
-                                roomPage = roomJpaRepository.findAllRoomInUser("", pageable);
-                        }
+                        roomPage = roomJpaRepository.findAllRoomInUser("", pageable);
 
                         // Sắp xếp rooms theo location score + price score
                         List<RoomInUserResponseDto> recommendedRooms = roomPage.getContent().stream()
@@ -1402,43 +1378,8 @@ public class RoomService {
                 }
         }
 
-        /**
-         * Cải tiến method filterRooms để sử dụng user preferences khi có userId
-         * 
-         * @param pageNumber Số trang
-         * @param pageSize   Kích thước trang
-         * @param filterDto  Filter criteria
-         * @param userId     ID của user (optional) - nếu có sẽ dùng để recommend
-         * @return Danh sách rooms được filter và sorted theo preferences
-         */
         public PaginationRoomInUserResponseDto filterRoomsWithRecommendation(int pageNumber, int pageSize,
                         FilterRoomRequestDto filterDto, UUID userId) {
-
-                // Code cũ - logic filter cơ bản
-                /*
-                 * Pageable pageable = PageRequest.of(pageNumber, pageSize);
-                 * Page<Room> roomPage;
-                 * 
-                 * // Kiểm tra có convenient filter không
-                 * if (filterDto.getListConvenientIds() == null ||
-                 * filterDto.getListConvenientIds().isEmpty()) {
-                 * // KHÔNG CÓ CONVENIENT FILTER - dùng query cơ bản
-                 * roomPage = roomJpaRepository.findRoomsWithBasicFilter(
-                 * filterDto.getMinPrice(),
-                 * filterDto.getMaxPrice(),
-                 * filterDto.getMinArea(),
-                 * filterDto.getMaxArea(),
-                 * filterDto.getProvinceId(),
-                 * filterDto.getDistrictId(),
-                 * filterDto.getWardId(),
-                 * pageable);
-                 * } else {
-                 * // CÓ CONVENIENT FILTER - dùng 2 bước
-                 * // ... (logic cũ)
-                 * }
-                 */
-
-                // Logic mới với recommendation
                 try {
                         final com.ants.ktc.ants_ktc.entities.UserProfile userProfile;
                         if (userId != null) {
@@ -1589,76 +1530,11 @@ public class RoomService {
 
         /**
          * Tính điểm price phù hợp dựa trên user preferences
-         * 
-         * @param userProfile User profile chứa desired price range
-         * @param roomPrice   Giá của room
-         * @return Điểm từ 0-100, cao hơn = phù hợp hơn
+         * trả về điểm cố định
+         * @return Điểm cố định 50 (trung bình)
          */
         private int calculatePriceScore(com.ants.ktc.ants_ktc.entities.UserProfile userProfile, Double roomPrice) {
-                if (roomPrice == null)
-                        return 0;
-
-                Double desiredMin = userProfile.getDesiredMinPrice();
-                Double desiredMax = userProfile.getDesiredMaxPrice();
-
-                // Nếu user không set price preferences, return điểm trung bình
-                if (desiredMin == null && desiredMax == null) {
-                        return 50;
-                }
-
-                // Nếu chỉ set min
-                if (desiredMin != null && desiredMax == null) {
-                        if (roomPrice >= desiredMin) {
-                                // Trong range ưa thích, điểm cao
-                                if (roomPrice <= desiredMin * 1.2)
-                                        return 100; // Trong 120% min price
-                                if (roomPrice <= desiredMin * 1.5)
-                                        return 80; // Trong 150% min price
-                                if (roomPrice <= desiredMin * 2.0)
-                                        return 60; // Trong 200% min price
-                                return 40; // Quá đắt nhưng vẫn >= min
-                        } else {
-                                // Dưới min price, điểm thấp hơn
-                                return Math.max(20, (int) (roomPrice * 100 / desiredMin));
-                        }
-                }
-
-                // Nếu chỉ set max
-                if (desiredMin == null && desiredMax != null) {
-                        if (roomPrice <= desiredMax) {
-                                // Trong budget, điểm cao
-                                if (roomPrice >= desiredMax * 0.8)
-                                        return 100; // 80-100% của max budget
-                                if (roomPrice >= desiredMax * 0.6)
-                                        return 90; // 60-80% của max budget
-                                if (roomPrice >= desiredMax * 0.4)
-                                        return 80; // 40-60% của max budget
-                                return 70; // Dưới 40% budget (quá rẻ có thể không đạt chất lượng)
-                        } else {
-                                // Vượt budget, điểm rất thấp
-                                return Math.max(10, (int) (desiredMax * 100 / roomPrice));
-                        }
-                }
-
-                // Nếu set cả min và max
-                if (desiredMin != null && desiredMax != null) {
-                        if (roomPrice >= desiredMin && roomPrice <= desiredMax) {
-                                // Perfect match - trong khoảng mong muốn
-                                return 100;
-                        } else if (roomPrice < desiredMin) {
-                                // Dưới min
-                                if (roomPrice >= desiredMin * 0.8)
-                                        return 80; // Gần min
-                                return Math.max(20, (int) (roomPrice * 100 / desiredMin));
-                        } else {
-                                // Trên max
-                                if (roomPrice <= desiredMax * 1.2)
-                                        return 70; // Chỉ vượt 20%
-                                return Math.max(10, (int) (desiredMax * 100 / roomPrice));
-                        }
-                }
-
-                // Default case - không nên xảy ra
+                // Vì đã bỏ price preferences, trả về điểm trung bình
                 return 50;
         }
 
@@ -1696,13 +1572,6 @@ public class RoomService {
                 return addressBuilder.toString();
         }
 
-        /**
-         * Generate unique 8-digit transaction code using timestamp and user ID
-         * 
-         * @param userId User ID for uniqueness (prefix parameter kept for compatibility
-         *               but not used)
-         * @return Unique 8-digit transaction code
-         */
         private String generateUniqueTransactionCode(String unusedPrefix, UUID userId) {
                 // Use last 4 digits of timestamp for time uniqueness
                 long timestamp = System.currentTimeMillis();

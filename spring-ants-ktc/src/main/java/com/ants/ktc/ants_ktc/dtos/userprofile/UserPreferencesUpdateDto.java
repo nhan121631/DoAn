@@ -11,6 +11,4 @@ import lombok.NoArgsConstructor;
 @Builder
 public class UserPreferencesUpdateDto {
     private String searchAddress; // Địa chỉ đầy đủ từ frontend
-    private Double desiredMinPrice;
-    private Double desiredMaxPrice;
 }

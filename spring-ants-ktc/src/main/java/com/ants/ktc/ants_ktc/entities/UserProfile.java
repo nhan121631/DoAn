@@ -46,10 +46,6 @@ public class UserProfile extends BaseEntity {
     @Column(name = "account_holder_name")
     private String accoutHolderName;
 
-    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JoinColumn(name = "address_id", referencedColumnName = "id")
-    private Address address;
-
     @Column(name = "search_address", length = 500)
     private String searchAddress;
 
@@ -60,11 +56,9 @@ public class UserProfile extends BaseEntity {
     @Column(name = "search_longitude")
     private Double searchLongitude;
 
-    @Column(name = "desired_min_price")
-    private Double desiredMinPrice;
-
-    @Column(name = "desired_max_price")
-    private Double desiredMaxPrice;
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JoinColumn(name = "address_id", referencedColumnName = "id")
+    private Address address;
 
     @OneToOne(mappedBy = "profile", fetch = FetchType.LAZY)
     private User user;

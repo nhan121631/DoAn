@@ -2,12 +2,10 @@ package com.ants.ktc.ants_ktc.repositories.projection;
 
 import java.util.UUID;
 
-public interface RoomMapProjection {
+public interface RoomSuggestionProjection {
     UUID getId();
 
     String getTitle();
-
-    String getImageUrl();
 
     Double getArea();
 
@@ -20,4 +18,14 @@ public interface RoomMapProjection {
     Double getLng();
 
     Double getLat();
+
+    // formatching
+    Double getDistance();
+
+    String getDescription();
+
+    //information landlord name email phone
+    String getLandlordName();
+    String getLandlordEmail();
+    String getLandlordPhone();
 }
