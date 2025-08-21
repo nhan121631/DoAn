@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import HeaderUserDashboard from "../user-dashboard/components/HeaderUserDashboard";
-import Footer from "../users/components/Footer";
 import MapRoom from "./components/Map";
 import RoomCard from "./components/CardRoomMap";
+import Footer from "../users/components/Footer";
 
 export interface RoomMap {
   id: string;
@@ -72,7 +72,7 @@ export default function RoomMapPage() {
 
       {/* Main content */}
       <div className="flex justify-center items-center flex-1 w-full h-full py-4">
-        <div className="flex gap-4 w-[1300px] h-full lg:flex-row flex-col">
+        <div className="flex gap-4 w-[1500px] h-full lg:flex-row flex-col">
           {/* Room List */}
           <div
             className={`flex flex-1 flex-col ${
@@ -132,6 +132,7 @@ export default function RoomMapPage() {
                   />
                 ))
               )}
+              <Footer />
             </div>
           </div>
 
@@ -140,7 +141,7 @@ export default function RoomMapPage() {
             <div
               className="w-full overflow-hidden shadow-lg border border-gray-200"
               style={{
-                height: "calc(100vh - 140px)",
+                height: "calc(100vh - 100px)",
               }}
             >
               <MapRoom onRoomClick={(room: RoomMap[]) => setRooms(room)} />
@@ -148,8 +149,6 @@ export default function RoomMapPage() {
           </div>
         </div>
       </div>
-
-      <Footer />
     </div>
   );
 }

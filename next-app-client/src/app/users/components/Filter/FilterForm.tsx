@@ -10,8 +10,10 @@ import {
 import { getConvenients } from "@/services/Convenients";
 import { Convenient, District, Province, Ward } from "@/types/types";
 import { Form, Select, Checkbox } from "antd";
+import styles from "./FilterForm.module.css";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { FaMapMarkerAlt, FaStar, FaFilter, FaSpinner } from "react-icons/fa";
 
 type SelectOption = {
   label: string;
@@ -60,7 +62,6 @@ export default function FilterForm() {
         ? item.listConvenientIds.map(String)
         : [],
     };
-    // Only update if values are different to avoid breaking user input
     const current = form.getFieldsValue();
     let changed = false;
     for (const key in formValues) {
@@ -109,12 +110,10 @@ export default function FilterForm() {
     fetchProvinces();
   }, []);
 
-  // Trigger filter and update URL param without reload (like CardFilter)
   const triggerFilter = (checkedValues?: any) => {
-    // Nếu là convenients thì lấy checkedValues, còn lại lấy từ form
     const values = {
       ...form.getFieldsValue(),
-      convenients: checkedValues ?? form.getFieldValue('convenients'),
+      convenients: checkedValues ?? form.getFieldValue("convenients"),
     };
     const payload: FilterRequest = {
       provinceId: values.province ? Number(values.province) : undefined,
@@ -125,7 +124,7 @@ export default function FilterForm() {
         : undefined,
     };
     applyFilters(payload);
-    // Build query string
+
     const query: Record<string, string> = {};
     if (payload.provinceId !== undefined)
       query.provinceId = String(payload.provinceId);
@@ -135,8 +134,9 @@ export default function FilterForm() {
     if (payload.listConvenientIds && payload.listConvenientIds.length > 0)
       query.listConvenientIds = payload.listConvenientIds.join(",");
     const queryString = new URLSearchParams(query).toString();
-    // Giữ vị trí scroll khi lọc
-    router.replace(`/users${queryString ? "?" + queryString : ""}`, { scroll: false });
+    router.replace(`/users${queryString ? "?" + queryString : ""}`, {
+      scroll: false,
+    });
   };
 
   const handleProvinceChange = async (provinceId: string | undefined) => {
@@ -193,83 +193,181 @@ export default function FilterForm() {
     triggerFilter();
   };
 
+  const getConvenientIcon = (name: string) => {
+    const iconName = name.toLowerCase();
+    if (iconName.includes("wifi") || iconName.includes("internet")) return "📶";
+    if (iconName.includes("parking")) return "🅿️";
+    if (iconName.includes("air") || iconName.includes("ac")) return "❄️";
+    if (iconName.includes("kitchen")) return "🍳";
+    if (iconName.includes("washing")) return "🧺";
+    if (iconName.includes("balcony")) return "🏡";
+    if (iconName.includes("security")) return "🔒";
+    if (iconName.includes("elevator")) return "🛗";
+    return "⭐";
+  };
+
   return (
-    <Form
-      form={form}
-      layout="vertical"
-      className="w-[300px] bg-white shadow-md rounded-lg p-4 flex flex-col gap-4"
-    >
-      <span className="font-semibold text-[15px] my-2 mx-5 text-gray-800">
-        Addresses
-      </span>
-      <div className="flex flex-wrap gap-2 justify-between mx-5">
-        <Form.Item label="Province" name="province" className="flex-1 min-w-0">
-          <Select
-            options={provinces}
-            placeholder="All Provinces"
-            allowClear
-            showSearch
-            optionFilterProp="label"
-            className="w-full"
-            onChange={handleProvinceChange}
-          />
-        </Form.Item>
-        <Form.Item label="District" name="district" className="flex-1 min-w-0">
-          <Select
-            options={districts}
-            placeholder="All Districts"
-            loading={loadingDistricts}
-            allowClear
-            showSearch
-            optionFilterProp="label"
-            disabled={districts.length === 0}
-            fieldNames={{ label: "label", value: "value" }}
-            className="w-full"
-            onChange={handleDistrictChange}
-          />
-        </Form.Item>
-        <Form.Item label="Ward" name="ward" className="flex-1 min-w-0">
-          <Select
-            options={wards}
-            placeholder="All Wards"
-            loading={loadingWards}
-            allowClear
-            showSearch
-            optionFilterProp="label"
-            disabled={wards.length === 0}
-            fieldNames={{ label: "label", value: "value" }}
-            className="w-full"
-            onChange={triggerFilter}
-          />
-        </Form.Item>
-      </div>
-      {/* Special Features */}
-      <Form.Item>
-        <span className="font-semibold text-[15px] my-2 mx-5 text-gray-800">
-          Convenients
-        </span>
-        <div className="bg-white rounded-lg overflow-y-auto mx-5">
-          <Checkbox.Group
-            className="w-full"
-            onChange={triggerFilter}
-            value={form.getFieldValue("convenients")}
-          >
-            {/* Không bọc div, chỉ render Checkbox trực tiếp */}
-            {convenients.map((c) => (
-              <Checkbox
-                key={c.id}
-                value={String(c.id)}
-                className="flex items-center gap-2 py-1 px-2 rounded hover:bg-gray-100 transition cursor-pointer w-full"
-              >
-                <span className="capitalize text-[15px] text-gray-800">
-                  {c.name.replace(/_/g, " ")}
-                </span>
-              </Checkbox>
-            ))}
-          </Checkbox.Group>
+    <div className={`w-[320px] space-y-4 ${styles.animateFadeIn}`}>
+      {/* Advanced Filters Section */}
+      <div
+        className={`bg-white rounded-2xl shadow-lg p-6 ${styles.animateSlideInUp}`}
+      >
+        {/* Header */}
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-lg flex items-center justify-center">
+            <FaFilter className="text-white text-sm" />
+          </div>
+          <h2 className="text-lg font-bold text-gray-800">Advanced Filters</h2>
         </div>
-      </Form.Item>
-      {/* No Apply/Reset buttons, filter triggers on change */}
-    </Form>
+
+        {/* Location Section */}
+        <div className="mb-6">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-6 h-6 bg-gradient-to-r from-teal-400 to-green-500 rounded-full flex items-center justify-center">
+              <FaMapMarkerAlt className="text-white text-xs" />
+            </div>
+            <h3 className="text-base font-semibold text-gray-700">Location</h3>
+          </div>
+
+          <Form form={form} layout="vertical" className="space-y-4">
+            {/* Province */}
+            <div className={styles.animateFadeInScale}>
+              <label className="block text-sm font-medium text-gray-600 mb-2">
+                Province
+              </label>
+              <Form.Item name="province" className="mb-0">
+                <div className="relative">
+                  <Select
+                    options={provinces}
+                    placeholder="Select Province"
+                    allowClear
+                    showSearch
+                    optionFilterProp="label"
+                    className={`w-full ${styles.simpleSelect}`}
+                    onChange={handleProvinceChange}
+                  />
+                </div>
+              </Form.Item>
+            </div>
+
+            {/* District */}
+            <div
+              className={`${styles.animateFadeInScale} ${styles.animationDelay200}`}
+            >
+              <label className="block text-sm font-medium text-gray-600 mb-2">
+                District
+              </label>
+              <Form.Item name="district" className="mb-0">
+                <div className="relative">
+                  {loadingDistricts && (
+                    <FaSpinner className="absolute right-8 top-1/2 transform -translate-y-1/2 text-purple-400 animate-spin z-10" />
+                  )}
+                  <Select
+                    options={districts}
+                    placeholder="Select District"
+                    loading={loadingDistricts}
+                    allowClear
+                    showSearch
+                    optionFilterProp="label"
+                    disabled={districts.length === 0}
+                    className={`w-full ${styles.simpleSelect}`}
+                    onChange={handleDistrictChange}
+                  />
+                </div>
+              </Form.Item>
+            </div>
+
+            {/* Ward */}
+            <div
+              className={`${styles.animateFadeInScale} ${styles.animationDelay400}`}
+            >
+              <label className="block text-sm font-medium text-gray-600 mb-2">
+                Ward
+              </label>
+              <Form.Item name="ward" className="mb-0">
+                <div className="relative">
+                  {loadingWards && (
+                    <FaSpinner className="absolute right-8 top-1/2 transform -translate-y-1/2 text-pink-400 animate-spin z-10" />
+                  )}
+                  <Select
+                    options={wards}
+                    placeholder="Select Ward"
+                    loading={loadingWards}
+                    allowClear
+                    showSearch
+                    optionFilterProp="label"
+                    disabled={wards.length === 0}
+                    className={`w-full ${styles.simpleSelect}`}
+                    onChange={triggerFilter}
+                  />
+                </div>
+              </Form.Item>
+            </div>
+          </Form>
+        </div>
+      </div>
+
+      {/* Amenities Section */}
+      <div
+        className={`bg-white rounded-2xl shadow-lg p-6 ${styles.animateSlideInUp} ${styles.animationDelay600}`}
+      >
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-6 h-6 bg-gradient-to-r from-orange-400 to-red-500 rounded-full flex items-center justify-center">
+            <FaStar className="text-white text-xs" />
+          </div>
+          <h3 className="text-base font-semibold text-gray-700">Amenities</h3>
+        </div>
+
+        <div className={`max-h-64 overflow-y-auto ${styles.customScrollbar}`}>
+          <Form form={form}>
+            <Form.Item name="convenients" className="mb-0">
+              <Checkbox.Group
+                className="w-full space-y-2"
+                onChange={triggerFilter}
+              >
+                {convenients.map((c, index) => (
+                  <div
+                    key={c.id}
+                    className={`${styles.animateFadeInScale} hover:bg-gray-50 rounded-lg transition-all duration-200`}
+                    style={{ animationDelay: `${index * 0.05}s` }}
+                  >
+                    <Checkbox value={String(c.id)} className="w-full p-2">
+                      <div className="flex items-center gap-3">
+                        <span className="text-base">
+                          {getConvenientIcon(c.name)}
+                        </span>
+                        <span className="capitalize text-sm text-gray-700">
+                          {c.name.replace(/_/g, " ")}
+                        </span>
+                      </div>
+                    </Checkbox>
+                  </div>
+                ))}
+              </Checkbox.Group>
+            </Form.Item>
+          </Form>
+        </div>
+      </div>
+
+      {/* Active Filters Indicator */}
+      {(item.provinceId ||
+        item.districtId ||
+        item.wardId ||
+        (item.listConvenientIds && item.listConvenientIds.length > 0)) && (
+        <div className={`flex justify-center ${styles.animateBounceIn}`}>
+          <div className="px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full text-white text-sm font-medium shadow-lg">
+            {
+              [
+                item.provinceId,
+                item.districtId,
+                item.wardId,
+                ...(item.listConvenientIds || []),
+              ].filter(Boolean).length
+            }{" "}
+            filter(s) active
+          </div>
+        </div>
+      )}
+    </div>
   );
 }

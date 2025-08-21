@@ -168,7 +168,7 @@ const MapRoom: React.FC<Props> = ({ onRoomClick }) => {
             key={index}
             position={[group.lat, group.lng]}
             icon={
-              zoom >= 15 || group.rooms.length > 1
+              zoom >= 15 || group.rooms.length > 1 || isVIP
                 ? createCustomIcon(label, isVIP)
                 : dotIcon
             }
