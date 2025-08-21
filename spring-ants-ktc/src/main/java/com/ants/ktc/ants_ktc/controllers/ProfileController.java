@@ -78,4 +78,17 @@ public class ProfileController {
                     .body(Map.of("message", "Error updating preferences: " + e.getMessage()));
         }
     }
+
+    //get search address by userId
+    @GetMapping("/{userId}/preferences")
+    public ResponseEntity<UserPreferencesUpdateDto> getUserPreferences(@PathVariable("userId")
+            UUID userId) {
+        try {
+            String searchAddress = profileService.getSearchAddress(userId);
+            return ResponseEntity.ok(new UserPreferencesUpdateDto(searchAddress));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                    .body(new UserPreferencesUpdateDto("Error fetching preferences: " + e.getMessage()));
+        }
+    }
 }
