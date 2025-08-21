@@ -1,4 +1,8 @@
 import requests
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 def geocode_address(address, api_key):
     """
@@ -25,7 +29,7 @@ def geocode_address(address, api_key):
         return None
 
 # 👉 Thay thế bằng API Key của bạn
-GOONG_API_KEY = 'Ho0Gu3oKszv6Zgu9OMqmAW6MpAVbxtUjS3RdiJLk'
+GOONG_API_KEY = os.getenv("API_GOONG_KEY")
 
 # 👉 Thay thế bằng địa chỉ bạn muốn geocode
 address = "2 Huỳnh Văn Nghệ, Hòa Hải Ngũ Hành Sơn, Đà Nẵng, Việt Nam"
