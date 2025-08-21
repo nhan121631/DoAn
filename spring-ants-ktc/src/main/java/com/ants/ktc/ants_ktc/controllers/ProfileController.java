@@ -1,6 +1,7 @@
 package com.ants.ktc.ants_ktc.controllers;
 
 import java.io.IOException;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -9,12 +10,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.ants.ktc.ants_ktc.dtos.userprofile.ProfileUpdateRequestDto;
+import com.ants.ktc.ants_ktc.dtos.userprofile.UserPreferencesUpdateDto;
 import com.ants.ktc.ants_ktc.dtos.userprofile.UserProfileResponseDto;
 import com.ants.ktc.ants_ktc.services.ProfileService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -57,5 +61,21 @@ public class ProfileController {
     public ResponseEntity<UserProfileResponseDto> getProfile(@PathVariable("id") UUID id) {
         UserProfileResponseDto profile = profileService.getProfile(id);
         return ResponseEntity.ok(profile);
+    }
+
+    /**
+     * Cập nhật preferences của user (địa chỉ tìm kiếm và giá mong muốn)
+     */
+    @PostMapping("/{userId}/preferences")
+    public ResponseEntity<?> updateUserPreferences(
+            @PathVariable("userId") UUID userId,
+            @RequestBody UserPreferencesUpdateDto preferencesDto) {
+        try {
+            profileService.updateUserPreferences(userId, preferencesDto);
+            return ResponseEntity.ok(Map.of("message", "User preferences updated successfully"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("message", "Error updating preferences: " + e.getMessage()));
+        }
     }
 }

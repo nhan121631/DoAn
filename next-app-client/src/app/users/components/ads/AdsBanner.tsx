@@ -16,7 +16,7 @@ export default function AdsBanner({
 }: AdsBannerProps) {
   return (
     <div
-      className={`hidden lg:flex flex-col items-center justify-start w-[140px] sticky top-24 z-20 mt-20 ${
+      className={`hidden lg:flex flex-col items-center justify-start w-[140px] sticky top-24 z-20 mt-5 ${
         position === "left" ? "left-0" : "right-0"
       }`}
       aria-label={`ads-banner-${position}`}

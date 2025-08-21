@@ -1,0 +1,81 @@
+@keyframes fade-in {
+    0% {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slide-in-up {
+    0% {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fade-in-scale {
+    0% {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes bounce-in {
+    0% {
+        opacity: 0;
+        transform: scale(0.3);
+    }
+
+    50% {
+        opacity: 1;
+        transform: scale(1.05);
+    }
+
+    70% {
+        transform: scale(0.9);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+.animateFadeIn {
+    animation: fade-in 0.6s ease-out forwards;
+}
+
+.animateSlideInUp {
+    animation: slide-in-up 0.8s ease-out forwards;
+    opacity: 0;
+}
+
+.animateFadeInScale {
+    animation: fade-in-scale 0.5s ease-out forwards;
+    opacity: 0;
+}
+
+.animateBounceIn {
+    animation: bounce-in 0.6s ease-out forwards;
+}
+
+.animationDelay400 {
+    animation-delay: 0.4s;
+}
+
+.animationDelay2000 {
+    animation-delay: 2s;
+}

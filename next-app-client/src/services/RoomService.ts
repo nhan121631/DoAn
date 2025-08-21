@@ -118,33 +118,47 @@ export async function getRoomById(id: string) {
   }
 }
 
-export async function getRoomVipUser(page: number, size: number) {
+export async function getRoomVipUser(
+  page: number,
+  size: number,
+  userId?: string
+) {
   try {
-    const response = await fetch(
-      `${API_URL}/rooms/allroom-vip?page=${page}&size=${size}`
-    );
+    let url = `${API_URL}/rooms/allroom-vip?page=${page}&size=${size}`;
+    if (userId) {
+      url += `&userId=${userId}`;
+    }
+
+    const response = await fetch(url);
     if (!response.ok) {
       const data = await response.json();
-      throw new Error(data.message || "Failed to fetch room images");
+      throw new Error(data.message || "Failed to fetch VIP rooms");
     }
     return response.json();
   } catch (error) {
-    console.error("Error fetching room images:", error);
+    console.error("Error fetching VIP rooms:", error);
     return null;
   }
 }
-export async function getRoomNormalUser(page: number, size: number) {
+export async function getRoomNormalUser(
+  page: number,
+  size: number,
+  userId?: string
+) {
   try {
-    const response = await fetch(
-      `${API_URL}/rooms/allroom-normal?page=${page}&size=${size}`
-    );
+    let url = `${API_URL}/rooms/allroom-normal?page=${page}&size=${size}`;
+    if (userId) {
+      url += `&userId=${userId}`;
+    }
+
+    const response = await fetch(url);
     if (!response.ok) {
       const data = await response.json();
-      throw new Error(data.message || "Failed to fetch room images");
+      throw new Error(data.message || "Failed to fetch normal rooms");
     }
     return response.json();
   } catch (error) {
-    console.error("Error fetching room images:", error);
+    console.error("Error fetching normal rooms:", error);
     return null;
   }
 }
@@ -172,7 +186,7 @@ export async function filterRooms(
       throw new Error(data.message || "Failed to filter rooms");
     }
     return response.json();
-  } catch (error:any ) {
+  } catch (error: any) {
     console.error("Error filtering rooms:", error.message);
     return null;
   }
@@ -203,6 +217,23 @@ export async function getLandlordByRoomId(roomId: string) {
     return response.json();
   } catch (error) {
     console.error("Error fetching landlord details:", error);
+    return null;
+  }
+}
+
+//------ room in map response ------//
+export async function getRoomsInMap(lat: number, lng: number, radius: number) {
+  try {
+    const response = await fetch(
+      `${API_URL}/rooms/rooms-in-map?lat=${lat}&lng=${lng}&radius=${radius}`
+    );
+    if (!response.ok) {
+      const data = await response.json();
+      throw new Error(data.message || "Failed to fetch rooms in map");
+    }
+    return response.json();
+  } catch (error) {
+    console.error("Error fetching rooms in map:", error);
     return null;
   }
 }

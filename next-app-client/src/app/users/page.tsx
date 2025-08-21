@@ -2,12 +2,9 @@
 import BackToTop from "./components/BackToTop";
 import Chatbot from "./components/Chatbot";
 import CompareRoom from "./components/CompareRoom";
-import ContactPage from "./components/contact";
-import LandlordListCard from "./components/landlord";
 import RentalRooms, {
   RentalRoomsSearchParams,
 } from "./components/rental_rooms";
-import WhyChooseUsSection from "./components/WhyChooseUsSection";
 
 export default async function UsersPage({
   searchParams,
@@ -25,11 +22,8 @@ export default async function UsersPage({
     : undefined;
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-white">
       <RentalRooms searchParams={normalizedParams as RentalRoomsSearchParams} />
-      <WhyChooseUsSection />
-      <LandlordListCard />
-      <ContactPage />
       <BackToTop />
       <CompareRoom />
       <Chatbot />

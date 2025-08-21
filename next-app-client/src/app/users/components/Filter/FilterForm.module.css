@@ -1,0 +1,136 @@
+/* FilterForm.module.css */
+.simpleSelect .ant-select-selector {
+    border-radius: 10px !important;
+    border: 1px solid #e5e7eb !important;
+    padding-left: 2.5rem !important;
+    height: 42px !important;
+    background: white !important;
+    transition: all 0.2s ease !important;
+}
+
+.simpleSelect .ant-select-selector:hover {
+    border-color: #9ca3af !important;
+}
+
+.simpleSelect.ant-select-focused .ant-select-selector {
+    border-color: #3b82f6 !important;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1) !important;
+}
+
+.simpleSelect .ant-select-selection-placeholder {
+    color: #9ca3af !important;
+}
+
+.customScrollbar::-webkit-scrollbar {
+    width: 4px;
+}
+
+.customScrollbar::-webkit-scrollbar-track {
+    background: #f3f4f6;
+    border-radius: 2px;
+}
+
+.customScrollbar::-webkit-scrollbar-thumb {
+    background: #d1d5db;
+    border-radius: 2px;
+}
+
+.customScrollbar::-webkit-scrollbar-thumb:hover {
+    background: #9ca3af;
+}
+
+.ant-checkbox-wrapper {
+    margin: 0 !important;
+}
+
+.ant-checkbox-checked .ant-checkbox-inner {
+    background-color: #3b82f6 !important;
+    border-color: #3b82f6 !important;
+}
+
+/* Animations */
+@keyframes fade-in {
+    0% {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slide-in-up {
+    0% {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fade-in-scale {
+    0% {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes bounce-in {
+    0% {
+        opacity: 0;
+        transform: scale(0.3);
+    }
+
+    50% {
+        opacity: 1;
+        transform: scale(1.05);
+    }
+
+    70% {
+        transform: scale(0.9);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+.animateFadeIn {
+    animation: fade-in 0.5s ease-out forwards;
+}
+
+.animateSlideInUp {
+    animation: slide-in-up 0.6s ease-out forwards;
+    opacity: 0;
+}
+
+.animateFadeInScale {
+    animation: fade-in-scale 0.4s ease-out forwards;
+    opacity: 0;
+}
+
+.animateBounceIn {
+    animation: bounce-in 0.6s ease-out forwards;
+}
+
+.animationDelay200 {
+    animation-delay: 0.2s;
+}
+
+.animationDelay400 {
+    animation-delay: 0.4s;
+}
+
+.animationDelay600 {
+    animation-delay: 0.6s;
+}

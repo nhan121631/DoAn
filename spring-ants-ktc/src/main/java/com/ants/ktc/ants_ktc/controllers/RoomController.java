@@ -25,6 +25,7 @@ import com.ants.ktc.ants_ktc.dtos.room.PaginationRoomInUserResponseDto;
 import com.ants.ktc.ants_ktc.dtos.room.PaginationRoomResponseDto;
 import com.ants.ktc.ants_ktc.dtos.room.RoomApprovalProjectionDto;
 import com.ants.ktc.ants_ktc.dtos.room.RoomDeleteRequestDto;
+import com.ants.ktc.ants_ktc.dtos.room.RoomInMapResponse;
 import com.ants.ktc.ants_ktc.dtos.room.RoomRecentResponseDto;
 import com.ants.ktc.ants_ktc.dtos.room.RoomRequestCreateDto;
 import com.ants.ktc.ants_ktc.dtos.room.RoomRequestUpdateDto;
@@ -174,18 +175,38 @@ public class RoomController {
     @GetMapping("allroom-vip")
     public ResponseEntity<PaginationRoomInUserResponseDto> getRoomVipPaginated(
             @RequestParam(name = "page", defaultValue = "0") int pageNumber,
-            @RequestParam(name = "size", defaultValue = "5") int pageSize) {
+            @RequestParam(name = "size", defaultValue = "5") int pageSize,
+            @RequestParam(name = "userId", required = false) UUID userId) {
         String code = "VIP";
-        PaginationRoomInUserResponseDto response = roomService.getAllRoomInUser(pageNumber, pageSize, code);
+        PaginationRoomInUserResponseDto response;
+
+        // Nếu có userId, sử dụng sorting theo khoảng cách
+        if (userId != null) {
+            response = roomService.getAllRoomInUserSortedByDistance(pageNumber, pageSize, code, userId);
+        } else {
+            // Fallback về method cũ nếu không có userId
+            response = roomService.getAllRoomInUser(pageNumber, pageSize, code);
+        }
+
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("allroom-normal")
     public ResponseEntity<PaginationRoomInUserResponseDto> getRoomNormalPaginated(
             @RequestParam(name = "page", defaultValue = "0") int pageNumber,
-            @RequestParam(name = "size", defaultValue = "5") int pageSize) {
+            @RequestParam(name = "size", defaultValue = "5") int pageSize,
+            @RequestParam(name = "userId", required = false) UUID userId) {
         String code = "NORMAL";
-        PaginationRoomInUserResponseDto response = roomService.getAllRoomInUser(pageNumber, pageSize, code);
+        PaginationRoomInUserResponseDto response;
+
+        // Nếu có userId, sử dụng sorting theo khoảng cách
+        if (userId != null) {
+            response = roomService.getAllRoomInUserSortedByDistance(pageNumber, pageSize, code, userId);
+        } else {
+            // Fallback về method cũ nếu không có userId
+            response = roomService.getAllRoomInUser(pageNumber, pageSize, code);
+        }
+
         return ResponseEntity.ok(response);
     }
 
@@ -208,5 +229,14 @@ public class RoomController {
     public ResponseEntity<LandlordResponseByRoomDto> getLandlordByRoomId(@PathVariable("id") UUID roomId) {
         LandlordResponseByRoomDto landlord = userService.getLandlordInfoByRoomId(roomId);
         return ResponseEntity.ok(landlord);
+    }
+
+    @GetMapping("rooms-in-map")
+    public ResponseEntity<List<RoomInMapResponse>> getRoomsInMap(
+            @RequestParam(value = "lat") double lat,
+            @RequestParam(value = "lng") double lng,
+            @RequestParam(value = "radius", defaultValue = "15") double radius) {
+        List<RoomInMapResponse> rooms = roomService.findRoomInMapWithRadius(lat, lng, radius);
+        return ResponseEntity.ok(rooms);
     }
 }

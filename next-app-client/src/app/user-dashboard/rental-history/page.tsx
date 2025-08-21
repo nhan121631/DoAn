@@ -292,7 +292,7 @@ function RentalHistory() {
               }
             }}
             title="Add Request"
-            disabled={record.status !== 4}
+            disabled={(record.status !== 4) || (new Date() > new Date(record.expires))}
           >
             <IoMdAddCircleOutline size={18} /> Sent new request
           </Button>

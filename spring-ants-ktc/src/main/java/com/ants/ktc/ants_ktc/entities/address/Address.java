@@ -23,6 +23,12 @@ public class Address extends BaseEntity {
     @Column(name = "name_street")
     private String street;
 
+    @Column(name = "lat")
+    private Double lat;
+
+    @Column(name = "lng")
+    private Double lng;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ward_id")
     private Ward ward;
