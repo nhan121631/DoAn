@@ -38,7 +38,7 @@ const FavoriteDashboardRoomCard: React.FC<RoomCardProps> = ({
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ amount: 0.15 }}
       transition={{ duration: 0.7, ease: "easeOut" }}
-      className="relative flex w-full h-[250px] bg-white rounded-2xl overflow-hidden shadow-lg border border-green-400 hover:shadow-green-200 hover:-translate-y-1 hover:scale-[1.015] transition-all duration-300"
+      className="relative flex w-full h-[250px] bg-white rounded-2xl overflow-hidden shadow-lg border border-blue-400 hover:shadow-blue-200 hover:-translate-y-1 hover:scale-[1.015] transition-all duration-300"
     >
       {/* IMAGE SECTION */}
       <div className="relative w-1/3 min-w-[250px] h-full flex-shrink-0">
@@ -73,7 +73,7 @@ const FavoriteDashboardRoomCard: React.FC<RoomCardProps> = ({
             ★★★★★
           </span>
           <span
-            className="text-xl font-extrabold text-green-700 uppercase break-words transition-colors duration-200 group-hover:text-emerald-600 line-clamp-2 text-ellipsis"
+            className="text-xl font-extrabold text-blue-700 uppercase break-words transition-colors duration-200 group-hover:text-emerald-600 line-clamp-2 text-ellipsis"
             style={{
               display: "-webkit-box",
               WebkitLineClamp: 2,
