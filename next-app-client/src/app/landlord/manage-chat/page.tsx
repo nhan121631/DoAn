@@ -1,21 +1,17 @@
 // Fixed version - giải quyết vấn đề realtime khi click sidebar
 "use client";
 
-import { useState, useRef, useEffect, useCallback, useMemo } from "react";
+import { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import ChatClient from "@/app/components/chat/ChatClient";
-import LandlordChatAutoOpen from "./LandlordChatAutoOpen";
 import { useSession } from "next-auth/react";
-import useWebSocket from "@/app/components/chat/useWebSocket";
-import { API_URL } from "@/services/Constant";
 import { db } from "@/lib/firebase";
 import {
   collection,
-  addDoc,
-  serverTimestamp,
   query,
   orderBy,
   onSnapshot,
 } from "firebase/firestore";
+import { getFullName } from "@/services/ProfileService";
 
 interface ChatUser {
   id: string;
@@ -24,41 +20,20 @@ interface ChatUser {
   unreadCount?: number;
 }
 
-interface ParsedMessage {
-  fromUserId?: string;
-  toUserId?: string;
-  fromUserName?: string;
-  isRead?: boolean;
-  timestamp?: string;
-}
+// ...existing code...
 
 export default function LandlordManageChatPage() {
   const { data: session } = useSession();
   const landlordId = (session?.user?.id ?? "") + "";
-  const [readUserIds, setReadUserIds] = useState<string[]>([]);
 
   const [userList, setUserList] = useState<ChatUser[]>([]);
   const [selectedUserId, setSelectedUserId] = useState<string>("");
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string>("");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   // Đánh dấu landlord đã chọn user thủ công
   const landlordSelectedRef = useRef(false);
-  const { messages, sendMessage: wsSendMessage } = useWebSocket(landlordId);
-
-  // Sử dụng useRef để tránh re-render khi click sidebar
-  const processedMessagesRef = useRef(new Set<string>());
-
-  // Helper function to parse messages safely - memoized
-  const parseMessage = useCallback((raw: any): ParsedMessage | null => {
-    try {
-      const obj = typeof raw === "string" ? JSON.parse(raw) : raw;
-      return obj;
-    } catch {
-      return null;
-    }
-  }, []);
 
   // Helper function to update user list - optimized
   const updateUserList = useCallback(
@@ -121,211 +96,87 @@ export default function LandlordManageChatPage() {
     [landlordId]
   );
 
-  useEffect(() => {
-  if (!landlordId) return;
-
-  const q = query(collection(db, "messages"), orderBy("createdAt", "asc"));
-  const unsubscribe = onSnapshot(q, (snapshot) => {
-    // Lấy tất cả tin nhắn có landlord liên quan
-    const listUser = snapshot.docs.map((doc) => ({
-      id: doc.id,
-      text: doc.data().text,
-      senderId: doc.data().senderId,
-      recipientId: doc.data().recipientId,
-      createdAt: doc.data().createdAt
-        ? new Date(doc.data().createdAt.seconds * 1000)
-        : null,
-    }))
-    .filter(
-      (msg) =>
-        msg.senderId === landlordId || msg.recipientId === landlordId
-    );
-
-    // Lấy ra danh sách unique userId khác landlord
-    const usersMap: Record<string, ChatUser> = {};
-
-    listUser.forEach((msg) => {
-      const otherId =
-        msg.senderId === landlordId ? msg.recipientId : msg.senderId;
-      if (!otherId) return;
-
-      if (!usersMap[otherId]) {
-        usersMap[otherId] = {
-          id: otherId,
-          name: otherId,
-          lastMessageTime: msg.createdAt || new Date(),
-          unreadCount: 0,
-        };
-      } else {
-        // update lastMessageTime mới nhất
-        if (
-          msg.createdAt &&
-          (!usersMap[otherId].lastMessageTime ||
-            msg.createdAt > usersMap[otherId].lastMessageTime!)
-        ) {
-          usersMap[otherId].lastMessageTime = msg.createdAt;
-        }
-      }
-    });
-
-    setUserList(Object.values(usersMap));
-  });
-
-  return () => unsubscribe();
-}, [landlordId]);
-
-  // FIX: Tách riêng việc xử lý messages để tránh conflict với click events
-  const processWebSocketMessages = useCallback(() => {
-    if (!Array.isArray(messages) || messages.length === 0) return;
-
-    // Batch process messages để giảm số lần re-render
-    const messagesToProcess = messages.filter((raw) => {
-      const messageId = typeof raw === "string" ? raw : JSON.stringify(raw);
-      return !processedMessagesRef.current.has(messageId);
-    });
-
-    if (messagesToProcess.length === 0) return;
-
-    setUserList((prev) => {
-      const lastTimes = new Map<string, Date>();
-      prev.forEach((u) => {
-        if (u.lastMessageTime) lastTimes.set(u.id, u.lastMessageTime);
-      });
-
-      let next = [...prev];
-      let changed = false;
-
-      messagesToProcess.forEach((raw) => {
-        const messageId = typeof raw === "string" ? raw : JSON.stringify(raw);
-        processedMessagesRef.current.add(messageId);
-
-        const parsedMessage = parseMessage(raw);
-        if (
-          !parsedMessage?.fromUserId ||
-          parsedMessage.fromUserId === landlordId
-        )
-          return;
-
-        const userId = parsedMessage.fromUserId;
-        const userName = parsedMessage.fromUserName;
-        const messageTime = parsedMessage.timestamp
-          ? new Date(parsedMessage.timestamp)
-          : new Date();
-
-        const lastTime = lastTimes.get(userId);
-        const idx = next.findIndex((u) => u.id === userId);
-
-        if (idx === -1) {
-          next.push({
-            id: userId,
-            name: userName || userId,
-            lastMessageTime: messageTime,
-          });
-          lastTimes.set(userId, messageTime);
-          changed = true;
-        } else if (!lastTime || messageTime > lastTime) {
-          next[idx] = {
-            ...next[idx],
-            name: userName || next[idx].name || userId,
-            lastMessageTime: messageTime,
-          };
-          lastTimes.set(userId, messageTime);
-          changed = true;
-        }
-      });
-
-      return changed ? next : prev;
-    });
-  }, [messages, parseMessage, landlordId]);
-
-  // FIX: Sử dụng setTimeout để delay xử lý messages, tránh conflict với UI events
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      processWebSocketMessages();
-    }, 100); // Delay ngắn để UI events hoàn thành trước
-
-    return () => clearTimeout(timeoutId);
-  }, [processWebSocketMessages]);
-
-  // Load initial user list
+  // Lắng nghe sự thay đổi trên Firebase để cập nhật danh sách người dùng
   useEffect(() => {
     if (!landlordId) return;
 
     setIsLoading(true);
-    setError("");
+    const q = query(collection(db, "messages"), orderBy("createdAt", "desc"));
+    
+    const unsubscribe = onSnapshot(q, async (snapshot) => {
+      setIsLoading(false);
+      
+      const fetchedMessages = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          text: doc.data().text,
+          senderId: doc.data().senderId,
+          recipientId: doc.data().recipientId,
+          createdAt: doc.data().createdAt
+              ? new Date(doc.data().createdAt.seconds * 1000)
+              : null,
+      }))
+      .filter(
+          (msg) =>
+              msg.senderId === landlordId || msg.recipientId === landlordId
+      );
 
-    fetch(`${API_URL}/messages/users?userId=${landlordId}`)
-      .then((res) => {
-        if (!res.ok) {
-          throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-        }
-        return res.json();
-      })
-      .then((users) => {
-        if (Array.isArray(users)) {
-          setUserList(
-            users.map((user) => ({
-              ...user,
-              lastMessageTime: user.lastMessageTime
-                ? new Date(user.lastMessageTime)
-                : new Date(),
-              unreadCount: user.unreadCount || 0,
-            }))
-          );
-        } else {
-          setUserList([]);
-        }
-      })
-      .catch((err) => {
-        console.error("Failed to load users:", err);
-        setError("Không thể tải danh sách người dùng");
-        setUserList([]);
-      })
-      .finally(() => {
-        setIsLoading(false);
+      // Lấy ra danh sách unique userId khác landlord và tin nhắn mới nhất
+      const usersMap: Record<string, ChatUser> = {};
+      
+      fetchedMessages.forEach((msg) => {
+          const otherId = msg.senderId === landlordId ? msg.recipientId : msg.senderId;
+          if (!otherId || (usersMap[otherId]?.lastMessageTime && usersMap[otherId].lastMessageTime! > msg.createdAt!)) return;
+
+          usersMap[otherId] = {
+              id: otherId,
+              name: otherId, // Sẽ được cập nhật sau
+              lastMessageTime: msg.createdAt || new Date(),
+              unreadCount: 0,
+          };
       });
-  }, [landlordId]);
 
-  // Memoize unread calculation để tránh re-calculate không cần thiết
-  const currentUnreadUserIds = useMemo(() => {
-    if (!Array.isArray(messages)) return [];
+      // Lấy danh sách ID để fetch tên
+      const userIdsToFetch = Object.keys(usersMap);
 
-    const landlordIdStr = String(landlordId).trim();
-    const unreadIds = new Set<string>();
-
-    messages.forEach((raw) => {
-      const parsedMessage = parseMessage(raw);
-      if (!parsedMessage) return;
-
-      const toId = String(parsedMessage.toUserId || "").trim();
-      const fromId = String(parsedMessage.fromUserId || "").trim();
-
-      if (
-        toId === landlordIdStr &&
-        fromId &&
-        fromId !== landlordIdStr &&
-        parsedMessage.isRead !== true &&
-        !readUserIds.includes(fromId)
-      ) {
-        unreadIds.add(fromId);
+    // Fetch tất cả các tên cùng lúc
+    const namePromises = userIdsToFetch.map(async (id) => {
+      try {
+        const fullName = await getFullName(id);
+        console.log(`API fullName for ${id}:`, fullName);
+        return { id, fullName };
+      } catch (error) {
+        console.error(`Failed to get name for user ${id}:`, error);
+        return { id, fullName: id }; // Trả về ID nếu fetch thất bại
       }
     });
 
-    return Array.from(unreadIds);
-  }, [messages, landlordId, parseMessage, readUserIds]);
+    const fetchedNames = await Promise.all(namePromises);
+    console.log('Fetched names:', fetchedNames);
+    const nameMap = new Map(fetchedNames.map(item => [item.id, item.fullName]));
 
-  // FIX: Optimize user selection handler
+    // Cập nhật userList với tên mới
+    const updatedUserList = Object.values(usersMap).map(user => ({
+      ...user,
+      name: nameMap.get(user.id) || user.id
+    }));
+    console.log('Updated userList:', updatedUserList);
+    setUserList(updatedUserList);
+
+    }, (err) => {
+        console.error("Firebase fetch error:", err);
+        setError("Không thể tải danh sách người dùng");
+        setIsLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, [landlordId]);
+
+  // Handle user selection
   const handleUserSelect = useCallback(
     (user: ChatUser) => {
       setSelectedUserId(user.id);
-      setReadUserIds((prev) => {
-        if (prev.includes(user.id)) return prev;
-        return [...prev, user.id];
-      });
-
       landlordSelectedRef.current = true;
-      console.log("Selected user:", selectedUserId);
-      // Khi click vào user, set unreadCount về 0 để mất highlight ngay trên frontend
+      // Cập nhật lại unreadCount về 0 khi chọn
       updateUserList(user.id, user.name, undefined, 0);
     },
     [updateUserList]
@@ -338,7 +189,7 @@ export default function LandlordManageChatPage() {
     }
   }, [selectedUserId]);
 
-  // Memoize sorted user list để tránh re-sort không cần thiết
+  // Sắp xếp danh sách người dùng theo thời gian tin nhắn cuối cùng
   const sortedUserList = useMemo(() => {
     return [...userList].sort((a, b) => {
       const timeA = a.lastMessageTime?.getTime() || 0;
@@ -376,9 +227,9 @@ export default function LandlordManageChatPage() {
       {/* Enhanced Sidebar */}
       <div
         className={`
-        ${sidebarCollapsed ? "w-0 lg:w-0" : "w-80 lg:w-80"} 
+        ${sidebarCollapsed ? "w-0 lg:w-80" : "w-80 lg:w-80"} 
         transition-all duration-500 ease-in-out overflow-hidden
-           bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-r border-slate-200/50 shadow-xl
+        bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-r border-slate-200/50 shadow-xl
       `}
       >
         <div className="p-6">
@@ -418,11 +269,9 @@ export default function LandlordManageChatPage() {
           ) : (
             <div className="space-y-2 max-h-[calc(100vh-200px)] overflow-y-auto scrollbar-none">
               {sortedUserList.map((user, index) => {
-                const isUnread =
-                  (typeof user.unreadCount === "number"
-                    ? user.unreadCount > 0
-                    : false) || currentUnreadUserIds.includes(user.id);
                 const isSelected = selectedUserId === user.id;
+                // TODO: Bổ sung logic tính unreadCount từ Firebase
+                const isUnread = false; 
 
                 return (
                   <div
@@ -495,14 +344,7 @@ export default function LandlordManageChatPage() {
                               }
                             `}
                             >
-                              {/* Uncomment nếu cần hiển thị thời gian
-                              {user.lastMessageTime.toLocaleString("vi-VN", {
-                                month: "short",
-                                day: "numeric",
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              })} 
-                              */}
+                              {/* Uncomment nếu cần hiển thị thời gian */}
                             </p>
                           )}
                         </div>
@@ -556,8 +398,6 @@ export default function LandlordManageChatPage() {
                 defaultToUserName={
                   userList.find((u) => u.id === selectedUserId)?.name || ""
                 }
-                // messages={messages}
-                // sendMessage={wsSendMessage}
               />
             </div>
           ) : (
@@ -602,18 +442,6 @@ export default function LandlordManageChatPage() {
             </div>
           )}
         </div>
-
-        {/* Auto-open chat component - FIX: Thêm key để tránh stale closures */}
-        <LandlordChatAutoOpen
-          key={`${selectedUserId}-${messages.length}`}
-          messages={messages}
-          landlordId={landlordId}
-          onUserMessage={(userId, userName) => {
-            if (!userId) return;
-            // Chỉ update userList, không auto-switch chat
-            updateUserList(userId, userName, new Date());
-          }}
-        />
       </div>
 
       {/* Custom CSS for animations */}
