@@ -114,6 +114,34 @@ export async function updatePreferences(
   return response.json();
 }
 
+export async function getUserPreferences() {
+  
+  const url = `/api/profile/matching-address`;
+
+  const response = await fetch(url, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    }
+  });
+
+  if (!response.ok) {
+    let errorMsg = "Failed to fetch user preferences";
+    try {
+      const error = await response.json();
+      errorMsg = Array.isArray(error.message)
+        ? error.message[0]
+        : error.message || error.error || errorMsg;
+      console.error("API error:", error);
+    } catch (e) {
+      console.error("Error parsing response:", e);
+    }
+    throw new Error(errorMsg);
+  }
+
+  return response.json();
+}
+
 export async function updateUserSearchPreferences(
   userId: string,
   preferences: UserSearchPreferences,

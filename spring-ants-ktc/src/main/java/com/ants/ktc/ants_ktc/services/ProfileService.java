@@ -260,6 +260,13 @@ public class ProfileService {
                 profileJpaRepository.save(profile);
         }
 
+        //get search address from user profile
+        public String getSearchAddress(UUID userId) {
+                UserProfile profile = profileJpaRepository.findByUserId(userId)
+                                .orElseThrow(() -> new IllegalArgumentException("Profile not found for user: " + userId));
+                return profile.getSearchAddress();
+        }
+
         /**
          * Lấy UserProfile entity (không phải DTO) để tính toán trong các service khác
          */

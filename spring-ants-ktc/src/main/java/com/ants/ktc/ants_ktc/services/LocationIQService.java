@@ -67,17 +67,17 @@ public class LocationIQService {
         }
     }
 
-    // Tính khoảng cách giữa 2 địa chỉ bằng Here Routing API (driving)
     public long getDistance(String origin, String destination) throws Exception {
         LatLng originCoord = getCoordinates(origin);
         LatLng destCoord = getCoordinates(destination);
 
-        String urlStr = "https://router.hereapi.com/v8/routes?transportMode=car"
-                + "&origin=" + originCoord.lat + "," + originCoord.lng
-                + "&destination=" + destCoord.lat + "," + destCoord.lng
-                + "&return=summary"
-                + "&apikey=" + apiKey;
-URL url = new URL(urlStr);
+        String urlStr = "https://rsapi.goong.io/DistanceMatrix"
+                + "?origins=" + originCoord.lat + "," + originCoord.lng
+                + "&destinations=" + destCoord.lat + "," + destCoord.lng
+                + "&vehicle=car"
+                + "&api_key=" + apiKey;
+
+        URL url = new URL(urlStr);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestMethod("GET");
         conn.setRequestProperty("User-Agent", "Mozilla/5.0");
@@ -90,16 +90,16 @@ URL url = new URL(urlStr);
             }
 
             JSONObject json = new JSONObject(response.toString());
-            JSONArray routes = json.getJSONArray("routes");
+            JSONArray rows = json.optJSONArray("rows");
 
-            if (routes.length() > 0) {
-                JSONObject firstRoute = routes.getJSONObject(0);
-                JSONObject summary = firstRoute.getJSONObject("sections")
-                        .getJSONArray("sections")
-                        .getJSONObject(0)
-                        .getJSONObject("summary");
+            if (rows != null && rows.length() > 0) {
+                JSONObject firstRow = rows.getJSONObject(0);
+                JSONArray elements = firstRow.getJSONArray("elements");
+                JSONObject firstElement = elements.getJSONObject(0);
 
-                long distanceMeters = summary.getLong("length"); // tính bằng mét
+                JSONObject distanceObj = firstElement.getJSONObject("distance");
+                long distanceMeters = distanceObj.getLong("value");
+
                 return distanceMeters;
             } else {
                 throw new Exception("Không tính được khoảng cách.");

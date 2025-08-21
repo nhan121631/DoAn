@@ -5,6 +5,7 @@ import Footer from "./components/Footer";
 import WhyChooseUsSection from "./components/WhyChooseUsSection";
 import ContactPage from "./components/contact";
 import LandlordListCard from "./components/landlord";
+import SuggestAddressBar from "./components/Filter/SuggestAddressBar";
 
 type UsersLayoutProps = {
   children: React.ReactNode;
@@ -14,6 +15,7 @@ export default function UsersLayout({ children }: UsersLayoutProps) {
   return (
     <div className="min-h-screen flex flex-col bg-white items-center">
       <HeaderUserDashboard />
+      <SuggestAddressBar showSaveButton={true} />
 
       {/* Banner/Slider */}
       {/* <Banner /> */}
