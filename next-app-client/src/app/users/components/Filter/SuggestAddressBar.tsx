@@ -14,7 +14,12 @@ import { Select, Input, Button, Form, message } from "antd";
 import { Province, District, Ward } from "@/types/types";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { EnvironmentOutlined, InfoCircleOutlined, SaveOutlined } from "@ant-design/icons";
+import {
+  EnvironmentOutlined,
+  InfoCircleOutlined,
+  SaveOutlined,
+} from "@ant-design/icons";
+import { Search } from "lucide-react";
 
 type SelectOption = {
   label: string;
@@ -244,7 +249,8 @@ function SuggestAddressBar({
       {currentPreferences && !loadingPreferences && (
         <div className="mb-4 p-3 bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-blue-400 rounded-r-lg">
           <p className="text-sm text-blue-800 font-medium">
-            Khu vực tìm kiếm hiện tại: <span className="font-normal">{currentPreferences}</span>
+            Khu vực tìm kiếm hiện tại:{" "}
+            <span className="font-normal">{currentPreferences}</span>
           </p>
         </div>
       )}
@@ -342,9 +348,9 @@ function SuggestAddressBar({
                   onClick={handleSave}
                   loading={isSaving}
                   className="h-10 px-4 bg-blue-600 hover:bg-blue-700 border-blue-600 rounded-lg font-medium shadow-sm hover:shadow transition-all duration-200"
-                  icon={<SaveOutlined />}
+                  icon={<Search />}
                 >
-                  Lưu
+                  Search
                 </Button>
               )}
 

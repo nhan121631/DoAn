@@ -22,6 +22,7 @@ import { getAllFavoriteIds } from "@/services/FavoriteService";
 import FilterForm from "../Filter/FilterForm";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { HiLocationMarker, HiSparkles } from "react-icons/hi";
 
 // Lấy danh sách ID yêu thích trên Server
 // const initialFavoriteIds = await getFavoriteRoomIds();
@@ -144,14 +145,22 @@ export default async function RentalRooms({
           {!isEmptyFilter ? (
             filteredRooms.data.length > 0 ? (
               <div className="flex flex-col items-center w-full gap-4 px-2 sm:px-4 my-8 bg-white max-w-7xl lg:px-0 lg:w-auto">
-                <h1 className="w-full text-2xl font-bold text-left">
-                  The room you&#39;re looking for
-                </h1>
+                <div className="w-full text-center space-y-4">
+                  <h1 className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-gray-900 via-blue-700 to-purple-700 bg-clip-text text-transparent leading-tight">
+                    Rooms You're Looking For
+                  </h1>
+                  <div className="flex items-center justify-center gap-2 text-lg text-gray-600">
+                    <HiLocationMarker className="text-blue-500" />
+                    <span className="font-medium">
+                      Found{" "}
+                      <span className="text-blue-600 font-bold">
+                        {filteredRooms.totalRecords}
+                      </span>{" "}
+                      perfect matches
+                    </span>
+                  </div>
+                </div>
 
-                <span className="w-full italic text-left">
-                  We found {filteredRooms.totalRecords} rooms matching your
-                  search criteria
-                </span>
                 <div
                   id="normal-rooms-list"
                   className="flex flex-wrap items-start justify-center w-full gap-4 md:gap-6 lg:gap-8"
@@ -218,22 +227,67 @@ export default async function RentalRooms({
             )
           ) : (
             <div className="flex flex-col items-center w-full gap-4 px-2 sm:px-4 my-8 bg-white max-w-7xl lg:px-0 lg:w-auto">
-              <h1
-                className="text-3xl md:text-4xl font-semibold tracking-tight
-                 bg-gradient-to-r from-slate-900 via-blue-900 to-slate-800 
-                 bg-clip-text text-transparent leading-tight"
-              >
-                Vietnam's No.1 Rental Room Platform
-              </h1>
+              {/* Hero Section */}
+              <div className="text-center space-y-6 max-w-4xl">
+                <div className="flex items-center justify-center gap-2 mb-4">
+                  <HiSparkles className="text-yellow-500 text-2xl animate-pulse" />
+                  <span className="text-sm font-semibold text-blue-600 uppercase tracking-wider">
+                    Vietnam's #1 Platform
+                  </span>
+                  <HiSparkles className="text-yellow-500 text-2xl animate-pulse" />
+                </div>
 
-              <span className="block text-lg text-gray-600 font-light leading-relaxed max-w-2xl">
-                Find thousands of verified rooms, apartments, and affordable
-                rentals across Vietnam – quickly and easily
-              </span>
+                <h1 className="text-5xl md:text-7xl font-bold tracking-tight leading-tight">
+                  <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+                    Find Your
+                  </span>
+                  <br />
+                  <span className="bg-gradient-to-r from-gray-900 via-blue-800 to-purple-800 bg-clip-text text-transparent">
+                    Perfect Room
+                  </span>
+                </h1>
+
+                <p className="text-xl lg:text-2xl text-gray-600 font-light leading-relaxed max-w-3xl mx-auto">
+                  Discover thousands of{" "}
+                  <span className="text-blue-600 font-semibold">
+                    verified rooms
+                  </span>
+                  , apartments, and affordable rentals across Vietnam
+                </p>
+
+                {/* Stats Cards */}
+                <div className="grid grid-cols-3 gap-4 mt-12 max-w-2xl mx-auto">
+                  <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-6 border border-white/20 shadow-lg">
+                    <div className="text-3xl font-bold text-blue-600">10K+</div>
+                    <div className="text-sm text-gray-600">Rooms</div>
+                  </div>
+                  <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-6 border border-white/20 shadow-lg">
+                    <div className="text-3xl font-bold text-purple-600">63</div>
+                    <div className="text-sm text-gray-600">Provinces</div>
+                  </div>
+                  <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-6 border border-white/20 shadow-lg">
+                    <div className="text-3xl font-bold text-pink-600">99%</div>
+                    <div className="text-sm text-gray-600">Verified</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* VIP Rooms Section */}
+              <div className="w-full space-y-8">
+                <div className="text-center">
+                  <div className="flex items-center justify-center gap-3 mb-4">
+                    <HiSparkles className="text-yellow-500 text-2xl" />
+                    <h3 className="text-3xl font-bold bg-gradient-to-r from-yellow-500 to-orange-500 bg-clip-text text-transparent">
+                      Premium Listings
+                    </h3>
+                    <HiSparkles className="text-yellow-500 text-2xl" />
+                  </div>
+                  <p className="text-gray-600">
+                    Hand-picked premium rooms for the discerning renter
+                  </p>
+                </div>
+              </div>
               <div className="flex flex-col items-center w-full gap-4">
-                <h3 className="w-full text-xl font-semibold text-left">
-                  Highlighted Post
-                </h3>
                 <div className="flex flex-wrap items-start justify-center w-full gap-4 md:gap-6 lg:gap-8">
                   {roomVips.data.map((room, index) => (
                     <div
@@ -319,12 +373,14 @@ export default async function RentalRooms({
       </div>
       {isEmptyFilter && (
         <div className="flex flex-col items-center justify-center w-full gap-4 px-2 sm:px-4 my-6 max-w-7xl">
-          <h3 className="w-full text-2xl font-semibold text-center">
-            Featured Listings
-          </h3>
-          <h5 className="w-full mb-3 font-normal text-center text-md">
-            Some description about the featured listings
-          </h5>
+          <div className="text-center space-y-6 mb-16">
+            <h3 className="text-4xl font-bold bg-gradient-to-r from-gray-800 to-blue-600 bg-clip-text text-transparent">
+              Featured Properties
+            </h3>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              Discover our most popular and highly-rated rental properties
+            </p>
+          </div>
           <div
             id="normal-rooms-list"
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 lg:gap-4 w-full"
