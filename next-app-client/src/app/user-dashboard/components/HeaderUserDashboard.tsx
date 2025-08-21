@@ -139,10 +139,10 @@ export default function HeaderUserDashboard() {
               <Image
                 src="/images/logo-ant.png"
                 alt="JustHome"
-                width={32}
-                height={32}
+                width={48}
+                height={48}
                 priority
-                className="relative object-contain w-auto h-7 brightness-0 invert transition-transform duration-300 group-hover:scale-110"
+                className="relative object-contain w-auto h-10 brightness-0 invert transition-transform duration-300 group-hover:scale-110"
               />
             </div>
             <div className="hidden sm:block">
