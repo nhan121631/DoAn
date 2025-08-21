@@ -86,7 +86,6 @@ export async function updatePreferences(
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${session.user.accessToken}`,
     },
     body: JSON.stringify({ userId, ...preferences }),
   });

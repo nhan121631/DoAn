@@ -39,11 +39,11 @@ export default function RoomVipCard({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 30 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ amount: 0.18 }}
-      transition={{ duration: 0.85, ease: [0.22, 0.61, 0.36, 1] }}
-      className="hover:border-blue-400"
+      initial={{ opacity: 0, y: 30 }} // mờ, trượt nhẹ lên
+      whileInView={{ opacity: 1, y: 0 }}  // hiện, về đúng vị trí
+      viewport={{ once:true, amount: 0.18 }} // once: true để chỉ chạy một lần khi vào view
+      transition={{ duration: 0.85, ease: [0.22, 0.61, 0.36, 1] }} // cubic-bezier mượt
+      className=" hover:border-emerald-400"
       style={{ willChange: "transform, box-shadow, border-color, background" }}
     >
       <div

@@ -284,8 +284,8 @@ export type Roomname = {
 // User Search Preferences
 export type UserSearchPreferences = {
   searchAddress: string;
-  desiredMinPrice?: number;
-  desiredMaxPrice?: number;
+  // desiredMinPrice?: number;
+  // desiredMaxPrice?: number;
 };
 
 export type SearchParamsType = { [key: string]: string | string[] | undefined };

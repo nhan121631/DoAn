@@ -7,6 +7,7 @@ import LandlordListCard from "./components/landlord";
 import RentalRooms, {
   RentalRoomsSearchParams,
 } from "./components/rental_rooms";
+import ScrollToResults from "./components/ScrollToResults";
 import WhyChooseUsSection from "./components/WhyChooseUsSection";
 
 export default async function UsersPage({
@@ -27,9 +28,6 @@ export default async function UsersPage({
   return (
     <div className="flex flex-col items-center justify-center min-h-screen">
       <RentalRooms searchParams={normalizedParams as RentalRoomsSearchParams} />
-      <WhyChooseUsSection />
-      <LandlordListCard />
-      <ContactPage />
       <BackToTop />
       <CompareRoom />
       <Chatbot />
