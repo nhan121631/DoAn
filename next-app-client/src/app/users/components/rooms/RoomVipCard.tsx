@@ -42,14 +42,14 @@ export default function RoomVipCard({
       style={{ willChange: "transform, box-shadow, border-color, background" }}
     >
       <div
-        className="overflow-hidden shadow-lg bg-white border border-slate-200 mx-auto w-[790px] min-w-[320px] transition-all duration-300 group/card flex flex-col sm:flex-row sm:items-stretch relative cursor-pointer hover:shadow-xl hover:border-cyan-400 hover:scale-[1.01] rounded-2xl"
+        className="overflow-hidden shadow-lg bg-white border border-slate-200 mx-auto transition-all duration-300 group/card flex flex-col sm:flex-row sm:items-stretch relative cursor-pointer hover:shadow-xl hover:border-cyan-400 hover:scale-[1.01] rounded-2xl w-full"
         style={{
           willChange: "transform, box-shadow, border-color, background",
         }}
       >
         {/* IMAGE SECTION */}
         <RoomCartActionsWrapper room={room}>
-          <div className="flex flex-col gap-2 p-4 w-full sm:w-[34%] min-w-[200px] max-w-[280px] bg-gradient-to-br from-cyan-50 via-slate-50 to-cyan-100/50 justify-between items-center h-full pb-24 rounded-l-2xl">
+          <div className="flex flex-col gap-2 p-4 w-full sm:w-[34%] min-w-[200px] bg-gradient-to-br from-cyan-50 via-slate-50 to-cyan-100/50 justify-between items-center h-full pb-24 rounded-l-2xl">
             {/* Ảnh lớn */}
             <div className="relative rounded-xl overflow-hidden group/image-main w-full min-h-[180px] max-h-[220px] h-auto shadow-lg mb-3 border border-cyan-100 flex items-center justify-center bg-white">
               <Image

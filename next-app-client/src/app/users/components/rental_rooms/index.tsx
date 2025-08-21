@@ -163,17 +163,16 @@ export default async function RentalRooms({
 
                 <div
                   id="normal-rooms-list"
-                  className="flex flex-wrap items-start justify-center w-full gap-4 md:gap-6 lg:gap-8"
+                  className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4 md:gap-6 lg:gap-4 w-full"
                 >
-                  {filteredRooms.data.map((room, index) => (
-                    <div
-                      key={index}
-                      className="basis-full max-w-full sm:basis-1/2 sm:max-w-1/2 lg:basis-1/3 lg:max-w-1/3 flex justify-center"
-                    >
+                  {roomNormals.data.map((room, index) => (
+                    <div key={index} className="flex justify-center">
                       <RoomCard
                         room={room}
                         isForSale={false}
                         isFeatured={false}
+                        isFavorite={initialFavoriteIds.includes(room.id)}
+                        // custom={index}
                       />
                     </div>
                   ))}

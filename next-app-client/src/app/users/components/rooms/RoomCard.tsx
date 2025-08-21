@@ -27,7 +27,7 @@ const RoomCard: React.FC<RoomCardProps> = ({
 }) => {
   return (
     <div
-      className="rounded-lg overflow-hidden shadow-lg bg-white relative group w-[320px] h-[370px] border border-gray-100 hover:shadow-2xl hover:-translate-y-1 hover:scale-[1.015] transition-all duration-300 cursor-pointer focus-within:ring-2 focus-within:ring-amber-400"
+      className="rounded-lg overflow-hidden shadow-lg bg-white relative group h-[370px] border border-gray-100 hover:shadow-2xl hover:-translate-y-1 hover:scale-[1.015] transition-all duration-300 cursor-pointer focus-within:ring-2 focus-within:ring-amber-400 w-full"
       style={{ willChange: "transform, box-shadow, border-color, background" }}
     >
       {/* Ảnh nền */}
