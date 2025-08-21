@@ -84,7 +84,7 @@ export default function RoomVipCard({
               priority
               style={{ objectFit: 'cover', width: '100%', height: '100%' }}
             />
-            <div className="absolute flex items-center gap-1 px-2 py-1 text-xs text-white rounded left-2 bottom-2 bg-black/60 shadow">
+            <div className="absolute flex items-center gap-1 px-2 py-1 text-xs text-white rounded shadow left-2 bottom-2 bg-black/60">
               <IoCameraOutline className="text-base" />
               {room.images?.length ?? 0}
             </div>
@@ -92,7 +92,7 @@ export default function RoomVipCard({
 
           {/* Nhóm ảnh nhỏ bên dưới */}
           {room.images && room.images.length > 1 && (
-            <div className="flex flex-row gap-2 w-full justify-center">
+            <div className="flex flex-row justify-center w-full gap-2">
               {room.images.slice(1, 4).map((img, idx) => {
                 const isLast = idx === 2 && room.images.length > 4;
                 if (isLast) {
@@ -142,12 +142,12 @@ export default function RoomVipCard({
       <div className="p-5 flex flex-col gap-2 min-h-[120px] flex-1 sm:max-w-[700px] bg-white pb-24">
         {/* Tên phòng + sao */}
         <div className="flex flex-wrap items-center gap-2 mb-1">
-          <span className="text-xl text-yellow-400 drop-shadow font-bold">
+          <span className="text-xl font-bold text-yellow-400 drop-shadow">
             ★★★★★
           </span>
           <RoomCartActionsWrapper room={room}>
             <span
-              className="text-xl font-extrabold text-gray-900 uppercase break-words group-hover/card:text-emerald-600 transition-colors duration-200 line-clamp-2 text-ellipsis"
+              className="text-xl font-extrabold text-gray-900 uppercase break-words transition-colors duration-200 group-hover/card:text-emerald-600 line-clamp-2 text-ellipsis"
               style={{
                 display: '-webkit-box',
                 WebkitLineClamp: 2,
@@ -242,20 +242,20 @@ export default function RoomVipCard({
           {room.description && room.description.trim().length > 0 ? (
             room.description.replace(/\n+/g, ' ').replace(/\s+/g, ' ').trim()
           ) : (
-            <span className="text-gray-400 italic">Không có mô tả cho phòng này.</span>
+            <span className="italic text-gray-400">Không có mô tả cho phòng này.</span>
           )}
         </div>
       </div>
 
       {/* Thông tin người đăng - luôn nằm dưới cùng card */}
-      <div className="absolute left-0 bottom-0 w-full flex items-center gap-4 border-t border-gray-100 bg-emerald-50/60 px-4 py-3 rounded-b-2xl z-10">
+      <div className="absolute bottom-0 left-0 z-10 flex items-center w-full gap-4 px-4 py-3 border-t border-gray-100 bg-emerald-50/60 rounded-b-2xl">
         <Image
           src="/images/useravt.png"
           alt="Avatar"
           width={44}
           height={44}
           style={{ width: 44, height: 44 }}
-          className="border-2 border-emerald-200 rounded-full shadow-sm"
+          className="border-2 rounded-full shadow-sm border-emerald-200"
         />
         <div className="flex flex-col flex-1 min-w-0">
           <span className="font-semibold text-gray-800 truncate">
@@ -265,7 +265,7 @@ export default function RoomVipCard({
             {getRelativeTime(room.postStartDate)}
           </span>
         </div>
-        <span className="px-3 py-1 text-sm font-semibold rounded-full bg-emerald-100 text-emerald-700 shadow truncate">
+        <span className="px-3 py-1 text-sm font-semibold truncate rounded-full shadow bg-emerald-100 text-emerald-700">
           {room.landlord.landlordProfile.phoneNumber
             ? room.landlord.landlordProfile.phoneNumber
             : room.landlord.landlordProfile.email}

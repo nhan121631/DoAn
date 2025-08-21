@@ -161,7 +161,7 @@ export default function BookingForm({
       <Button
         type="primary"
         size="large"
-        className="w-full bg-blue-600 hover:bg-blue-700 border-blue-600 font-semibold"
+        className="w-full font-semibold bg-blue-600 border-blue-600 hover:bg-blue-700"
         onClick={showModal}
       >
         Book This Room
@@ -180,9 +180,9 @@ export default function BookingForm({
         width={500}
         centered
       >
-        <div className="mb-4 p-4 bg-gray-50 rounded-lg">
-          <h3 className="font-semibold text-gray-800 mb-2">{roomTitle}</h3>
-          <p className="text-green-600 font-bold">
+        <div className="p-4 mb-4 rounded-lg bg-gray-50">
+          <h3 className="mb-2 font-semibold text-gray-800">{roomTitle}</h3>
+          <p className="font-bold text-green-600">
             {priceMonth?.toLocaleString("vi-VN")} VND/month
           </p>
         </div>
@@ -196,7 +196,7 @@ export default function BookingForm({
               rentalMonths: 1,
             }}
           >
-            <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+            <div className="p-3 mb-4 border border-blue-200 rounded-lg bg-blue-50">
               <div className="flex items-center gap-2 mb-2">
                 <CalendarOutlined className="text-blue-600" />
                 <span className="font-medium text-gray-700">Rental Period</span>
@@ -241,7 +241,7 @@ export default function BookingForm({
             </Form.Item>
 
             {rentalEndDate && (
-              <div className="mb-4 p-3 bg-green-50 rounded-lg border border-green-200">
+              <div className="p-3 mb-4 border border-green-200 rounded-lg bg-green-50">
                 <div className="flex items-center gap-2 mb-1">
                   <CalendarOutlined className="text-green-600" />
                   <span className="font-medium text-gray-700">Total Cost</span>
