@@ -17,10 +17,13 @@ interface ButtonFavoriteProps {
   isFavorite?: boolean;
   onFavoriteChange?: (id: string) => void;
   showHeartOnly?: boolean;
-
 }
 
-export function ButtonForVipCard({ room, onFavoriteChange, showHeartOnly }: ButtonFavoriteProps) {
+export function ButtonForVipCard({
+  room,
+  onFavoriteChange,
+  showHeartOnly,
+}: ButtonFavoriteProps) {
   const { items, addItem } = useCompareStore((state) => state);
   const [isCompared, setIsCompared] = useState(false);
   const [messageApi, contextHolder] = message.useMessage();
@@ -53,45 +56,49 @@ export function ButtonForVipCard({ room, onFavoriteChange, showHeartOnly }: Butt
       router.push("/auth/login");
       return;
     }
-  setLoading(true);
-  try {
-    const res = await fetch(
-      `/api/favorites/rooms/${room.id}`,
-      { method: isFavorite ? "DELETE" : "POST" }
-    );
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/favorites/rooms/${room.id}`, {
+        method: isFavorite ? "DELETE" : "POST",
+      });
 
-    if (res.ok) {
-      if (isFavorite) {
-        removeFavorite(room.id);
-        if (onFavoriteChange) onFavoriteChange(room.id);
-        messageApi.success("Removed from favorites");
+      if (res.ok) {
+        if (isFavorite) {
+          removeFavorite(room.id);
+          if (onFavoriteChange) onFavoriteChange(room.id);
+          messageApi.success("Removed from favorites");
+        } else {
+          addFavorite(room.id);
+          messageApi.success("Added to favorites");
+        }
       } else {
-        addFavorite(room.id);
-        messageApi.success("Added to favorites");
+        throw new Error("Failed to update favorite status");
       }
-    } else {
-      throw new Error("Failed to update favorite status");
+    } catch (error) {
+      messageApi.error("Failed to update favorite status");
+    } finally {
+      setLoading(false);
     }
-  } catch (error) {
-    messageApi.error("Failed to update favorite status");
-  } finally {
-    setLoading(false);
-  }
-};
-if (showHeartOnly) {
+  };
+  if (showHeartOnly) {
     return (
       <>
         {contextHolder}
         <button
           aria-label="Favorite"
-          className={`transition-colors p-2 rounded-full bg-white/70 backdrop-blur-sm
-          ${isFavorite ? "text-red-500" : "text-gray-400 hover:text-red-500"} 
+          className={`transition-all duration-200 p-2 rounded-full border border-gray-200 bg-white/80 shadow-sm hover:shadow-md focus:ring-2 focus:ring-blue-200
+          ${
+            isFavorite
+              ? "text-red-500 bg-red-50 border-red-200"
+              : "text-gray-400 hover:text-red-500 hover:border-red-300"
+          }
           ${loading ? "opacity-60 cursor-not-allowed" : ""}`}
           onClick={handleFavorite}
           disabled={loading}
           type="button"
+          title={isFavorite ? "Remove from favorites" : "Add to favorites"}
         >
-          <FaHeart size={22} />
+          <FaHeart size={20} />
         </button>
       </>
     );
@@ -101,32 +108,41 @@ if (showHeartOnly) {
     <>
       {contextHolder}
       <button
-      aria-label="Favorite"
-      className={`transition-colors ${isFavorite ? "text-red-500" : "text-gray-400 hover:text-red-500"}`}
-      onClick={handleFavorite}
-      disabled={loading}
-      type="button"
-    >
-      <FaHeart size={22} />
-    </button>
+        aria-label="Favorite"
+        className={`transition-all duration-200 p-2 rounded-full border border-gray-200 bg-white/80 shadow-sm hover:shadow-md focus:ring-2 focus:ring-blue-200
+        ${
+          isFavorite
+            ? "text-red-500 bg-red-50 border-red-200"
+            : "text-gray-400 hover:text-red-500 hover:border-red-300"
+        }
+        ${loading ? "opacity-60 cursor-not-allowed" : ""}`}
+        onClick={handleFavorite}
+        disabled={loading}
+        type="button"
+        title={isFavorite ? "Remove from favorites" : "Add to favorites"}
+        style={{ marginRight: 8 }}
+      >
+        <FaHeart size={20} />
+      </button>
       <button
-        className={`flex items-center justify-center gap-2 px-5 py-2 rounded-full shadow-sm border border-gray-200 font-semibold text-base transition-all duration-200
+        className={`flex items-center justify-center gap-2 px-4 py-2 rounded-full shadow-sm border font-semibold text-base transition-all duration-200
           ${
             isCompared
               ? "bg-gray-100 text-gray-400 border-gray-200 opacity-60 cursor-not-allowed"
-              : "bg-blue-500 text-white border-blue-500 hover:bg-white hover:text-blue-600 hover:border-blue-400 active:scale-95"
+              : "bg-blue-600 text-white border-blue-600 hover:bg-white hover:text-blue-600 hover:border-blue-400 active:scale-95"
           }
         `}
         onClick={handleCompare}
         disabled={isCompared}
         type="button"
         style={{ minWidth: 110 }}
+        title={isCompared ? "Already in compare list" : "Compare this room"}
       >
         <span className="flex items-center">
           {isCompared ? (
-            <FaRegCheckCircle size={20} />
+            <FaRegCheckCircle size={18} />
           ) : (
-            <IoIosAddCircleOutline size={22} />
+            <IoIosAddCircleOutline size={20} />
           )}
         </span>
         <span>Compare</span>
@@ -134,6 +150,3 @@ if (showHeartOnly) {
     </>
   );
 }
-
-
-

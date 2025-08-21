@@ -42,7 +42,7 @@ export default function RoomVipCard({
       style={{ willChange: "transform, box-shadow, border-color, background" }}
     >
       <div
-        className="overflow-hidden shadow-lg bg-white border border-slate-200 mx-auto w-[790px] min-w-[320px] transition-all duration-300 group/card flex flex-col sm:flex-row sm:items-stretch relative cursor-pointer hover:shadow-xl hover:border-cyan-400 hover:scale-[1.01] rounded-2xl"
+        className="overflow-hidden shadow-lg bg-white border border-slate-200 mx-auto w-[780px] min-w-[320px] transition-all duration-300 group/card flex flex-col sm:flex-row sm:items-stretch relative cursor-pointer hover:shadow-xl hover:border-cyan-400 hover:scale-[1.01] rounded-2xl"
         style={{
           willChange: "transform, box-shadow, border-color, background",
         }}
@@ -65,7 +65,7 @@ export default function RoomVipCard({
                 priority
                 style={{ objectFit: "cover", width: "100%", height: "100%" }}
               />
-              <div className="absolute flex items-center gap-1 px-3 py-1.5 text-xs text-white rounded-lg left-3 bottom-3 bg-cyan-900/90 backdrop-blur-sm shadow-lg border border-cyan-700/50">
+              <div className="absolute flex items-center gap-1 px-3 py-1.5 text-xs text-white rounded-lg left-3 bottom-3 bg-cyan-900/80 backdrop-blur-sm shadow-lg border border-cyan-700/50">
                 <IoCameraOutline className="text-sm" />
                 {room.images?.length ?? 0}
               </div>
@@ -92,8 +92,9 @@ export default function RoomVipCard({
                           fill
                           className="object-cover w-full h-full opacity-60"
                           sizes="72px"
+                          priority
                         />
-                        <span className="absolute inset-0 flex items-center justify-center text-sm font-bold text-white bg-cyan-900/80 backdrop-blur-sm">
+                        <span className="absolute inset-0 flex items-center justify-center text-sm font-bold text-white bg-cyan-900/60">
                           +{room.images.length - 3}
                         </span>
                       </div>
@@ -243,24 +244,24 @@ export default function RoomVipCard({
         </div>
 
         {/* Thông tin người đăng - Modern footer */}
-        <div className="absolute left-0 bottom-0 w-full flex items-center gap-4 border-t border-cyan-100 bg-gradient-to-r from-cyan-50/90 to-slate-50/80 backdrop-blur-sm px-5 py-4 rounded-b-2xl z-10">
+        <div className="absolute left-0 bottom-0 w-full flex flex-wrap items-center gap-4 border-t border-cyan-100 bg-gradient-to-r from-white/95 to-cyan-50/80 backdrop-blur-md px-6 py-4 rounded-b-2xl z-10 shadow-[0_-2px_16px_0_rgba(0,180,216,0.04)]">
           <Image
             src="/images/useravt.png"
             alt="Avatar"
-            width={44}
-            height={44}
-            style={{ width: 44, height: 44 }}
-            className="border-2 border-cyan-200 rounded-full shadow-md"
+            width={48}
+            height={48}
+            style={{ width: 48, height: 48 }}
+            className="border-2 border-cyan-300 rounded-full shadow-lg object-cover"
           />
           <div className="flex flex-col flex-1 min-w-0">
-            <span className="font-semibold text-slate-800 truncate">
+            <span className="font-semibold text-slate-900 text-base truncate leading-tight">
               {room.landlord.landlordProfile.fullName}
             </span>
-            <span className="text-xs text-slate-500 truncate">
+            <span className="text-xs text-slate-400 truncate mt-0.5">
               {getRelativeTime(room.postStartDate)}
             </span>
           </div>
-          <span className="px-3 py-1.5 text-sm font-medium rounded-full bg-purple-100 text-purple-700 shadow-sm truncate border border-purple-200">
+          <span className="px-3 py-1.5 text-sm font-semibold rounded-full bg-gradient-to-r from-purple-100 to-pink-50 text-purple-700 shadow border border-purple-200 tracking-wide select-all transition-all duration-200 hover:bg-purple-200/80 hover:text-purple-900">
             {room.landlord.landlordProfile.phoneNumber
               ? room.landlord.landlordProfile.phoneNumber
               : room.landlord.landlordProfile.email}

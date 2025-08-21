@@ -18,7 +18,7 @@ import {
   EnvironmentOutlined,
   InfoCircleOutlined,
   SaveOutlined,
-  AimOutlined,
+  // AimOutlined,
 } from "@ant-design/icons";
 
 type SelectOption = {
