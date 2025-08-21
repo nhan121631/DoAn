@@ -75,7 +75,6 @@ export default function FavoriteRoomList() {
 
   return (
     <div className="flex flex-col w-full">
-      {/* Sửa lại CSS để hiển thị danh sách theo chiều dọc và có khoảng cách */}
       <div className="flex flex-col w-full gap-6">
         {rooms.map((room) => {
           const isFavorite = favoriteRoomIds.has(room.id);
@@ -99,7 +98,6 @@ export default function FavoriteRoomList() {
         })}
       </div>
       
-      {/* Phân trang */}
       {/* <div className="flex items-center justify-center gap-4 py-6">
         <button
           onClick={() => handlePageChange(currentPage - 1)}
