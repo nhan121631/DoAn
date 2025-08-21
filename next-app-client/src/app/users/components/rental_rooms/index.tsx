@@ -140,28 +140,33 @@ export default async function RentalRooms({
         className="flex flex-col w-full mx-auto bg-white max-w-7xl lg:flex-row lg:gap-x-2"
       >
         {/* Main Content */}
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0 px-2 sm:px-4 md:px-6">
           {!isEmptyFilter ? (
             filteredRooms.data.length > 0 ? (
-              <div className="flex flex-col items-center w-full gap-4 px-4 my-8 bg-white max-w-7xl lg:px-0 lg:w-auto">
+              <div className="flex flex-col items-center w-full gap-4 px-2 sm:px-4 my-8 bg-white max-w-7xl lg:px-0 lg:w-auto">
                 <h1 className="w-full text-2xl font-bold text-left">
                   The room you&#39;re looking for
                 </h1>
+
                 <span className="w-full italic text-left">
                   We found {filteredRooms.totalRecords} rooms matching your
                   search criteria
                 </span>
                 <div
                   id="normal-rooms-list"
-                  className="flex flex-wrap items-start justify-center w-full gap-8"
+                  className="flex flex-wrap items-start justify-center w-full gap-4 md:gap-6 lg:gap-8"
                 >
                   {filteredRooms.data.map((room, index) => (
-                    <RoomCard
+                    <div
                       key={index}
-                      room={room}
-                      isForSale={false}
-                      isFeatured={false}
-                    />
+                      className="basis-full max-w-full sm:basis-1/2 sm:max-w-1/2 lg:basis-1/3 lg:max-w-1/3 flex justify-center"
+                    >
+                      <RoomCard
+                        room={room}
+                        isForSale={false}
+                        isFeatured={false}
+                      />
+                    </div>
                   ))}
                 </div>
                 {/* Previous Button */}
@@ -212,11 +217,16 @@ export default async function RentalRooms({
               <NoLookingForFilter />
             )
           ) : (
-            <div className="flex flex-col items-center w-full gap-4 px-4 my-8 bg-white max-w-7xl lg:px-0 lg:w-auto">
-              <h1 className="w-full text-2xl font-bold text-left">
-                Vietnam’s No.1 Rental Room Platform
+            <div className="flex flex-col items-center w-full gap-4 px-2 sm:px-4 my-8 bg-white max-w-7xl lg:px-0 lg:w-auto">
+              <h1
+                className="text-3xl md:text-4xl font-semibold tracking-tight text-gray-900 
+                 bg-gradient-to-r from-slate-900 via-blue-900 to-slate-800 
+                 bg-clip-text text-transparent leading-tight"
+              >
+                Vietnam's No.1 Rental Room Platform
               </h1>
-              <span className="w-full italic text-left">
+
+              <span className="block text-lg text-gray-600 font-light leading-relaxed max-w-2xl">
                 Find thousands of verified rooms, apartments, and affordable
                 rentals across Vietnam – quickly and easily
               </span>
@@ -224,15 +234,19 @@ export default async function RentalRooms({
                 <h3 className="w-full text-xl font-semibold text-left">
                   Highlighted Post
                 </h3>
-                <div className="flex flex-col items-center w-full gap-4">
+                <div className="flex flex-wrap items-start justify-center w-full gap-4 md:gap-6 lg:gap-8">
                   {roomVips.data.map((room, index) => (
-                    <RoomVipCard
+                    <div
                       key={index}
-                      room={room}
-                      isFavorite={initialFavoriteIds.includes(room.id)}
-                    />
+                      className="basis-full w-full max-w-xs sm:max-w-1/2  lg:max-w-none flex justify-center"
+                    >
+                      <RoomVipCard
+                        room={room}
+                        isFavorite={initialFavoriteIds.includes(room.id)}
+                      />
+                    </div>
                   ))}
-                  <div className="flex items-center justify-center gap-4 mt-8">
+                  <div className="flex flex-wrap items-center justify-center gap-4 mt-8">
                     {/* Previous Button */}
                     <Link
                       href={`?page=${page - 1}#rental-rooms`}
@@ -279,21 +293,32 @@ export default async function RentalRooms({
             </div>
           )}
         </div>
-        {/* Sidebar - always fixed on the right */}
-        <div className="w-full lg:w-[350px] flex flex-col items-center">
-          <div className="hidden lg:block">
+        {/* Sidebar - responsive: below main on mobile, right on desktop */}
+        <div className="w-full mt-6 lg:mt-0 lg:w-[350px] flex flex-col items-center">
+          {/* Mobile: show sidebar below main content */}
+          <div className="block lg:hidden w-full max-w-md mx-auto mb-4">
             <CardFilter />
           </div>
-          <div className="mt-3 hidden lg:block">
+          <div className="block lg:hidden w-full max-w-md mx-auto mb-4">
             <FilterForm />
           </div>
-          <div className="w-[80%] lg:w-[300px]">
+          <div className="block lg:hidden w-full max-w-md mx-auto mb-4">
             <FeaturedListingsCard />
+          </div>
+          {/* Desktop: sidebar on the right */}
+          <div className="hidden lg:block w-full">
+            <CardFilter />
+            <div className="mt-3">
+              <FilterForm />
+            </div>
+            <div className="w-[80%] lg:w-[300px] mt-3">
+              <FeaturedListingsCard />
+            </div>
           </div>
         </div>
       </div>
       {isEmptyFilter && (
-        <div className="flex flex-col items-center justify-center w-full gap-4 px-4 my-6 max-w-7xl">
+        <div className="flex flex-col items-center justify-center w-full gap-4 px-2 sm:px-4 my-6 max-w-7xl">
           <h3 className="w-full text-2xl font-semibold text-center">
             Featured Listings
           </h3>
@@ -302,17 +327,18 @@ export default async function RentalRooms({
           </h5>
           <div
             id="normal-rooms-list"
-            className="flex flex-wrap items-start justify-center w-full gap-8"
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 lg:gap-4 w-full"
           >
             {roomNormals.data.map((room, index) => (
-              <RoomCard
-                key={index}
-                room={room}
-                isForSale={false}
-                isFeatured={false}
-                isFavorite={initialFavoriteIds.includes(room.id)}
-                // custom={index}
-              />
+              <div key={index} className="flex justify-center">
+                <RoomCard
+                  room={room}
+                  isForSale={false}
+                  isFeatured={false}
+                  isFavorite={initialFavoriteIds.includes(room.id)}
+                  // custom={index}
+                />
+              </div>
             ))}
           </div>
           <div className="flex items-center justify-center gap-4 mt-8">

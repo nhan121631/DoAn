@@ -1,7 +1,7 @@
 "use client";
 
 import { URL_IMAGE } from "@/services/Constant";
-import { RoomInUser } from "@/types/types";
+import type { RoomInUser } from "@/types/types";
 import Image from "next/image";
 import { IoCameraOutline } from "react-icons/io5";
 import { ButtonForVipCard } from "./ButtonForVipCard";
@@ -36,23 +36,22 @@ export default function RoomVipCard({
   const showConveniences = conveniences.slice(0, maxShow);
   const moreCount = conveniences.length - maxShow;
 
-  // BỎ motion, chỉ trả về div thường
   return (
     <div
-      className="hover:border-emerald-400"
+      className="hover:border-cyan-400"
       style={{ willChange: "transform, box-shadow, border-color, background" }}
     >
       <div
-        className="overflow-hidden shadow-lg bg-white border border-slate-200 mx-auto w-[790px] min-w-[320px] transition-all duration-300 group/card flex flex-col sm:flex-row sm:items-stretch relative cursor-pointer hover:shadow-2xl hover:border-blue-400 hover:scale-[1.015]"
+        className="overflow-hidden shadow-lg bg-white border border-slate-200 mx-auto w-[790px] min-w-[320px] transition-all duration-300 group/card flex flex-col sm:flex-row sm:items-stretch relative cursor-pointer hover:shadow-xl hover:border-cyan-400 hover:scale-[1.01] rounded-2xl"
         style={{
           willChange: "transform, box-shadow, border-color, background",
         }}
       >
         {/* IMAGE SECTION */}
         <RoomCartActionsWrapper room={room}>
-          <div className="flex flex-col gap-2 p-3 w-full sm:w-[34%] min-w-[200px] max-w-[280px] bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 justify-between items-center h-full pb-24">
+          <div className="flex flex-col gap-2 p-4 w-full sm:w-[34%] min-w-[200px] max-w-[280px] bg-gradient-to-br from-cyan-50 via-slate-50 to-cyan-100/50 justify-between items-center h-full pb-24 rounded-l-2xl">
             {/* Ảnh lớn */}
-            <div className="relative rounded-2xl overflow-hidden group/image-main w-full min-h-[180px] max-h-[220px] h-auto shadow-md mb-2 border border-slate-200 flex items-center justify-center bg-white">
+            <div className="relative rounded-xl overflow-hidden group/image-main w-full min-h-[180px] max-h-[220px] h-auto shadow-lg mb-3 border border-cyan-100 flex items-center justify-center bg-white">
               <Image
                 src={
                   room.images && room.images.length > 0
@@ -66,7 +65,7 @@ export default function RoomVipCard({
                 priority
                 style={{ objectFit: "cover", width: "100%", height: "100%" }}
               />
-              <div className="absolute flex items-center gap-1 px-2.5 py-1 text-xs text-white rounded-lg left-2 bottom-2 bg-slate-900/80 backdrop-blur-sm shadow-lg">
+              <div className="absolute flex items-center gap-1 px-3 py-1.5 text-xs text-white rounded-lg left-3 bottom-3 bg-cyan-900/90 backdrop-blur-sm shadow-lg border border-cyan-700/50">
                 <IoCameraOutline className="text-sm" />
                 {room.images?.length ?? 0}
               </div>
@@ -81,7 +80,7 @@ export default function RoomVipCard({
                     return (
                       <div
                         key={idx}
-                        className="relative flex-1 aspect-[1/1] max-w-[72px] rounded-xl overflow-hidden group/image-thumb shadow-md flex items-center justify-center bg-slate-200 cursor-pointer border border-slate-200"
+                        className="relative flex-1 aspect-[1/1] max-w-[72px] rounded-lg overflow-hidden group/image-thumb shadow-md flex items-center justify-center bg-slate-200 cursor-pointer border border-cyan-200"
                       >
                         <Image
                           src={
@@ -94,7 +93,7 @@ export default function RoomVipCard({
                           className="object-cover w-full h-full opacity-60"
                           sizes="72px"
                         />
-                        <span className="absolute inset-0 flex items-center justify-center text-sm font-bold text-white bg-slate-900/70 backdrop-blur-sm">
+                        <span className="absolute inset-0 flex items-center justify-center text-sm font-bold text-white bg-cyan-900/80 backdrop-blur-sm">
                           +{room.images.length - 3}
                         </span>
                       </div>
@@ -103,7 +102,7 @@ export default function RoomVipCard({
                   return (
                     <div
                       key={idx}
-                      className="relative flex-1 aspect-[1/1] max-w-[72px] rounded-xl overflow-hidden group/image-thumb shadow-md border border-slate-200"
+                      className="relative flex-1 aspect-[1/1] max-w-[72px] rounded-lg overflow-hidden group/image-thumb shadow-md border border-cyan-200"
                     >
                       <Image
                         src={
@@ -125,15 +124,15 @@ export default function RoomVipCard({
         </RoomCartActionsWrapper>
 
         {/* CONTENT SECTION */}
-        <div className="p-5 flex flex-col gap-2 min-h-[120px] flex-1 sm:max-w-[700px] bg-white pb-24">
+        <div className="p-6 flex flex-col gap-3 min-h-[120px] flex-1 sm:max-w-[700px] bg-white pb-24">
           {/* Tên phòng + sao */}
-          <div className="flex flex-wrap items-center gap-2 mb-1">
-            <span className="text-xl text-amber-400 drop-shadow-sm font-bold">
+          <div className="flex flex-wrap items-center gap-3 mb-2">
+            <span className="text-lg text-amber-500 drop-shadow-sm font-bold">
               ★★★★★
             </span>
             <RoomCartActionsWrapper room={room}>
               <span
-                className="text-xl font-bold text-slate-800 uppercase break-words group-hover/card:text-blue-600 transition-colors duration-200 line-clamp-2 text-ellipsis"
+                className="text-xl font-bold text-slate-800 uppercase break-words group-hover/card:text-cyan-700 transition-colors duration-200 line-clamp-2 text-ellipsis"
                 style={{
                   display: "-webkit-box",
                   WebkitLineClamp: 2,
@@ -153,14 +152,14 @@ export default function RoomVipCard({
 
           {/* Giá - Diện tích - Địa chỉ */}
           <div className="flex flex-wrap items-center max-w-full gap-4 text-base font-semibold">
-            <span className="truncate max-w-[120px] text-lg font-bold text-rose-600">
+            <span className="truncate max-w-[120px] text-xl font-bold text-emerald-600">
               {room.priceMonth.toLocaleString("en-US") + "đ"}
             </span>
             <span className="text-slate-600 font-medium truncate max-w-[80px]">
               • {room.area}m²
             </span>
             <a
-              className="text-blue-600 font-medium truncate max-w-[220px] hover:text-blue-700 underline underline-offset-2 cursor-pointer transition-colors duration-150"
+              className="text-cyan-600 font-medium truncate max-w-[220px] hover:text-cyan-700 underline underline-offset-2 cursor-pointer transition-colors duration-150"
               href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
                 `${room.address.street}, ${room.address.ward.name}, ${room.address.ward.district.name}, ${room.address.ward.district.province.name}`
               )}`}
@@ -176,11 +175,11 @@ export default function RoomVipCard({
 
           {/* Conveniences (Tiện ích) - Modern UI */}
           {conveniences.length > 0 && (
-            <div className="flex flex-wrap items-center gap-2 mb-2">
+            <div className="flex flex-wrap items-center gap-2 mb-3">
               {showConveniences.map((item: string, idx: number) => (
                 <span
                   key={idx}
-                  className="inline-flex items-center px-3 py-1.5 border border-blue-200 bg-blue-50 text-blue-700 text-xs font-medium rounded-full shadow-sm hover:bg-blue-100 hover:border-blue-300 transition-all duration-200 cursor-default"
+                  className="inline-flex items-center px-3 py-1.5 border border-cyan-200 bg-cyan-50 text-cyan-700 text-xs font-medium rounded-full shadow-sm hover:bg-cyan-100 hover:border-cyan-300 transition-all duration-200 cursor-default"
                   title={item}
                   style={{
                     minWidth: 60,
@@ -193,7 +192,7 @@ export default function RoomVipCard({
                     height="12"
                     viewBox="0 0 20 20"
                     fill="none"
-                    className="mr-1.5 text-blue-500"
+                    className="mr-1.5 text-cyan-500"
                     style={{ minWidth: 12 }}
                   >
                     <circle
@@ -222,7 +221,7 @@ export default function RoomVipCard({
 
           {/* Mô tả */}
           <div
-            className="max-w-full mb-2 text-[15px] text-slate-600 break-words line-clamp-3 text-ellipsis leading-relaxed px-1"
+            className="max-w-full mb-3 text-[15px] text-slate-600 break-words line-clamp-3 text-ellipsis leading-relaxed px-1"
             style={{
               minHeight: 45,
               display: "-webkit-box",
@@ -244,14 +243,14 @@ export default function RoomVipCard({
         </div>
 
         {/* Thông tin người đăng - Modern footer */}
-        <div className="absolute left-0 bottom-0 w-full flex items-center gap-4 border-t border-slate-100 bg-gradient-to-r from-slate-50/80 to-blue-50/40 backdrop-blur-sm px-4 py-3 rounded-b-2xl z-10">
+        <div className="absolute left-0 bottom-0 w-full flex items-center gap-4 border-t border-cyan-100 bg-gradient-to-r from-cyan-50/90 to-slate-50/80 backdrop-blur-sm px-5 py-4 rounded-b-2xl z-10">
           <Image
             src="/images/useravt.png"
             alt="Avatar"
             width={44}
             height={44}
             style={{ width: 44, height: 44 }}
-            className="border-2 border-blue-200 rounded-full shadow-md"
+            className="border-2 border-cyan-200 rounded-full shadow-md"
           />
           <div className="flex flex-col flex-1 min-w-0">
             <span className="font-semibold text-slate-800 truncate">
@@ -261,7 +260,7 @@ export default function RoomVipCard({
               {getRelativeTime(room.postStartDate)}
             </span>
           </div>
-          <span className="px-3 py-1.5 text-sm font-medium rounded-full bg-indigo-100 text-indigo-700 shadow-sm truncate border border-indigo-200">
+          <span className="px-3 py-1.5 text-sm font-medium rounded-full bg-purple-100 text-purple-700 shadow-sm truncate border border-purple-200">
             {room.landlord.landlordProfile.phoneNumber
               ? room.landlord.landlordProfile.phoneNumber
               : room.landlord.landlordProfile.email}
