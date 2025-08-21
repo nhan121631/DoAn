@@ -209,9 +209,7 @@ export default function FilterForm() {
   return (
     <div className={`w-[320px] space-y-4 ${styles.animateFadeIn}`}>
       {/* Advanced Filters Section */}
-      <div
-        className={`bg-white rounded-2xl shadow-lg p-6 ${styles.animateSlideInUp}`}
-      >
+      <div className={`bg-white shadow-lg p-6 ${styles.animateSlideInUp}`}>
         {/* Header */}
         <div className="flex items-center gap-3 mb-6">
           <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-lg flex items-center justify-center">
@@ -309,7 +307,7 @@ export default function FilterForm() {
 
       {/* Amenities Section */}
       <div
-        className={`bg-white rounded-2xl shadow-lg p-6 ${styles.animateSlideInUp} ${styles.animationDelay600}`}
+        className={`bg-white shadow-lg p-6 ${styles.animateSlideInUp} ${styles.animationDelay600}`}
       >
         <div className="flex items-center gap-3 mb-4">
           <div className="w-6 h-6 bg-gradient-to-r from-orange-400 to-red-500 rounded-full flex items-center justify-center">

@@ -79,7 +79,7 @@ export default function CardFilter() {
 
   return (
     <div
-      className={`relative bg-white shadow-xl rounded-2xl p-6 w-[320px] overflow-hidden ${styles.animateFadeIn}`}
+      className={`relative bg-white shadow-xl p-6 w-[320px] overflow-hidden ${styles.animateFadeIn}`}
     >
       {/* Background Gradient */}
       <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-purple-50 opacity-60"></div>
