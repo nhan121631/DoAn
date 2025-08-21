@@ -219,7 +219,7 @@ export default async function RentalRooms({
           ) : (
             <div className="flex flex-col items-center w-full gap-4 px-2 sm:px-4 my-8 bg-white max-w-7xl lg:px-0 lg:w-auto">
               <h1
-                className="text-3xl md:text-4xl font-semibold tracking-tight text-gray-900 
+                className="text-3xl md:text-4xl font-semibold tracking-tight
                  bg-gradient-to-r from-slate-900 via-blue-900 to-slate-800 
                  bg-clip-text text-transparent leading-tight"
               >
