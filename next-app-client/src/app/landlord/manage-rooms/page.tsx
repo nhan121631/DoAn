@@ -194,10 +194,14 @@ function TableManageRoom() {
         const end = new Date(record.postEndDate);
         const isStillValid = start <= now && now <= end;
         const isRemoved = record.isRemoved === 1;
+        const isReject = record.approval === 2;
 
         // Nếu bài đã bị xóa hoặc vẫn còn hiệu lực thì không hiển thị nút Extend, thay vào đó hiển thị trạng thái phù hợp
         if (isRemoved) {
           return <Tag color="red">Removed</Tag>;
+        }
+        if (isReject) {
+          return <Tag color="orange">Rejected Post</Tag>
         }
         if (isStillValid) {
           return <Tag color="green">Still valid</Tag>;

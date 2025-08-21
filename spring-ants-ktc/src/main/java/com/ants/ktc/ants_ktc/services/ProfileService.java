@@ -271,10 +271,6 @@ public class ProfileService {
 
         /**
          * Tính khoảng cách từ user preferences đến địa chỉ của room (theo tọa độ)
-         * 
-         * @param userLatitude  Vĩ độ của user từ searchLatitude
-         * @param userLongitude Kinh độ của user từ searchLongitude
-         * @param roomAddress   Địa chỉ của room
          * @return Khoảng cách tính bằng km, hoặc Double.MAX_VALUE nếu không tính được
          */
         public double calculateDistanceToRoom(Double userLatitude, Double userLongitude, String roomAddressString) {
