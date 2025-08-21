@@ -147,6 +147,7 @@ export default async function RentalRooms({
                 <h1 className="w-full text-2xl font-bold text-left">
                   The room you&#39;re looking for
                 </h1>
+
                 <span className="w-full italic text-left">
                   We found {filteredRooms.totalRecords} rooms matching your
                   search criteria
@@ -217,10 +218,15 @@ export default async function RentalRooms({
             )
           ) : (
             <div className="flex flex-col items-center w-full gap-4 px-2 sm:px-4 my-8 bg-white max-w-7xl lg:px-0 lg:w-auto">
-              <h1 className="w-full text-2xl font-bold text-left">
-                Vietnam’s No.1 Rental Room Platform
+              <h1
+                className="text-3xl md:text-4xl font-semibold tracking-tight text-gray-900 
+                 bg-gradient-to-r from-slate-900 via-blue-900 to-slate-800 
+                 bg-clip-text text-transparent leading-tight"
+              >
+                Vietnam's No.1 Rental Room Platform
               </h1>
-              <span className="w-full italic text-left">
+
+              <span className="block text-lg text-gray-600 font-light leading-relaxed max-w-2xl">
                 Find thousands of verified rooms, apartments, and affordable
                 rentals across Vietnam – quickly and easily
               </span>
@@ -321,13 +327,10 @@ export default async function RentalRooms({
           </h5>
           <div
             id="normal-rooms-list"
-            className="flex flex-wrap items-start justify-center w-full gap-4 md:gap-6 lg:gap-8"
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 lg:gap-4 w-full"
           >
             {roomNormals.data.map((room, index) => (
-              <div
-                key={index}
-                className="basis-full max-w-full sm:basis-1/2 sm:max-w-1/2 lg:basis-1/3 lg:max-w-1/3 flex justify-center"
-              >
+              <div key={index} className="flex justify-center">
                 <RoomCard
                   room={room}
                   isForSale={false}
