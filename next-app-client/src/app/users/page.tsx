@@ -22,7 +22,7 @@ export default async function UsersPage({
     : undefined;
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen ">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-white">
       <RentalRooms searchParams={normalizedParams as RentalRoomsSearchParams} />
       <BackToTop />
       <CompareRoom />

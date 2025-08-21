@@ -12,14 +12,14 @@ type UsersLayoutProps = {
 
 export default function UsersLayout({ children }: UsersLayoutProps) {
   return (
-    <div className="min-h-screen flex flex-col bg-[#f5f5f5] items-center">
+    <div className="min-h-screen flex flex-col bg-white items-center">
       <HeaderUserDashboard />
 
       {/* Banner/Slider */}
       {/* <Banner /> */}
       <div className="flex flex-row w-full max-w-full justify-center relative">
-        {/* <AdsBanner position="left" /> */}
-        <main className="flex-1 mt-20 max-w-6xl mx-auto">{children}</main>
+        <AdsBanner position="left" />
+        <main className="flex-1 mt-5 max-w-6xl mx-auto">{children}</main>
         <AdsBanner position="right" />
       </div>
       <WhyChooseUsSection />

@@ -137,157 +137,149 @@ export default async function RentalRooms({
     <>
       <div
         id="rental-rooms"
-        className="flex flex-col justify-center w-full gap-0 mx-auto bg-gray-100 lg:flex-row max-w-7xl lg:gap-x-2"
+        className="flex flex-col w-full mx-auto bg-white max-w-7xl lg:flex-row lg:gap-x-2"
       >
-        {!isEmptyFilter ? (
-          filteredRooms.data.length > 0 ? (
-            <div className="flex flex-col items-center w-full gap-4 px-4 my-8 bg-gray-100 max-w-7xl lg:px-0 lg:w-auto">
-              <h1 className="w-full text-2xl font-bold text-left">
-                The room you&#39;re looking for
-              </h1>
-              <span className="w-full italic text-left">
-                We found {filteredRooms.totalRecords} rooms matching your search
-                criteria
-              </span>
-              <div
-                id="normal-rooms-list"
-                className="flex flex-wrap items-start justify-center w-full gap-8"
-              >
-                {filteredRooms.data.map((room, index) => (
-                  <RoomCard
-                    key={index}
-                    room={room}
-                    isForSale={false}
-                    isFeatured={false}
-
-                    //           isFavorite={favoriteRoomIds.includes(room.id)}
-                    // onFavoriteChange={handleFavoriteChange}
-                  />
-                ))}
-              </div>
-
-              {/* Previous Button */}
-              <div className="flex items-center justify-center gap-4 mt-8">
-                <Link
-                  href={buildFilterQuery(filters, pageSearch - 1)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-full font-medium border transition-all duration-200 shadow ${
-                    pageSearch === 0
-                      ? "text-gray-400 bg-gray-100 cursor-not-allowed pointer-events-none border-gray-200"
-                      : "text-blue-600 bg-white hover:bg-blue-50 hover:shadow-lg border-blue-300"
-                  }`}
-                  scroll={false}
-                  aria-disabled={pageSearch === 0}
+        {/* Main Content */}
+        <div className="flex-1 min-w-0">
+          {!isEmptyFilter ? (
+            filteredRooms.data.length > 0 ? (
+              <div className="flex flex-col items-center w-full gap-4 px-4 my-8 bg-white max-w-7xl lg:px-0 lg:w-auto">
+                <h1 className="w-full text-2xl font-bold text-left">
+                  The room you&#39;re looking for
+                </h1>
+                <span className="w-full italic text-left">
+                  We found {filteredRooms.totalRecords} rooms matching your
+                  search criteria
+                </span>
+                <div
+                  id="normal-rooms-list"
+                  className="flex flex-wrap items-start justify-center w-full gap-8"
                 >
-                  <BiChevronLeft size={20} />
-                  <span className="hidden sm:inline">Previous</span>
-                </Link>
-
-                {/* Page Info */}
-                <div className="flex flex-col items-center px-4">
-                  <span className="text-base font-semibold text-gray-700">
-                    Page <span className="text-blue-600">{pageSearch + 1}</span>{" "}
-                    /{" "}
-                    <span className="text-blue-600">
-                      {filteredRooms.totalPages}
-                    </span>
-                  </span>
-                  <span className="text-xs text-gray-400">
-                    {filteredRooms.totalPages} rooms found
-                  </span>
+                  {filteredRooms.data.map((room, index) => (
+                    <RoomCard
+                      key={index}
+                      room={room}
+                      isForSale={false}
+                      isFeatured={false}
+                    />
+                  ))}
                 </div>
-
-                {/* Next Button */}
-                <Link
-                  href={buildFilterQuery(filters, pageSearch + 1)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-full font-medium border transition-all duration-200 shadow ${
-                    pageSearch + 1 >= filteredRooms.totalPages
-                      ? "text-gray-400 bg-gray-100 cursor-not-allowed pointer-events-none border-gray-200"
-                      : "text-blue-600 bg-white hover:bg-blue-50 hover:shadow-lg border-blue-300"
-                  }`}
-                  scroll={false}
-                  aria-disabled={pageSearch + 1 >= filteredRooms.totalPages}
-                >
-                  <span className="hidden sm:inline">Next</span>
-                  <BiChevronRight size={20} />
-                </Link>
-              </div>
-            </div>
-          ) : (
-            <NoLookingForFilter />
-          )
-        ) : (
-          <div className="flex flex-col items-center w-full gap-4 px-4 my-8 bg-gray-100 max-w-7xl lg:px-0 lg:w-auto">
-            <h1 className="w-full text-2xl font-bold text-left">
-              Vietnam’s No.1 Rental Room Platform
-            </h1>
-            <span className="w-full italic text-left">
-              Find thousands of verified rooms, apartments, and affordable
-              rentals across Vietnam – quickly and easily
-            </span>
-
-            <div className="flex flex-col items-center w-full gap-4">
-              <h3 className="w-full text-xl font-semibold text-left">
-                Highlighted Post
-              </h3>
-              <div className="flex flex-col items-center w-full gap-4">
-                {roomVips.data.map((room, index) => (
-                  // <RoomVipCard key={index} room={room} />
-                  <RoomVipCard
-                    key={index}
-                    room={room}
-                    isFavorite={initialFavoriteIds.includes(room.id)}
-                  />
-                  // isFavorite={false}
-                ))}
+                {/* Previous Button */}
                 <div className="flex items-center justify-center gap-4 mt-8">
-                  {/* Previous Button */}
                   <Link
-                    href={`?page=${page - 1}#rental-rooms`}
+                    href={buildFilterQuery(filters, pageSearch - 1)}
                     className={`flex items-center gap-2 px-4 py-2 rounded-full font-medium border transition-all duration-200 shadow ${
-                      page === 0
+                      pageSearch === 0
                         ? "text-gray-400 bg-gray-100 cursor-not-allowed pointer-events-none border-gray-200"
                         : "text-blue-600 bg-white hover:bg-blue-50 hover:shadow-lg border-blue-300"
                     }`}
-                    scroll={true}
-                    aria-disabled={page === 0}
+                    scroll={false}
+                    aria-disabled={pageSearch === 0}
                   >
                     <BiChevronLeft size={20} />
                     <span className="hidden sm:inline">Previous</span>
                   </Link>
-
                   {/* Page Info */}
                   <div className="flex flex-col items-center px-4">
                     <span className="text-base font-semibold text-gray-700">
-                      Page <span className="text-blue-600">{page + 1}</span> /{" "}
+                      Page{" "}
+                      <span className="text-blue-600">{pageSearch + 1}</span> /{" "}
                       <span className="text-blue-600">
-                        {roomVips.totalPages}
+                        {filteredRooms.totalPages}
                       </span>
                     </span>
                     <span className="text-xs text-gray-400">
-                      {roomVips.totalPages} rooms found
+                      {filteredRooms.totalPages} rooms found
                     </span>
                   </div>
-
                   {/* Next Button */}
                   <Link
-                    href={`?page=${page + 1}#rental-rooms`}
+                    href={buildFilterQuery(filters, pageSearch + 1)}
                     className={`flex items-center gap-2 px-4 py-2 rounded-full font-medium border transition-all duration-200 shadow ${
-                      page + 1 >= roomVips.totalPages
+                      pageSearch + 1 >= filteredRooms.totalPages
                         ? "text-gray-400 bg-gray-100 cursor-not-allowed pointer-events-none border-gray-200"
                         : "text-blue-600 bg-white hover:bg-blue-50 hover:shadow-lg border-blue-300"
                     }`}
-                    scroll={true}
-                    aria-disabled={page + 1 >= roomVips.totalPages}
+                    scroll={false}
+                    aria-disabled={pageSearch + 1 >= filteredRooms.totalPages}
                   >
                     <span className="hidden sm:inline">Next</span>
                     <BiChevronRight size={20} />
                   </Link>
                 </div>
               </div>
+            ) : (
+              <NoLookingForFilter />
+            )
+          ) : (
+            <div className="flex flex-col items-center w-full gap-4 px-4 my-8 bg-white max-w-7xl lg:px-0 lg:w-auto">
+              <h1 className="w-full text-2xl font-bold text-left">
+                Vietnam’s No.1 Rental Room Platform
+              </h1>
+              <span className="w-full italic text-left">
+                Find thousands of verified rooms, apartments, and affordable
+                rentals across Vietnam – quickly and easily
+              </span>
+              <div className="flex flex-col items-center w-full gap-4">
+                <h3 className="w-full text-xl font-semibold text-left">
+                  Highlighted Post
+                </h3>
+                <div className="flex flex-col items-center w-full gap-4">
+                  {roomVips.data.map((room, index) => (
+                    <RoomVipCard
+                      key={index}
+                      room={room}
+                      isFavorite={initialFavoriteIds.includes(room.id)}
+                    />
+                  ))}
+                  <div className="flex items-center justify-center gap-4 mt-8">
+                    {/* Previous Button */}
+                    <Link
+                      href={`?page=${page - 1}#rental-rooms`}
+                      className={`flex items-center gap-2 px-4 py-2 rounded-full font-medium border transition-all duration-200 shadow ${
+                        page === 0
+                          ? "text-gray-400 bg-gray-100 cursor-not-allowed pointer-events-none border-gray-200"
+                          : "text-blue-600 bg-white hover:bg-blue-50 hover:shadow-lg border-blue-300"
+                      }`}
+                      scroll={true}
+                      aria-disabled={page === 0}
+                    >
+                      <BiChevronLeft size={20} />
+                      <span className="hidden sm:inline">Previous</span>
+                    </Link>
+                    {/* Page Info */}
+                    <div className="flex flex-col items-center px-4">
+                      <span className="text-base font-semibold text-gray-700">
+                        Page <span className="text-blue-600">{page + 1}</span> /{" "}
+                        <span className="text-blue-600">
+                          {roomVips.totalPages}
+                        </span>
+                      </span>
+                      <span className="text-xs text-gray-400">
+                        {roomVips.totalPages} rooms found
+                      </span>
+                    </div>
+                    {/* Next Button */}
+                    <Link
+                      href={`?page=${page + 1}#rental-rooms`}
+                      className={`flex items-center gap-2 px-4 py-2 rounded-full font-medium border transition-all duration-200 shadow ${
+                        page + 1 >= roomVips.totalPages
+                          ? "text-gray-400 bg-gray-100 cursor-not-allowed pointer-events-none border-gray-200"
+                          : "text-blue-600 bg-white hover:bg-blue-50 hover:shadow-lg border-blue-300"
+                      }`}
+                      scroll={true}
+                      aria-disabled={page + 1 >= roomVips.totalPages}
+                    >
+                      <span className="hidden sm:inline">Next</span>
+                      <BiChevronRight size={20} />
+                    </Link>
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
-        )}
-
+          )}
+        </div>
+        {/* Sidebar - always fixed on the right */}
         <div className="w-full lg:w-[350px] flex flex-col items-center">
           <div className="hidden lg:block">
             <CardFilter />
@@ -300,7 +292,6 @@ export default async function RentalRooms({
           </div>
         </div>
       </div>
-
       {isEmptyFilter && (
         <div className="flex flex-col items-center justify-center w-full gap-4 px-4 my-6 max-w-7xl">
           <h3 className="w-full text-2xl font-semibold text-center">
@@ -339,7 +330,6 @@ export default async function RentalRooms({
               <BiChevronLeft size={20} />
               <span className="hidden sm:inline">Previous</span>
             </Link>
-
             {/* Page Info */}
             <div className="flex flex-col items-center px-4">
               <span className="text-base font-semibold text-gray-700">
@@ -350,7 +340,6 @@ export default async function RentalRooms({
                 {roomNormals.totalPages} rooms found
               </span>
             </div>
-
             {/* Next Button */}
             <Link
               href={`?pageNormal=${page_normal + 1}`}

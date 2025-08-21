@@ -30,7 +30,16 @@ export default async function FeaturedListingsCard() {
   return (
     <div className="p-5 mt-6 border shadow-lg bg-white rounded-xl border-sky-200 max-w-full overflow-hidden">
       <h3 className="mb-4 text-xl font-bold text-red-600 flex items-center gap-2">
-        <svg width="20" height="20" fill="none" viewBox="0 0 20 20" className="text-red-400"><circle cx="10" cy="10" r="9" fill="#f87171" opacity="0.15"/><circle cx="10" cy="10" r="4" fill="#f87171"/></svg>
+        <svg
+          width="20"
+          height="20"
+          fill="none"
+          viewBox="0 0 20 20"
+          className="text-red-400"
+        >
+          <circle cx="10" cy="10" r="9" fill="#f87171" opacity="0.15" />
+          <circle cx="10" cy="10" r="4" fill="#f87171" />
+        </svg>
         Newest posts
       </h3>
       <div className="flex flex-col gap-2 w-full">
@@ -39,7 +48,7 @@ export default async function FeaturedListingsCard() {
             <Link
               href={`/detail/${listing.id}`}
               className="flex w-full gap-2 p-2 transition duration-200 rounded-lg items-center group hover:bg-emerald-50 hover:shadow-md hover:border-emerald-200 border border-transparent focus-within:ring-2 focus-within:ring-emerald-300"
-              style={{ maxWidth: '100%' }}
+              style={{ maxWidth: "100%" }}
             >
               <div className="relative flex-shrink-0 w-20 h-20 overflow-hidden rounded-md bg-gray-100 border border-gray-200">
                 <Image
@@ -65,7 +74,9 @@ export default async function FeaturedListingsCard() {
                   {listing.priceMonth
                     ? Number(listing.priceMonth).toLocaleString("vi-VN")
                     : 0}
-                  <span className="text-xs font-semibold text-gray-500 ml-1">₫/month</span>
+                  <span className="text-xs font-semibold text-gray-500 ml-1">
+                    ₫/month
+                  </span>
                 </p>
                 <p className="text-xs text-gray-500 group-hover:text-gray-700 transition-colors duration-200">
                   {listing.postStartDate
