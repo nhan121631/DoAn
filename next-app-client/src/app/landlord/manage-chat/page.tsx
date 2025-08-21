@@ -7,6 +7,15 @@ import LandlordChatAutoOpen from "./LandlordChatAutoOpen";
 import { useSession } from "next-auth/react";
 import useWebSocket from "@/app/components/chat/useWebSocket";
 import { API_URL } from "@/services/Constant";
+import { db } from "@/lib/firebase";
+import {
+  collection,
+  addDoc,
+  serverTimestamp,
+  query,
+  orderBy,
+  onSnapshot,
+} from "firebase/firestore";
 
 interface ChatUser {
   id: string;
@@ -111,6 +120,26 @@ export default function LandlordManageChatPage() {
     },
     [landlordId]
   );
+
+  useEffect(() => {
+    const q = query(collection(db, "messages"), orderBy("createdAt", "asc"));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const listUser = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        text: doc.data().text,
+        senderId: doc.data().senderId,
+        recipientId: doc.data().recipientId,
+        createdAt: doc.data().createdAt
+          ? new Date(doc.data().createdAt.seconds * 1000)
+          : null,
+      })).filter(msg =>
+          (msg.recipientId === landlordId)
+        );
+        const uniqueSenderIds = [...new Set(listUser.map(u => u.senderId))];
+console.log("Unique Sender IDs:", uniqueSenderIds);
+    });
+    return () => unsubscribe();
+  }, [selectedUserId]);
 
   // FIX: Tách riêng việc xử lý messages để tránh conflict với click events
   const processWebSocketMessages = useCallback(() => {
@@ -262,7 +291,7 @@ export default function LandlordManageChatPage() {
       });
 
       landlordSelectedRef.current = true;
-
+      console.log("Selected user:", selectedUserId);
       // Khi click vào user, set unreadCount về 0 để mất highlight ngay trên frontend
       updateUserList(user.id, user.name, undefined, 0);
     },
@@ -489,9 +518,8 @@ export default function LandlordManageChatPage() {
           {selectedUserId ? (
             <div className="w-full max-w-4xl mx-auto h-full animate-fade-in">
               <ChatClient
-                key={selectedUserId}
-                userId={landlordId}
-                defaultToUserId={selectedUserId}
+                recipientId={selectedUserId}
+                senderId={landlordId}
                 defaultToUserName={
                   userList.find((u) => u.id === selectedUserId)?.name || ""
                 }

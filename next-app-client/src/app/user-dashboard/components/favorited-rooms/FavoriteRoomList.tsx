@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { RoomInUser } from "@/types/types";
-import { useFavoriteStore } from "@/stores/FavoriteStore";
+import { useFavoriteStore } from "@/stores/favoriteStore";
 import { fetchAndUpdateFavorites } from "@/services/FavoriteService";
 import FavoriteDashboardRoomCard from "./FavoriteDashboardRoomCard"; 
 import FavoriteDashboardRoomVipCard from "./FavoriteDashboardRoomVipCard"; 

@@ -1,4 +1,4 @@
-import { useFavoriteStore } from "@/stores/FavoriteStore";
+import { useFavoriteStore } from "@/stores/favoriteStore";
 import { RoomInUser } from "@/types/types";
 import { getSession } from "next-auth/react";
 
