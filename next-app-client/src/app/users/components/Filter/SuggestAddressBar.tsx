@@ -18,8 +18,8 @@ import {
   EnvironmentOutlined,
   InfoCircleOutlined,
   SaveOutlined,
-  // AimOutlined,
 } from "@ant-design/icons";
+import { Search } from "lucide-react";
 
 type SelectOption = {
   label: string;
@@ -436,15 +436,15 @@ function SuggestAddressBar({
       <div className="w-full max-w-7xl mx-auto px-4 pt-2 pb-2">
         {contextHolder}
 
-        {/* Current search area display */}
-        {currentPreferences && !loadingPreferences && (
-          <div className="mb-4 p-3 bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-blue-400 rounded-r-lg">
-            <p className="text-sm text-blue-800 font-medium">
-              Khu vực tìm kiếm hiện tại:{" "}
-              <span className="font-normal">{currentPreferences}</span>
-            </p>
-          </div>
-        )}
+      {/* Current search area display */}
+      {currentPreferences && !loadingPreferences && (
+        <div className="mb-4 p-3 bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-blue-400 rounded-r-lg">
+          <p className="text-sm text-blue-800 font-medium">
+            Khu vực tìm kiếm hiện tại:{" "}
+            <span className="font-normal">{currentPreferences}</span>
+          </p>
+        </div>
+      )}
 
         {/* Main search bar */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 hover:shadow-md transition-shadow duration-200">
@@ -567,11 +567,12 @@ function SuggestAddressBar({
                 {/* Map button */}
                 <Button
                   type="primary"
-                  onClick={() => router.push("/testmap")}
-                  className="h-10 px-4 bg-emerald-600 hover:bg-emerald-700 border-emerald-600 rounded-lg font-medium shadow-sm hover:shadow transition-all duration-200"
-                  icon={<EnvironmentOutlined />}
+                  onClick={handleSave}
+                  loading={isSaving}
+                  className="h-10 px-4 bg-blue-600 hover:bg-blue-700 border-blue-600 rounded-lg font-medium shadow-sm hover:shadow transition-all duration-200"
+                  icon={<Search />}
                 >
-                  Bản đồ
+                  Search
                 </Button>
 
                 {/* Tooltip */}

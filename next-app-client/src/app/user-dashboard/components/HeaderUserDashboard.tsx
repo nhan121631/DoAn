@@ -138,7 +138,7 @@ export default function HeaderUserDashboard() {
               <div className="absolute inset-0 bg-gradient-to-br from-blue-400 via-purple-500 to-pink-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl"></div>
               <Image
                 src="/images/logo-ant.png"
-                alt="JustHome"
+                alt="Ants"
                 width={48}
                 height={48}
                 priority
@@ -147,7 +147,7 @@ export default function HeaderUserDashboard() {
             </div>
             <div className="hidden sm:block">
               <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent transition-all duration-300 group-hover:scale-105 group-hover:tracking-wide">
-                JustHome
+                Ants
               </h1>
               <div className="h-0.5 w-0 bg-gradient-to-r from-blue-600 to-purple-600 group-hover:w-full transition-all duration-500"></div>
             </div>
@@ -375,7 +375,7 @@ export default function HeaderUserDashboard() {
         <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-gray-50/80 to-transparent">
           <div className="text-center text-sm text-gray-500">
             <div className="w-full h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent mb-3"></div>
-            JustHome © 2024
+            Ants © 2025
           </div>
         </div>
       </div>
