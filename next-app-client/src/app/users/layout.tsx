@@ -18,9 +18,15 @@ export default function UsersLayout({ children }: UsersLayoutProps) {
       {/* Banner/Slider */}
       {/* <Banner /> */}
       <div className="flex flex-row w-full max-w-full justify-center relative">
-        <AdsBanner position="left" />
+        {/* Sticky AdsBanner left */}
+        <div className="hidden xl:block sticky top-[90px] self-start z-30 h-[calc(100vh-120px)]">
+          <AdsBanner position="left" />
+        </div>
         <main className="flex-1 mt-5 max-w-6xl mx-auto">{children}</main>
-        <AdsBanner position="right" />
+        {/* Sticky AdsBanner right */}
+        <div className="hidden xl:block sticky top-[90px] self-start z-30 h-[calc(100vh-120px)]">
+          <AdsBanner position="right" />
+        </div>
       </div>
       <WhyChooseUsSection />
       <LandlordListCard />

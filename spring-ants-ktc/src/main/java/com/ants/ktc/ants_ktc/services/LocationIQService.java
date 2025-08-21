@@ -17,7 +17,7 @@ public class LocationIQService {
     private final String apiKey;
 
     public LocationIQService() {
-        this.apiKey = com.ants.ktc.ants_ktc.config.EnvLoader.get("HERE_API_KEY");
+        this.apiKey = com.ants.ktc.ants_ktc.config.EnvLoader.get("GOONG_API_KEY");
     }
 
     public static class LatLng {
@@ -34,8 +34,8 @@ public class LocationIQService {
 
     public LatLng getCoordinates(String address) throws Exception {
         String encodedAddress = URLEncoder.encode(address, StandardCharsets.UTF_8);
-        String urlStr = "https://geocode.search.hereapi.com/v1/geocode?q=" + encodedAddress
-                + "&apiKey=" + apiKey;
+        String urlStr = "https://rsapi.goong.io/geocode?address=" + encodedAddress
+                + "&api_key=" + apiKey;
 
         URL url = new URL(urlStr);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -50,16 +50,17 @@ public class LocationIQService {
             }
 
             JSONObject json = new JSONObject(response.toString());
-            JSONArray items = json.optJSONArray("items");
+            JSONArray results = json.optJSONArray("results");
 
-            if (items != null && items.length() > 0) {
-                JSONObject firstItem = items.getJSONObject(0);
-                JSONObject position = firstItem.getJSONObject("position");
-                double lat = position.getDouble("lat");
-                double lng = position.getDouble("lng");
-                String label = firstItem.optString("title", address);
+            if (results != null && results.length() > 0) {
+                JSONObject first = results.getJSONObject(0);
+                JSONObject location = first.getJSONObject("geometry").getJSONObject("location");
 
-                return new LatLng(lat, lng, label);
+                double lat = location.getDouble("lat");
+                double lng = location.getDouble("lng");
+                String formattedAddress = first.optString("formatted_address", address);
+
+                return new LatLng(lat, lng, formattedAddress);
             } else {
                 throw new Exception("Không tìm thấy tọa độ cho địa chỉ: " + address);
             }
@@ -76,8 +77,7 @@ public class LocationIQService {
                 + "&destination=" + destCoord.lat + "," + destCoord.lng
                 + "&return=summary"
                 + "&apikey=" + apiKey;
-
-        URL url = new URL(urlStr);
+URL url = new URL(urlStr);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestMethod("GET");
         conn.setRequestProperty("User-Agent", "Mozilla/5.0");
