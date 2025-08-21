@@ -124,7 +124,8 @@ export default function LandlordManageChatPage() {
   useEffect(() => {
     const q = query(collection(db, "messages"), orderBy("createdAt", "asc"));
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const listUser = snapshot.docs.map((doc) => ({
+      // Lấy tất cả các tin nhắn mà landlord là sender hoặc recipient
+      const messages = snapshot.docs.map((doc) => ({
         id: doc.id,
         text: doc.data().text,
         senderId: doc.data().senderId,
@@ -132,14 +133,42 @@ export default function LandlordManageChatPage() {
         createdAt: doc.data().createdAt
           ? new Date(doc.data().createdAt.seconds * 1000)
           : null,
-      })).filter(msg =>
-          (msg.recipientId === landlordId)
-        );
-        const uniqueSenderIds = [...new Set(listUser.map(u => u.senderId))];
-console.log("Unique Sender IDs:", uniqueSenderIds);
+      }));
+
+      // Tìm tất cả userId đã từng chat với landlord (khác landlordId)
+      const userIds = new Set<string>();
+      messages.forEach((msg) => {
+        if (msg.senderId === landlordId && msg.recipientId && msg.recipientId !== landlordId) {
+          userIds.add(msg.recipientId);
+        }
+        if (msg.recipientId === landlordId && msg.senderId && msg.senderId !== landlordId) {
+          userIds.add(msg.senderId);
+        }
+      });
+
+      // Tạo danh sách user
+      const userListFirestore: ChatUser[] = Array.from(userIds).map((userId) => {
+        // Tìm tin nhắn cuối cùng với user này
+        const lastMsg = messages.filter(
+          (msg) =>
+            (msg.senderId === userId && msg.recipientId === landlordId) ||
+            (msg.senderId === landlordId && msg.recipientId === userId)
+        ).sort((a, b) => (b.createdAt?.getTime() || 0) - (a.createdAt?.getTime() || 0))[0];
+        return {
+          id: userId,
+          name: userId,
+          lastMessageTime: lastMsg?.createdAt || new Date(),
+          unreadCount: 0,
+        };
+      });
+      setUserList((prev) => {
+        // Gộp với userList cũ nếu cần
+        const merged = [...userListFirestore];
+        return merged;
+      });
     });
     return () => unsubscribe();
-  }, [selectedUserId]);
+  }, [landlordId]);
 
   // FIX: Tách riêng việc xử lý messages để tránh conflict với click events
   const processWebSocketMessages = useCallback(() => {

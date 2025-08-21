@@ -61,7 +61,7 @@ export default function ChatClient({
       setAllMessages(msgs);
     });
     return () => unsubscribe();
-  }, []);
+  }, [recipientId]);
   useEffect(() => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollTop = messagesEndRef.current.scrollHeight;
