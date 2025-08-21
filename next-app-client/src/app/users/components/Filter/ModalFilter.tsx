@@ -90,44 +90,6 @@ export default function ModalFilter({
   const handleSave = async () => {
     try {
       const values = await form.validateFields();
-      let minPrice, maxPrice;
-      switch (values.priceRange) {
-        case "under1m":
-          minPrice = 0;
-          maxPrice = 1000000;
-          break;
-        case "1m-2m":
-          minPrice = 1000000;
-          maxPrice = 2000000;
-          break;
-        case "2m-3m":
-          minPrice = 2000000;
-          maxPrice = 3000000;
-          break;
-        case "3m-5m":
-          minPrice = 3000000;
-          maxPrice = 5000000;
-          break;
-        case "5m-7m":
-          minPrice = 5000000;
-          maxPrice = 7000000;
-          break;
-        case "7m-10m":
-          minPrice = 7000000;
-          maxPrice = 10000000;
-          break;
-        case "10m-15m":
-          minPrice = 10000000;
-          maxPrice = 15000000;
-          break;
-        case "over15m":
-          minPrice = 15000000;
-          maxPrice = undefined;
-          break;
-        default:
-          minPrice = undefined;
-          maxPrice = undefined;
-      }
 
       // Create full address string from selections
       let searchAddress = "";
@@ -162,8 +124,6 @@ export default function ModalFilter({
           userId,
           {
             searchAddress: searchAddress || undefined,
-            desiredMinPrice: minPrice,
-            desiredMaxPrice: maxPrice,
           },
           session
         );
@@ -194,20 +154,14 @@ export default function ModalFilter({
       open={true}
       onCancel={handleClose}
       // onOk removed, only using custom button
-      title="Update Address and Desired Price"
+      title="Update Address"
       footer={null}
       width={600}
       styles={{ body: { maxHeight: "70vh", overflowY: "auto", padding: 24 } }}
       centered
     >
       <Form form={form} layout="vertical">
-        <Form.Item
-          label="Specific Address"
-          name="specificAddress"
-          rules={[
-            { required: true, message: "Please enter specific address!" },
-          ]}
-        >
+        <Form.Item label="Specific Address" name="specificAddress">
           <Input
             placeholder="Enter specific address (house number, street name, etc.)"
             allowClear
@@ -264,23 +218,6 @@ export default function ModalFilter({
             />
           </Form.Item>
         </div>
-        <Form.Item label="Desired Price Range" name="priceRange">
-          <Select
-            options={[
-              { label: "All", value: "all" },
-              { label: "Under 1 million", value: "under1m" },
-              { label: "1 - 2 million", value: "1m-2m" },
-              { label: "2 - 3 million", value: "2m-3m" },
-              { label: "3 - 5 million", value: "3m-5m" },
-              { label: "5 - 7 million", value: "5m-7m" },
-              { label: "7 - 10 million", value: "7m-10m" },
-              { label: "10 - 15 million", value: "10m-15m" },
-              { label: "Over 15 million", value: "over15m" },
-            ]}
-            placeholder="Select price range"
-            allowClear
-          />
-        </Form.Item>
         <div className="flex gap-4 justify-center">
           <Form.Item>
             <Button type="primary" block onClick={handleSave}>
