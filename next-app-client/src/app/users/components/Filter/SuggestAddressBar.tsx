@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import {
   getDistricts,
   getProvinces,
@@ -17,128 +17,6 @@ import { useRouter } from "next/navigation";
 type SelectOption = {
   label: string;
   value: string;
-};
-
-// Custom SearchableSelect Component
-const SearchableSelect = ({
-  options,
-  value,
-  onChange,
-  placeholder,
-  disabled,
-  loading,
-  error,
-  className = "",
-}) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filteredOptions, setFilteredOptions] = useState(options);
-  const dropdownRef = useRef(null);
-  const inputRef = useRef(null);
-
-  useEffect(() => {
-    const filtered = options.filter((option) =>
-      option.label.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-    setFilteredOptions(filtered);
-  }, [searchTerm, options]);
-
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setIsOpen(false);
-        setSearchTerm("");
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  const selectedOption = options.find((option) => option.value === value);
-
-  const handleSelect = (option) => {
-    onChange(option.value);
-    setIsOpen(false);
-    setSearchTerm("");
-  };
-
-  return (
-    <div className="relative" ref={dropdownRef}>
-      <div
-        className={`w-full h-11 px-3 text-sm font-medium bg-white border-2 rounded-lg transition-all duration-200 shadow-sm cursor-pointer flex items-center justify-between ${
-          disabled
-            ? "bg-gray-50 text-gray-400 cursor-not-allowed"
-            : "hover:border-gray-300"
-        } ${
-          error
-            ? "border-red-300 focus-within:border-red-500"
-            : "border-gray-200 focus-within:border-blue-500 focus-within:ring-4 focus-within:ring-blue-500/10"
-        } ${className}`}
-        onClick={() => !disabled && setIsOpen(!isOpen)}
-      >
-        <span className={selectedOption ? "text-gray-900" : "text-gray-400"}>
-          {loading
-            ? "Đang tải..."
-            : selectedOption
-            ? selectedOption.label
-            : placeholder}
-        </span>
-        <svg
-          className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${
-            isOpen ? "rotate-180" : ""
-          }`}
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M19 9l-7 7-7-7"
-          />
-        </svg>
-      </div>
-
-      {isOpen && !disabled && (
-        <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-60 overflow-hidden">
-          <div className="p-2 border-b border-gray-100">
-            <input
-              ref={inputRef}
-              type="text"
-              placeholder="Tìm kiếm..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full px-3 py-2 text-sm border border-gray-200 rounded focus:outline-none focus:border-blue-500"
-              autoFocus
-            />
-          </div>
-          <div className="max-h-48 overflow-y-auto">
-            {filteredOptions.length > 0 ? (
-              filteredOptions.map((option) => (
-                <div
-                  key={option.value}
-                  className={`px-3 py-2 text-sm cursor-pointer hover:bg-blue-50 transition-colors duration-150 ${
-                    option.value === value
-                      ? "bg-blue-100 text-blue-700 font-medium"
-                      : "text-gray-700"
-                  }`}
-                  onClick={() => handleSelect(option)}
-                >
-                  {option.label}
-                </div>
-              ))
-            ) : (
-              <div className="px-3 py-2 text-sm text-gray-500 text-center">
-                Không tìm thấy kết quả
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-    </div>
-  );
 };
 
 export interface SuggestAddressBarProps {
@@ -434,9 +312,6 @@ function SuggestAddressBar({
         const result = data.results[0];
         const formattedAddress = result.formatted_address || "";
 
-        // Update the specific address input with the location
-        setFormData((prev) => ({ ...prev, specificAddress: formattedAddress }));
-
         const userId = session?.user?.userProfile?.id;
         if (userId && formattedAddress) {
           await updatePreferences(
@@ -486,7 +361,7 @@ function SuggestAddressBar({
   };
 
   return (
-    <div className="lg:w-[1200px] md:w-[800px] sm:w-full sticky top-0 z-40 bg-white/95 backdrop-blur-xl border-b border-gray-200/50 shadow-lg transition-all duration-300">
+    <div className="sticky top-0 z-40 bg-white/95 backdrop-blur-xl border-b border-gray-200/50 shadow-lg transition-all duration-300">
       {/* Message Toast */}
       {message && (
         <div
@@ -523,9 +398,15 @@ function SuggestAddressBar({
       )}
 
       <div className="w-full max-w-7xl mx-auto px-4 py-4">
-        {/* Current Location Display - Always visible */}
+        {/* Current Location Display */}
         {currentPreferences && !loadingPreferences && (
-          <div className="mb-4 p-4 bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 border border-blue-200/50 rounded-xl transition-all duration-300">
+          <div
+            className={`mb-4 p-4 bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 border border-blue-200/50 rounded-xl transition-all duration-300 ${
+              isScrolled
+                ? "opacity-0 max-h-0 overflow-hidden mb-0 py-0"
+                : "opacity-100 max-h-20"
+            }`}
+          >
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
               <span className="text-sm font-medium text-blue-700">
@@ -540,7 +421,7 @@ function SuggestAddressBar({
 
         {/* Main Form - 2 Rows Layout */}
         <div className="space-y-4">
-          {/* Row 1: Address Input with Location Button */}
+          {/* Row 1: Address Input */}
           <div className="w-full">
             <div className="relative">
               <input
@@ -550,7 +431,7 @@ function SuggestAddressBar({
                 onChange={(e) =>
                   handleInputChange("specificAddress", e.target.value)
                 }
-                className="w-full h-12 px-4 pl-12 pr-16 text-sm font-medium bg-white border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all duration-200 placeholder-gray-400 shadow-sm hover:border-gray-300"
+                className="w-full h-12 px-4 pl-12 text-sm font-medium bg-white border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all duration-200 placeholder-gray-400 shadow-sm hover:border-gray-300"
               />
               <div className="absolute left-4 top-1/2 -translate-y-1/2">
                 <svg
@@ -567,19 +448,105 @@ function SuggestAddressBar({
                   />
                 </svg>
               </div>
-              {/* Location Button inside input */}
+            </div>
+          </div>
+
+          {/* Row 2: Location Selects and Action Buttons */}
+          <div className="flex flex-wrap gap-3 items-start">
+            {/* Province Select */}
+            <div className="flex-1 min-w-[140px] max-w-[200px]">
+              <select
+                value={formData.province}
+                onChange={(e) => handleProvinceChange(e.target.value)}
+                className={`w-full h-11 px-3 text-sm font-medium bg-white border-2 rounded-lg transition-all duration-200 shadow-sm focus:ring-4 focus:ring-blue-500/10 ${
+                  errors.province
+                    ? "border-red-300 focus:border-red-500"
+                    : "border-gray-200 focus:border-blue-500 hover:border-gray-300"
+                }`}
+              >
+                <option value="">Chọn Tỉnh/TP</option>
+                {provinces.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+              {errors.province && (
+                <p className="text-xs text-red-500 mt-1 ml-1">
+                  {errors.province}
+                </p>
+              )}
+            </div>
+
+            {/* District Select */}
+            <div className="flex-1 min-w-[120px] max-w-[180px]">
+              <select
+                value={formData.district}
+                onChange={(e) => handleDistrictChange(e.target.value)}
+                disabled={loadingDistricts || districts.length === 0}
+                className={`w-full h-11 px-3 text-sm font-medium bg-white border-2 rounded-lg transition-all duration-200 shadow-sm focus:ring-4 focus:ring-blue-500/10 disabled:bg-gray-50 disabled:text-gray-400 ${
+                  errors.district
+                    ? "border-red-300 focus:border-red-500"
+                    : "border-gray-200 focus:border-blue-500 hover:border-gray-300"
+                }`}
+              >
+                <option value="">
+                  {loadingDistricts ? "Đang tải..." : "Chọn Q/Huyện"}
+                </option>
+                {districts.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+              {errors.district && (
+                <p className="text-xs text-red-500 mt-1 ml-1">
+                  {errors.district}
+                </p>
+              )}
+            </div>
+
+            {/* Ward Select */}
+            <div className="flex-1 min-w-[120px] max-w-[180px]">
+              <select
+                value={formData.ward}
+                onChange={(e) => handleInputChange("ward", e.target.value)}
+                disabled={loadingWards || wards.length === 0}
+                className={`w-full h-11 px-3 text-sm font-medium bg-white border-2 rounded-lg transition-all duration-200 shadow-sm focus:ring-4 focus:ring-blue-500/10 disabled:bg-gray-50 disabled:text-gray-400 ${
+                  errors.ward
+                    ? "border-red-300 focus:border-red-500"
+                    : "border-gray-200 focus:border-blue-500 hover:border-gray-300"
+                }`}
+              >
+                <option value="">
+                  {loadingWards ? "Đang tải..." : "Chọn P/Xã"}
+                </option>
+                {wards.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+              {errors.ward && (
+                <p className="text-xs text-red-500 mt-1 ml-1">{errors.ward}</p>
+              )}
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex items-center gap-2 relative ml-auto">
+              {/* Get Location Button */}
               <button
                 type="button"
                 onClick={getCurrentLocation}
                 disabled={isGettingLocation}
-                className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 bg-gradient-to-br from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center disabled:opacity-70 disabled:cursor-not-allowed group"
+                className="h-11 w-11 bg-gradient-to-br from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center disabled:opacity-70 disabled:cursor-not-allowed group"
                 title="Lấy vị trí hiện tại"
               >
                 {isGettingLocation ? (
-                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                 ) : (
                   <svg
-                    className="w-4 h-4 group-hover:scale-110 transition-transform duration-200"
+                    className="w-5 h-5 group-hover:scale-110 transition-transform duration-200"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -599,65 +566,7 @@ function SuggestAddressBar({
                   </svg>
                 )}
               </button>
-            </div>
-          </div>
 
-          {/* Row 2: Searchable Location Selects and Action Buttons */}
-          <div className="flex flex-wrap gap-3 items-start">
-            {/* Province Select */}
-            <div className="flex-1 min-w-[140px] max-w-[200px]">
-              <SearchableSelect
-                options={provinces}
-                value={formData.province}
-                onChange={handleProvinceChange}
-                placeholder="Chọn Tỉnh/TP"
-                disabled={false}
-                loading={false}
-                error={errors.province}
-              />
-              {errors.province && (
-                <p className="text-xs text-red-500 mt-1 ml-1">
-                  {errors.province}
-                </p>
-              )}
-            </div>
-
-            {/* District Select */}
-            <div className="flex-1 min-w-[120px] max-w-[180px]">
-              <SearchableSelect
-                options={districts}
-                value={formData.district}
-                onChange={handleDistrictChange}
-                placeholder="Chọn Q/Huyện"
-                disabled={loadingDistricts || districts.length === 0}
-                loading={loadingDistricts}
-                error={errors.district}
-              />
-              {errors.district && (
-                <p className="text-xs text-red-500 mt-1 ml-1">
-                  {errors.district}
-                </p>
-              )}
-            </div>
-
-            {/* Ward Select */}
-            <div className="flex-1 min-w-[120px] max-w-[180px]">
-              <SearchableSelect
-                options={wards}
-                value={formData.ward}
-                onChange={(value: any) => handleInputChange("ward", value)}
-                placeholder="Chọn P/Xã"
-                disabled={loadingWards || wards.length === 0}
-                loading={loadingWards}
-                error={errors.ward}
-              />
-              {errors.ward && (
-                <p className="text-xs text-red-500 mt-1 ml-1">{errors.ward}</p>
-              )}
-            </div>
-
-            {/* Action Buttons */}
-            <div className="flex items-center gap-2 relative ml-auto">
               {/* Save/Search Button */}
               {showSaveButton && (
                 <button
