@@ -13,6 +13,7 @@ import {
   orderBy,
   onSnapshot,
 } from "firebase/firestore";
+import { URL_IMAGE } from "@/services/Constant";
 
 interface ChatClientProps {
   senderId: string;
@@ -48,17 +49,20 @@ export default function ChatClient({
   useEffect(() => {
     const q = query(collection(db, "messages"), orderBy("createdAt", "asc"));
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const msgs = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        text: doc.data().text,
-        senderId: doc.data().senderId,
-        recipientId: doc.data().recipientId,
-        createdAt: doc.data().createdAt
-          ? new Date(doc.data().createdAt.seconds * 1000)
-          : null,
-      })).filter(msg =>
-          (msg.senderId === senderId && msg.recipientId === recipientId) ||
-          (msg.senderId === recipientId && msg.recipientId === senderId)
+      const msgs = snapshot.docs
+        .map((doc) => ({
+          id: doc.id,
+          text: doc.data().text,
+          senderId: doc.data().senderId,
+          recipientId: doc.data().recipientId,
+          createdAt: doc.data().createdAt
+            ? new Date(doc.data().createdAt.seconds * 1000)
+            : null,
+        }))
+        .filter(
+          (msg) =>
+            (msg.senderId === senderId && msg.recipientId === recipientId) ||
+            (msg.senderId === recipientId && msg.recipientId === senderId)
         );
       setAllMessages(msgs);
     });
@@ -103,9 +107,11 @@ export default function ChatClient({
   const isConnected = true;
 
   return (
-    <div className={`relative w-full flex flex-col bg-white dark:bg-gray-900 rounded-2xl shadow-2xl overflow-hidden border border-gray-100/50 dark:border-gray-800 backdrop-blur-sm ${
+    <div
+      className={`relative w-full flex flex-col bg-white dark:bg-gray-900 rounded-2xl shadow-2xl overflow-hidden border border-gray-100/50 dark:border-gray-800 backdrop-blur-sm ${
         fullHeight ? "h-full" : "h-[590px]"
-      }`}>
+      }`}
+    >
       {/* Header */}
       <div className="relative bg-gradient-to-r from-blue-500 via-purple-500 to-blue-600 px-6 py-4 text-white">
         <div className="flex items-center space-x-4">
@@ -113,7 +119,7 @@ export default function ChatClient({
           <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-white shadow-md">
             {session?.user?.userProfile?.avatar ? (
               <Image
-                src={session.user.userProfile.avatar}
+                src={URL_IMAGE + session.user.userProfile.avatar}
                 alt="Avatar"
                 width={48}
                 height={48}
@@ -148,8 +154,8 @@ export default function ChatClient({
       {/* Messages */}
       <div
         className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 dark:bg-gray-800"
-    ref={messagesEndRef}
-    style={{ paddingBottom: "80px" }}
+        ref={messagesEndRef}
+        style={{ paddingBottom: "80px" }}
       >
         {allMessages.map((m) => (
           <div

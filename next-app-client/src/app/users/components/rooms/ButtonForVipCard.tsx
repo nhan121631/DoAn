@@ -8,8 +8,8 @@ import { useEffect, useState } from "react";
 import { FaRegCheckCircle } from "react-icons/fa";
 import { FaHeart } from "react-icons/fa6";
 import { IoIosAddCircleOutline } from "react-icons/io";
-import { useFavoriteStore } from "@/stores/favoriteStore";
 import { useCompareStore } from "@/stores/CompareStore";
+import { useFavoriteStore } from "@/stores/FavoriteStore";
 
 interface ButtonFavoriteProps {
   onClick?: () => void;

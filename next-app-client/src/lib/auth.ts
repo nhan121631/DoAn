@@ -159,6 +159,7 @@ export const authOptions: NextAuthOptions = {
         userProfile: token.userProfile ?? {},
       };
       session.user = userObject;
+      console.log("Session user:", session.user);
       return session;
     },
   },

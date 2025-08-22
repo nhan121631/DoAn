@@ -3,7 +3,7 @@ import { API_URL } from "./Constant";
 import { UserSearchPreferences } from "../types/types";
 
 export async function getFullName(id: string) {
-  const response = await fetch(`http://localhost:3333/api/profile/getname/${id}`, {
+  const response = await fetch(`${API_URL}/profile/getname/${id}`, {
     method: "GET",
   });
 
@@ -194,5 +194,31 @@ export async function updateUserSearchPreferences(
     throw new Error(errorMsg);
   }
 
+  return response.json();
+}
+
+//------is have a bank ------//
+
+export async function isHaveBankAccount() {
+  const response = await fetch(`/api/profile/ishavebank`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    let errorMsg = "Failed to check bank account existence";
+    try {
+      const error = await response.json();
+      errorMsg = Array.isArray(error.message)
+        ? error.message[0]
+        : error.message || error.error || errorMsg;
+      console.error("API error:", error);
+    } catch (e) {
+      console.error("Error parsing response:", e);
+    }
+    throw new Error(errorMsg);
+  }
   return response.json();
 }

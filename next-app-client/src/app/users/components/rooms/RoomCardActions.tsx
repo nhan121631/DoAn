@@ -7,9 +7,8 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { FaHeart, FaRegCheckCircle } from "react-icons/fa";
 import { IoIosAddCircleOutline } from "react-icons/io";
-import { useFavoriteStore } from "@/stores/favoriteStore";
 import { useCompareStore } from "@/stores/CompareStore";
-
+import { useFavoriteStore } from "@/stores/FavoriteStore";
 
 export interface RoomCardProps {
   room: RoomInUser;
@@ -18,7 +17,11 @@ export interface RoomCardProps {
   showHeartOnly?: boolean;
 }
 
-export default function RoomCartActions({ room, onFavoriteChange, showHeartOnly }: RoomCardProps) {
+export default function RoomCartActions({
+  room,
+  onFavoriteChange,
+  showHeartOnly,
+}: RoomCardProps) {
   const router = useRouter();
   const handleClick = () => {
     router.push(`/detail/${room.id}`);
@@ -50,7 +53,6 @@ export default function RoomCartActions({ room, onFavoriteChange, showHeartOnly 
     setIsCompared(items.some((item) => item.room.id === room.id));
   }, [items, room.id]);
 
-
   const handleFavorite = async () => {
     if (!session) {
       router.push("/auth/login");
@@ -58,10 +60,9 @@ export default function RoomCartActions({ room, onFavoriteChange, showHeartOnly 
     }
     setLoadingFavorite(true);
     try {
-      const res = await fetch(
-        `/api/favorites/rooms/${room.id}`,
-        { method: isFavorite ? "DELETE" : "POST" }
-      );
+      const res = await fetch(`/api/favorites/rooms/${room.id}`, {
+        method: isFavorite ? "DELETE" : "POST",
+      });
 
       if (res.ok) {
         if (isFavorite) {
@@ -107,8 +108,16 @@ export default function RoomCartActions({ room, onFavoriteChange, showHeartOnly 
         {/* Favorite Button */}
         <button
           className={`flex items-center gap-1 px-2.5 py-1.5 text-base font-semibold rounded-full shadow bg-white/90 border border-gray-200 focus:ring-2 focus:ring-red-300 transition-all duration-150
-            ${isFavorite ? "text-red-500 bg-red-50 border-red-200" : "text-gray-400 hover:text-red-500 hover:bg-red-50"}
-            ${loadingFavorite ? "opacity-60 cursor-not-allowed" : "hover:scale-105 active:scale-95"}`}
+            ${
+              isFavorite
+                ? "text-red-500 bg-red-50 border-red-200"
+                : "text-gray-400 hover:text-red-500 hover:bg-red-50"
+            }
+            ${
+              loadingFavorite
+                ? "opacity-60 cursor-not-allowed"
+                : "hover:scale-105 active:scale-95"
+            }`}
           tabIndex={0}
           title={isFavorite ? "Bỏ yêu thích" : "Thêm vào yêu thích"}
           onClick={handleFavorite}
@@ -120,15 +129,18 @@ export default function RoomCartActions({ room, onFavoriteChange, showHeartOnly 
         {/* Compare Button */}
         <button
           className={`flex items-center justify-center gap-1 px-3 py-1.5 text-base font-semibold rounded-full border transition-all duration-150
-            ${isCompared
-              ? "bg-gray-100 text-gray-400 border-gray-200 opacity-60 cursor-not-allowed"
-              : "bg-blue-500 text-white border-blue-500 hover:bg-white hover:text-blue-600 hover:border-blue-400 active:scale-95"}
+            ${
+              isCompared
+                ? "bg-gray-100 text-gray-400 border-gray-200 opacity-60 cursor-not-allowed"
+                : "bg-blue-500 text-white border-blue-500 hover:bg-white hover:text-blue-600 hover:border-blue-400 active:scale-95"
+            }
             focus:ring-2 focus:ring-blue-300`}
           onClick={handleCompare}
           disabled={isCompared}
           type="button"
         >
-          {isCompared ? <FaRegCheckCircle /> : <IoIosAddCircleOutline />} Compare
+          {isCompared ? <FaRegCheckCircle /> : <IoIosAddCircleOutline />}{" "}
+          Compare
         </button>
         {/* Detail Button */}
         <button
@@ -142,4 +154,3 @@ export default function RoomCartActions({ room, onFavoriteChange, showHeartOnly 
     </>
   );
 }
-
