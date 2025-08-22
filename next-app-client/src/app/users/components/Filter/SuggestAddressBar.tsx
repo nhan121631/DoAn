@@ -247,6 +247,7 @@ function SuggestAddressBar({
     if (session) {
       loadUserPreferences();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session]);
 
   const showMessage = (type: "success" | "error" | "warning", text: string) => {
@@ -265,6 +266,16 @@ function SuggestAddressBar({
   };
 
   const handleInputChange = (field: string, value: string) => {
+    // If updating specificAddress, keep only the first segment (street/name) before comma
+    if (field === "specificAddress") {
+      const streetOnly = value ? value.split(",")[0].trim() : "";
+      setFormData((prev) => ({ ...prev, specificAddress: streetOnly }));
+      if (errors.specificAddress) {
+        setErrors((prev) => ({ ...prev, specificAddress: "" }));
+      }
+      return;
+    }
+
     setFormData((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: "" }));
@@ -548,8 +559,8 @@ function SuggestAddressBar({
         {/* Main Form - luôn hiển thị, không bị ảnh hưởng bởi scroll */}
         <div className="space-y-4">
           {/* Row 1: Address Input with Location Button Inside */}
-          <div className="w-full">
-            <div className="relative">
+          <div className="w-full flex items-center gap-3">
+            <div className="relative flex-1">
               <input
                 type="text"
                 placeholder="Nhập địa chỉ cụ thể (số nhà, tên đường)..."
@@ -606,6 +617,29 @@ function SuggestAddressBar({
                     />
                   </svg>
                 )}
+              </button>
+            </div>
+            <div className="flex-shrink-0">
+              {/* Map Button */}
+              <button
+                type="button"
+                onClick={() => router.push("/testmap")}
+                className="h-11 px-5 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-medium text-sm rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex items-center gap-2"
+              >
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"
+                  />
+                </svg>
+                <span>Bản đồ</span>
               </button>
             </div>
           </div>
@@ -705,28 +739,6 @@ function SuggestAddressBar({
                     d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                   />
                 </svg>
-              </button>
-
-              {/* Map Button */}
-              <button
-                type="button"
-                onClick={() => router.push("/testmap")}
-                className="h-11 px-6 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-medium text-sm rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex items-center gap-2"
-              >
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"
-                  />
-                </svg>
-                <span>Bản đồ</span>
               </button>
 
               {/* Tooltip */}
