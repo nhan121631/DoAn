@@ -62,6 +62,14 @@ public class SecurityConfig {
                                                 .requestMatchers("/api/requirements/**").authenticated()
                                                 .requestMatchers("/api/requirements/landlord/**")
                                                 .hasAnyRole("Landlords", "Administrators")
+
+                                                //feedback
+                                                .requestMatchers(HttpMethod.GET, "/api/rooms/*/feedbacks").permitAll() // xem feedback
+                                                .requestMatchers(HttpMethod.POST, "/api/rooms/*/feedbacks").hasRole("Users") // viết feedback
+                                                .requestMatchers(HttpMethod.POST, "/api/rooms/feedbacks/*/reply").hasRole("Landlords") // reply feedback
+//                                                .requestMatchers(HttpMethod.GET, "/api/rooms/*/feedback-access").authenticated() // check quyền
+                                                .requestMatchers(HttpMethod.GET, "/api/rooms/landlords/*/feedbacks").hasRole("Landlords") // landlord xem feedback
+                                                .requestMatchers(HttpMethod.DELETE, "/api/rooms/feedbacks/*").hasAnyRole("Users","Landlords", "Administrators")
                                                 .anyRequest().permitAll())
                                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
                 return http.build();

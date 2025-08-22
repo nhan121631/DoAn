@@ -1,8 +1,11 @@
 package com.ants.ktc.ants_ktc.entities;
 
+import com.ants.ktc.ants_ktc.enums.FeedbackStatus;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "ratings")
@@ -23,7 +26,14 @@ public class Rating extends BaseEntity {
     @Column(name = "comment", length = 500)
     private String comment;
 
+    @Column(name = "reply", length = 500)
+    private String reply;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
+    private FeedbackStatus status = FeedbackStatus.NEW;
+
     @Column(name = "date_rated", nullable = false, length = 20)
-    private String dateRated;
+    private LocalDateTime dateRated;
 
 }

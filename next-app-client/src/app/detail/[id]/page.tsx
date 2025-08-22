@@ -3,6 +3,7 @@ import Convenient from "@/app/landlord/components/room-detail/convenient";
 import MapSection from "@/app/landlord/components/room-detail/map";
 import { Slide } from "@/app/landlord/components/room-detail/Slide";
 import RightSidebar from "@/app/users/components/RightSidebar";
+import FeedbackLayout from "@/app/landlord/components/room-detail/Feedback";
 import { getRoomById, getRoomVipUser } from "@/services/RoomService";
 import { Image, RoomInUser } from "@/types/types";
 
@@ -148,6 +149,10 @@ export default async function Page({
             </div>
             <Convenient features={room.convenients} />
             <hr className="my-5 text-gray-300" />
+            <div className="">
+              <FeedbackLayout roomId= {id}/>
+            </div>
+            <hr className="my-2 text-gray-300" />
             <MapSection
               address={
                 room.address.street +
