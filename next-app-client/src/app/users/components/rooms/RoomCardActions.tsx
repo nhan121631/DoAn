@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { FaHeart, FaRegCheckCircle } from "react-icons/fa";
 import { IoIosAddCircleOutline } from "react-icons/io";
-import { useFavoriteStore } from "@/stores/FavoriteStore";
+import { useFavoriteStore } from "@/stores/favoriteStore";
 import { useCompareStore } from "@/stores/CompareStore";
 
 

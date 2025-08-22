@@ -2,9 +2,12 @@ package com.ants.ktc.ants_ktc.controllers;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
+import com.ants.ktc.ants_ktc.dtos.user.UserNameResponseDto;
+import com.ants.ktc.ants_ktc.repositories.projection.UserProfileProjection;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -36,6 +39,17 @@ public class ProfileController {
     @Autowired
     private Validator validator;
 
+    @GetMapping("/getname/{id}")
+    public ResponseEntity<?> getUserProfileById(@PathVariable UUID id) {
+        Optional<UserNameResponseDto> userProfile = profileService.getFullNameById(id);
+
+        if (userProfile.isPresent()) {
+            return ResponseEntity.ok(userProfile.get());
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
     @PatchMapping("/update")
 
     public ResponseEntity<UserProfileResponseDto> updateProfile(
@@ -57,7 +71,7 @@ public class ProfileController {
         return ResponseEntity.ok(result);
     }
 
-    @GetMapping("{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<UserProfileResponseDto> getProfile(@PathVariable("id") UUID id) {
         UserProfileResponseDto profile = profileService.getProfile(id);
         return ResponseEntity.ok(profile);

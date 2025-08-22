@@ -2,6 +2,19 @@
 import { API_URL } from "./Constant";
 import { UserSearchPreferences } from "../types/types";
 
+export async function getFullName(id: string) {
+  const response = await fetch(`http://localhost:3333/api/profile/getname/${id}`, {
+    method: "GET",
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch full name");
+  }
+
+  const data = await response.json();
+  return data.fullName;
+};
+
 export async function updateProfile(avatar: File | null, profile: string) {
   const formData = new FormData();
   if (avatar) {

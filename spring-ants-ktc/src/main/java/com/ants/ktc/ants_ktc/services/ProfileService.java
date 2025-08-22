@@ -3,9 +3,13 @@ package com.ants.ktc.ants_ktc.services;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 
+import com.ants.ktc.ants_ktc.dtos.user.UserNameResponseDto;
+import com.ants.ktc.ants_ktc.repositories.projection.UserProfileProjection;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -67,6 +71,16 @@ public class ProfileService {
                                 .street(address.getStreet())
                                 .ward(wardDto)
                                 .build();
+        }
+
+        public Optional<UserNameResponseDto> getFullNameById(UUID id){
+                Optional<UserProfileProjection> projection = userJpaRepository.findFullNameById(id);
+                return projection.map(p ->{
+                        UserNameResponseDto responseDto = new UserNameResponseDto();
+                        responseDto.setUserId(p.getId());
+                        responseDto.setFullName(p.getFullName());
+                        return responseDto;
+                });
         }
 
         private String removePrefix(String text, String prefix) {
