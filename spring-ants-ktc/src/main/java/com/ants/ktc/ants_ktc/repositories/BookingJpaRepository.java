@@ -94,6 +94,7 @@ public interface BookingJpaRepository extends JpaRepository<Booking, UUID> {
                         "WHERE b.status = 4 AND b.isRemoved = 0")
         List<Booking> findActiveBookingsForAvailabilityCheck();
 
+
         // Lấy danh sách booking theo user
         // @Query(value = "SELECT b FROM Booking b " +
         // "JOIN FETCH b.room r " +
