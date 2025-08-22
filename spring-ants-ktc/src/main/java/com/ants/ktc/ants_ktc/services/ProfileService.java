@@ -3,6 +3,7 @@ package com.ants.ktc.ants_ktc.services;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +14,7 @@ import com.ants.ktc.ants_ktc.dtos.address.AddressResponseDto;
 import com.ants.ktc.ants_ktc.dtos.address.DistrictResponseDto;
 import com.ants.ktc.ants_ktc.dtos.address.ProvinceResponseDto;
 import com.ants.ktc.ants_ktc.dtos.address.WardResponseDto;
+import com.ants.ktc.ants_ktc.dtos.user.UserNameResponseDto;
 import com.ants.ktc.ants_ktc.dtos.userprofile.ProfileUpdateRequestDto;
 import com.ants.ktc.ants_ktc.dtos.userprofile.UserPreferencesUpdateDto;
 import com.ants.ktc.ants_ktc.dtos.userprofile.UserProfileResponseDto;
@@ -23,6 +25,7 @@ import com.ants.ktc.ants_ktc.entities.address.Ward;
 import com.ants.ktc.ants_ktc.repositories.ProfileJpaRepository;
 import com.ants.ktc.ants_ktc.repositories.UserJpaRepository;
 import com.ants.ktc.ants_ktc.repositories.address.WardJpaRepository;
+import com.ants.ktc.ants_ktc.repositories.projection.UserProfileProjection;
 
 @Service
 public class ProfileService {
@@ -67,6 +70,16 @@ public class ProfileService {
                                 .street(address.getStreet())
                                 .ward(wardDto)
                                 .build();
+        }
+
+        public Optional<UserNameResponseDto> getFullNameById(UUID id) {
+                Optional<UserProfileProjection> projection = userJpaRepository.findFullNameById(id);
+                return projection.map(p -> {
+                        UserNameResponseDto responseDto = new UserNameResponseDto();
+                        responseDto.setUserId(p.getId());
+                        responseDto.setFullName(p.getFullName());
+                        return responseDto;
+                });
         }
 
         private String removePrefix(String text, String prefix) {
@@ -260,10 +273,11 @@ public class ProfileService {
                 profileJpaRepository.save(profile);
         }
 
-        //get search address from user profile
+        // get search address from user profile
         public String getSearchAddress(UUID userId) {
                 UserProfile profile = profileJpaRepository.findByUserId(userId)
-                                .orElseThrow(() -> new IllegalArgumentException("Profile not found for user: " + userId));
+                                .orElseThrow(() -> new IllegalArgumentException(
+                                                "Profile not found for user: " + userId));
                 return profile.getSearchAddress();
         }
 
@@ -278,6 +292,7 @@ public class ProfileService {
 
         /**
          * Tính khoảng cách từ user preferences đến địa chỉ của room (theo tọa độ)
+         * 
          * @return Khoảng cách tính bằng km, hoặc Double.MAX_VALUE nếu không tính được
          */
         public double calculateDistanceToRoom(Double userLatitude, Double userLongitude, String roomAddressString) {
@@ -403,6 +418,14 @@ public class ProfileService {
 
                 // Tính điểm dựa trên tỷ lệ từ khớp
                 return totalWords > 0 ? Math.min(100, (matchCount * 100) / totalWords) : 0;
+        }
+
+        public boolean isHaveBankAccount(UUID userId) {
+                User user = userJpaRepository.findById(userId)
+                                .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
+                UserProfile profile = user.getProfile();
+                return profile != null && profile.getBankNumber() != null && !profile.getBankNumber().isEmpty();
+
         }
 
         /**

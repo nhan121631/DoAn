@@ -14,6 +14,8 @@ import { getPostTypes } from "@/services/TypePostService";
 import { getConvenients } from "@/services/Convenients";
 import { createRoom } from "@/services/RoomService";
 import { message } from "antd";
+import { isHaveBankAccount } from "@/services/ProfileService";
+import { useSession } from "next-auth/react";
 
 type ProvinceOption = {
   label: string;
@@ -57,6 +59,7 @@ const AddRoomForm: React.FC<{ onFinish?: (values: RoomData) => void }> = (
   );
   const [totalPrice, setTotalPrice] = React.useState<number>(0);
   const [convenients, setConvenients] = React.useState<Convenient[]>([]);
+  const [isHaveBank, setIsHaveBank] = React.useState<boolean>(false);
 
   useEffect(() => {
     const fetchConvenients = async () => {
@@ -70,6 +73,21 @@ const AddRoomForm: React.FC<{ onFinish?: (values: RoomData) => void }> = (
     fetchConvenients();
   }, []);
 
+  const { data: session } = useSession();
+  if (!session) {
+    return <div>Please log in to add a room.</div>;
+  }
+  useEffect(() => {
+    const fetchIsHaveBank = async () => {
+      try {
+        const data = await isHaveBankAccount();
+        setIsHaveBank(data);
+      } catch (error) {
+        console.error("Failed to check bank account existence:", error);
+      }
+    };
+    fetchIsHaveBank();
+  }, []);
   // Tính giá khi thay đổi ngày hoặc loại bài đăng
   useEffect(() => {
     if (!selectedTypePostId || !startDate || !endDate) {
@@ -233,6 +251,18 @@ const AddRoomForm: React.FC<{ onFinish?: (values: RoomData) => void }> = (
   return (
     <>
       {contextHolder}
+      {!isHaveBank && (
+        <div className="flex-1 flex justify-center items-center bg-gradient-to-r from-amber-400 to-yellow-500 rounded-lg shadow-md p-6">
+          <div className="text-center">
+            <div className="text-white font-semibold text-xl mb-2">
+              Bank Account Required
+            </div>
+            <p className="text-amber-50 text-sm">
+              Please link a bank account in profile to add your room!!!
+            </p>
+          </div>
+        </div>
+      )}
 
       <div className="w-full min-h-screen flex items-center justify-center bg-gray-50 dark:bg-[#171f2f] dark:text-white p-0 m-0">
         <Form

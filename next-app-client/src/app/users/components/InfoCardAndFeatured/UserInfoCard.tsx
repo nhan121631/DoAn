@@ -214,8 +214,8 @@ export default function UserInfoCard({ id }: { id: string }) {
                 &times;
               </button>
               <ChatClient
-                userId={session?.user?.id ? String(session.user.id) : ""}
-                defaultToUserId={landlord.id ? String(landlord.id) : ""}
+                senderId={session?.user?.id ? String(session.user.id) : ""}
+                recipientId={landlord.id ? String(landlord.id) : ""}
                 defaultToUserName={landlord.fullName}
                 // sendMessage={handleSendMessage}
               />

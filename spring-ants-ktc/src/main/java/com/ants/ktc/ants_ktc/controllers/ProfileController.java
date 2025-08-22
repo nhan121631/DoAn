@@ -2,6 +2,7 @@ package com.ants.ktc.ants_ktc.controllers;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -13,10 +14,12 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.ants.ktc.ants_ktc.dtos.user.UserNameResponseDto;
 import com.ants.ktc.ants_ktc.dtos.userprofile.ProfileUpdateRequestDto;
 import com.ants.ktc.ants_ktc.dtos.userprofile.UserPreferencesUpdateDto;
 import com.ants.ktc.ants_ktc.dtos.userprofile.UserProfileResponseDto;
@@ -35,6 +38,17 @@ public class ProfileController {
 
     @Autowired
     private Validator validator;
+
+    @GetMapping("/getname/{id}")
+    public ResponseEntity<?> getUserProfileById(@PathVariable("id") UUID id) {
+        Optional<UserNameResponseDto> userProfile = profileService.getFullNameById(id);
+
+        if (userProfile.isPresent()) {
+            return ResponseEntity.ok(userProfile.get());
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
 
     @PatchMapping("/update")
 
@@ -57,7 +71,7 @@ public class ProfileController {
         return ResponseEntity.ok(result);
     }
 
-    @GetMapping("{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<UserProfileResponseDto> getProfile(@PathVariable("id") UUID id) {
         UserProfileResponseDto profile = profileService.getProfile(id);
         return ResponseEntity.ok(profile);
@@ -79,10 +93,9 @@ public class ProfileController {
         }
     }
 
-    //get search address by userId
+    // get search address by userId
     @GetMapping("/{userId}/preferences")
-    public ResponseEntity<UserPreferencesUpdateDto> getUserPreferences(@PathVariable("userId")
-            UUID userId) {
+    public ResponseEntity<UserPreferencesUpdateDto> getUserPreferences(@PathVariable("userId") UUID userId) {
         try {
             String searchAddress = profileService.getSearchAddress(userId);
             return ResponseEntity.ok(new UserPreferencesUpdateDto(searchAddress));
@@ -91,4 +104,11 @@ public class ProfileController {
                     .body(new UserPreferencesUpdateDto("Error fetching preferences: " + e.getMessage()));
         }
     }
+
+    @GetMapping("/ishavebank/{userId}")
+    public ResponseEntity<Boolean> isHaveBankAccount(@PathVariable("userId") UUID userId) {
+        boolean hasBankAccount = profileService.isHaveBankAccount(userId);
+        return ResponseEntity.ok(hasBankAccount);
+    }
+
 }
