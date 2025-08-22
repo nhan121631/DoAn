@@ -122,7 +122,7 @@ export default function HeaderUserDashboard() {
   return (
     <>
       <header
-        className={`fixed top-0 left-0 w-full z-50 transition-all duration-500 ease-in-out ${
+        className={` w-full z-50 transition-all duration-500 ease-in-out ${
           isScrolled
             ? "h-[65px] bg-white/90 backdrop-blur-xl shadow-xl border-b border-blue-200/30"
             : "h-[85px] bg-white/95 shadow-lg border-b border-gray-200/50"

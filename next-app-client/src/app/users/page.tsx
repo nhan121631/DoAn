@@ -2,6 +2,7 @@
 import BackToTop from "./components/BackToTop";
 import Chatbot from "./components/Chatbot";
 import CompareRoom from "./components/CompareRoom";
+import SuggestAddressBar from "./components/Filter/SuggestAddressBar";
 import RentalRooms, {
   RentalRoomsSearchParams,
 } from "./components/rental_rooms";
@@ -23,7 +24,12 @@ export default async function UsersPage({
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-white">
-      <RentalRooms searchParams={normalizedParams as RentalRoomsSearchParams} />
+      <div className="w-full max-w-7xl mx-auto px-4">
+        {/* <SuggestAddressBar showSaveButton={true} /> */}
+        <RentalRooms
+          searchParams={normalizedParams as RentalRoomsSearchParams}
+        />
+      </div>
       <BackToTop />
       <CompareRoom />
       <Chatbot />

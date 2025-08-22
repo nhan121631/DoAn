@@ -16,7 +16,6 @@ export default function UsersLayout({ children }: UsersLayoutProps) {
     <div className="min-h-screen flex flex-col bg-white items-center">
       <HeaderUserDashboard />
       <SuggestAddressBar showSaveButton={true} />
-
       {/* Banner/Slider */}
       {/* <Banner /> */}
       <div className="flex flex-row w-full max-w-full justify-center relative">

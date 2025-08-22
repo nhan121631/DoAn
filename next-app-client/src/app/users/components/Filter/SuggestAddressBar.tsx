@@ -1,6 +1,8 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React, { useEffect, useState } from "react";
+import styles from "./SuggestAddressBar.module.css";
 import {
   getDistricts,
   getProvinces,
@@ -17,27 +19,15 @@ import { useRouter } from "next/navigation";
 import {
   EnvironmentOutlined,
   InfoCircleOutlined,
-  SaveOutlined,
+  SearchOutlined,
+  HomeOutlined,
+  AimOutlined,
 } from "@ant-design/icons";
-import { Search } from "lucide-react";
 
 type SelectOption = {
   label: string;
   value: string;
 };
-
-// interface GoongGeocodeResponse {
-//   results: Array<{
-//     formatted_address: string;
-//     address_components: Array<{
-//       types: string[];
-//       long_name: string;
-//       short_name: string;
-//     }>;
-//   }>;
-// }
-
-// const GOONG_API_KEY = process.env.NEXT_PUBLIC_GOONG_API_KEY;
 
 export interface SuggestAddressBarProps {
   onChange?: (address: {
@@ -77,14 +67,26 @@ function SuggestAddressBar({
   );
   const [loadingPreferences, setLoadingPreferences] = useState(true);
   const [showTooltip, setShowTooltip] = useState(false);
-  // const [loadingLocation, setLoadingLocation] = useState(false);
+  const [isGettingLocation, setIsGettingLocation] = useState(false);
 
-  console.log(
-    "Show tooltip:",
-    showTooltip,
-    "Current preferences:",
-    currentPreferences
-  );
+  // Scroll states
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [barTop, setBarTop] = useState(90);
+
+  // Handle scroll effects with dynamic top
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollTop = window.scrollY;
+      const newTop = Math.max(0, 90 - scrollTop);
+      setBarTop(newTop);
+      setIsScrolled(scrollTop > 10);
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   useEffect(() => {
     if (showTooltip) {
       const timer = setTimeout(() => {
@@ -206,7 +208,7 @@ function SuggestAddressBar({
           },
           session
         );
-        messageApi.success("Đã lưu thành công!");
+        messageApi.success("Đã lưu thành công!", 3);
 
         await loadUserPreferences();
 
@@ -216,11 +218,11 @@ function SuggestAddressBar({
       }
     } catch (error) {
       if (error instanceof Error && error.message.includes("validation")) {
-        messageApi.error("Vui lòng điền đầy đủ tỉnh, quận/huyện, phường/xã!");
+        messageApi.error("Vui lòng điền đầy đủ tỉnh, quận/huyện, phường/xã!", 3);
       } else if (error instanceof Error) {
-        messageApi.error("Lưu thất bại! " + error.message);
+        messageApi.error("Lưu thất bại! " + error.message, 3);
       } else {
-        messageApi.error("Vui lòng điền đầy đủ tỉnh, quận/huyện, phường/xã!");
+        messageApi.error("Vui lòng điền đầy đủ tỉnh, quận/huyện, phường/xã!", 3);
       }
       console.error("Error saving address:", error);
     } finally {
@@ -248,6 +250,114 @@ function SuggestAddressBar({
     }
   };
 
+  // Get current location and reverse geocode
+  const getCurrentLocation = async () => {
+    console.log("getCurrentLocation called");
+    
+    if (!navigator.geolocation) {
+      messageApi.error("Trình duyệt không hỗ trợ định vị!");
+      return;
+    }
+
+    // Check if running on secure context
+    if (typeof window !== "undefined" && !window.isSecureContext && window.location.hostname !== "localhost") {
+      messageApi.error("Chức năng định vị chỉ hoạt động trên HTTPS hoặc localhost!");
+      return;
+    }
+
+    setIsGettingLocation(true);
+    
+    try {
+      console.log("Requesting geolocation permission...");
+      
+      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            console.log("Geolocation success:", pos);
+            resolve(pos);
+          },
+          (err) => {
+            console.error("Geolocation error:", err);
+            reject(err);
+          },
+          {
+            enableHighAccuracy: true,
+            timeout: 15000,
+            maximumAge: 60000
+          }
+        );
+      });
+
+      const { latitude, longitude } = position.coords;
+      console.log("Current position:", latitude, longitude);
+      
+      // Reverse geocoding using Goong API
+      const GOONG_API_KEY = process.env.NEXT_PUBLIC_GOONG_API_KEY;
+      console.log("GOONG_API_KEY available:", !!GOONG_API_KEY);
+      
+      if (!GOONG_API_KEY) {
+        messageApi.error("Thiếu API key cho dịch vụ bản đồ!", 3);
+        return;
+      }
+      
+      const response = await fetch(
+        `https://rsapi.goong.io/Geocode?latlng=${latitude},${longitude}&api_key=${GOONG_API_KEY}`
+      );
+      
+      console.log("Goong API response status:", response.status);
+      
+      if (!response.ok) {
+        throw new Error(`Không thể lấy thông tin địa chỉ (Status: ${response.status})`);
+      }
+
+      const data = await response.json();
+      console.log("Goong API response data:", data);
+      
+      if (data.results && data.results.length > 0) {
+        const result = data.results[0];
+        const formattedAddress = result.formatted_address || "";
+        
+        // Save location to database directly
+        const userId = session?.user?.userProfile?.id;
+        if (userId && formattedAddress) {
+          await updatePreferences(
+            userId,
+            {
+              searchAddress: formattedAddress,
+            },
+            session
+          );
+          
+          // Update current preferences
+          setCurrentPreferences(formattedAddress);
+          
+          messageApi.success("Đã cập nhật vị trí hiện tại thành công!", 3);
+          
+          if (onSaveSuccess) onSaveSuccess();
+          setShowTooltip(true);
+        } else {
+          messageApi.success("Đã lấy vị trí hiện tại thành công!", 3);
+        }
+      } else {
+        messageApi.warning("Không thể xác định địa chỉ chính xác từ vị trí hiện tại", 3);
+      }
+    } catch (error: any) {
+      console.error("Error getting location:", error);
+      
+      if (error.code === 1 || error.code === GeolocationPositionError.PERMISSION_DENIED) {
+        messageApi.error("Bạn đã từ chối cấp quyền truy cập vị trí. Vui lòng cho phép truy cập vị trí trong cài đặt trình duyệt.", 4);
+      } else if (error.code === 2 || error.code === GeolocationPositionError.POSITION_UNAVAILABLE) {
+        messageApi.error("Không thể xác định vị trí hiện tại. Vui lòng kiểm tra GPS/Wi-Fi.", 4);
+      } else if (error.code === 3 || error.code === GeolocationPositionError.TIMEOUT) {
+        messageApi.error("Hết thời gian chờ khi lấy vị trí. Vui lòng thử lại.", 4);
+      } else {
+        messageApi.error("Có lỗi xảy ra khi lấy vị trí: " + (error.message || "Lỗi không xác định"), 4);
+      }
+    } finally {
+      setIsGettingLocation(false);
+    }
+  };
+
   useEffect(() => {
     if (session) {
       loadUserPreferences();
@@ -255,301 +365,141 @@ function SuggestAddressBar({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session]);
 
-  // // Function to get current location and reverse geocode
-  // const getCurrentLocation = async () => {
-  //   if (!navigator.geolocation) {
-  //     messageApi.error("Trình duyệt không hỗ trợ định vị!");
-  //     return;
-  //   }
-
-  //   setLoadingLocation(true);
-  //   try {
-  //     const position = await new Promise<GeolocationPosition>(
-  //       (resolve, reject) => {
-  //         navigator.geolocation.getCurrentPosition(resolve, reject, {
-  //           enableHighAccuracy: true,
-  //           timeout: 10000,
-  //           maximumAge: 60000,
-  //         });
-  //       }
-  //     );
-
-  //     const { latitude, longitude } = position.coords;
-
-  //     // Use Goong reverse geocoding API
-  //     const response = await fetch(
-  //       `https://rsapi.goong.io/Geocode?latlng=${latitude},${longitude}&api_key=${GOONG_API_KEY}`
-  //     );
-
-  //     if (!response.ok) {
-  //       throw new Error("Không thể lấy địa chỉ từ tọa độ");
-  //     }
-
-  //     const data: GoongGeocodeResponse = await response.json();
-  //     if (data.results && data.results.length > 0) {
-  //       const result = data.results[0];
-  //       const addressComponents = result.address_components;
-
-  //       // Extract address components
-  //       let provinceName = "";
-  //       let districtName = "";
-  //       let wardName = "";
-  //       let specificAddress = "";
-
-  //       addressComponents.forEach(
-  //         (component: {
-  //           types: string[];
-  //           long_name: string;
-  //           short_name: string;
-  //         }) => {
-  //           const types = component.types;
-  //           if (types.includes("administrative_area_level_1")) {
-  //             provinceName = component.long_name;
-  //           } else if (types.includes("administrative_area_level_2")) {
-  //             districtName = component.long_name;
-  //           } else if (
-  //             types.includes("administrative_area_level_3") ||
-  //             types.includes("sublocality_level_1")
-  //           ) {
-  //             wardName = component.long_name;
-  //           } else if (
-  //             types.includes("street_number") ||
-  //             types.includes("route")
-  //           ) {
-  //             if (specificAddress) {
-  //               specificAddress = component.long_name + " " + specificAddress;
-  //             } else {
-  //               specificAddress = component.long_name;
-  //             }
-  //           }
-  //         }
-  //       );
-
-  //       // Find matching province, district, ward IDs
-  //       const matchedProvince = provinces.find(
-  //         (p) =>
-  //           p.label.toLowerCase().includes(provinceName.toLowerCase()) ||
-  //           provinceName.toLowerCase().includes(p.label.toLowerCase())
-  //       );
-
-  //       if (matchedProvince) {
-  //         // Load districts for the province
-  //         await handleProvinceChange(matchedProvince.value, false);
-
-  //         // Wait a bit for districts to load
-  //         setTimeout(async () => {
-  //           const districtData = await getDistricts(matchedProvince.value);
-  //           const districtOptions = districtData.map((item: District) => ({
-  //             label: item.name,
-  //             value: String(item.id),
-  //           }));
-
-  //           const matchedDistrict = districtOptions.find(
-  //             (d: SelectOption) =>
-  //               d.label.toLowerCase().includes(districtName.toLowerCase()) ||
-  //               districtName.toLowerCase().includes(d.label.toLowerCase())
-  //           );
-
-  //           if (matchedDistrict) {
-  //             // Load wards for the district
-  //             setTimeout(async () => {
-  //               const wardData = await getWards(matchedDistrict.value);
-  //               const wardOptions = wardData.map((item: Ward) => ({
-  //                 label: item.name,
-  //                 value: String(item.id),
-  //               }));
-
-  //               const matchedWard = wardOptions.find(
-  //                 (w: SelectOption) =>
-  //                   w.label.toLowerCase().includes(wardName.toLowerCase()) ||
-  //                   wardName.toLowerCase().includes(w.label.toLowerCase())
-  //               );
-
-  //               // Set form values
-  //               form.setFieldsValue({
-  //                 specificAddress:
-  //                   specificAddress || result.formatted_address.split(",")[0],
-  //                 province: matchedProvince.value,
-  //                 district: matchedDistrict.value,
-  //                 ward: matchedWard?.value || null,
-  //               });
-
-  //               messageApi.success("Đã lấy vị trí hiện tại thành công!");
-  //             }, 500);
-  //           } else {
-  //             // Set only province and district
-  //             form.setFieldsValue({
-  //               specificAddress: result.formatted_address.split(",")[0],
-  //               province: matchedProvince.value,
-  //               district: null,
-  //               ward: null,
-  //             });
-  //             messageApi.warning(
-  //               "Chỉ tìm thấy tỉnh/thành phố, vui lòng chọn quận/huyện và phường/xã!"
-  //             );
-  //           }
-  //         }, 500);
-  //       } else {
-  //         // Just set the formatted address
-  //         form.setFieldsValue({
-  //           specificAddress: result.formatted_address,
-  //           province: null,
-  //           district: null,
-  //           ward: null,
-  //         });
-  //         messageApi.warning(
-  //           "Không tìm thấy thông tin hành chính, vui lòng chọn thủ công!"
-  //         );
-  //       }
-  //     } else {
-  //       throw new Error("Không tìm thấy địa chỉ");
-  //     }
-  //   } catch (error) {
-  //     console.error("Error getting location:", error);
-  //     if (error instanceof GeolocationPositionError) {
-  //       switch (error.code) {
-  //         case error.PERMISSION_DENIED:
-  //           messageApi.error(
-  //             "Vui lòng cho phép truy cập vị trí trong trình duyệt!"
-  //           );
-  //           break;
-  //         case error.POSITION_UNAVAILABLE:
-  //           messageApi.error("Không thể xác định vị trí hiện tại!");
-  //           break;
-  //         case error.TIMEOUT:
-  //           messageApi.error("Hết thời gian chờ lấy vị trí!");
-  //           break;
-  //         default:
-  //           messageApi.error("Lỗi không xác định khi lấy vị trí!");
-  //           break;
-  //       }
-  //     } else {
-  //       messageApi.error("Không thể lấy thông tin địa chỉ từ vị trí hiện tại!");
-  //     }
-  //   } finally {
-  //     setLoadingLocation(false);
   return (
     <div
-      className="w-full bg-white/95 shadow-lg border-b border-gray-200/50 z-40"
-      style={{ position: "sticky", top: 0 }}
+      className={`fixed left-0 right-0 z-50 transition-all duration-300 ease-out ${
+        isScrolled
+          ? "bg-white/95 backdrop-blur-lg shadow-lg border-b border-gray-200/50"
+          : "bg-gradient-to-b from-white via-white to-white/90"
+      }`}
+      style={{
+        top: barTop,
+        transition: "top 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+      }}
     >
-      <div className="w-full max-w-7xl mx-auto px-4 pt-2 pb-2">
-        {contextHolder}
+      {contextHolder}
+      <div className="w-full max-w-7xl mx-auto px-4">
+        {/* Current search area display - Enhanced design */}
+        {currentPreferences && !loadingPreferences && isScrolled && (
+          <div className="my-1 p-3 bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-blue-400 rounded-r-lg">
+            <p className="text-sm text-blue-800 font-medium">
+              <EnvironmentOutlined className="text-indigo-600 text-sm" /> Khu
+              vực tìm kiếm hiện tại:{" "}
+              <span className="font-normal">{currentPreferences}</span>
+            </p>
+          </div>
+        )}
 
-      {/* Current search area display */}
-      {currentPreferences && !loadingPreferences && (
-        <div className="mb-4 p-3 bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-blue-400 rounded-r-lg">
-          <p className="text-sm text-blue-800 font-medium">
-            Khu vực tìm kiếm hiện tại:{" "}
-            <span className="font-normal">{currentPreferences}</span>
-          </p>
-        </div>
-      )}
-
-        {/* Main search bar */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 hover:shadow-md transition-shadow duration-200">
+        {/* Main search bar - Compact redesign */}
+        <div className="py-2.5">
           <Form
             form={form}
             layout="inline"
             className="w-full"
             initialValues={initialValue}
           >
-            <div className="flex items-center gap-3 w-full flex-wrap lg:flex-nowrap">
-              {/* Address Input - takes remaining space */}
-              <div className="flex-1 min-w-[200px]">
+            <div className="flex items-stretch gap-2 w-full">
+              {/* Address Input - Compact */}
+              <div className="flex-1 min-w-[180px]">
                 <Form.Item name="specificAddress" className="mb-0">
                   <Input
                     placeholder="Nhập địa chỉ cụ thể..."
                     allowClear
-                    className="h-10 rounded-lg border-gray-300 hover:border-blue-400 focus:border-blue-500 transition-colors"
-                    size="middle"
+                    prefix={<HomeOutlined className="text-gray-400 text-sm" />}
+                    className="h-9 rounded-lg border border-gray-200 hover:border-blue-300 focus:border-blue-500 transition-all duration-200"
+                    style={{
+                      fontSize: "13px",
+                      fontWeight: "500",
+                    }}
                   />
                 </Form.Item>
               </div>
 
-              {/* Province - fixed width */}
-              <div className="w-44">
+              {/* Province - Compact */}
+              <div className="w-36">
                 <Form.Item
                   name="province"
                   className="mb-0"
-                  rules={[{ required: true, message: "Chọn tỉnh/thành!" }]}
+                  rules={[{ required: true, message: "Chọn tỉnh!" }]}
                 >
                   <Select
                     options={provinces}
-                    placeholder="Tỉnh/Thành phố"
+                    placeholder="Tỉnh/TP"
                     onChange={(v) => handleProvinceChange(v)}
                     allowClear
                     showSearch
                     optionFilterProp="label"
-                    className="h-10"
-                    size="middle"
+                    className={styles.provinceSelect}
+                    style={{ height: "36px" }}
                   />
                 </Form.Item>
               </div>
 
-              {/* District - fixed width */}
-              <div className="w-40">
+              {/* District - Compact */}
+              <div className="w-32">
                 <Form.Item
                   name="district"
                   className="mb-0"
-                  rules={[{ required: true, message: "Chọn quận/huyện!" }]}
+                  rules={[{ required: true, message: "Chọn quận!" }]}
                 >
                   <Select
                     options={districts}
-                    placeholder="Quận/Huyện"
+                    placeholder="Q/Huyện"
                     onChange={(v) => handleDistrictChange(v)}
                     loading={loadingDistricts}
                     allowClear
                     showSearch
                     optionFilterProp="label"
                     disabled={districts.length === 0}
-                    className="h-10"
-                    size="middle"
+                    className={styles.districtSelect}
+                    style={{ height: "36px" }}
+                    size="small"
                   />
                 </Form.Item>
               </div>
 
-              {/* Ward - fixed width */}
-              <div className="w-36">
+              {/* Ward - Compact */}
+              <div className="w-28">
                 <Form.Item
                   name="ward"
                   className="mb-0"
-                  rules={[{ required: true, message: "Chọn phường/xã!" }]}
+                  rules={[{ required: true, message: "Chọn xã!" }]}
                 >
                   <Select
                     options={wards}
-                    placeholder="Phường/Xã"
+                    placeholder="P/Xã"
                     loading={loadingWards}
                     allowClear
                     showSearch
                     optionFilterProp="label"
                     disabled={wards.length === 0}
-                    className="h-10"
-                    size="middle"
+                    className={styles.wardSelect}
+                    style={{ height: "36px" }}
+                    size="small"
                   />
                 </Form.Item>
               </div>
 
-              {/* Action buttons container */}
-              <div className="flex items-center gap-2 relative">
-                {/* Current location button
+              {/* Action buttons - Compact design */}
+              <div className="flex items-center gap-1.5 relative">
+                {/* Get Current Location button */}
                 <Button
                   type="default"
                   onClick={getCurrentLocation}
-                  loading={loadingLocation}
-                  className="h-10 px-3 border-orange-300 hover:border-orange-400 text-orange-600 hover:text-orange-700 rounded-lg shadow-sm hover:shadow transition-all duration-200"
-                  icon={<AimOutlined />}
+                  loading={isGettingLocation}
+                  className="h-9 w-9 border border-gray-300 hover:border-blue-400 rounded-lg hover:bg-blue-50 transition-all duration-200 flex items-center justify-center p-0"
+                  icon={<AimOutlined className="text-gray-600 hover:text-blue-500 text-sm transition-colors duration-200" />}
                   title="Lấy vị trí hiện tại"
-                /> */}
+                />
 
-                {/* Save button */}
+                {/* Search/Save button */}
                 {showSaveButton && (
                   <Button
                     type="primary"
                     onClick={handleSave}
                     loading={isSaving}
-                    className="h-10 px-4 bg-blue-600 hover:bg-blue-700 border-blue-600 rounded-lg font-medium shadow-sm hover:shadow transition-all duration-200"
-                    icon={<SaveOutlined />}
+                    className="h-9 px-4 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 border-0 rounded-lg font-medium text-xs shadow-sm hover:shadow-md transition-all duration-200"
+                    icon={<SearchOutlined className="text-sm" />}
                   >
                     Tìm kiếm
                   </Button>
@@ -557,24 +507,25 @@ function SuggestAddressBar({
 
                 {/* Info button */}
                 <Button
-                  type="default"
-                  className="h-10 px-3 border-gray-300 hover:border-blue-400 rounded-lg shadow-sm hover:shadow transition-all duration-200"
-                  onClick={() => setShowTooltip(true)}
-                  icon={<InfoCircleOutlined className="text-blue-500" />}
-                  title="Thông tin khu vực"
+                  type="text"
+                  className="h-9 w-9 border-0 rounded-lg hover:bg-gray-100 transition-all duration-200 flex items-center justify-center p-0"
+                  onClick={() => setShowTooltip(!showTooltip)}
+                  icon={
+                    <InfoCircleOutlined className="text-gray-500 hover:text-blue-500 text-sm transition-colors duration-200" />
+                  }
                 />
 
                 {/* Map button */}
                 <Button
                   type="primary"
-                  onClick={handleSave}
-                  loading={isSaving}
-                  className="h-10 px-4 bg-blue-600 hover:bg-blue-700 border-blue-600 rounded-lg font-medium shadow-sm hover:shadow transition-all duration-200"
-                  icon={<Search />}
+                  onClick={() => router.push("/testmap")}
+                  className="h-9 px-4 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 border-0 rounded-lg font-medium text-xs shadow-sm hover:shadow-md transition-all duration-200"
+                  icon={<EnvironmentOutlined className="text-sm" />}
                 >
-                  Search
+                  Bản đồ
                 </Button>
 
+                {/* Enhanced Tooltip */}
                 {/* Tooltip */}
                 {showTooltip && (
                   <div className="absolute top-full right-0 mt-2 z-50 p-4 bg-white text-gray-800 rounded-lg shadow-lg border border-gray-200 min-w-[320px] max-w-sm animate-fadeIn">
