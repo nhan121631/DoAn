@@ -18,12 +18,14 @@ interface ChatClientProps {
   senderId: string;
   recipientId: string;
   defaultToUserName: string;
+  fullHeight?: boolean;
 }
 
 export default function ChatClient({
   senderId,
   recipientId,
   defaultToUserName,
+  fullHeight = false,
 }: ChatClientProps) {
   const [msg, setMsg] = useState<string>("");
   const { data: session } = useSession();
@@ -101,7 +103,9 @@ export default function ChatClient({
   const isConnected = true;
 
   return (
-    <div className="w-full h-full flex flex-col bg-white dark:bg-gray-900 rounded-2xl shadow-2xl overflow-hidden border border-gray-100/50 dark:border-gray-800 backdrop-blur-sm">
+    <div className={`relative w-full flex flex-col bg-white dark:bg-gray-900 rounded-2xl shadow-2xl overflow-hidden border border-gray-100/50 dark:border-gray-800 backdrop-blur-sm ${
+        fullHeight ? "h-full" : "h-[590px]"
+      }`}>
       {/* Header */}
       <div className="relative bg-gradient-to-r from-blue-500 via-purple-500 to-blue-600 px-6 py-4 text-white">
         <div className="flex items-center space-x-4">
@@ -143,9 +147,9 @@ export default function ChatClient({
 
       {/* Messages */}
       <div
-        className="overflow-y-auto p-4 space-y-4 bg-gray-50 dark:bg-gray-800"
-        style={{ height: "450px" }}
-        ref={messagesEndRef}
+        className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 dark:bg-gray-800"
+    ref={messagesEndRef}
+    style={{ paddingBottom: "80px" }}
       >
         {allMessages.map((m) => (
           <div
@@ -179,20 +183,34 @@ export default function ChatClient({
       </div>
 
       {/* Input */}
-      <div className="p-4 border-t border-gray-200 dark:border-gray-700 flex items-center space-x-2">
+      <div className="absolute bottom-0 left-0 w-full px-4 py-3 border-t border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/80 backdrop-blur flex items-center gap-3 shadow-lg">
         <input
           value={msg}
           onChange={(e) => setMsg(e.target.value)}
           placeholder="Type a message..."
           onKeyDown={(e) => e.key === "Enter" && sendMessage()}
           disabled={sending}
-          className="flex-1 rounded-xl border border-gray-300 dark:border-gray-600 px-4 py-2 focus:outline-none"
+          className="flex-1 rounded-full border border-gray-300 dark:border-gray-600 px-5 py-3 text-base bg-white/70 dark:bg-gray-800/70 shadow focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all duration-200 outline-none"
         />
         <button
           onClick={sendMessage}
-          className="px-4 py-2 bg-blue-500 text-white rounded-xl hover:bg-blue-600"
+          disabled={sending || !msg.trim()}
+          className="flex items-center justify-center p-3 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg hover:scale-105 hover:shadow-xl transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+          style={{ minWidth: 48, minHeight: 48 }}
         >
-          Send
+          <svg
+            className="w-6 h-6"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2.2}
+            viewBox="0 0 24 24"
+          >
+            <path
+              d="M5 12l14-7-7 14-2-5-5-2z"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
         </button>
       </div>
     </div>

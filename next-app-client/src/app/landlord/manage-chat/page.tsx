@@ -18,6 +18,7 @@ interface ChatUser {
   name?: string;
   lastMessageTime?: Date;
   unreadCount?: number;
+  lastMessageText?: string;
 }
 
 // ...existing code...
@@ -121,18 +122,18 @@ export default function LandlordManageChatPage() {
       );
 
       // Lấy ra danh sách unique userId khác landlord và tin nhắn mới nhất
-      const usersMap: Record<string, ChatUser> = {};
-      
+      const usersMap: Record<string, ChatUser & { lastMessageText?: string }> = {};
       fetchedMessages.forEach((msg) => {
-          const otherId = msg.senderId === landlordId ? msg.recipientId : msg.senderId;
-          if (!otherId || (usersMap[otherId]?.lastMessageTime && usersMap[otherId].lastMessageTime! > msg.createdAt!)) return;
+        const otherId = msg.senderId === landlordId ? msg.recipientId : msg.senderId;
+        if (!otherId || (usersMap[otherId]?.lastMessageTime && usersMap[otherId].lastMessageTime! > msg.createdAt!)) return;
 
-          usersMap[otherId] = {
-              id: otherId,
-              name: otherId, // Sẽ được cập nhật sau
-              lastMessageTime: msg.createdAt || new Date(),
-              unreadCount: 0,
-          };
+        usersMap[otherId] = {
+          id: otherId,
+          name: otherId, // Sẽ được cập nhật sau
+          lastMessageTime: msg.createdAt || new Date(),
+          unreadCount: 0,
+          lastMessageText: msg.text || "",
+        };
       });
 
       // Lấy danh sách ID để fetch tên
@@ -157,7 +158,8 @@ export default function LandlordManageChatPage() {
     // Cập nhật userList với tên mới
     const updatedUserList = Object.values(usersMap).map(user => ({
       ...user,
-      name: nameMap.get(user.id) || user.id
+      name: nameMap.get(user.id) || user.id,
+      lastMessageText: user.lastMessageText || ""
     }));
     console.log('Updated userList:', updatedUserList);
     setUserList(updatedUserList);
@@ -267,12 +269,21 @@ export default function LandlordManageChatPage() {
               ))}
             </div>
           ) : (
-            <div className="space-y-2 max-h-[calc(100vh-200px)] overflow-y-auto scrollbar-none">
+            <div className="space-y-3 max-h-[calc(100vh-200px)] overflow-y-auto scrollbar-none">
               {sortedUserList.map((user, index) => {
                 const isSelected = selectedUserId === user.id;
-                // TODO: Bổ sung logic tính unreadCount từ Firebase
-                const isUnread = false; 
-
+                const isUnread = user.unreadCount && user.unreadCount > 0;
+                // Format time
+                let timeStr = "";
+                if (user.lastMessageTime) {
+                  const d = user.lastMessageTime;
+                  const now = new Date();
+                  if (d.toDateString() === now.toDateString()) {
+                    timeStr = d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+                  } else {
+                    timeStr = d.toLocaleDateString();
+                  }
+                }
                 return (
                   <div
                     key={user.id}
@@ -280,79 +291,49 @@ export default function LandlordManageChatPage() {
                     style={{ animationDelay: `${index * 50}ms` }}
                   >
                     <button
-                      className={`
-                        group relative w-full text-left p-4 rounded-xl transition-all duration-300
-                        transform hover:scale-105 hover:shadow-lg active:scale-100
-                        ${
-                          isSelected
-                            ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg"
-                            : isUnread
-                            ? "bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 hover:from-amber-100 hover:to-orange-100"
-                            : "bg-slate-50 dark:bg-gray-800 hover:bg-white dark:hover:bg-gray-700 hover:shadow-md"
-                        }
-                      `}
-                      onClick={() => handleUserSelect(user)}
-                    >
-                      <div className="flex items-center space-x-3">
-                        {/* Avatar with animation */}
-                        <div
-                          className={`
-                          relative w-12 h-12 rounded-full flex items-center justify-center font-semibold text-lg
-                          ${
-                            isSelected
-                              ? "bg-white/20 dark:bg-white/30 text-white"
-                              : "bg-gradient-to-br from-blue-400 to-purple-400 text-white"
-                          }
-                          transition-all duration-300 group-hover:scale-110
-                        `}
-                        >
-                          {(user.name || user.id).charAt(0).toUpperCase()}
-
-                          {/* Unread indicator with pulse animation */}
-                          {isUnread && (
-                            <div className="absolute -top-1 -right-1">
-                              <div className="w-4 h-4 bg-amber-400 rounded-full animate-pulse" />
-                              <div className="absolute inset-0 w-4 h-4 bg-amber-400 rounded-full animate-ping opacity-75" />
-                            </div>
-                          )}
-                        </div>
-
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between">
-                            <h3
-                              className={`
-                              font-semibold truncate transition-colors duration-300
-                              ${
-                                isSelected
-                                  ? "text-white"
-                                  : "text-slate-800 group-hover:text-slate-900 dark:text-gray-100 dark:group-hover:text-white"
-                              }
-                            `}
-                            >
-                              {user.name || user.id}
-                            </h3>
-                          </div>
-
-                          {user.lastMessageTime && (
-                            <p
-                              className={`
-                              text-sm mt-1 transition-colors duration-300
-                              ${
-                                isSelected
-                                  ? "text-white/80"
-                                  : "text-slate-500 group-hover:text-slate-600"
-                              }
-                            `}
-                            >
-                              {/* Uncomment nếu cần hiển thị thời gian */}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Hover effect overlay */}
-                      <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-500/0 to-purple-500/0 group-hover:from-blue-500/5 group-hover:to-purple-500/5 transition-all duration-300" />
-                    </button>
+  className={`group relative w-full text-left px-5 py-4 rounded-2xl transition-all duration-300 flex items-center gap-4
+    border-2
+    ${isSelected
+      ? "border-blue-500 bg-gradient-to-r from-blue-100 to-purple-100 shadow-lg"
+      : "border-transparent bg-white dark:bg-gray-800"}
+    hover:ring-2 hover:ring-blue-400 hover:border-blue-400
+    hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 dark:hover:from-blue-900 dark:hover:to-purple-900
+    
+    `}
+  style={{ transition: "box-shadow 0.2s, background 0.2s, border 0.2s, transform 0.2s" }}
+  onClick={() => handleUserSelect(user)}
+>
+  {/* Avatar gradient */}
+  <div className={`relative w-14 h-14 rounded-full flex items-center justify-center font-bold text-xl shadow-lg
+    ${isSelected ? "bg-gradient-to-br from-blue-400 to-purple-400 text-white" : "bg-gradient-to-br from-blue-300 to-purple-300 text-white"}
+    transition-all duration-300 group-hover:scale-105`}
+  >
+    {(user.name || user.id).charAt(0).toUpperCase()}
+    {/* Badge số tin nhắn chưa đọc */}
+    {isUnread && (
+      <span className="absolute -top-2 -right-2 bg-amber-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow animate-pulse">
+        {user.unreadCount}
+      </span>
+    )}
+  </div>
+  {/* Info */}
+  <div className="flex-1 min-w-0">
+    <div className="flex items-center gap-2">
+      <h3 className={`font-semibold text-lg truncate transition-colors duration-200
+        ${isSelected ? "text-blue-700" : "text-slate-800 dark:text-gray-100 group-hover:text-blue-700 dark:group-hover:text-blue-300"}`}>{user.name || user.id}</h3>
+    </div>
+    {user.lastMessageText && (
+      <p className={`text-sm mt-1 truncate transition-colors duration-200
+        ${isSelected ? "text-blue-600" : "text-slate-500 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-300"}`}>{user.lastMessageText}</p>
+    )}
+    {timeStr && (
+      <p className={`text-xs mt-1 transition-colors duration-200
+        ${isSelected ? "text-blue-500" : "text-slate-500 dark:text-gray-400 group-hover:text-blue-500 dark:group-hover:text-blue-300"}`}>{timeStr}</p>
+    )}
+  </div>
+  {/* Hover effect overlay */}
+  <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-blue-500/0 to-purple-500/0 group-hover:from-blue-500/10 group-hover:to-purple-500/10 transition-all duration-300 pointer-events-none z-0" />
+</button>
                   </div>
                 );
               })}
@@ -389,60 +370,59 @@ export default function LandlordManageChatPage() {
 
       {/* Enhanced Chat Area */}
       <div className="flex-1 flex flex-col bg-white/50 dark:bg-gray-900/60 backdrop-blur-sm">
-        <div className="flex-1 flex items-center justify-center">
-          {selectedUserId ? (
-            <div className="w-full max-w-4xl mx-auto h-full animate-fade-in">
-              <ChatClient
-                recipientId={selectedUserId}
-                senderId={landlordId}
-                defaultToUserName={
-                  userList.find((u) => u.id === selectedUserId)?.name || ""
-                }
-              />
-            </div>
-          ) : (
-            <div className="text-center animate-fade-in">
-              {isLoading ? (
-                <div className="flex flex-col items-center space-y-4">
-                  <div className="w-16 h-16 border-4 border-blue-200 border-t-blue-500 rounded-full animate-spin" />
-                  <p className="text-slate-600 font-medium">
-                    Loading conversations...
-                  </p>
-                </div>
-              ) : (
-                <div className="flex flex-col items-center space-y-6 p-8">
-                  <div className="relative">
-                    <div className="w-24 h-24 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center">
-                      <svg
-                        className="w-12 h-12 text-blue-500"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-                        />
-                      </svg>
-                    </div>
-                    <div className="absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full animate-bounce" />
-                  </div>
-                  <div className="text-center">
-                    <h3 className="text-xl font-semibold text-slate-700 mb-2">
-                      Welcome to Chat Management
-                    </h3>
-                    <p className="text-slate-500">
-                      Select a conversation from the sidebar to start chatting
-                    </p>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
+  <div className="flex-1 flex items-center justify-center w-full h-full">
+    {selectedUserId ? (
+      <div className="flex-1 h-full animate-fade-in flex flex-col">
+        <ChatClient
+          recipientId={selectedUserId}
+          senderId={landlordId}
+          defaultToUserName={
+            userList.find((u) => u.id === selectedUserId)?.name || ""
+          }
+          fullHeight={true}
+        />
       </div>
+    ) : (
+      isLoading ? (
+        <div className="flex flex-col items-center justify-center">
+          <div className="w-16 h-16 border-4 border-blue-200 border-t-blue-500 rounded-full animate-spin" />
+          <p className="text-slate-600 font-medium mt-4">
+            Loading conversations...
+          </p>
+        </div>
+      ) : (
+        <div className="flex flex-col items-center justify-center animate-fade-in">
+          <div className="relative">
+            <div className="w-24 h-24 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center">
+              <svg
+                className="w-12 h-12 text-blue-500"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                />
+              </svg>
+            </div>
+            <div className="absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full animate-bounce" />
+          </div>
+          <div className="text-center mt-6">
+            <h3 className="text-xl font-semibold text-slate-700 mb-2">
+              Welcome to Chat Management
+            </h3>
+            <p className="text-slate-500">
+              Select a conversation from the sidebar to start chatting
+            </p>
+          </div>
+        </div>
+      )
+    )}
+  </div>
+</div>
 
       {/* Custom CSS for animations */}
       <style jsx>{`
