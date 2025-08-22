@@ -37,6 +37,129 @@ export interface SuggestAddressBarProps {
   onSaveSuccess?: () => void;
 }
 
+// Custom Select Component with search functionality
+interface CustomSelectProps {
+  options: SelectOption[];
+  value: string;
+  onChange: (value: string) => void;
+  placeholder: string;
+  disabled?: boolean;
+  error?: string;
+  loading?: boolean;
+}
+
+const CustomSelect: React.FC<CustomSelectProps> = ({
+  options,
+  value,
+  onChange,
+  placeholder,
+  disabled = false,
+  error = "",
+  loading = false,
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filteredOptions, setFilteredOptions] =
+    useState<SelectOption[]>(options);
+
+  useEffect(() => {
+    if (searchTerm) {
+      const filtered = options.filter((option) =>
+        option.label.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      setFilteredOptions(filtered);
+    } else {
+      setFilteredOptions(options);
+    }
+  }, [searchTerm, options]);
+
+  const selectedOption = options.find((opt) => opt.value === value);
+
+  const handleSelect = (option: SelectOption) => {
+    onChange(option.value);
+    setIsOpen(false);
+    setSearchTerm("");
+  };
+
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={() => !disabled && setIsOpen(!isOpen)}
+        disabled={disabled}
+        className={`w-full h-11 px-3 pr-8 text-left text-sm font-medium bg-white border-2 rounded-lg transition-all duration-200 shadow-sm focus:ring-4 focus:ring-blue-500/10 disabled:bg-gray-50 disabled:text-gray-400 ${
+          error
+            ? "border-red-300 focus:border-red-500"
+            : "border-gray-200 focus:border-blue-500 hover:border-gray-300"
+        }`}
+      >
+        <span className={selectedOption ? "text-gray-900" : "text-gray-500"}>
+          {loading ? "Đang tải..." : selectedOption?.label || placeholder}
+        </span>
+        <svg
+          className={`absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 transition-transform duration-200 ${
+            isOpen ? "rotate-180" : ""
+          }`}
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M19 9l-7 7-7-7"
+          />
+        </svg>
+      </button>
+
+      {isOpen && (
+        <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-60 overflow-hidden">
+          <div className="p-2 border-b border-gray-100">
+            <input
+              type="text"
+              placeholder="Tìm kiếm..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full px-3 py-2 text-sm border border-gray-200 rounded-md focus:border-blue-500 focus:outline-none"
+              autoFocus
+            />
+          </div>
+          <div className="max-h-44 overflow-y-auto">
+            {filteredOptions.length > 0 ? (
+              filteredOptions.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => handleSelect(option)}
+                  className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-50 transition-colors duration-150 ${
+                    option.value === value
+                      ? "bg-blue-50 text-blue-600"
+                      : "text-gray-900"
+                  }`}
+                >
+                  {option.label}
+                </button>
+              ))
+            ) : (
+              <div className="px-3 py-2 text-sm text-gray-500 text-center">
+                Không tìm thấy kết quả
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Overlay to close dropdown */}
+      {isOpen && (
+        <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
+      )}
+
+      {error && <p className="text-xs text-red-500 mt-1 ml-1">{error}</p>}
+    </div>
+  );
+};
+
 function SuggestAddressBar({
   initialValue,
   showSaveButton = false,
@@ -312,6 +435,9 @@ function SuggestAddressBar({
         const result = data.results[0];
         const formattedAddress = result.formatted_address || "";
 
+        // Update the specific address field with the formatted address
+        handleInputChange("specificAddress", formattedAddress);
+
         const userId = session?.user?.userProfile?.id;
         if (userId && formattedAddress) {
           await updatePreferences(
@@ -361,7 +487,7 @@ function SuggestAddressBar({
   };
 
   return (
-    <div className="sticky top-0 z-40 bg-white/95 backdrop-blur-xl border-b border-gray-200/50 shadow-lg transition-all duration-300">
+    <div className="sticky lg:w-[1200px] md:w-[800px] w-full top-0 z-40 bg-white/95 backdrop-blur-xl border-b border-gray-200/50 shadow-lg transition-all duration-300">
       {/* Message Toast */}
       {message && (
         <div
@@ -398,7 +524,7 @@ function SuggestAddressBar({
       )}
 
       <div className="w-full max-w-7xl mx-auto px-4 py-4">
-        {/* Current Location Display */}
+        {/* Current Location Display - chỉ ẩn phần này khi scroll */}
         {currentPreferences && !loadingPreferences && (
           <div
             className={`mb-4 p-4 bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 border border-blue-200/50 rounded-xl transition-all duration-300 ${
@@ -419,9 +545,9 @@ function SuggestAddressBar({
           </div>
         )}
 
-        {/* Main Form - 2 Rows Layout */}
+        {/* Main Form - luôn hiển thị, không bị ảnh hưởng bởi scroll */}
         <div className="space-y-4">
-          {/* Row 1: Address Input */}
+          {/* Row 1: Address Input with Location Button Inside */}
           <div className="w-full">
             <div className="relative">
               <input
@@ -431,8 +557,9 @@ function SuggestAddressBar({
                 onChange={(e) =>
                   handleInputChange("specificAddress", e.target.value)
                 }
-                className="w-full h-12 px-4 pl-12 text-sm font-medium bg-white border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all duration-200 placeholder-gray-400 shadow-sm hover:border-gray-300"
+                className="w-full h-12 px-4 pl-12 pr-16 text-sm font-medium bg-white border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all duration-200 placeholder-gray-400 shadow-sm hover:border-gray-300"
               />
+              {/* Home Icon */}
               <div className="absolute left-4 top-1/2 -translate-y-1/2">
                 <svg
                   className="w-5 h-5 text-gray-400"
@@ -448,105 +575,19 @@ function SuggestAddressBar({
                   />
                 </svg>
               </div>
-            </div>
-          </div>
-
-          {/* Row 2: Location Selects and Action Buttons */}
-          <div className="flex flex-wrap gap-3 items-start">
-            {/* Province Select */}
-            <div className="flex-1 min-w-[140px] max-w-[200px]">
-              <select
-                value={formData.province}
-                onChange={(e) => handleProvinceChange(e.target.value)}
-                className={`w-full h-11 px-3 text-sm font-medium bg-white border-2 rounded-lg transition-all duration-200 shadow-sm focus:ring-4 focus:ring-blue-500/10 ${
-                  errors.province
-                    ? "border-red-300 focus:border-red-500"
-                    : "border-gray-200 focus:border-blue-500 hover:border-gray-300"
-                }`}
-              >
-                <option value="">Chọn Tỉnh/TP</option>
-                {provinces.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-              {errors.province && (
-                <p className="text-xs text-red-500 mt-1 ml-1">
-                  {errors.province}
-                </p>
-              )}
-            </div>
-
-            {/* District Select */}
-            <div className="flex-1 min-w-[120px] max-w-[180px]">
-              <select
-                value={formData.district}
-                onChange={(e) => handleDistrictChange(e.target.value)}
-                disabled={loadingDistricts || districts.length === 0}
-                className={`w-full h-11 px-3 text-sm font-medium bg-white border-2 rounded-lg transition-all duration-200 shadow-sm focus:ring-4 focus:ring-blue-500/10 disabled:bg-gray-50 disabled:text-gray-400 ${
-                  errors.district
-                    ? "border-red-300 focus:border-red-500"
-                    : "border-gray-200 focus:border-blue-500 hover:border-gray-300"
-                }`}
-              >
-                <option value="">
-                  {loadingDistricts ? "Đang tải..." : "Chọn Q/Huyện"}
-                </option>
-                {districts.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-              {errors.district && (
-                <p className="text-xs text-red-500 mt-1 ml-1">
-                  {errors.district}
-                </p>
-              )}
-            </div>
-
-            {/* Ward Select */}
-            <div className="flex-1 min-w-[120px] max-w-[180px]">
-              <select
-                value={formData.ward}
-                onChange={(e) => handleInputChange("ward", e.target.value)}
-                disabled={loadingWards || wards.length === 0}
-                className={`w-full h-11 px-3 text-sm font-medium bg-white border-2 rounded-lg transition-all duration-200 shadow-sm focus:ring-4 focus:ring-blue-500/10 disabled:bg-gray-50 disabled:text-gray-400 ${
-                  errors.ward
-                    ? "border-red-300 focus:border-red-500"
-                    : "border-gray-200 focus:border-blue-500 hover:border-gray-300"
-                }`}
-              >
-                <option value="">
-                  {loadingWards ? "Đang tải..." : "Chọn P/Xã"}
-                </option>
-                {wards.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-              {errors.ward && (
-                <p className="text-xs text-red-500 mt-1 ml-1">{errors.ward}</p>
-              )}
-            </div>
-
-            {/* Action Buttons */}
-            <div className="flex items-center gap-2 relative ml-auto">
-              {/* Get Location Button */}
+              {/* Location Button Inside Input */}
               <button
                 type="button"
                 onClick={getCurrentLocation}
                 disabled={isGettingLocation}
-                className="h-11 w-11 bg-gradient-to-br from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center disabled:opacity-70 disabled:cursor-not-allowed group"
+                className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 bg-gradient-to-br from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center disabled:opacity-70 disabled:cursor-not-allowed group"
                 title="Lấy vị trí hiện tại"
               >
                 {isGettingLocation ? (
-                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                  <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                 ) : (
                   <svg
-                    className="w-5 h-5 group-hover:scale-110 transition-transform duration-200"
+                    className="w-4 h-4 group-hover:scale-110 transition-transform duration-200"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -566,7 +607,50 @@ function SuggestAddressBar({
                   </svg>
                 )}
               </button>
+            </div>
+          </div>
 
+          {/* Row 2: Location Selects and Action Buttons */}
+          <div className="flex flex-wrap gap-3 items-start">
+            {/* Province Select */}
+            <div className="flex-1 min-w-[140px] max-w-[200px]">
+              <CustomSelect
+                options={provinces}
+                value={formData.province}
+                onChange={handleProvinceChange}
+                placeholder="Chọn Tỉnh/TP"
+                error={errors.province}
+              />
+            </div>
+
+            {/* District Select */}
+            <div className="flex-1 min-w-[120px] max-w-[180px]">
+              <CustomSelect
+                options={districts}
+                value={formData.district}
+                onChange={handleDistrictChange}
+                placeholder="Chọn Q/Huyện"
+                disabled={districts.length === 0}
+                loading={loadingDistricts}
+                error={errors.district}
+              />
+            </div>
+
+            {/* Ward Select */}
+            <div className="flex-1 min-w-[120px] max-w-[180px]">
+              <CustomSelect
+                options={wards}
+                value={formData.ward}
+                onChange={(value) => handleInputChange("ward", value)}
+                placeholder="Chọn P/Xã"
+                disabled={wards.length === 0}
+                loading={loadingWards}
+                error={errors.ward}
+              />
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex items-center gap-2 relative ml-auto">
               {/* Save/Search Button */}
               {showSaveButton && (
                 <button
