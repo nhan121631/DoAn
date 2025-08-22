@@ -121,13 +121,7 @@ export default function HeaderUserDashboard() {
 
   return (
     <>
-      <header
-        className={` w-full z-50 transition-all duration-500 ease-in-out ${
-          isScrolled
-            ? "h-[65px] bg-white/90 backdrop-blur-xl shadow-xl border-b border-blue-200/30"
-            : "h-[85px] bg-white/95 shadow-lg border-b border-gray-200/50"
-        }`}
-      >
+      <header className="fixed top-0 left-0 w-full z-50 h-[85px] bg-white/95 shadow-lg border-b border-gray-200/50">
         {/* Animated background gradient */}
         <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 via-purple-500/5 to-pink-500/5 opacity-0 hover:opacity-100 transition-opacity duration-700"></div>
 
@@ -381,11 +375,7 @@ export default function HeaderUserDashboard() {
       </div>
 
       {/* Spacer with smooth transition */}
-      <div
-        className={`${
-          isScrolled ? "h-[65px]" : "h-[85px]"
-        } transition-all duration-500 ease-in-out`}
-      ></div>
+      <div className="h-[85px]"></div>
 
       {/* Custom styles */}
       <style jsx>{`
