@@ -14,4 +14,5 @@ import java.util.UUID;
 public class UserNameResponseDto {
     private UUID userId;
     private String fullName;
+    private String avatar;
 }
