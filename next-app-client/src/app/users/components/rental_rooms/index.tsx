@@ -165,7 +165,7 @@ export default async function RentalRooms({
                   id="normal-rooms-list"
                   className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4 md:gap-6 lg:gap-4 w-full"
                 >
-                  {roomNormals.data.map((room, index) => (
+                  {filteredRooms.data.map((room, index) => (
                     <div key={index} className="flex justify-center">
                       <RoomCard
                         room={room}
@@ -177,47 +177,54 @@ export default async function RentalRooms({
                     </div>
                   ))}
                 </div>
-                {/* Previous Button */}
+                {/* Pagination */}
                 <div className="flex items-center justify-center gap-4 mt-8">
+                  {/* Previous Button */}
                   <Link
                     href={buildFilterQuery(filters, pageSearch - 1)}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-full font-medium border transition-all duration-200 shadow ${
+                    className={`group flex items-center gap-3 px-6 py-3 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95 ${
                       pageSearch === 0
-                        ? "text-gray-400 bg-gray-100 cursor-not-allowed pointer-events-none border-gray-200"
-                        : "text-blue-600 bg-white hover:bg-blue-50 hover:shadow-lg border-blue-300"
+                        ? "bg-gradient-to-r from-gray-200 to-gray-300 text-gray-500 cursor-not-allowed pointer-events-none"
+                        : "bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-blue-500/30"
                     }`}
                     scroll={false}
                     aria-disabled={pageSearch === 0}
                   >
-                    <BiChevronLeft size={20} />
-                    <span className="hidden sm:inline">Previous</span>
-                  </Link>
-                  {/* Page Info */}
-                  <div className="flex flex-col items-center px-4">
-                    <span className="text-base font-semibold text-gray-700">
-                      Page{" "}
-                      <span className="text-blue-600">{pageSearch + 1}</span> /{" "}
-                      <span className="text-blue-600">
-                        {filteredRooms.totalPages}
-                      </span>
+                    <BiChevronLeft
+                      size={22}
+                      className="transition-transform group-hover:-translate-x-1"
+                    />
+                    <span className="hidden sm:inline font-medium">
+                      Previous
                     </span>
-                    <span className="text-xs text-gray-400">
-                      {filteredRooms.totalPages} rooms found
+                  </Link>
+
+                  {/* Page Info */}
+                  <div className="flex flex-col items-center px-6 py-2 bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/50 shadow-sm">
+                    <span className="text-lg font-bold bg-gradient-to-r from-blue-600 to-blue-700 bg-clip-text text-transparent">
+                      Page {pageSearch + 1} / {filteredRooms.totalPages}
+                    </span>
+                    <span className="text-xs text-gray-500 font-medium">
+                      {filteredRooms.totalRecords} rooms found
                     </span>
                   </div>
+
                   {/* Next Button */}
                   <Link
                     href={buildFilterQuery(filters, pageSearch + 1)}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-full font-medium border transition-all duration-200 shadow ${
+                    className={`group flex items-center gap-3 px-6 py-3 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95 ${
                       pageSearch + 1 >= filteredRooms.totalPages
-                        ? "text-gray-400 bg-gray-100 cursor-not-allowed pointer-events-none border-gray-200"
-                        : "text-blue-600 bg-white hover:bg-blue-50 hover:shadow-lg border-blue-300"
+                        ? "bg-gradient-to-r from-gray-200 to-gray-300 text-gray-500 cursor-not-allowed pointer-events-none"
+                        : "bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-blue-500/30"
                     }`}
                     scroll={false}
                     aria-disabled={pageSearch + 1 >= filteredRooms.totalPages}
                   >
-                    <span className="hidden sm:inline">Next</span>
-                    <BiChevronRight size={20} />
+                    <span className="hidden sm:inline font-medium">Next</span>
+                    <BiChevronRight
+                      size={22}
+                      className="transition-transform group-hover:translate-x-1"
+                    />
                   </Link>
                 </div>
               </div>
@@ -227,7 +234,7 @@ export default async function RentalRooms({
           ) : (
             <div className="flex flex-col items-center w-full gap-4 px-2 sm:px-4 my-8 bg-white max-w-7xl lg:px-0 lg:w-auto">
               {/* Hero Section */}
-              <div className="text-center space-y-6 max-w-4xl">
+              {/* <div className="text-center space-y-6 max-w-4xl">
                 <div className="flex items-center justify-center gap-2 mb-4">
                   <HiSparkles className="text-yellow-500 text-2xl animate-pulse" />
                   <span className="text-sm font-semibold text-blue-600 uppercase tracking-wider">
@@ -252,10 +259,10 @@ export default async function RentalRooms({
                     verified rooms
                   </span>
                   , apartments, and affordable rentals across Vietnam
-                </p>
+                </p> */}
 
-                {/* Stats Cards */}
-                <div className="grid grid-cols-3 gap-4 mt-12 max-w-2xl mx-auto">
+              {/* Stats Cards */}
+              {/* <div className="grid grid-cols-3 gap-4 mt-12 max-w-2xl mx-auto">
                   <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-6 border border-white/20 shadow-lg">
                     <div className="text-3xl font-bold text-blue-600">10K+</div>
                     <div className="text-sm text-gray-600">Rooms</div>
@@ -269,7 +276,7 @@ export default async function RentalRooms({
                     <div className="text-sm text-gray-600">Verified</div>
                   </div>
                 </div>
-              </div>
+              </div> */}
 
               {/* VIP Rooms Section */}
               <div className="w-full space-y-8">
@@ -287,7 +294,7 @@ export default async function RentalRooms({
                 </div>
               </div>
               <div className="flex flex-col items-center w-full gap-4">
-                <div className="flex flex-wrap items-start justify-center w-full gap-4 md:gap-6 lg:gap-8">
+                <div className="flex flex-wrap items-start justify-center w-full gap-4 md:gap-6 lg:gap-4">
                   {roomVips.data.map((room, index) => (
                     <div
                       key={index}
@@ -299,46 +306,53 @@ export default async function RentalRooms({
                       />
                     </div>
                   ))}
-                  <div className="flex flex-wrap items-center justify-center gap-4 mt-8">
+                  <div className="flex items-center justify-center gap-4 mt-8">
                     {/* Previous Button */}
                     <Link
                       href={`?page=${page - 1}#rental-rooms`}
-                      className={`flex items-center gap-2 px-4 py-2 rounded-full font-medium border transition-all duration-200 shadow ${
+                      className={`group flex items-center gap-3 px-6 py-3 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95 ${
                         page === 0
-                          ? "text-gray-400 bg-gray-100 cursor-not-allowed pointer-events-none border-gray-200"
-                          : "text-blue-600 bg-white hover:bg-blue-50 hover:shadow-lg border-blue-300"
+                          ? "bg-gradient-to-r from-gray-200 to-gray-300 text-gray-500 cursor-not-allowed pointer-events-none"
+                          : "bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-blue-500/30"
                       }`}
                       scroll={true}
                       aria-disabled={page === 0}
                     >
-                      <BiChevronLeft size={20} />
-                      <span className="hidden sm:inline">Previous</span>
-                    </Link>
-                    {/* Page Info */}
-                    <div className="flex flex-col items-center px-4">
-                      <span className="text-base font-semibold text-gray-700">
-                        Page <span className="text-blue-600">{page + 1}</span> /{" "}
-                        <span className="text-blue-600">
-                          {roomVips.totalPages}
-                        </span>
+                      <BiChevronLeft
+                        size={22}
+                        className="transition-transform group-hover:-translate-x-1"
+                      />
+                      <span className="hidden sm:inline font-medium">
+                        Previous
                       </span>
-                      <span className="text-xs text-gray-400">
-                        {roomVips.totalPages} rooms found
+                    </Link>
+
+                    {/* Page Info */}
+                    <div className="flex flex-col items-center px-6 py-2 bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/50 shadow-sm">
+                      <span className="text-lg font-bold bg-gradient-to-r from-blue-600 to-blue-700 bg-clip-text text-transparent">
+                        Page {page + 1} / {roomVips.totalPages}
+                      </span>
+                      <span className="text-xs text-gray-500 font-medium">
+                        {roomVips.totalRecords} premium rooms
                       </span>
                     </div>
+
                     {/* Next Button */}
                     <Link
                       href={`?page=${page + 1}#rental-rooms`}
-                      className={`flex items-center gap-2 px-4 py-2 rounded-full font-medium border transition-all duration-200 shadow ${
+                      className={`group flex items-center gap-3 px-6 py-3 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95 ${
                         page + 1 >= roomVips.totalPages
-                          ? "text-gray-400 bg-gray-100 cursor-not-allowed pointer-events-none border-gray-200"
-                          : "text-blue-600 bg-white hover:bg-blue-50 hover:shadow-lg border-blue-300"
+                          ? "bg-gradient-to-r from-gray-200 to-gray-300 text-gray-500 cursor-not-allowed pointer-events-none"
+                          : "bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-blue-500/30"
                       }`}
                       scroll={true}
                       aria-disabled={page + 1 >= roomVips.totalPages}
                     >
-                      <span className="hidden sm:inline">Next</span>
-                      <BiChevronRight size={20} />
+                      <span className="hidden sm:inline font-medium">Next</span>
+                      <BiChevronRight
+                        size={22}
+                        className="transition-transform group-hover:translate-x-1"
+                      />
                     </Link>
                   </div>
                 </div>
@@ -401,39 +415,46 @@ export default async function RentalRooms({
             <Link
               href={`?pageNormal=${page_normal - 1}`}
               scroll={false}
-              className={`flex items-center gap-2 px-4 py-2 rounded-full font-medium border transition-all duration-200 shadow ${
+              className={`group flex items-center gap-3 px-6 py-3 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95 ${
                 page_normal === 0
-                  ? "text-gray-400 bg-gray-100 cursor-not-allowed pointer-events-none border-gray-200"
-                  : "text-blue-600 bg-white hover:bg-blue-50 hover:shadow-lg border-blue-300"
+                  ? "bg-gradient-to-r from-gray-200 to-gray-300 text-gray-500 cursor-not-allowed pointer-events-none"
+                  : "bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-blue-500/30"
               }`}
               aria-disabled={page_normal === 0}
             >
-              <BiChevronLeft size={20} />
-              <span className="hidden sm:inline">Previous</span>
+              <BiChevronLeft
+                size={22}
+                className="transition-transform group-hover:-translate-x-1"
+              />
+              <span className="hidden sm:inline font-medium">Previous</span>
             </Link>
+
             {/* Page Info */}
-            <div className="flex flex-col items-center px-4">
-              <span className="text-base font-semibold text-gray-700">
-                Page <span className="text-blue-600">{page_normal + 1}</span> /{" "}
-                <span className="text-blue-600">{roomNormals.totalPages}</span>
+            <div className="flex flex-col items-center px-6 py-2 bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/50 shadow-sm">
+              <span className="text-lg font-bold bg-gradient-to-r from-blue-600 to-blue-700 bg-clip-text text-transparent">
+                Page {page_normal + 1} / {roomNormals.totalPages}
               </span>
-              <span className="text-xs text-gray-400">
-                {roomNormals.totalPages} rooms found
+              <span className="text-xs text-gray-500 font-medium">
+                {roomNormals.totalRecords} featured rooms
               </span>
             </div>
+
             {/* Next Button */}
             <Link
               href={`?pageNormal=${page_normal + 1}`}
               scroll={false}
-              className={`flex items-center gap-2 px-4 py-2 rounded-full font-medium border transition-all duration-200 shadow ${
+              className={`group flex items-center gap-3 px-6 py-3 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95 ${
                 page_normal + 1 >= roomNormals.totalPages
-                  ? "text-gray-400 bg-gray-100 cursor-not-allowed pointer-events-none border-gray-200"
-                  : "text-blue-600 bg-white hover:bg-blue-50 hover:shadow-lg border-blue-300"
+                  ? "bg-gradient-to-r from-gray-200 to-gray-300 text-gray-500 cursor-not-allowed pointer-events-none"
+                  : "bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-blue-500/30"
               }`}
               aria-disabled={page_normal + 1 >= roomNormals.totalPages}
             >
-              <span className="hidden sm:inline">Next</span>
-              <BiChevronRight size={20} />
+              <span className="hidden sm:inline font-medium">Next</span>
+              <BiChevronRight
+                size={22}
+                className="transition-transform group-hover:translate-x-1"
+              />
             </Link>
           </div>
         </div>

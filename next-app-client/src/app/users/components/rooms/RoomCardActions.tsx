@@ -142,14 +142,6 @@ export default function RoomCartActions({
           {isCompared ? <FaRegCheckCircle /> : <IoIosAddCircleOutline />}{" "}
           Compare
         </button>
-        {/* Detail Button */}
-        <button
-          className="px-3 py-1.5 text-base font-semibold text-white rounded-full shadow bg-amber-600 hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-300 whitespace-nowrap transition-all duration-150 hover:scale-105 active:scale-95"
-          onClick={handleClick}
-          tabIndex={0}
-        >
-          See Details
-        </button>
       </div>
     </>
   );

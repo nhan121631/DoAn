@@ -23,7 +23,7 @@ export default function CardFilter() {
       query.listConvenientIds = filter.listConvenientIds.join(",");
     return query;
   };
-  // Các giá trị filter mẫu
+  // Price and area filter options
   const priceRanges = [
     { label: "Under 1M", min: 0, max: 1000000 },
     { label: "1-2M", min: 1000000, max: 2000000 },
@@ -43,29 +43,39 @@ export default function CardFilter() {
     { label: "Above 90m²", min: 90, max: undefined },
   ];
   return (
-    <div className="bg-white shadow-md rounded-lg p-4 flex flex-col gap-4 w-[300px]">
-      <div>
-        <h3 className="font-semibold text-[15px] mb-2 text-gray-800">
-          Price Range
-        </h3>
-        <div className="grid grid-cols-2 gap-x-8 gap-y-1">
-          {priceRanges.map((range) => {
+    <div className="bg-gradient-to-br from-white via-blue-50/30 to-indigo-50/40 backdrop-blur-lg border border-blue-100/50 rounded-2xl p-6 flex flex-col gap-6 w-[320px] transition-all duration-300 hover:shadow-3xl hover:scale-[1.02]">
+      {/* Header with gradient */}
+      <div className="text-center pb-2 border-b border-gradient-to-r from-transparent via-blue-200/50 to-transparent">
+        <h2 className="text-lg font-bold bg-gradient-to-r from-blue-700 via-indigo-700 to-purple-700 bg-clip-text text-transparent tracking-wide">
+          Advanced Filters
+        </h2>
+        <p className="text-sm text-gray-500 mt-1">Refine your search results</p>
+      </div>
+
+      {/* Price Range Section */}
+      <div className="space-y-3">
+        <div className="flex items-center gap-2">
+          <div className="w-2 h-2 bg-gradient-to-r from-orange-500 to-red-500 rounded-full"></div>
+          <h3 className="font-bold text-base text-gray-800 tracking-wide">
+            Price Range
+          </h3>
+        </div>
+        <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+          {priceRanges.map((range, index) => {
             const isActive =
               item.minPrice === range.min && item.maxPrice === range.max;
             return (
-              <a
+              <button
                 key={range.label}
-                href="#"
-                className={`flex items-center gap-1 text-[14px] ${
+                className={`group relative overflow-hidden px-3 py-2.5 text-sm font-medium rounded-xl border-2 transition-all duration-300 hover:scale-105 active:scale-95 ${
                   isActive
-                    ? "text-orange-500 font-bold"
-                    : "text-sky-700 hover:text-orange-500"
+                    ? "bg-gradient-to-r from-orange-500 to-red-500 text-white border-orange-400 shadow-lg shadow-orange-500/25"
+                    : "bg-white/70 text-gray-700 border-gray-200/50 hover:border-orange-300 hover:bg-gradient-to-r hover:from-orange-50 hover:to-red-50 hover:text-orange-700"
                 }`}
                 onClick={(e) => {
                   e.preventDefault();
                   let filter;
                   if (isActive) {
-                    // Bỏ filter nếu đang active: set về 0 để đồng bộ với store
                     filter = {
                       ...item,
                       minPrice: undefined,
@@ -84,32 +94,47 @@ export default function CardFilter() {
                   router.push(`/users${queryString ? "?" + queryString : ""}`);
                 }}
               >
-                <span className="text-orange-500">&gt;</span> {range.label}
-              </a>
+                {/* Shine effect */}
+                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                  <div className="absolute top-0 -left-full w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12 group-hover:left-full transition-all duration-700"></div>
+                </div>
+
+                <span className="relative flex items-center gap-1 text-left w-full">
+                  {!isActive && (
+                    <span className="text-orange-500 text-xs">₫</span>
+                  )}
+                  {range.label}
+                </span>
+              </button>
             );
           })}
         </div>
       </div>
-      <div>
-        <h3 className="font-semibold text-[15px] mb-2 text-gray-800">Area</h3>
-        <div className="grid grid-cols-2 gap-x-8 gap-y-1">
-          {areaRanges.map((range) => {
+
+      {/* Area Section */}
+      <div className="space-y-3">
+        <div className="flex items-center gap-2">
+          <div className="w-2 h-2 bg-gradient-to-r from-orange-500 to-red-500 rounded-full"></div>
+          <h3 className="font-bold text-base text-gray-800 tracking-wide">
+            Area Range
+          </h3>
+        </div>
+        <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+          {areaRanges.map((range, index) => {
             const isActive =
               item.minArea === range.min && item.maxArea === range.max;
             return (
-              <a
+              <button
                 key={range.label}
-                href="#"
-                className={`flex items-center gap-1 text-[14px] ${
+                className={`group relative overflow-hidden px-3 py-2.5 text-sm font-medium rounded-xl border-2 transition-all duration-300 hover:scale-105 active:scale-95 ${
                   isActive
-                    ? "text-orange-500 font-bold"
-                    : "text-sky-700 hover:text-orange-500"
+                    ? "bg-gradient-to-r from-orange-500 to-red-500 text-white border-orange-400 shadow-lg shadow-orange-500/25"
+                    : "bg-white/70 text-gray-700 border-gray-200/50 hover:border-orange-300 hover:bg-gradient-to-r hover:from-orange-50 hover:to-red-50 hover:text-orange-700"
                 }`}
                 onClick={(e) => {
                   e.preventDefault();
                   let filter;
                   if (isActive) {
-                    // Bỏ filter nếu đang active: set về 0 để đồng bộ với store
                     filter = {
                       ...item,
                       minArea: undefined,
@@ -128,12 +153,25 @@ export default function CardFilter() {
                   router.push(`/users${queryString ? "?" + queryString : ""}`);
                 }}
               >
-                <span className="text-orange-500">&gt;</span> {range.label}
-              </a>
+                {/* Shine effect */}
+                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                  <div className="absolute top-0 -left-full w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12 group-hover:left-full transition-all duration-700"></div>
+                </div>
+
+                <span className="relative flex items-center gap-1 text-left w-full">
+                  {!isActive && (
+                    <span className="text-orange-500 text-xs">◘</span>
+                  )}
+                  {range.label}
+                </span>
+              </button>
             );
           })}
         </div>
       </div>
+
+      {/* Footer gradient line */}
+      <div className="h-1 bg-gradient-to-r from-orange-500 via-red-500 to-orange-600 rounded-full opacity-20"></div>
     </div>
   );
 }
