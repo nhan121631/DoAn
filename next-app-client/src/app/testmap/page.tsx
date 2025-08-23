@@ -85,7 +85,7 @@ export default function RoomMapPage() {
       </div>
 
       {/* Main content */}
-      <div className="flex justify-center items-center flex-1 w-full h-full py-4">
+      <div className="flex justify-center items-center flex-1 w-full h-full ">
         <div className="flex gap-4 w-[1500px] h-full lg:flex-row flex-col">
           {/* Room List */}
 
@@ -94,11 +94,11 @@ export default function RoomMapPage() {
               view === "map" ? "hidden" : ""
             } lg:block`}
           >
-            <div className="flex-shrink-0 mb-4">
+            {/* <div className="flex-shrink-0 mb-4">
               <h1 className="text-xl font-semibold text-gray-900">
                 List Rooms {rooms.length > 0 && `(${rooms.length})`}
               </h1>
-            </div>
+            </div> */}
 
             <div
               className="flex-1 overflow-y-auto space-y-3 pr-2"

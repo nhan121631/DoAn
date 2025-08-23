@@ -6,8 +6,11 @@ import { RoomMap } from "../page";
 import { getRoomsInMap } from "@/services/RoomService";
 import { URL_IMAGE } from "@/services/Constant";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
+import { getUserPreferences } from "@/services/ProfileService";
 
-const GOONG_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+const GOONG_API_KEY_MAP = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+const GOONG_API_KEY = process.env.NEXT_PUBLIC_GOONG_API_KEY;
 
 type Props = {
   onRoomClick: (room: RoomMap[]) => void;
@@ -22,7 +25,7 @@ const MapRoom: React.FC<Props> = ({ onRoomClick }) => {
   const [center, setCenter] = useState<[number, number]>([10.7769, 106.7009]);
   const [zoom, setZoom] = useState(13);
   const [rooms, setRooms] = useState<RoomMap[]>([]);
-
+  const { data: session } = useSession();
   // Load Goong Maps library
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -48,6 +51,74 @@ const MapRoom: React.FC<Props> = ({ onRoomClick }) => {
     loadGoongMaps();
   }, []);
 
+  // Geocoding function to convert address to coordinates using Goong API
+  const geocodeAddress = async (
+    address: string
+  ): Promise<[number, number] | null> => {
+    try {
+      const encodedAddress = encodeURIComponent(address);
+      const response = await fetch(
+        `https://rsapi.goong.io/geocode?address=${encodedAddress}&api_key=${GOONG_API_KEY}`
+      );
+
+      if (!response.ok) {
+        throw new Error(`Geocoding API error: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      if (data.results && data.results.length > 0) {
+        const location = data.results[0].geometry.location;
+        return [location.lat, location.lng];
+      }
+
+      console.warn("No geocoding results found for address:", address);
+      return null;
+    } catch (error) {
+      console.error("Error geocoding address:", error);
+      return null;
+    }
+  };
+
+  useEffect(() => {
+    const loadUserPreferences = async () => {
+      if (session) {
+        try {
+          const preferences = await getUserPreferences();
+          if (preferences?.searchAddress) {
+            // Geocode address to coordinates using Goong API
+            const coordinates = await geocodeAddress(preferences.searchAddress);
+            if (coordinates) {
+              const [lat, lng] = coordinates;
+              setCenter([lat, lng]);
+
+              // Update map center if map is already initialized
+              if (mapRef.current) {
+                mapRef.current.setCenter([lng, lat]);
+                mapRef.current.setZoom(14); // Zoom in when address is set
+              }
+
+              // Load rooms for the geocoded location
+              try {
+                const fetchedRooms = await getRoomsInMap(lat, lng, 10);
+                setRooms(fetchedRooms);
+                onRoomClick(fetchedRooms);
+              } catch (roomError) {
+                console.error(
+                  "Error fetching rooms for geocoded location:",
+                  roomError
+                );
+              }
+            }
+          }
+        } catch (error) {
+          console.error("Error loading user preferences:", error);
+        }
+      }
+    };
+
+    loadUserPreferences();
+  }, [session]);
   // Group rooms by location
   function groupRoomsByLocation(rooms: RoomMap[]) {
     const groups = new Map<string, RoomMap[]>();
@@ -64,26 +135,26 @@ const MapRoom: React.FC<Props> = ({ onRoomClick }) => {
   }
 
   // Load initial location & rooms
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        async (pos) => {
-          const lat = pos.coords.latitude;
-          const lng = pos.coords.longitude;
-          setCenter([lat, lng]);
-          if (mapRef.current) mapRef.current.setCenter([lng, lat]);
+  // useEffect(() => {
+  //   if (typeof window === "undefined") return;
+  //   if (navigator.geolocation) {
+  //     navigator.geolocation.getCurrentPosition(
+  //       async (pos) => {
+  //         const lat = pos.coords.latitude;
+  //         const lng = pos.coords.longitude;
+  //         setCenter([lat, lng]);
+  //         if (mapRef.current) mapRef.current.setCenter([lng, lat]);
 
-          const fetchedRooms = await getRoomsInMap(lat, lng, 10);
-          setRooms(fetchedRooms);
-          onRoomClick(fetchedRooms);
-        },
-        () => {
-          setCenter([10.7769, 106.7009]);
-        }
-      );
-    }
-  }, []);
+  //         const fetchedRooms = await getRoomsInMap(lat, lng, 10);
+  //         setRooms(fetchedRooms);
+  //         onRoomClick(fetchedRooms);
+  //       },
+  //       () => {
+  //         setCenter([10.7769, 106.7009]);
+  //       }
+  //     );
+  //   }
+  // }, []);
 
   // Initialize map
   useEffect(() => {
@@ -94,7 +165,7 @@ const MapRoom: React.FC<Props> = ({ onRoomClick }) => {
       style: "https://tiles.goong.io/assets/goong_map_web.json",
       center: [center[1], center[0]],
       zoom,
-      accessToken: GOONG_API_KEY,
+      accessToken: GOONG_API_KEY_MAP,
     });
 
     // Handle click

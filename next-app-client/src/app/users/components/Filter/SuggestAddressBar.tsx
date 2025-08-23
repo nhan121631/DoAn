@@ -568,8 +568,8 @@ function SuggestAddressBar({
   return (
     <div
       className={`sticky ${
-        width ? `lg:w-[100%]` : `lg:w-[80%]`
-      } md:w-[800px] w-full top-0 z-40 bg-gradient-to-r from-white/95 via-blue-50/80 to-indigo-50/80 backdrop-blur-xl border-b border-blue-200/30 transition-all duration-300`}
+        width ? `w-[100%]` : `lg:w-[80%] md:w-[800px] w-full`
+      }  top-0 z-40 bg-gradient-to-r from-white/95 via-blue-50/80 to-indigo-50/80 backdrop-blur-xl border-b border-blue-200/30 transition-all duration-300`}
     >
       {/* Message Toast */}
       {message && (
