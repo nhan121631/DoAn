@@ -61,7 +61,7 @@ export default function CardFilter() {
           </h3>
         </div>
         <div className="grid grid-cols-2 gap-x-4 gap-y-2">
-          {priceRanges.map((range, index) => {
+          {priceRanges.map((range) => {
             const isActive =
               item.minPrice === range.min && item.maxPrice === range.max;
             return (
@@ -120,7 +120,7 @@ export default function CardFilter() {
           </h3>
         </div>
         <div className="grid grid-cols-2 gap-x-4 gap-y-2">
-          {areaRanges.map((range, index) => {
+          {areaRanges.map((range) => {
             const isActive =
               item.minArea === range.min && item.maxArea === range.max;
             return (

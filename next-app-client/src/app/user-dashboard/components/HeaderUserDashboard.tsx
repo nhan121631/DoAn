@@ -1,39 +1,39 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import { Avatar, Dropdown } from "antd";
+import { signOut, useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import React, { useEffect, useState } from "react";
 import { AiOutlineUserAdd } from "react-icons/ai";
 import { FaRegEdit } from "react-icons/fa";
-import { IoClose, IoLogInOutline } from "react-icons/io5";
-import { RxHamburgerMenu } from "react-icons/rx";
-import { signOut, useSession } from "next-auth/react";
-import { Avatar, Dropdown } from "antd";
-import { IoIosLogOut } from "react-icons/io";
 import {
   HiOutlineHome,
   HiOutlineOfficeBuilding,
-  HiOutlineUsers,
   HiOutlinePhone,
+  HiOutlineUsers,
 } from "react-icons/hi";
+import { IoIosLogOut } from "react-icons/io";
+import { IoClose, IoLogInOutline } from "react-icons/io5";
+import { RxHamburgerMenu } from "react-icons/rx";
 
 export default function HeaderUserDashboard() {
   const { data: session } = useSession();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(false);
+  // const [isScrolled, setIsScrolled] = useState(false);
   const [activeItem, setActiveItem] = useState("");
   const router = useRouter();
 
   // Handle scroll effect with enhanced animation
-  useEffect(() => {
-    const handleScroll = () => {
-      const scrollY = window.scrollY;
-      setIsScrolled(scrollY > 20);
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  // useEffect(() => {
+  //   const handleScroll = () => {
+  //     // const scrollY = window.scrollY;
+  //     // setIsScrolled(scrollY > 20);
+  //   };
+  //   window.addEventListener("scroll", handleScroll);
+  //   return () => window.removeEventListener("scroll", handleScroll);
+  // }, []);
 
   // Close mobile menu on resize
   useEffect(() => {

@@ -1,15 +1,12 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { Table, Tag, Button, Modal, Popconfirm, message, Space, Input } from "antd";
-import type { ColumnsType } from "antd/es/table";
-import { AiOutlineDelete, AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
-import CommentFormModal from "./CommentFormModal";
-import { CommentData } from "@/types/types";
-import { useSession } from "next-auth/react";
-import { RatingResponseDto, RatingReplyDto } from "../../types/index";
 import { ratingService } from "@/services/FeedbackService";
-
+import { Button, Input, message, Modal, Space, Table, Tag } from "antd";
+import type { ColumnsType } from "antd/es/table";
+import { useSession } from "next-auth/react";
+import React, { useEffect, useState } from "react";
+import { RatingReplyDto, RatingResponseDto } from "../../types/index";
+import CommentFormModal from "./CommentFormModal";
 
 const ManageCommentsInteractive: React.FC = () => {
   const { data: session } = useSession();
@@ -18,7 +15,8 @@ const ManageCommentsInteractive: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [isViewDetailsModalOpen, setViewDetailsModalOpen] = useState(false);
-  const [selectedComment, setSelectedComment] = useState<RatingResponseDto | null>(null);
+  const [selectedComment, setSelectedComment] =
+    useState<RatingResponseDto | null>(null);
 
   useEffect(() => {
     if (!landlordId) return;
@@ -42,10 +40,8 @@ const ManageCommentsInteractive: React.FC = () => {
         selectedComment.id,
         replyDto
       );
-      setData(prev =>
-        prev.map(item =>
-          item.id === selectedComment.id ? updated : item
-        )
+      setData((prev) =>
+        prev.map((item) => (item.id === selectedComment.id ? updated : item))
       );
       message.success("Đã phản hồi thành công!");
       setIsFormModalOpen(false);
@@ -60,8 +56,6 @@ const ManageCommentsInteractive: React.FC = () => {
     setSelectedComment(record);
     setViewDetailsModalOpen(true);
   };
-
-
 
   const columns: ColumnsType<RatingResponseDto> = [
     {

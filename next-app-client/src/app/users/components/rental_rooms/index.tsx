@@ -147,7 +147,7 @@ export default async function RentalRooms({
               <div className="flex flex-col items-center w-full gap-4 px-2 sm:px-4 my-8 bg-white max-w-7xl lg:px-0 lg:w-auto">
                 <div className="w-full text-center space-y-4">
                   <h1 className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-gray-900 via-blue-700 to-purple-700 bg-clip-text text-transparent leading-tight">
-                    Rooms You're Looking For
+                    Rooms You&#39;re Looking For
                   </h1>
                   <div className="flex items-center justify-center gap-2 text-lg text-gray-600">
                     <HiLocationMarker className="text-blue-500" />

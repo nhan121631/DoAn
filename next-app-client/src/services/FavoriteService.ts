@@ -69,7 +69,7 @@ export async function getAllFavoriteIds(): Promise<string[]> {
     if (!firstPageRes.ok) {
       if (firstPageRes.status === 401) return [];
       
-      const errorText = await firstPageRes.text();
+      // const errorText = await firstPageRes.text();
       console.error(`API Error: Failed to fetch favorites. Status: ${firstPageRes.status} - ${firstPageRes.statusText}`);
       return [];
     }

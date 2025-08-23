@@ -45,6 +45,7 @@ export default function UserInfoCard({ id }: { id: string }) {
 
         setOnlineUsers(data);
       } catch (e) {
+        console.error("Error fetching online users:", e);
         setOnlineUsers([]);
       }
     }

@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
+import { URL_IMAGE } from "@/services/Constant";
+import { getUserPreferences } from "@/services/ProfileService";
+import { getRoomsInMap } from "@/services/RoomService";
+import { useSession } from "next-auth/react";
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { RoomMap } from "../page";
-import { getRoomsInMap } from "@/services/RoomService";
-import { URL_IMAGE } from "@/services/Constant";
-import Link from "next/link";
-import { useSession } from "next-auth/react";
-import { getUserPreferences } from "@/services/ProfileService";
 
 const GOONG_API_KEY_MAP = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 const GOONG_API_KEY = process.env.NEXT_PUBLIC_GOONG_API_KEY;
@@ -118,7 +118,7 @@ const MapRoom: React.FC<Props> = ({ onRoomClick }) => {
     };
 
     loadUserPreferences();
-  }, [session]);
+  }, [session, onRoomClick]);
   // Group rooms by location
   function groupRoomsByLocation(rooms: RoomMap[]) {
     const groups = new Map<string, RoomMap[]>();
@@ -182,7 +182,7 @@ const MapRoom: React.FC<Props> = ({ onRoomClick }) => {
     mapRef.current.on("zoomend", () => {
       setZoom(mapRef.current.getZoom());
     });
-  }, [mapContainer, goongjs]);
+  }, [mapContainer, goongjs, onRoomClick]);
 
   // Render markers
   useEffect(() => {
