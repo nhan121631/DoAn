@@ -12,8 +12,8 @@ import { notFound } from "next/navigation";
 import { BiChevronLeft, BiChevronRight } from "react-icons/bi";
 import CardFilter from "../Filter/CardFilter";
 import FeaturedListingsCard from "../InfoCardAndFeatured/FeaturedListingsCard";
-import RoomCard from "../rooms/RoomCard";
-import RoomVipCard from "../rooms/RoomVipCard";
+import RoomCard from "../rooms/RoomCard"; // Still needed for filtered rooms display
+import RentalRoomsWithLocation from "./RentalRoomsWithLocation"; // New component with location context
 
 import NoLookingForFilter from "../Filter/NoLookingForFilter";
 
@@ -147,7 +147,7 @@ export default async function RentalRooms({
               <div className="flex flex-col items-center w-full gap-4 px-2 sm:px-4 my-8 bg-white max-w-7xl lg:px-0 lg:w-auto">
                 <div className="w-full text-center space-y-4">
                   <h1 className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-gray-900 via-blue-700 to-purple-700 bg-clip-text text-transparent leading-tight">
-                    Rooms You're Looking For
+                    Rooms You&#39;re Looking For
                   </h1>
                   <div className="flex items-center justify-center gap-2 text-lg text-gray-600">
                     <HiLocationMarker className="text-blue-500" />
@@ -165,19 +165,18 @@ export default async function RentalRooms({
                   id="normal-rooms-list"
                   className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4 md:gap-6 lg:gap-4 w-full"
                 >
-                  {roomNormals.data.map((room, index) => (
+                  {filteredRooms.data.map((room, index) => (
                     <div key={index} className="flex justify-center">
                       <RoomCard
                         room={room}
                         isForSale={false}
                         isFeatured={false}
                         isFavorite={initialFavoriteIds.includes(room.id)}
-                        // custom={index}
                       />
                     </div>
                   ))}
                 </div>
-                {/* Previous Button */}
+                {/* Pagination for filtered results */}
                 <div className="flex items-center justify-center gap-4 mt-8">
                   <Link
                     href={buildFilterQuery(filters, pageSearch - 1)}
@@ -192,7 +191,6 @@ export default async function RentalRooms({
                     <BiChevronLeft size={20} />
                     <span className="hidden sm:inline">Previous</span>
                   </Link>
-                  {/* Page Info */}
                   <div className="flex flex-col items-center px-4">
                     <span className="text-base font-semibold text-gray-700">
                       Page{" "}
@@ -202,10 +200,9 @@ export default async function RentalRooms({
                       </span>
                     </span>
                     <span className="text-xs text-gray-400">
-                      {filteredRooms.totalPages} rooms found
+                      {filteredRooms.totalRecords} rooms found
                     </span>
                   </div>
-                  {/* Next Button */}
                   <Link
                     href={buildFilterQuery(filters, pageSearch + 1)}
                     className={`flex items-center gap-2 px-4 py-2 rounded-full font-medium border transition-all duration-200 shadow ${
@@ -225,13 +222,14 @@ export default async function RentalRooms({
               <NoLookingForFilter />
             )
           ) : (
+            // HERO SECTION + LOCATION-AWARE ROOM DISPLAY
             <div className="flex flex-col items-center w-full gap-4 px-2 sm:px-4 my-8 bg-white max-w-7xl lg:px-0 lg:w-auto">
               {/* Hero Section */}
               <div className="text-center space-y-6 max-w-4xl">
                 <div className="flex items-center justify-center gap-2 mb-4">
                   <HiSparkles className="text-yellow-500 text-2xl animate-pulse" />
                   <span className="text-sm font-semibold text-blue-600 uppercase tracking-wider">
-                    Vietnam's #1 Platform
+                    Vietnam&#39;s #1 Platform
                   </span>
                   <HiSparkles className="text-yellow-500 text-2xl animate-pulse" />
                 </div>
@@ -270,82 +268,20 @@ export default async function RentalRooms({
                   </div>
                 </div>
               </div>
-
-              {/* VIP Rooms Section */}
-              <div className="w-full space-y-8">
-                <div className="text-center">
-                  <div className="flex items-center justify-center gap-3 mb-4">
-                    <HiSparkles className="text-yellow-500 text-2xl" />
-                    <h3 className="text-3xl font-bold bg-gradient-to-r from-yellow-500 to-orange-500 bg-clip-text text-transparent">
-                      Premium Listings
-                    </h3>
-                    <HiSparkles className="text-yellow-500 text-2xl" />
-                  </div>
-                  <p className="text-gray-600">
-                    Hand-picked premium rooms for the discerning renter
-                  </p>
-                </div>
-              </div>
-              <div className="flex flex-col items-center w-full gap-4">
-                <div className="flex flex-wrap items-start justify-center w-full gap-4 md:gap-6 lg:gap-8">
-                  {roomVips.data.map((room, index) => (
-                    <div
-                      key={index}
-                      className="basis-full w-full max-w-xs sm:max-w-1/2  lg:max-w-none flex justify-center"
-                    >
-                      <RoomVipCard
-                        room={room}
-                        isFavorite={initialFavoriteIds.includes(room.id)}
-                      />
-                    </div>
-                  ))}
-                  <div className="flex flex-wrap items-center justify-center gap-4 mt-8">
-                    {/* Previous Button */}
-                    <Link
-                      href={`?page=${page - 1}#rental-rooms`}
-                      className={`flex items-center gap-2 px-4 py-2 rounded-full font-medium border transition-all duration-200 shadow ${
-                        page === 0
-                          ? "text-gray-400 bg-gray-100 cursor-not-allowed pointer-events-none border-gray-200"
-                          : "text-blue-600 bg-white hover:bg-blue-50 hover:shadow-lg border-blue-300"
-                      }`}
-                      scroll={true}
-                      aria-disabled={page === 0}
-                    >
-                      <BiChevronLeft size={20} />
-                      <span className="hidden sm:inline">Previous</span>
-                    </Link>
-                    {/* Page Info */}
-                    <div className="flex flex-col items-center px-4">
-                      <span className="text-base font-semibold text-gray-700">
-                        Page <span className="text-blue-600">{page + 1}</span> /{" "}
-                        <span className="text-blue-600">
-                          {roomVips.totalPages}
-                        </span>
-                      </span>
-                      <span className="text-xs text-gray-400">
-                        {roomVips.totalPages} rooms found
-                      </span>
-                    </div>
-                    {/* Next Button */}
-                    <Link
-                      href={`?page=${page + 1}#rental-rooms`}
-                      className={`flex items-center gap-2 px-4 py-2 rounded-full font-medium border transition-all duration-200 shadow ${
-                        page + 1 >= roomVips.totalPages
-                          ? "text-gray-400 bg-gray-100 cursor-not-allowed pointer-events-none border-gray-200"
-                          : "text-blue-600 bg-white hover:bg-blue-50 hover:shadow-lg border-blue-300"
-                      }`}
-                      scroll={true}
-                      aria-disabled={page + 1 >= roomVips.totalPages}
-                    >
-                      <span className="hidden sm:inline">Next</span>
-                      <BiChevronRight size={20} />
-                    </Link>
-                  </div>
-                </div>
-              </div>
             </div>
           )}
+
+          {/* Location-aware room display - uses context for guest users, server data for logged users */}
+          <RentalRoomsWithLocation
+            initialVipRooms={roomVips}
+            initialNormalRooms={roomNormals}
+            initialFavoriteIds={initialFavoriteIds}
+            page={page}
+            pageNormal={page_normal}
+            isEmptyFilter={isEmptyFilter}
+          />
         </div>
+
         {/* Sidebar - responsive: below main on mobile, right on desktop */}
         <div className="w-full mt-6 lg:mt-0 lg:w-[350px] flex flex-col items-center">
           {/* Mobile: show sidebar below main content */}
@@ -370,74 +306,6 @@ export default async function RentalRooms({
           </div>
         </div>
       </div>
-      {isEmptyFilter && (
-        <div className="flex flex-col items-center justify-center w-full gap-4 px-2 sm:px-4 my-6 max-w-7xl">
-          <div className="text-center space-y-6 mb-16">
-            <h3 className="text-4xl font-bold bg-gradient-to-r from-gray-800 to-blue-600 bg-clip-text text-transparent">
-              Featured Properties
-            </h3>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Discover our most popular and highly-rated rental properties
-            </p>
-          </div>
-          <div
-            id="normal-rooms-list"
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 lg:gap-4 w-full"
-          >
-            {roomNormals.data.map((room, index) => (
-              <div key={index} className="flex justify-center">
-                <RoomCard
-                  room={room}
-                  isForSale={false}
-                  isFeatured={false}
-                  isFavorite={initialFavoriteIds.includes(room.id)}
-                  // custom={index}
-                />
-              </div>
-            ))}
-          </div>
-          <div className="flex items-center justify-center gap-4 mt-8">
-            {/* Previous Button */}
-            <Link
-              href={`?pageNormal=${page_normal - 1}`}
-              scroll={false}
-              className={`flex items-center gap-2 px-4 py-2 rounded-full font-medium border transition-all duration-200 shadow ${
-                page_normal === 0
-                  ? "text-gray-400 bg-gray-100 cursor-not-allowed pointer-events-none border-gray-200"
-                  : "text-blue-600 bg-white hover:bg-blue-50 hover:shadow-lg border-blue-300"
-              }`}
-              aria-disabled={page_normal === 0}
-            >
-              <BiChevronLeft size={20} />
-              <span className="hidden sm:inline">Previous</span>
-            </Link>
-            {/* Page Info */}
-            <div className="flex flex-col items-center px-4">
-              <span className="text-base font-semibold text-gray-700">
-                Page <span className="text-blue-600">{page_normal + 1}</span> /{" "}
-                <span className="text-blue-600">{roomNormals.totalPages}</span>
-              </span>
-              <span className="text-xs text-gray-400">
-                {roomNormals.totalPages} rooms found
-              </span>
-            </div>
-            {/* Next Button */}
-            <Link
-              href={`?pageNormal=${page_normal + 1}`}
-              scroll={false}
-              className={`flex items-center gap-2 px-4 py-2 rounded-full font-medium border transition-all duration-200 shadow ${
-                page_normal + 1 >= roomNormals.totalPages
-                  ? "text-gray-400 bg-gray-100 cursor-not-allowed pointer-events-none border-gray-200"
-                  : "text-blue-600 bg-white hover:bg-blue-50 hover:shadow-lg border-blue-300"
-              }`}
-              aria-disabled={page_normal + 1 >= roomNormals.totalPages}
-            >
-              <span className="hidden sm:inline">Next</span>
-              <BiChevronRight size={20} />
-            </Link>
-          </div>
-        </div>
-      )}
     </>
   );
 }

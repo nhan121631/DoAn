@@ -10,9 +10,15 @@ import {
   updatePreferences,
   getUserPreferences,
 } from "@/services/ProfileService";
+// Import for location-based room APIs
+import {
+  getRoomVipWithLocation,
+  getRoomNormalWithLocation,
+} from "@/services/RoomService";
 import { Province, District, Ward } from "@/types/types";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { useLocationContext } from "@/context/LocationContext";
 
 type SelectOption = {
   label: string;
@@ -87,18 +93,18 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
         type="button"
         onClick={() => !disabled && setIsOpen(!isOpen)}
         disabled={disabled}
-        className={`w-full h-11 px-3 pr-8 text-left text-sm font-medium bg-white border-2 rounded-lg transition-all duration-200 shadow-sm focus:ring-4 focus:ring-blue-500/10 disabled:bg-gray-50 disabled:text-gray-400 ${
+        className={`w-full h-11 px-4 pr-10 text-left text-sm font-medium bg-white/90 backdrop-blur-sm border-2 rounded-xl transition-all duration-300 shadow-sm hover:shadow-md focus:ring-4 focus:ring-blue-500/20 disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed ${
           error
             ? "border-red-300 focus:border-red-500"
-            : "border-gray-200 focus:border-blue-500 hover:border-gray-300"
+            : "border-gray-200/60 focus:border-blue-500 hover:border-blue-300"
         }`}
       >
         <span className={selectedOption ? "text-gray-900" : "text-gray-500"}>
-          {loading ? "Đang tải..." : selectedOption?.label || placeholder}
+          {loading ? "Loading..." : selectedOption?.label || placeholder}
         </span>
         <svg
-          className={`absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 transition-transform duration-200 ${
-            isOpen ? "rotate-180" : ""
+          className={`absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 transition-all duration-300 text-gray-400 ${
+            isOpen ? "rotate-180 text-blue-500" : ""
           }`}
           fill="none"
           stroke="currentColor"
@@ -114,36 +120,81 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
       </button>
 
       {isOpen && (
-        <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-60 overflow-hidden">
-          <div className="p-2 border-b border-gray-100">
-            <input
-              type="text"
-              placeholder="Tìm kiếm..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full px-3 py-2 text-sm border border-gray-200 rounded-md focus:border-blue-500 focus:outline-none"
-              autoFocus
-            />
+        <div className="absolute top-full left-0 right-0 mt-2 bg-white/95 backdrop-blur-lg border border-gray-200/50 rounded-xl shadow-xl z-50 max-h-64 overflow-hidden animate-fadeIn">
+          <div className="p-3 border-b border-gray-100/70">
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Search..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full px-4 py-2.5 pl-10 text-sm border border-gray-200/60 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all duration-200 bg-white/80"
+                autoFocus
+              />
+              <svg
+                className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
+              </svg>
+            </div>
           </div>
-          <div className="max-h-44 overflow-y-auto">
+          <div className="max-h-48 overflow-y-auto">
             {filteredOptions.length > 0 ? (
               filteredOptions.map((option) => (
                 <button
                   key={option.value}
                   type="button"
                   onClick={() => handleSelect(option)}
-                  className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-50 transition-colors duration-150 ${
+                  className={`w-full px-4 py-3 text-left text-sm hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition-all duration-200 border-b border-gray-50 last:border-0 ${
                     option.value === value
-                      ? "bg-blue-50 text-blue-600"
-                      : "text-gray-900"
+                      ? "bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 font-medium"
+                      : "text-gray-700 hover:text-blue-700"
                   }`}
                 >
-                  {option.label}
+                  <div className="flex items-center justify-between">
+                    <span>{option.label}</span>
+                    {option.value === value && (
+                      <svg
+                        className="w-4 h-4 text-blue-500"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                    )}
+                  </div>
                 </button>
               ))
             ) : (
-              <div className="px-3 py-2 text-sm text-gray-500 text-center">
-                Không tìm thấy kết quả
+              <div className="px-4 py-6 text-sm text-gray-500 text-center">
+                <div className="flex flex-col items-center gap-2">
+                  <svg
+                    className="w-8 h-8 text-gray-300"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={1.5}
+                      d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-6-4h6M7 8a3 3 0 016 0M7 8H5a2 2 0 00-2 2v6a2 2 0 002 2h14a2 2 0 002-2V10a2 2 0 00-2-2h-2"
+                    />
+                  </svg>
+                  <span>No results found</span>
+                </div>
               </div>
             )}
           </div>
@@ -155,7 +206,18 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
         <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
       )}
 
-      {error && <p className="text-xs text-red-500 mt-1 ml-1">{error}</p>}
+      {error && (
+        <p className="text-xs text-red-500 mt-1.5 ml-1 font-medium flex items-center gap-1">
+          <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+            <path
+              fillRule="evenodd"
+              d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+              clipRule="evenodd"
+            />
+          </svg>
+          {error}
+        </p>
+      )}
     </div>
   );
 };
@@ -167,6 +229,7 @@ function SuggestAddressBar({
 }: SuggestAddressBarProps) {
   const { data: session } = useSession();
   const router = useRouter();
+  const { setLocation, setIsSearching, setGuestRooms } = useLocationContext();
 
   // Form state
   const [formData, setFormData] = useState({
@@ -257,9 +320,10 @@ function SuggestAddressBar({
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
-    if (!formData.province) newErrors.province = "Vui lòng chọn tỉnh/thành phố";
-    if (!formData.district) newErrors.district = "Vui lòng chọn quận/huyện";
-    if (!formData.ward) newErrors.ward = "Vui lòng chọn phường/xã";
+    if (!formData.province)
+      newErrors.province = "Please select a province/city";
+    if (!formData.district) newErrors.district = "Please select a district";
+    if (!formData.ward) newErrors.ward = "Please select a ward";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -327,9 +391,87 @@ function SuggestAddressBar({
     }
   };
 
+  // NEW FUNCTION: Fetch rooms based on address location for non-logged users
+  const fetchRoomsByAddress = async (searchAddress: string) => {
+    setIsSearching(true);
+
+    // Clear previous guest data to ensure fresh results
+    setGuestRooms(null);
+
+    try {
+      // Use Goong API to get coordinates from address
+      const GOONG_API_KEY = process.env.NEXT_PUBLIC_GOONG_API_KEY;
+      if (!GOONG_API_KEY) {
+        showMessage("error", "Thiếu API key cho dịch vụ bản đồ!");
+        return;
+      }
+
+      const geoResponse = await fetch(
+        `https://rsapi.goong.io/Geocode?address=${encodeURIComponent(
+          searchAddress
+        )}&api_key=${GOONG_API_KEY}`
+      );
+
+      if (!geoResponse.ok) {
+        throw new Error("Không thể tìm thấy tọa độ của địa chỉ này");
+      }
+
+      const geoData = await geoResponse.json();
+
+      if (geoData.results && geoData.results.length > 0) {
+        const location = geoData.results[0].geometry.location;
+        const { lat, lng } = location;
+
+        console.log("🌍 Fetching rooms by location:");
+        console.log("- Address:", searchAddress);
+        console.log("- Coordinates:", { lat, lng });
+
+        // Update location context FIRST
+        setLocation({ lat, lng, address: searchAddress });
+
+        // Add a small delay to ensure state is updated
+        await new Promise((resolve) => setTimeout(resolve, 100));
+
+        // Fetch rooms using location-based APIs
+        const [vipResponse, normalResponse] = await Promise.all([
+          getRoomVipWithLocation(0, 4, lat, lng),
+          getRoomNormalWithLocation(0, 6, lat, lng),
+        ]);
+
+        console.log("🏠 API Responses:");
+        console.log("- VIP rooms:", vipResponse);
+        console.log("- Normal rooms:", normalResponse);
+
+        if (vipResponse && normalResponse) {
+          // Force a new object to trigger re-render
+          const newGuestRooms = {
+            vipRooms: { ...vipResponse },
+            normalRooms: { ...normalResponse },
+          };
+          setGuestRooms(newGuestRooms);
+          showMessage(
+            "success",
+            `🎯 Đã tìm thấy ${
+              vipResponse.totalRecords + normalResponse.totalRecords
+            } phòng gần "${searchAddress}" - Đã sắp xếp theo khoảng cách!`
+          );
+        } else {
+          showMessage("error", "Không thể tải danh sách phòng!");
+        }
+      } else {
+        showMessage("error", "Không tìm thấy địa chỉ này!");
+      }
+    } catch (error) {
+      console.error("Error fetching rooms by address:", error);
+      showMessage("error", "Có lỗi xảy ra khi tìm kiếm phòng!");
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
   const handleSave = async () => {
     if (!validateForm()) {
-      showMessage("error", "Vui lòng điền đầy đủ thông tin địa chỉ!");
+      showMessage("error", "Please fill in all address information!");
       return;
     }
 
@@ -350,6 +492,8 @@ function SuggestAddressBar({
       const searchAddress = addressParts.join(", ");
 
       const userId = session?.user?.userProfile?.id;
+
+      // If user is logged in, save preferences
       if (userId) {
         setIsSaving(true);
         await updatePreferences(
@@ -358,15 +502,18 @@ function SuggestAddressBar({
           session
         );
 
-        showMessage("success", "Đã lưu địa chỉ thành công!");
+        showMessage("success", "Address saved successfully!");
         await loadUserPreferences();
 
         if (onSaveSuccess) onSaveSuccess();
         setShowTooltip(true);
+      } else {
+        // If user is NOT logged in, fetch rooms by address location
+        await fetchRoomsByAddress(searchAddress);
       }
     } catch (error) {
       console.error("Error saving address:", error);
-      showMessage("error", "Có lỗi xảy ra khi lưu địa chỉ!");
+      showMessage("error", "An error occurred while saving the address!");
     } finally {
       setIsSaving(false);
     }
@@ -384,7 +531,7 @@ function SuggestAddressBar({
         }
       }
     } catch (error) {
-      console.log("Không thể tải preferences:", error);
+      console.log("Could not load preferences:", error);
       setCurrentPreferences(null);
     } finally {
       setLoadingPreferences(false);
@@ -393,7 +540,7 @@ function SuggestAddressBar({
 
   const getCurrentLocation = async () => {
     if (!navigator.geolocation) {
-      showMessage("error", "Trình duyệt không hỗ trợ định vị!");
+      showMessage("error", "Your browser does not support geolocation!");
       return;
     }
 
@@ -404,7 +551,7 @@ function SuggestAddressBar({
     ) {
       showMessage(
         "error",
-        "Chức năng định vị chỉ hoạt động trên HTTPS hoặc localhost!"
+        "Geolocation feature only works on HTTPS or localhost!"
       );
       return;
     }
@@ -426,7 +573,7 @@ function SuggestAddressBar({
       const GOONG_API_KEY = process.env.NEXT_PUBLIC_GOONG_API_KEY;
 
       if (!GOONG_API_KEY) {
-        showMessage("error", "Thiếu API key cho dịch vụ bản đồ!");
+        showMessage("error", "Missing API key for map service!");
         return;
       }
 
@@ -436,7 +583,7 @@ function SuggestAddressBar({
 
       if (!response.ok) {
         throw new Error(
-          `Không thể lấy thông tin địa chỉ (Status: ${response.status})`
+          `Unable to get address information (Status: ${response.status})`
         );
       }
 
@@ -451,6 +598,7 @@ function SuggestAddressBar({
 
         const userId = session?.user?.userProfile?.id;
         if (userId && formattedAddress) {
+          // User is logged in - save preferences
           await updatePreferences(
             userId,
             { searchAddress: formattedAddress },
@@ -458,17 +606,71 @@ function SuggestAddressBar({
           );
 
           setCurrentPreferences(formattedAddress);
-          showMessage("success", "Đã cập nhật vị trí hiện tại thành công!");
+          showMessage("success", "Current location updated successfully!");
 
           if (onSaveSuccess) onSaveSuccess();
           setShowTooltip(true);
+        } else if (!userId) {
+          // User is NOT logged in - fetch rooms with coordinates and update context
+          try {
+            console.log("🌍 Fetching rooms by current location:");
+            console.log("- Address:", formattedAddress);
+            console.log("- Coordinates:", { latitude, longitude });
+
+            // Clear previous guest data first
+            setGuestRooms(null);
+
+            setLocation({
+              lat: latitude,
+              lng: longitude,
+              address: formattedAddress,
+            });
+
+            // Add small delay to ensure state is updated
+            await new Promise((resolve) => setTimeout(resolve, 100));
+
+            const [vipResponse, normalResponse] = await Promise.all([
+              getRoomVipWithLocation(0, 4, latitude, longitude),
+              getRoomNormalWithLocation(0, 6, latitude, longitude),
+            ]);
+
+            console.log("🏠 Current Location API Responses:");
+            console.log("- VIP rooms:", vipResponse);
+            console.log("- Normal rooms:", normalResponse);
+
+            if (vipResponse && normalResponse) {
+              // Force new object to trigger re-render
+              const newGuestRooms = {
+                vipRooms: { ...vipResponse },
+                normalRooms: { ...normalResponse },
+              };
+              setGuestRooms(newGuestRooms);
+              showMessage(
+                "success",
+                `🎯 Đã tìm thấy ${
+                  vipResponse.totalRecords + normalResponse.totalRecords
+                } phòng gần vị trí của bạn - Đã sắp xếp theo khoảng cách!`
+              );
+            } else {
+              showMessage(
+                "warning",
+                "Lấy vị trí thành công nhưng không thể tải danh sách phòng!"
+              );
+            }
+          } catch (error) {
+            console.error("Error fetching rooms by location:", error);
+            showMessage(
+              "warning",
+              "Lấy vị trí thành công nhưng không thể tải danh sách phòng!"
+            );
+          }
         } else {
-          showMessage("success", "Đã lấy vị trí hiện tại thành công!");
+          showMessage("success", "Current location retrieved successfully!");
         }
       } else {
         showMessage(
           "warning",
-          "Không thể xác định địa chỉ chính xác từ vị trí hiện tại"
+          "Unable to determine exact address from current location"
         );
       }
     } catch (error: any) {
@@ -478,19 +680,19 @@ function SuggestAddressBar({
         error.code === 1 ||
         error.code === GeolocationPositionError.PERMISSION_DENIED
       ) {
-        showMessage("error", "Bạn đã từ chối cấp quyền truy cập vị trí.");
+        showMessage("error", "You have denied location access permission.");
       } else if (
         error.code === 2 ||
         error.code === GeolocationPositionError.POSITION_UNAVAILABLE
       ) {
-        showMessage("error", "Không thể xác định vị trí hiện tại.");
+        showMessage("error", "Unable to determine current location.");
       } else if (
         error.code === 3 ||
         error.code === GeolocationPositionError.TIMEOUT
       ) {
-        showMessage("error", "Hết thời gian chờ khi lấy vị trí.");
+        showMessage("error", "Timeout while getting location.");
       } else {
-        showMessage("error", "Có lỗi xảy ra khi lấy vị trí.");
+        showMessage("error", "An error occurred while getting location.");
       }
     } finally {
       setIsGettingLocation(false);
@@ -498,80 +700,147 @@ function SuggestAddressBar({
   };
 
   return (
-    <div className="sticky lg:w-[1200px] md:w-[800px] w-full top-0 z-40 bg-white/95 backdrop-blur-xl border-b border-gray-200/50 shadow-lg transition-all duration-300">
+    <div className="sticky lg:w-[1100px] md:w-[800px] w-full top-0 z-40 bg-gradient-to-r from-white/95 via-blue-50/80 to-indigo-50/80 backdrop-blur-xl border-b border-blue-200/30 shadow-xl transition-all duration-300">
       {/* Message Toast */}
       {message && (
         <div
-          className={`fixed top-20 right-4 z-50 px-6 py-3 rounded-lg shadow-lg border-l-4 animate-slideIn ${
+          className={`fixed top-20 right-4 z-50 px-6 py-4 rounded-2xl shadow-2xl border-l-4 animate-slideIn backdrop-blur-lg ${
             message.type === "success"
-              ? "bg-green-50 border-green-400 text-green-800"
+              ? "bg-emerald-50/95 border-emerald-400 text-emerald-800"
               : message.type === "error"
-              ? "bg-red-50 border-red-400 text-red-800"
-              : "bg-yellow-50 border-yellow-400 text-yellow-800"
+              ? "bg-red-50/95 border-red-400 text-red-800"
+              : "bg-amber-50/95 border-amber-400 text-amber-800"
           }`}
         >
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             {message.type === "success" && (
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                <path
-                  fillRule="evenodd"
-                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                  clipRule="evenodd"
-                />
-              </svg>
+              <div className="w-6 h-6 bg-emerald-500 rounded-full flex items-center justify-center flex-shrink-0">
+                <svg
+                  className="w-4 h-4 text-white"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </div>
             )}
             {message.type === "error" && (
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <div className="w-6 h-6 bg-red-500 rounded-full flex items-center justify-center flex-shrink-0">
+                <svg
+                  className="w-4 h-4 text-white"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </div>
+            )}
+            {message.type === "warning" && (
+              <div className="w-6 h-6 bg-amber-500 rounded-full flex items-center justify-center flex-shrink-0">
+                <svg
+                  className="w-4 h-4 text-white"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 102 0V6a1 1 0 00-1-1z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </div>
+            )}
+            <div className="flex-1">
+              <span className="font-semibold text-sm">{message.text}</span>
+            </div>
+            <button
+              onClick={() => setMessage(null)}
+              className="text-gray-400 hover:text-gray-600 transition-colors duration-200"
+            >
+              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                 <path
                   fillRule="evenodd"
-                  d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                  d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
                   clipRule="evenodd"
                 />
               </svg>
-            )}
-            <span className="font-medium">{message.text}</span>
+            </button>
           </div>
         </div>
       )}
 
       <div className="w-full max-w-7xl mx-auto px-4 py-4">
-        {/* Current Location Display - chỉ ẩn phần này khi scroll */}
+        {/* Current Location Display - hides when scrolling */}
         {currentPreferences && !loadingPreferences && (
           <div
-            className={`mb-4 p-4 bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 border border-blue-200/50 rounded-xl transition-all duration-300 ${
+            className={`mb-4 p-4 bg-gradient-to-br from-blue-50/90 via-indigo-50/90 to-purple-50/90 backdrop-blur-sm border border-blue-200/40 rounded-2xl transition-all duration-500 shadow-md hover:shadow-lg ${
               isScrolled
                 ? "opacity-0 max-h-0 overflow-hidden mb-0 py-0"
-                : "opacity-100 max-h-20"
+                : "opacity-100 max-h-24"
             }`}
           >
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-              <span className="text-sm font-medium text-blue-700">
-                Khu vực tìm kiếm:
-              </span>
-              <span className="text-sm text-blue-600 font-normal">
-                {currentPreferences}
-              </span>
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                <div className="w-3 h-3 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full"></div>
+                <div className="absolute inset-0 w-3 h-3 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full animate-ping opacity-75"></div>
+              </div>
+              <div className="flex-1">
+                <span className="text-sm font-semibold text-blue-800">
+                  Current Search Area:
+                </span>
+                <p className="text-sm text-blue-700 font-medium mt-0.5 leading-relaxed">
+                  {currentPreferences}
+                </p>
+              </div>
+              <div className="flex-shrink-0">
+                <svg
+                  className="w-5 h-5 text-blue-500"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                  />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                  />
+                </svg>
+              </div>
             </div>
           </div>
         )}
 
-        {/* Main Form - luôn hiển thị, không bị ảnh hưởng bởi scroll */}
-        <div className="space-y-4">
+        {/* Main Form - always visible */}
+        <div className="space-y-5">
           {/* Row 1: Address Input with Location Button Inside */}
-          <div className="w-full flex items-center gap-3">
+          <div className="w-full flex items-center gap-4">
             <div className="relative flex-1">
               <input
                 type="text"
-                placeholder="Nhập địa chỉ cụ thể (số nhà, tên đường)..."
+                placeholder="Enter specific address (house number, street name)..."
                 value={formData.specificAddress}
                 onChange={(e) =>
                   handleInputChange("specificAddress", e.target.value)
                 }
-                className="w-full h-12 px-4 pl-12 pr-16 text-sm font-medium bg-white border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all duration-200 placeholder-gray-400 shadow-sm hover:border-gray-300"
+                className="w-full h-12 px-6 pl-14 pr-16 text-sm font-medium bg-white/90 backdrop-blur-sm border-2 border-gray-200/60 rounded-2xl focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 placeholder-gray-400 shadow-lg hover:shadow-xl hover:border-blue-300"
               />
               {/* Home Icon */}
-              <div className="absolute left-4 top-1/2 -translate-y-1/2">
+              <div className="absolute left-5 top-1/2 -translate-y-1/2">
                 <svg
                   className="w-5 h-5 text-gray-400"
                   fill="none"
@@ -591,14 +860,26 @@ function SuggestAddressBar({
                 type="button"
                 onClick={getCurrentLocation}
                 disabled={isGettingLocation}
-                className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 bg-gradient-to-br from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center disabled:opacity-70 disabled:cursor-not-allowed group"
-                title="Lấy vị trí hiện tại"
+                className="absolute right-3 top-1/2 -translate-y-1/2 h-8 w-8 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center disabled:opacity-70 disabled:cursor-not-allowed group active:scale-95 text-white"
+                style={{
+                  background:
+                    "linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background =
+                    "linear-gradient(135deg, #2563eb 0%, #1e40af 100%)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background =
+                    "linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)";
+                }}
+                title="Get Current Location"
               >
                 {isGettingLocation ? (
-                  <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                  <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                 ) : (
                   <svg
-                    className="w-4 h-4 group-hover:scale-110 transition-transform duration-200"
+                    className="w-4.5 h-4.5 group-hover:scale-110 transition-transform duration-300"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -624,10 +905,27 @@ function SuggestAddressBar({
               <button
                 type="button"
                 onClick={() => router.push("/testmap")}
-                className="h-11 px-5 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-medium text-sm rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex items-center gap-2"
+                className="h-12 px-6 text-white font-semibold text-sm rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-3 active:scale-95"
+                style={{
+                  background:
+                    "linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)",
+                  boxShadow: "0 10px 25px -5px rgba(59, 130, 246, 0.25)",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background =
+                    "linear-gradient(135deg, #2563eb 0%, #1e40af 100%)";
+                  e.currentTarget.style.boxShadow =
+                    "0 15px 35px -5px rgba(59, 130, 246, 0.35)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background =
+                    "linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)";
+                  e.currentTarget.style.boxShadow =
+                    "0 10px 25px -5px rgba(59, 130, 246, 0.25)";
+                }}
               >
                 <svg
-                  className="w-4 h-4"
+                  className="w-5 h-5"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -639,31 +937,31 @@ function SuggestAddressBar({
                     d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"
                   />
                 </svg>
-                <span>Bản đồ</span>
+                <span>View Map</span>
               </button>
             </div>
           </div>
 
           {/* Row 2: Location Selects and Action Buttons */}
-          <div className="flex flex-wrap gap-3 items-start">
+          <div className="flex flex-wrap gap-4 items-start">
             {/* Province Select */}
-            <div className="flex-1 min-w-[140px] max-w-[200px]">
+            <div className="flex-1 min-w-[160px] max-w-[220px]">
               <CustomSelect
                 options={provinces}
                 value={formData.province}
                 onChange={handleProvinceChange}
-                placeholder="Chọn Tỉnh/TP"
+                placeholder="Select Province/City"
                 error={errors.province}
               />
             </div>
 
             {/* District Select */}
-            <div className="flex-1 min-w-[120px] max-w-[180px]">
+            <div className="flex-1 min-w-[140px] max-w-[200px]">
               <CustomSelect
                 options={districts}
                 value={formData.district}
                 onChange={handleDistrictChange}
-                placeholder="Chọn Q/Huyện"
+                placeholder="Select District"
                 disabled={districts.length === 0}
                 loading={loadingDistricts}
                 error={errors.district}
@@ -671,12 +969,12 @@ function SuggestAddressBar({
             </div>
 
             {/* Ward Select */}
-            <div className="flex-1 min-w-[120px] max-w-[180px]">
+            <div className="flex-1 min-w-[140px] max-w-[200px]">
               <CustomSelect
                 options={wards}
                 value={formData.ward}
                 onChange={(value) => handleInputChange("ward", value)}
-                placeholder="Chọn P/Xã"
+                placeholder="Select Ward"
                 disabled={wards.length === 0}
                 loading={loadingWards}
                 error={errors.ward}
@@ -684,19 +982,38 @@ function SuggestAddressBar({
             </div>
 
             {/* Action Buttons */}
-            <div className="flex items-center gap-2 relative ml-auto">
+            <div className="flex items-center gap-3 relative ml-auto">
               {/* Save/Search Button */}
               {showSaveButton && (
                 <button
                   type="button"
                   onClick={handleSave}
                   disabled={isSaving}
-                  className="h-11 px-6 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium text-sm rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+                  className="h-11 px-8 text-white font-semibold text-sm rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-3 disabled:opacity-70 disabled:cursor-not-allowed active:scale-95"
+                  style={{
+                    background:
+                      "linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)",
+                    boxShadow: "0 10px 25px -5px rgba(59, 130, 246, 0.25)",
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isSaving) {
+                      e.currentTarget.style.background =
+                        "linear-gradient(135deg, #2563eb 0%, #1e40af 100%)";
+                      e.currentTarget.style.boxShadow =
+                        "0 15px 35px -5px rgba(59, 130, 246, 0.35)";
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background =
+                      "linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)";
+                    e.currentTarget.style.boxShadow =
+                      "0 10px 25px -5px rgba(59, 130, 246, 0.25)";
+                  }}
                 >
                   {isSaving ? (
                     <>
                       <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                      <span>Đang lưu...</span>
+                      <span>Saving...</span>
                     </>
                   ) : (
                     <>
@@ -713,7 +1030,7 @@ function SuggestAddressBar({
                           d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
                         />
                       </svg>
-                      <span>Tìm kiếm</span>
+                      <span>Search</span>
                     </>
                   )}
                 </button>
@@ -723,8 +1040,8 @@ function SuggestAddressBar({
               <button
                 type="button"
                 onClick={() => setShowTooltip(!showTooltip)}
-                className="h-11 w-11 bg-gray-100 hover:bg-gray-200 text-gray-600 hover:text-gray-800 rounded-lg transition-all duration-200 flex items-center justify-center"
-                title="Thông tin"
+                className="h-11 w-11 bg-gray-50/90 hover:bg-gray-100/90 text-gray-500 hover:text-gray-700 rounded-2xl transition-all duration-300 flex items-center justify-center shadow-md hover:shadow-lg backdrop-blur-sm active:scale-95 border border-gray-200/50"
+                title="Information"
               >
                 <svg
                   className="w-5 h-5"
@@ -741,15 +1058,15 @@ function SuggestAddressBar({
                 </svg>
               </button>
 
-              {/* Tooltip */}
+              {/* Enhanced Tooltip */}
               {showTooltip && (
-                <div className="absolute top-full right-0 mt-3 z-50 w-80 p-5 bg-white rounded-2xl shadow-2xl border border-gray-200 animate-fadeIn">
+                <div className="absolute top-full right-0 mt-4 z-50 w-96 p-6 bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-gray-200/50 animate-fadeIn">
                   <button
                     onClick={() => setShowTooltip(false)}
-                    className="absolute top-3 right-3 w-8 h-8 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full flex items-center justify-center transition-colors duration-200"
+                    className="absolute top-4 right-4 w-8 h-8 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-2xl flex items-center justify-center transition-all duration-200 border border-gray-200/30"
                   >
                     <svg
-                      className="w-5 h-5"
+                      className="w-4 h-4"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -763,37 +1080,83 @@ function SuggestAddressBar({
                     </svg>
                   </button>
 
-                  <div className="mb-3">
-                    <h3 className="font-bold text-gray-800 text-lg">
+                  <div className="mb-4">
+                    <h3 className="font-bold text-gray-800 text-xl mb-1">
                       {currentPreferences
-                        ? "Khu vực hiện tại"
-                        : "Chọn khu vực tìm kiếm"}
+                        ? "Current Search Area"
+                        : "Choose Search Area"}
                     </h3>
+                    <div className="w-12 h-1 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full"></div>
                   </div>
 
                   <div className="text-sm text-gray-600 leading-relaxed">
                     {currentPreferences ? (
-                      <div className="space-y-2">
-                        <div className="p-3 bg-blue-50 rounded-lg border-l-4 border-blue-400">
-                          <p className="font-medium text-blue-800">
-                            {currentPreferences}
-                          </p>
+                      <div className="space-y-3">
+                        <div className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl border border-blue-200/50">
+                          <div className="flex items-start gap-3">
+                            <svg
+                              className="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                              />
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                              />
+                            </svg>
+                            <div className="flex-1">
+                              <p className="font-medium text-blue-800 text-base">
+                                {currentPreferences}
+                              </p>
+                            </div>
+                          </div>
                         </div>
-                        <p>Đây là khu vực bạn đang tìm kiếm phòng trọ.</p>
+                        <p className="text-gray-700">
+                          This is the area where you&#39;re currently searching
+                          for rental rooms.
+                        </p>
                       </div>
                     ) : (
-                      <div className="space-y-2">
-                        <p>Bạn chưa chọn khu vực tìm kiếm.</p>
-                        <p>
-                          Hãy chọn tỉnh/thành phố, quận/huyện, phường/xã để nhận
-                          được những gợi ý phù hợp nhất!
+                      <div className="space-y-3">
+                        <p className="text-gray-700">
+                          You haven&#39;t selected a search area yet.
                         </p>
+                        <p className="text-gray-700">
+                          Please choose province/city, district, and ward to get
+                          the most suitable suggestions!
+                        </p>
+                        <div className="flex items-center gap-2 text-blue-600 text-xs font-medium mt-3 p-2 bg-blue-50 rounded-xl">
+                          <svg
+                            className="w-4 h-4"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                          <span>
+                            Tip: Use the location button to automatically detect
+                            your current area
+                          </span>
+                        </div>
                       </div>
                     )}
                   </div>
 
                   {/* Arrow */}
-                  <div className="absolute -top-2 right-6 w-4 h-4 bg-white border-l border-t border-gray-200 transform rotate-45"></div>
+                  <div className="absolute -top-2 right-8 w-4 h-4 bg-white border-l border-t border-gray-200/50 transform rotate-45"></div>
                 </div>
               )}
             </div>
@@ -803,20 +1166,20 @@ function SuggestAddressBar({
 
       <style jsx>{`
         .animate-slideIn {
-          animation: slideIn 0.3s ease-out;
+          animation: slideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
         .animate-fadeIn {
-          animation: fadeIn 0.2s ease-out;
+          animation: fadeIn 0.3s ease-out;
         }
 
         @keyframes slideIn {
           from {
-            transform: translateX(100%);
+            transform: translateX(100%) scale(0.9);
             opacity: 0;
           }
           to {
-            transform: translateX(0);
+            transform: translateX(0) scale(1);
             opacity: 1;
           }
         }
@@ -824,11 +1187,11 @@ function SuggestAddressBar({
         @keyframes fadeIn {
           from {
             opacity: 0;
-            transform: translateY(-10px);
+            transform: translateY(-20px) scale(0.95);
           }
           to {
             opacity: 1;
-            transform: translateY(0);
+            transform: translateY(0) scale(1);
           }
         }
       `}</style>

@@ -97,7 +97,6 @@ public class RoomController {
         return ResponseEntity.ok(updatedRoom);
     }
 
-
     @GetMapping("/by-landlord/{id}/paging")
     public ResponseEntity<PaginationRoomResponseDto> getAllRoomByLandlordIdPaginated(@PathVariable("id") UUID id,
             @RequestParam(value = "page", defaultValue = "0") int page,
@@ -149,7 +148,6 @@ public class RoomController {
         RoomResponseDto room = roomService.getRoomById(id);
         return ResponseEntity.ok(room);
     }
-
 
     @PostMapping("/admin-send-email")
     public ResponseEntity<String> sendEmailToLandlord(
@@ -217,6 +215,32 @@ public class RoomController {
         return ResponseEntity.ok(response);
     }
 
+    // API mới - Lấy rooms VIP với tọa độ trực tiếp (cho user chưa đăng nhập)
+    @GetMapping("allroom-vip-location")
+    public ResponseEntity<PaginationRoomInUserResponseDto> getRoomVipWithLocation(
+            @RequestParam(name = "page", defaultValue = "0") int pageNumber,
+            @RequestParam(name = "size", defaultValue = "5") int pageSize,
+            @RequestParam(name = "lat", required = false) Double latitude,
+            @RequestParam(name = "lng", required = false) Double longitude) {
+        String code = "VIP";
+        PaginationRoomInUserResponseDto response = roomService.getAllRoomInUserWithLocation(
+                pageNumber, pageSize, code, latitude, longitude);
+        return ResponseEntity.ok(response);
+    }
+
+    // API mới - Lấy rooms Normal với tọa độ trực tiếp (cho user chưa đăng nhập)
+    @GetMapping("allroom-normal-location")
+    public ResponseEntity<PaginationRoomInUserResponseDto> getRoomNormalWithLocation(
+            @RequestParam(name = "page", defaultValue = "0") int pageNumber,
+            @RequestParam(name = "size", defaultValue = "5") int pageSize,
+            @RequestParam(name = "lat", required = false) Double latitude,
+            @RequestParam(name = "lng", required = false) Double longitude) {
+        String code = "NORMAL";
+        PaginationRoomInUserResponseDto response = roomService.getAllRoomInUserWithLocation(
+                pageNumber, pageSize, code, latitude, longitude);
+        return ResponseEntity.ok(response);
+    }
+
     @PostMapping("filter-rooms")
     public ResponseEntity<PaginationRoomInUserResponseDto> filterRooms(
             @RequestParam(name = "page", defaultValue = "0") int pageNumber,
@@ -246,16 +270,17 @@ public class RoomController {
         List<RoomInMapResponse> rooms = roomService.findRoomInMapWithRadius(lat, lng, radius);
         return ResponseEntity.ok(rooms);
     }
+
     @GetMapping("/{id}/feedbacks")
     public ResponseEntity<List<RatingResponseDto>> getFeedbacksByRoom(@PathVariable("id") UUID id) {
         List<RatingResponseDto> feedbacks = ratingService.getAllRatingsByRoom(id);
         return ResponseEntity.ok(feedbacks);
     }
+
     @PostMapping("/{id}/feedbacks")
     public ResponseEntity<RatingResponseDto> createFeedback(
             @PathVariable("id") UUID id,
-            @RequestBody RatingCreateDto dto
-    ) {
+            @RequestBody RatingCreateDto dto) {
         dto.setRoomId(id);
         RatingResponseDto response = ratingService.createRating(dto);
         return ResponseEntity.ok(response);
@@ -265,33 +290,31 @@ public class RoomController {
     public ResponseEntity<RatingResponseDto> replyFeedback(
             @PathVariable("feedbackId") UUID feedbackId,
             @RequestBody RatingReplyDto dto,
-             @RequestParam("landlordId") UUID landlordId
-    ) {
+            @RequestParam("landlordId") UUID landlordId) {
 
         RatingResponseDto response = ratingService.replyRating(landlordId, feedbackId, dto);
         return ResponseEntity.ok(response);
     }
+
     @GetMapping("/{roomId}/feedback-access")
     public ResponseEntity<FeedbackAccess> checkFeedbackAccess(
             @PathVariable("roomId") UUID roomId,
-            @RequestParam UUID userId
-    ) {
+            @RequestParam UUID userId) {
         FeedbackAccess access = ratingService.checkUserFeedbackAccess(userId, roomId);
         return ResponseEntity.ok(access);
     }
 
     @GetMapping("/landlords/{landlordId}/feedbacks")
     public ResponseEntity<List<RatingResponseDto>> getFeedbacksByLandlord(
-            @PathVariable("landlordId") UUID landlordId
-    ) {
+            @PathVariable("landlordId") UUID landlordId) {
         List<RatingResponseDto> feedbacks = ratingService.getAllRatingsByLandlord(landlordId);
         return ResponseEntity.ok(feedbacks);
     }
+
     @DeleteMapping("/feedbacks/{feedbackId}")
     public ResponseEntity<String> deleteFeedback(
             @PathVariable("feedbackId") UUID feedbackId,
-            @RequestParam("userId") UUID userId
-    ) {
+            @RequestParam("userId") UUID userId) {
         String result = ratingService.deleteRating(feedbackId, userId);
         return ResponseEntity.ok(result);
     }

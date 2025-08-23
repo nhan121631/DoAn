@@ -2,7 +2,6 @@
 import BackToTop from "./components/BackToTop";
 import Chatbot from "./components/Chatbot";
 import CompareRoom from "./components/CompareRoom";
-import SuggestAddressBar from "./components/Filter/SuggestAddressBar";
 import RentalRooms, {
   RentalRoomsSearchParams,
 } from "./components/rental_rooms";

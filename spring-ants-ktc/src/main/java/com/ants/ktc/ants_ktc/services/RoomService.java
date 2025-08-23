@@ -1188,6 +1188,57 @@ public class RoomService {
                 }
         }
 
+        // Method mới - sắp xếp theo tọa độ trực tiếp (cho user chưa đăng nhập)
+        public PaginationRoomInUserResponseDto getAllRoomInUserWithLocation(int pageNumber, int pageSize,
+                        String code, Double latitude, Double longitude) {
+                try {
+                        Pageable pageable = PageRequest.of(pageNumber, pageSize);
+                        Page<Room> roomPage;
+
+                        // Sử dụng query có sắp xếp theo khoảng cách nếu có tọa độ
+                        if (latitude != null && longitude != null) {
+                                roomPage = roomJpaRepository.findAllRoomInUserSortedByDistance(code, latitude,
+                                                longitude,
+                                                pageable);
+                        } else {
+                                // Fallback về query cơ bản nếu không có tọa độ
+                                roomPage = roomJpaRepository.findAllRoomInUser(code, pageable);
+                        }
+
+                        List<RoomInUserResponseDto> rooms = roomPage.getContent().stream()
+                                        .map(room -> RoomInUserResponseDto.builder()
+                                                        .id(room.getId())
+                                                        .title(room.getTitle())
+                                                        .description(room.getDescription())
+                                                        .priceMonth(room.getPrice_month())
+                                                        .area(room.getArea())
+                                                        .postStartDate(room.getPost_start_date())
+                                                        .address(convertAddress(room.getAddress()))
+                                                        .images(convertImages(room.getImages()))
+                                                        .conveniences(convertConveniences(room.getConvenients()))
+                                                        .landlord(convertLandlord(room.getUser()))
+                                                        .build())
+                                        .collect(Collectors.toList());
+
+                        return PaginationRoomInUserResponseDto.builder()
+                                        .data(rooms)
+                                        .pageNumber(roomPage.getNumber())
+                                        .pageSize(roomPage.getSize())
+                                        .totalRecords(roomPage.getTotalElements())
+                                        .totalPages(roomPage.getTotalPages())
+                                        .hasNext(roomPage.hasNext())
+                                        .hasPrevious(roomPage.hasPrevious())
+                                        .build();
+
+                } catch (Exception e) {
+                        System.err.println("Error in getAllRoomInUserWithLocation: " + e.getMessage());
+                        e.printStackTrace();
+
+                        // Fallback về method cơ bản nếu có lỗi
+                        return getAllRoomInUser(pageNumber, pageSize, code);
+                }
+        }
+
         public PaginationRoomInUserResponseDto filterRooms(int pageNumber, int pageSize,
                         FilterRoomRequestDto filterDto) {
                 Pageable pageable = PageRequest.of(pageNumber, pageSize);
@@ -1533,6 +1584,7 @@ public class RoomService {
         /**
          * Tính điểm price phù hợp dựa trên user preferences
          * trả về điểm cố định
+         * 
          * @return Điểm cố định 50 (trung bình)
          */
         private int calculatePriceScore(com.ants.ktc.ants_ktc.entities.UserProfile userProfile, Double roomPrice) {
@@ -1557,9 +1609,7 @@ public class RoomService {
                 }
 
                 if (address.getWard() != null) {
-                        if (addressBuilder.length() > 0)
-                                addressBuilder.append(", ");
-                        addressBuilder.append(address.getWard().getName());
+                        addressBuilder.append(", ").append(address.getWard().getName());
 
                         if (address.getWard().getDistrict() != null) {
                                 addressBuilder.append(", ").append(address.getWard().getDistrict().getName());
