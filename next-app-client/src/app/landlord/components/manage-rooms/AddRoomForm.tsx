@@ -1,21 +1,28 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useEffect } from "react";
-import { Form, Input, InputNumber, Button, Upload, Select } from "antd";
-import { PlusOutlined } from "@ant-design/icons";
-import type { UploadFile } from "antd/es/upload/interface";
-import { RoomData } from "../../types";
-import { Convenient, District, Province, TypePost, Ward } from "@/types/types";
 import {
   getDistricts,
   getProvinces,
   getWards,
 } from "@/services/AddressService";
-import { getPostTypes } from "@/services/TypePostService";
 import { getConvenients } from "@/services/Convenients";
-import { createRoom } from "@/services/RoomService";
-import { message } from "antd";
 import { isHaveBankAccount } from "@/services/ProfileService";
+import { createRoom } from "@/services/RoomService";
+import { getPostTypes } from "@/services/TypePostService";
+import { Convenient, District, Province, TypePost, Ward } from "@/types/types";
+import { PlusOutlined } from "@ant-design/icons";
+import {
+  Button,
+  Form,
+  Input,
+  InputNumber,
+  message,
+  Select,
+  Upload,
+} from "antd";
+import type { UploadFile } from "antd/es/upload/interface";
 import { useSession } from "next-auth/react";
+import React, { useEffect } from "react";
+import { RoomData } from "../../types";
 
 type ProvinceOption = {
   label: string;
@@ -74,10 +81,10 @@ const AddRoomForm: React.FC<{ onFinish?: (values: RoomData) => void }> = (
   }, []);
 
   const { data: session } = useSession();
-  if (!session) {
-    return <div>Please log in to add a room.</div>;
-  }
+
   useEffect(() => {
+    if (!session) return;
+
     const fetchIsHaveBank = async () => {
       try {
         const data = await isHaveBankAccount();
@@ -87,7 +94,8 @@ const AddRoomForm: React.FC<{ onFinish?: (values: RoomData) => void }> = (
       }
     };
     fetchIsHaveBank();
-  }, []);
+  }, [session]);
+
   // Tính giá khi thay đổi ngày hoặc loại bài đăng
   useEffect(() => {
     if (!selectedTypePostId || !startDate || !endDate) {
@@ -107,7 +115,10 @@ const AddRoomForm: React.FC<{ onFinish?: (values: RoomData) => void }> = (
     );
     setTotalPrice(diffDays * typepost.pricePerDay);
   }, [selectedTypePostId, startDate, endDate, typeposts]);
+
   useEffect(() => {
+    if (!session) return;
+
     const fetchTypePosts = async () => {
       try {
         const data = await getPostTypes();
@@ -117,9 +128,11 @@ const AddRoomForm: React.FC<{ onFinish?: (values: RoomData) => void }> = (
       }
     };
     fetchTypePosts();
-  }, []);
+  }, [session]);
 
   useEffect(() => {
+    if (!session) return;
+
     const fetchProvinces = async () => {
       try {
         const data = await getProvinces();
@@ -133,7 +146,11 @@ const AddRoomForm: React.FC<{ onFinish?: (values: RoomData) => void }> = (
       }
     };
     fetchProvinces();
-  }, []);
+  }, [session]);
+
+  if (!session) {
+    return <div>Please log in to add a room.</div>;
+  }
 
   // Khi chọn tỉnh, load lại danh sách quận/huyện
   const handleProvinceChange = async (provinceId: string) => {

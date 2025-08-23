@@ -34,9 +34,9 @@ export default function ChatClient({
   const { data: session } = useSession();
   console.log("User avatar URL:", urlAvatar);
   const [sending, setSending] = useState<boolean>(false);
-  const [messages, setMessages] = useState<
-    { id: string; text: string; senderId: string; recipientId: string }[]
-  >([]);
+  // const [messages, setMessages] = useState<
+  //   { id: string; text: string; senderId: string; recipientId: string }[]
+  // >([]);
   const [allMessages, setAllMessages] = useState<
     {
       id: string;
@@ -71,7 +71,7 @@ export default function ChatClient({
       setAllMessages(msgs);
     });
     return () => unsubscribe();
-  }, [recipientId]);
+  }, [recipientId, senderId]);
   useEffect(() => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollTop = messagesEndRef.current.scrollHeight;

@@ -915,46 +915,48 @@ function SuggestAddressBar({
                 )}
               </button>
             </div>
-            <div className="flex-shrink-0">
-              {/* Map Button */}
-              <button
-                type="button"
-                onClick={() => router.push("/testmap")}
-                className="h-12 px-6 text-white font-semibold text-sm rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-3 active:scale-95"
-                style={{
-                  background:
-                    "linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)",
-                  boxShadow: "0 10px 25px -5px rgba(59, 130, 246, 0.25)",
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background =
-                    "linear-gradient(135deg, #2563eb 0%, #1e40af 100%)";
-                  e.currentTarget.style.boxShadow =
-                    "0 15px 35px -5px rgba(59, 130, 246, 0.35)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background =
-                    "linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)";
-                  e.currentTarget.style.boxShadow =
-                    "0 10px 25px -5px rgba(59, 130, 246, 0.25)";
-                }}
-              >
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
+            {!width && (
+              <div className="flex-shrink-0">
+                {/* Map Button */}
+                <button
+                  type="button"
+                  onClick={() => router.push("/testmap")}
+                  className="h-12 px-6 text-white font-semibold text-sm rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-3 active:scale-95"
+                  style={{
+                    background:
+                      "linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)",
+                    boxShadow: "0 10px 25px -5px rgba(59, 130, 246, 0.25)",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background =
+                      "linear-gradient(135deg, #2563eb 0%, #1e40af 100%)";
+                    e.currentTarget.style.boxShadow =
+                      "0 15px 35px -5px rgba(59, 130, 246, 0.35)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background =
+                      "linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)";
+                    e.currentTarget.style.boxShadow =
+                      "0 10px 25px -5px rgba(59, 130, 246, 0.25)";
+                  }}
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"
-                  />
-                </svg>
-                <span>View Map</span>
-              </button>
-            </div>
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"
+                    />
+                  </svg>
+                  <span>View Map</span>
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Row 2: Location Selects and Action Buttons */}

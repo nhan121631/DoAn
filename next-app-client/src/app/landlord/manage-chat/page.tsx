@@ -1,23 +1,22 @@
 "use client";
 
-import { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import ChatClient from "@/app/components/chat/ChatClient";
-import { useSession } from "next-auth/react";
-import Image from "next/image";
 import { db } from "@/lib/firebase";
+import { getFullName } from "@/services/ProfileService";
 import {
   collection,
-  query,
-  orderBy,
-  onSnapshot,
-  where,
-  or,
   doc,
-  setDoc,
-  getDoc,
+  onSnapshot,
+  or,
+  orderBy,
+  query,
   serverTimestamp,
+  setDoc,
+  where,
 } from "firebase/firestore";
-import { getFullName } from "@/services/ProfileService";
+import { useSession } from "next-auth/react";
+import Image from "next/image";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 interface ChatUser {
   id: string;
@@ -37,7 +36,7 @@ export default function LandlordManageChatPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string>("");
 
-  const chatDataRef = useRef(new Map<string, ChatUser>());
+  // const chatDataRef = useRef(new Map<string, ChatUser>());
   const lastReadTimestamps = useRef(new Map<string, Date>());
 
   // Effect để lắng nghe và lấy trạng thái đã đọc từ Firestore khi tải trang
@@ -272,7 +271,7 @@ export default function LandlordManageChatPage() {
               )}
               {sortedUserList.map((user, index) => {
                 const isSelected = selectedUserId === user.id;
-                const isUnread = user.unreadCount && user.unreadCount > 0;
+                // const isUnread = user.unreadCount && user.unreadCount > 0;
                 let timeStr = "";
                 if (user.lastMessageTime) {
                   const d = user.lastMessageTime;
@@ -294,7 +293,7 @@ export default function LandlordManageChatPage() {
                     style={{ animationDelay: `${index * 50}ms` }}
                   >
                     <button
-  className={`group relative w-full text-left px-5 py-4 rounded-2xl transition-all duration-300 flex items-center gap-4
+                      className={`group relative w-full text-left px-5 py-4 rounded-2xl transition-all duration-300 flex items-center gap-4
     border-2
     ${
       isSelected
@@ -304,64 +303,63 @@ export default function LandlordManageChatPage() {
     hover:border-blue-400
     hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 dark:hover:from-blue-900 dark:hover:to-purple-900
   `}
-  style={{
-    transition:
-      "box-shadow 0.2s, background 0.2s, border 0.2s, transform 0.2s",
-  }}
-  onClick={() => handleUserSelect(user)}
->
-  {/* Avatar + Badge */}
-  <div className="relative w-14 h-14">
-    <div
-      className={`w-14 h-14 rounded-full flex items-center justify-center font-bold text-xl shadow-lg
+                      style={{
+                        transition:
+                          "box-shadow 0.2s, background 0.2s, border 0.2s, transform 0.2s",
+                      }}
+                      onClick={() => handleUserSelect(user)}
+                    >
+                      {/* Avatar + Badge */}
+                      <div className="relative w-14 h-14">
+                        <div
+                          className={`w-14 h-14 rounded-full flex items-center justify-center font-bold text-xl shadow-lg
         ${
           isSelected
             ? "bg-gradient-to-br from-blue-400 to-purple-400 text-white"
             : "bg-gradient-to-br from-blue-300 to-purple-300 text-white"
         }
         transition-all duration-300 group-hover:scale-105 overflow-hidden`}
-    >
-      {user.avatar ? (
-        <Image
-          src={user.avatar}
-          alt="Avatar"
-          width={56}
-          height={56}
-          className="object-cover w-full h-full"
-        />
-      ) : (
-        (user.name || user.id).charAt(0).toUpperCase()
-      )}
-    </div>
+                        >
+                          {user.avatar ? (
+                            <Image
+                              src={user.avatar}
+                              alt="Avatar"
+                              width={56}
+                              height={56}
+                              className="object-cover w-full h-full"
+                            />
+                          ) : (
+                            (user.name || user.id).charAt(0).toUpperCase()
+                          )}
+                        </div>
 
-    {(user.unreadCount ?? 0) > 0 && (
-  <div className="absolute -top-1 -right-1">
-    <span className="absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75 animate-ping" />
-    <span className="relative flex h-5 w-5 items-center justify-center rounded-full bg-amber-500 text-xs font-bold text-white shadow ring-2 ring-white dark:ring-gray-900">
-      {user.unreadCount}
-    </span>
-  </div>
-)}
-    
-  </div>
+                        {(user.unreadCount ?? 0) > 0 && (
+                          <div className="absolute -top-1 -right-1">
+                            <span className="absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75 animate-ping" />
+                            <span className="relative flex h-5 w-5 items-center justify-center rounded-full bg-amber-500 text-xs font-bold text-white shadow ring-2 ring-white dark:ring-gray-900">
+                              {user.unreadCount}
+                            </span>
+                          </div>
+                        )}
+                      </div>
 
-  {/* Info */}
-  <div className="flex-1 min-w-0">
-    <div className="flex items-center gap-2">
-      <h3
-        className={`font-semibold text-lg truncate transition-colors duration-200
+                      {/* Info */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <h3
+                            className={`font-semibold text-lg truncate transition-colors duration-200
           ${
             isSelected
               ? "text-blue-700"
               : "text-slate-800 dark:text-gray-100 group-hover:text-blue-700 dark:group-hover:text-blue-300"
           }`}
-      >
-        {user.name || user.id}
-      </h3>
-    </div>
-    {user.lastMessageText && (
-      <p
-        className={`text-sm mt-1 truncate transition-colors duration-200
+                          >
+                            {user.name || user.id}
+                          </h3>
+                        </div>
+                        {user.lastMessageText && (
+                          <p
+                            className={`text-sm mt-1 truncate transition-colors duration-200
           ${
             isSelected
               ? "text-blue-600"
@@ -369,27 +367,26 @@ export default function LandlordManageChatPage() {
               ? "font-semibold text-amber-600 dark:text-amber-400"
               : "text-slate-500 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-300"
           }`}
-      >
-        {user.lastMessageText}
-      </p>
-    )}
-    {timeStr && (
-      <p
-        className={`text-xs mt-1 transition-colors duration-200
+                          >
+                            {user.lastMessageText}
+                          </p>
+                        )}
+                        {timeStr && (
+                          <p
+                            className={`text-xs mt-1 transition-colors duration-200
           ${
             isSelected
               ? "text-blue-500"
               : "text-slate-500 dark:text-gray-400 group-hover:text-blue-500 dark:group-hover:text-blue-300"
           }`}
-      >
-        {timeStr}
-      </p>
-    )}
-  </div>
+                          >
+                            {timeStr}
+                          </p>
+                        )}
+                      </div>
 
-  <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-blue-500/0 to-purple-500/0 group-hover:from-blue-500/10 group-hover:to-purple-500/10 transition-all duration-300 pointer-events-none z-0" />
-</button>
-
+                      <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-blue-500/0 to-purple-500/0 group-hover:from-blue-500/10 group-hover:to-purple-500/10 transition-all duration-300 pointer-events-none z-0" />
+                    </button>
                   </div>
                 );
               })}
@@ -410,7 +407,9 @@ export default function LandlordManageChatPage() {
                   userList.find((u) => u.id === selectedUserId)?.name || ""
                 }
                 fullHeight={true}
-                urlAvatar={userList.find((u) => u.id === selectedUserId)?.avatar || ""}
+                urlAvatar={
+                  userList.find((u) => u.id === selectedUserId)?.avatar || ""
+                }
               />
             </div>
           ) : isLoading ? (

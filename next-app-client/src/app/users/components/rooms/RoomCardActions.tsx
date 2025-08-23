@@ -23,9 +23,9 @@ export default function RoomCartActions({
   showHeartOnly,
 }: RoomCardProps) {
   const router = useRouter();
-  const handleClick = () => {
-    router.push(`/detail/${room.id}`);
-  };
+  // const handleClick = () => {
+  //   router.push(`/detail/${room.id}`);
+  // };
 
   const { items, addItem } = useCompareStore((state) => state);
   const [isCompared, setIsCompared] = useState(false);
@@ -77,7 +77,8 @@ export default function RoomCartActions({
         throw new Error("Failed to update favorite status");
       }
     } catch (error) {
-      messageApi.error("Failed to update favorite status");
+      console.error("Error updating favorite status:", error);
+      messageApi.error("Failed to update favorite status ");
     } finally {
       setLoadingFavorite(false);
     }
