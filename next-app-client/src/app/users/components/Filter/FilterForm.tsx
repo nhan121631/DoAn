@@ -1,31 +1,228 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 "use client";
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { FilterRequest, useFilterStore } from "@/stores/FilterStore";
 import {
   getDistricts,
   getProvinces,
   getWards,
 } from "@/services/AddressService";
 import { getConvenients } from "@/services/Convenients";
+import { FilterRequest, useFilterStore } from "@/stores/FilterStore";
 import { Convenient, District, Province, Ward } from "@/types/types";
-import { Form, Select, Checkbox } from "antd";
-import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 type SelectOption = {
   label: string;
   value: string;
 };
 
+// Custom Select Component
+interface CustomSelectProps {
+  options: SelectOption[];
+  value: string;
+  onChange: (value: string | undefined) => void;
+  placeholder: string;
+  disabled?: boolean;
+  loading?: boolean;
+}
+
+const CustomSelect = ({
+  options,
+  value,
+  onChange,
+  placeholder,
+  disabled = false,
+  loading = false,
+}: CustomSelectProps) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filteredOptions, setFilteredOptions] =
+    useState<SelectOption[]>(options);
+
+  useEffect(() => {
+    if (searchTerm) {
+      const filtered = options.filter((option) =>
+        option.label.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      setFilteredOptions(filtered);
+    } else {
+      setFilteredOptions(options);
+    }
+  }, [searchTerm, options]);
+
+  const selectedOption = options.find((opt) => opt.value === value);
+
+  const handleSelect = (option: SelectOption) => {
+    onChange(option.value);
+    setIsOpen(false);
+    setSearchTerm("");
+  };
+
+  const handleClear = () => {
+    onChange(undefined);
+    setIsOpen(false);
+    setSearchTerm("");
+  };
+
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={() => !disabled && setIsOpen(!isOpen)}
+        disabled={disabled || loading}
+        className={`w-full h-11 px-4 pr-10 text-left text-sm font-medium bg-white/90 backdrop-blur-sm border-2 rounded-xl transition-all duration-300 shadow-sm hover:shadow-md focus:ring-4 focus:ring-blue-500/20 disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed ${
+          isOpen
+            ? "border-blue-500 ring-4 ring-blue-500/20"
+            : "border-gray-200/60 hover:border-blue-300"
+        }`}
+      >
+        <span className={selectedOption ? "text-gray-900" : "text-gray-500"}>
+          {loading ? "Loading..." : selectedOption?.label || placeholder}
+        </span>
+
+        <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1">
+          {selectedOption && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleClear();
+              }}
+              className="w-4 h-4 text-gray-400 hover:text-gray-600 transition-colors duration-200"
+            >
+              <svg fill="currentColor" viewBox="0 0 20 20">
+                <path
+                  fillRule="evenodd"
+                  d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </button>
+          )}
+          <svg
+            className={`w-4 h-4 transition-all duration-300 text-gray-400 ${
+              isOpen ? "rotate-180 text-blue-500" : ""
+            }`}
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M19 9l-7 7-7-7"
+            />
+          </svg>
+        </div>
+      </button>
+
+      {isOpen && (
+        <div className="absolute top-full left-0 right-0 mt-2 bg-white/95 backdrop-blur-lg border border-gray-200/50 rounded-xl shadow-xl z-50 max-h-64 overflow-hidden animate-fadeIn">
+          <div className="p-3 border-b border-gray-100/70">
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Search..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full px-4 py-2.5 pl-10 text-sm border border-gray-200/60 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all duration-200 bg-white/80"
+                autoFocus
+              />
+              <svg
+                className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
+              </svg>
+            </div>
+          </div>
+          <div className="max-h-48 overflow-y-auto">
+            {filteredOptions.length > 0 ? (
+              filteredOptions.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => handleSelect(option)}
+                  className={`w-full px-4 py-3 text-left text-sm hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition-all duration-200 border-b border-gray-50 last:border-0 ${
+                    option.value === value
+                      ? "bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 font-medium"
+                      : "text-gray-700 hover:text-blue-700"
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span>{option.label}</span>
+                    {option.value === value && (
+                      <svg
+                        className="w-4 h-4 text-blue-500"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                    )}
+                  </div>
+                </button>
+              ))
+            ) : (
+              <div className="px-4 py-6 text-sm text-gray-500 text-center">
+                <div className="flex flex-col items-center gap-2">
+                  <svg
+                    className="w-8 h-8 text-gray-300"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={1.5}
+                      d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-6-4h6M7 8a3 3 0 016 0M7 8H5a2 2 0 00-2 2v6a2 2 0 002 2h14a2 2 0 002-2V10a2 2 0 00-2-2h-2"
+                    />
+                  </svg>
+                  <span>No results found</span>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {isOpen && (
+        <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
+      )}
+    </div>
+  );
+};
+
 export default function FilterForm() {
-  const [form] = Form.useForm();
   const [provinces, setProvinces] = useState<SelectOption[]>([]);
   const [districts, setDistricts] = useState<SelectOption[]>([]);
   const [wards, setWards] = useState<SelectOption[]>([]);
   const [loadingDistricts, setLoadingDistricts] = useState(false);
   const [loadingWards, setLoadingWards] = useState(false);
   const [convenients, setConvenients] = useState<Convenient[]>([]);
+  const [selectedConvenients, setSelectedConvenients] = useState<string[]>([]);
+
+  // Form state
+  const [formData, setFormData] = useState({
+    province: "",
+    district: "",
+    ward: "",
+  });
+
   const { applyFilters, item } = useFilterStore((state) => state);
   const router = useRouter();
 
@@ -52,26 +249,15 @@ export default function FilterForm() {
   }, [item.provinceId, item.districtId]);
 
   useEffect(() => {
-    const formValues: any = {
-      province: item.provinceId ? String(item.provinceId) : undefined,
-      district: item.districtId ? String(item.districtId) : undefined,
-      ward: item.wardId ? String(item.wardId) : undefined,
-      convenients: item.listConvenientIds
-        ? item.listConvenientIds.map(String)
-        : [],
-    };
-    // Only update if values are different to avoid breaking user input
-    const current = form.getFieldsValue();
-    let changed = false;
-    for (const key in formValues) {
-      if (formValues[key] !== current[key]) {
-        changed = true;
-        break;
-      }
-    }
-    if (changed) {
-      form.setFieldsValue(formValues);
-    }
+    // Update form state from store
+    setFormData({
+      province: item.provinceId ? String(item.provinceId) : "",
+      district: item.districtId ? String(item.districtId) : "",
+      ward: item.wardId ? String(item.wardId) : "",
+    });
+    setSelectedConvenients(
+      item.listConvenientIds ? item.listConvenientIds.map(String) : []
+    );
   }, [item]);
 
   useEffect(() => {
@@ -95,13 +281,6 @@ export default function FilterForm() {
           value: String(item.id),
         }));
         setProvinces(options);
-        const provinceValue = form.getFieldValue("province");
-        if (
-          provinceValue &&
-          options.some((opt: any) => opt.value === provinceValue)
-        ) {
-          form.setFieldsValue({ province: provinceValue });
-        }
       } catch (err) {
         console.error("Error fetching provinces", err);
       }
@@ -109,22 +288,33 @@ export default function FilterForm() {
     fetchProvinces();
   }, []);
 
-  // Trigger filter and update URL param without reload (like CardFilter)
-  const triggerFilter = (checkedValues?: any) => {
-    // Nếu là convenients thì lấy checkedValues, còn lại lấy từ form
-    const values = {
-      ...form.getFieldsValue(),
-      convenients: checkedValues ?? form.getFieldValue('convenients'),
-    };
+  // Trigger filter and update URL param without reload
+  const triggerFilter = (
+    updatedFormData?: any,
+    updatedConvenients?: string[]
+  ) => {
+    const currentFormData = updatedFormData || formData;
+    const currentConvenients =
+      updatedConvenients !== undefined
+        ? updatedConvenients
+        : selectedConvenients;
+
     const payload: FilterRequest = {
-      provinceId: values.province ? Number(values.province) : undefined,
-      districtId: values.district ? Number(values.district) : undefined,
-      wardId: values.ward ? Number(values.ward) : undefined,
-      listConvenientIds: values.convenients
-        ? values.convenients.map(Number)
+      provinceId: currentFormData.province
+        ? Number(currentFormData.province)
         : undefined,
+      districtId: currentFormData.district
+        ? Number(currentFormData.district)
+        : undefined,
+      wardId: currentFormData.ward ? Number(currentFormData.ward) : undefined,
+      listConvenientIds:
+        currentConvenients.length > 0
+          ? currentConvenients.map(Number)
+          : undefined,
     };
+
     applyFilters(payload);
+
     // Build query string
     const query: Record<string, string> = {};
     if (payload.provinceId !== undefined)
@@ -135,14 +325,22 @@ export default function FilterForm() {
     if (payload.listConvenientIds && payload.listConvenientIds.length > 0)
       query.listConvenientIds = payload.listConvenientIds.join(",");
     const queryString = new URLSearchParams(query).toString();
-    // Giữ vị trí scroll khi lọc
-    router.replace(`/users${queryString ? "?" + queryString : ""}`, { scroll: false });
+    router.replace(`/users${queryString ? "?" + queryString : ""}`, {
+      scroll: false,
+    });
   };
 
   const handleProvinceChange = async (provinceId: string | undefined) => {
-    form.setFieldsValue({ district: undefined, ward: undefined });
+    const updatedFormData = {
+      ...formData,
+      province: provinceId || "",
+      district: "",
+      ward: "",
+    };
+    setFormData(updatedFormData);
     setDistricts([]);
     setWards([]);
+
     if (provinceId) {
       setLoadingDistricts(true);
       try {
@@ -152,25 +350,24 @@ export default function FilterForm() {
           value: String(item.id),
         }));
         setDistricts(options);
-        const districtValue = form.getFieldValue("district");
-        if (
-          districtValue &&
-          options.some((opt: any) => opt.value === districtValue)
-        ) {
-          form.setFieldsValue({ district: districtValue });
-        }
       } catch (err) {
         console.error("Error fetching districts", err);
       } finally {
         setLoadingDistricts(false);
       }
     }
-    triggerFilter();
+    triggerFilter(updatedFormData);
   };
 
   const handleDistrictChange = async (districtId: string | undefined) => {
-    form.setFieldsValue({ ward: undefined });
+    const updatedFormData = {
+      ...formData,
+      district: districtId || "",
+      ward: "",
+    };
+    setFormData(updatedFormData);
     setWards([]);
+
     if (districtId) {
       setLoadingWards(true);
       try {
@@ -180,96 +377,206 @@ export default function FilterForm() {
           value: String(item.id),
         }));
         setWards(options);
-        const wardValue = form.getFieldValue("ward");
-        if (wardValue && options.some((opt: any) => opt.value === wardValue)) {
-          form.setFieldsValue({ ward: wardValue });
-        }
       } catch (err) {
         console.error("Error fetching wards", err);
       } finally {
         setLoadingWards(false);
       }
     }
-    triggerFilter();
+    triggerFilter(updatedFormData);
+  };
+
+  const handleWardChange = (wardId: string | undefined) => {
+    const updatedFormData = { ...formData, ward: wardId || "" };
+    setFormData(updatedFormData);
+    triggerFilter(updatedFormData);
+  };
+
+  const handleConvenientToggle = (convenientId: string) => {
+    const updated = selectedConvenients.includes(convenientId)
+      ? selectedConvenients.filter((id) => id !== convenientId)
+      : [...selectedConvenients, convenientId];
+
+    setSelectedConvenients(updated);
+    triggerFilter(undefined, updated);
   };
 
   return (
-    <Form
-      form={form}
-      layout="vertical"
-      className="w-[300px] bg-white shadow-md rounded-lg p-4 flex flex-col gap-4"
-    >
-      <span className="font-semibold text-[15px] my-2 mx-5 text-gray-800">
-        Addresses
-      </span>
-      <div className="flex flex-wrap gap-2 justify-between mx-5">
-        <Form.Item label="Province" name="province" className="flex-1 min-w-0">
-          <Select
-            options={provinces}
-            placeholder="All Provinces"
-            allowClear
-            showSearch
-            optionFilterProp="label"
-            className="w-full"
-            onChange={handleProvinceChange}
-          />
-        </Form.Item>
-        <Form.Item label="District" name="district" className="flex-1 min-w-0">
-          <Select
-            options={districts}
-            placeholder="All Districts"
-            loading={loadingDistricts}
-            allowClear
-            showSearch
-            optionFilterProp="label"
-            disabled={districts.length === 0}
-            fieldNames={{ label: "label", value: "value" }}
-            className="w-full"
-            onChange={handleDistrictChange}
-          />
-        </Form.Item>
-        <Form.Item label="Ward" name="ward" className="flex-1 min-w-0">
-          <Select
-            options={wards}
-            placeholder="All Wards"
-            loading={loadingWards}
-            allowClear
-            showSearch
-            optionFilterProp="label"
-            disabled={wards.length === 0}
-            fieldNames={{ label: "label", value: "value" }}
-            className="w-full"
-            onChange={triggerFilter}
-          />
-        </Form.Item>
+    <div className="w-[320px] bg-gradient-to-br from-white via-slate-50/50 to-blue-50/30 backdrop-blur-lg border border-blue-100/50 rounded-3xl p-6 flex flex-col gap-6">
+      {/* Header with gradient */}
+      <div className="text-center pb-4 border-b  border-gradient-to-r from-transparent via-blue-200/50 to-transparent">
+        <h2 className="text-xl font-bold bg-gradient-to-r from-blue-700 via-indigo-700 to-purple-700 bg-clip-text text-transparent tracking-wide">
+          Advanced Filters
+        </h2>
+        <p className="text-sm text-gray-500 mt-1">Find your perfect room</p>
       </div>
-      {/* Special Features */}
-      <Form.Item>
-        <span className="font-semibold text-[15px] my-2 mx-5 text-gray-800">
-          Convenients
-        </span>
-        <div className="bg-white rounded-lg overflow-y-auto mx-5">
-          <Checkbox.Group
-            className="w-full"
-            onChange={triggerFilter}
-            value={form.getFieldValue("convenients")}
-          >
-            {/* Không bọc div, chỉ render Checkbox trực tiếp */}
-            {convenients.map((c) => (
-              <Checkbox
-                key={c.id}
-                value={String(c.id)}
-                className="flex items-center gap-2 py-1 px-2 rounded hover:bg-gray-100 transition cursor-pointer w-full"
-              >
-                <span className="capitalize text-[15px] text-gray-800">
-                  {c.name.replace(/_/g, " ")}
-                </span>
-              </Checkbox>
-            ))}
-          </Checkbox.Group>
+
+      {/*
+      Address Section
+      <div className="space-y-4">
+        <div className="flex items-center gap-3">
+          <div className="w-6 h-6 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center shadow-md">
+            <svg
+              className="w-3 h-3 text-white"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+              />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+              />
+            </svg>
+          </div>
+          <h3 className="font-bold text-base text-gray-800">Location</h3>
         </div>
-      </Form.Item>
-      {/* No Apply/Reset buttons, filter triggers on change */}
-    </Form>
+
+        <div className="space-y-3">
+          <div>
+            <label className="text-sm font-medium text-gray-700 mb-2 block">
+              Province/City
+            </label>
+            <CustomSelect
+              options={provinces}
+              value={formData.province}
+              onChange={handleProvinceChange}
+              placeholder="All Provinces"
+            />
+          </div>
+
+          <div>
+            <label className="text-sm font-medium text-gray-700 mb-2 block">
+              District
+            </label>
+            <CustomSelect
+              options={districts}
+              value={formData.district}
+              onChange={handleDistrictChange}
+              placeholder="All Districts"
+              disabled={districts.length === 0}
+              loading={loadingDistricts}
+            />
+          </div>
+
+          <div>
+            <label className="text-sm font-medium text-gray-700 mb-2 block">
+              Ward
+            </label>
+            <CustomSelect
+              options={wards}
+              value={formData.ward}
+              onChange={handleWardChange}
+              placeholder="All Wards"
+              disabled={wards.length === 0}
+              loading={loadingWards}
+            />
+          </div>
+        </div>
+      </div>
+      */}
+
+      {/* Convenients Section */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-6 h-6 bg-gradient-to-br from-violet-500 to-purple-600 rounded-lg flex items-center justify-center shadow-md">
+              <svg
+                className="w-3 h-3 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"
+                />
+              </svg>
+            </div>
+            <h3 className="font-bold text-base text-gray-800">Convenients</h3>
+          </div>
+
+          {selectedConvenients.length > 0 && (
+            <div className="px-2 py-1 bg-gradient-to-r from-violet-100 to-purple-100 text-violet-700 text-xs font-semibold rounded-full border border-violet-200">
+              {selectedConvenients.length}
+            </div>
+          )}
+        </div>
+
+        <div className="space-y-2 max-h-64 overflow-y-auto pr-2 custom-scrollbar">
+          {convenients.map((convenient) => {
+            const isSelected = selectedConvenients.includes(
+              String(convenient.id)
+            );
+            return (
+              <button
+                key={convenient.id}
+                type="button"
+                onClick={() => handleConvenientToggle(String(convenient.id))}
+                className={`group w-full p-3 text-left rounded-xl border-2 transition-all duration-300 hover:scale-[1.02] active:scale-95 ${
+                  isSelected
+                    ? "bg-gradient-to-r from-violet-500 to-purple-600 text-white border-violet-400 shadow-lg shadow-violet-500/25"
+                    : "bg-white/80 text-gray-700 border-gray-200/60 hover:border-violet-300 hover:bg-gradient-to-r hover:from-violet-50 hover:to-purple-50 hover:text-violet-700 hover:shadow-md"
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium capitalize">
+                    {convenient.name.replace(/_/g, " ")}
+                  </span>
+                  <div
+                    className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all duration-200 ${
+                      isSelected
+                        ? "bg-white/20 border-white/40"
+                        : "border-gray-300 group-hover:border-violet-300"
+                    }`}
+                  >
+                    {isSelected && (
+                      <svg
+                        className="w-3 h-3 text-white"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                    )}
+                  </div>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+
+        {selectedConvenients.length > 0 && (
+          <button
+            type="button"
+            onClick={() => {
+              setSelectedConvenients([]);
+              triggerFilter(undefined, []);
+            }}
+            className="w-full text-xs text-violet-600 hover:text-violet-700 font-medium transition-colors duration-200 hover:bg-violet-50 px-3 py-2 rounded-lg border border-violet-200/50"
+          >
+            Clear all selections
+          </button>
+        )}
+      </div>
+
+      {/* Footer gradient line */}
+      <div className="h-1 bg-gradient-to-r from-emerald-500 via-indigo-500 to-purple-500 rounded-full opacity-30"></div>
+
+      {/* styles moved to filterform.module.css */}
+    </div>
   );
 }

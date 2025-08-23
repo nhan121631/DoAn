@@ -1,5 +1,13 @@
 package com.ants.ktc.ants_ktc.services;
 
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import com.ants.ktc.ants_ktc.dtos.rating.RatingCreateDto;
 import com.ants.ktc.ants_ktc.dtos.rating.RatingReplyDto;
 import com.ants.ktc.ants_ktc.dtos.rating.RatingResponseDto;
@@ -12,14 +20,6 @@ import com.ants.ktc.ants_ktc.repositories.BookingJpaRepository;
 import com.ants.ktc.ants_ktc.repositories.RatingJpaRepository;
 import com.ants.ktc.ants_ktc.repositories.RoomJpaRepository;
 import com.ants.ktc.ants_ktc.repositories.UserJpaRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Repository;
-import org.springframework.stereotype.Service;
-
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 public class RatingService {
@@ -49,6 +49,7 @@ public class RatingService {
         Rating saved = ratingJpaRepository.save(rating);
         return mapToResponse(saved);
     }
+
     public RatingResponseDto replyRating(UUID landlordId, UUID ratingId, RatingReplyDto dto) {
         Rating rating = ratingJpaRepository.findById(ratingId)
                 .orElseThrow(() -> new RuntimeException("Rating not found"));
@@ -63,12 +64,14 @@ public class RatingService {
         Rating saved = ratingJpaRepository.save(rating);
         return mapToResponse(saved);
     }
+
     public List<RatingResponseDto> getAllRatingsByRoom(UUID roomId) {
         return ratingJpaRepository.findAllByRoomIdWithUserAndRoom(roomId)
                 .stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
     }
+
     public List<RatingResponseDto> getAllRatingsByLandlord(UUID landlordId) {
         return ratingJpaRepository.findAllByLandlordId(landlordId)
                 .stream()
@@ -78,25 +81,28 @@ public class RatingService {
 
     public FeedbackAccess checkUserFeedbackAccess(UUID userId, UUID roomId) {
         boolean hasUsedRoom = bookingJpaRepository.existsByUserIdAndRoomIdAndIsRemoved(userId, roomId, 0);
-        if (!hasUsedRoom) return FeedbackAccess.NOT_USED;
+        if (!hasUsedRoom)
+            return FeedbackAccess.NOT_USED;
 
         boolean alreadyRated = ratingJpaRepository.existsByUserIdAndRoomId(userId, roomId);
-        if (alreadyRated) return FeedbackAccess.ALREADY_RATED;
+        if (alreadyRated)
+            return FeedbackAccess.ALREADY_RATED;
 
         return FeedbackAccess.CAN_RATE;
     }
 
-public String deleteRating(UUID ratingId, UUID userId) {
-         Rating rating = ratingJpaRepository.findById(ratingId)
+    public String deleteRating(UUID ratingId, UUID userId) {
+        Rating rating = ratingJpaRepository.findById(ratingId)
                 .orElseThrow(() -> new RuntimeException("Rating not found"));
-         UUID comment_by = rating.getUser().getId();
-         UUID landlord =  rating.getRoom().getUser().getId();
-         if (!comment_by.equals(userId) && !landlord.equals(userId)) {
-             throw new RuntimeException("Bạn không có quyền xóa feedback này");
-         }
-         ratingJpaRepository.deleteById(ratingId);
-         return "Feedback removed";
+        UUID comment_by = rating.getUser().getId();
+        UUID landlord = rating.getRoom().getUser().getId();
+        if (!comment_by.equals(userId) && !landlord.equals(userId)) {
+            throw new RuntimeException("Bạn không có quyền xóa feedback này");
+        }
+        ratingJpaRepository.deleteById(ratingId);
+        return "Feedback removed";
     }
+
     private RatingResponseDto mapToResponse(Rating rating) {
         return new RatingResponseDto(
                 rating.getId(),
@@ -110,7 +116,6 @@ public String deleteRating(UUID ratingId, UUID userId) {
                 rating.getScore(),
                 rating.getComment(),
                 rating.getReply(),
-                rating.getDateRated()
-        );
+                rating.getDateRated());
     }
 }

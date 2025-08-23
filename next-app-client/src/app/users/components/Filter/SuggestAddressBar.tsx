@@ -39,6 +39,7 @@ export interface SuggestAddressBarProps {
     district?: string;
     ward?: string;
   };
+  width?: string;
   showSaveButton?: boolean;
   onSaveSuccess?: () => void;
 }
@@ -225,11 +226,13 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
 function SuggestAddressBar({
   initialValue,
   showSaveButton = false,
+  width,
   onSaveSuccess,
 }: SuggestAddressBarProps) {
   const { data: session } = useSession();
   const router = useRouter();
   const { setLocation, setIsSearching, setGuestRooms } = useLocationContext();
+  console.log("width: ", width);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -263,13 +266,21 @@ function SuggestAddressBar({
     text: string;
   } | null>(null);
 
-  // Scroll effect
+  // Scroll effect - Simple approach
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 10);
     };
+
     window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+
+    // Initial check after a delay
+    const timer = setTimeout(handleScroll, 1000);
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      clearTimeout(timer);
+    };
   }, []);
 
   // Auto-hide tooltip
@@ -700,7 +711,11 @@ function SuggestAddressBar({
   };
 
   return (
-    <div className="sticky lg:w-[1100px] md:w-[800px] w-full top-0 z-40 bg-gradient-to-r from-white/95 via-blue-50/80 to-indigo-50/80 backdrop-blur-xl border-b border-blue-200/30 shadow-xl transition-all duration-300">
+    <div
+      className={`sticky ${
+        width ? `w-[100%]` : `lg:w-[80%] md:w-[800px] w-full`
+      }  top-0 z-40 bg-gradient-to-r from-white/95 via-blue-50/80 to-indigo-50/80 backdrop-blur-xl border-b border-blue-200/30 transition-all duration-300`}
+    >
       {/* Message Toast */}
       {message && (
         <div

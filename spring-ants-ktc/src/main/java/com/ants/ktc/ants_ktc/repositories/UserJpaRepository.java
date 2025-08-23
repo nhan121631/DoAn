@@ -19,7 +19,7 @@ import com.ants.ktc.ants_ktc.repositories.projection.LandLordProjectionByRoom;
 @Repository
 public interface UserJpaRepository extends JpaRepository<User, UUID> {
     @Query("""
-        SELECT u.id AS id, p.fullName AS fullName
+        SELECT u.id AS id, p.fullName AS fullName, p.avatar AS avatar
         FROM User u
         JOIN u.profile p
         WHERE u.id = :id

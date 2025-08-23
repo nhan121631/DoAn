@@ -78,6 +78,7 @@ public class ProfileService {
                         UserNameResponseDto responseDto = new UserNameResponseDto();
                         responseDto.setUserId(p.getId());
                         responseDto.setFullName(p.getFullName());
+                        responseDto.setAvatar(p.getAvatar());
                         return responseDto;
                 });
         }

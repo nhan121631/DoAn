@@ -130,63 +130,72 @@ export default function UserInfoCard({ id }: { id: string }) {
   console.log("onlineUsers: ", onlineUsers);
 
   return (
-    <div className="bg-white rounded-xl shadow-lg py-15 px-6 min-h-96 flex flex-col items-center text-center">
-      <Image
-        src={URL_IMAGE + landlord.avatar || "/images/useravt.png"}
-        alt="User Avatar"
-        width={100}
-        height={100}
-        className="rounded-full object-cover border-4 border-blue-400"
-        priority
-      />
-      <h3 className="text-xl font-bold mt-4 text-gray-800">
+    <div className="bg-gradient-to-br from-white via-blue-50/30 to-indigo-50/40 rounded-2xl shadow-lg border border-blue-100/50 p-6 min-h-96 flex flex-col items-center text-center hover:shadow-xl hover:border-blue-200/60 transition-all duration-300">
+      <div className="relative">
+        <div className="p-1 bg-gradient-to-r from-blue-400 to-indigo-400 rounded-full shadow-md">
+          <Image
+            src={URL_IMAGE + landlord.avatar || "/images/useravt.png"}
+            alt="User Avatar"
+            width={100}
+            height={100}
+            className="rounded-full object-cover border-2 border-white shadow-sm"
+            priority
+          />
+        </div>
+        {onlineUsers.includes(landlord.id) ? (
+          <div className="absolute -bottom-2 -right-2 bg-white rounded-full p-1.5 shadow-lg">
+            <div className="w-4 h-4 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full flex items-center justify-center">
+              <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+            </div>
+          </div>
+        ) : (
+          <div className="absolute -bottom-2 -right-2 bg-white rounded-full p-1.5 shadow-lg">
+            <div className="w-4 h-4 bg-gradient-to-r from-gray-400 to-gray-500 rounded-full flex items-center justify-center">
+              <div className="w-2 h-2 bg-white rounded-full"></div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <h3 className="text-xl font-semibold mt-4 bg-gradient-to-r from-gray-800 to-gray-700 bg-clip-text text-transparent">
         {landlord.fullName}
       </h3>
+
       {onlineUsers.includes(landlord.id) ? (
-        <p className="text-sm text-green-600 flex items-center gap-1 mt-1">
-          <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-          </span>
-          Active
-        </p>
+        <div className="flex items-center gap-2 mt-1 bg-green-50 px-3 py-1 rounded-full">
+          <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+          <p className="text-sm text-green-700 font-medium">Online now</p>
+        </div>
       ) : (
-        <p className="text-sm text-red-600 flex items-center gap-1 mt-1">
-          <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
-          </span>
-          Offline
-        </p>
+        <div className="flex items-center gap-2 mt-1 bg-gray-50 px-3 py-1 rounded-full">
+          <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
+          <p className="text-sm text-gray-600">Offline</p>
+        </div>
       )}
-      <p className="text-xs text-gray-500 mt-1">
-        {landlord.amountPost} Post - Joined since: {landlord.createDate}
+
+      <p className="text-sm text-slate-600 mt-2 bg-gradient-to-r from-slate-50 to-blue-50 px-4 py-2 rounded-full border border-slate-200/50">
+        {landlord.amountPost} listings • Member since {landlord.createDate}
       </p>
+
       <div className="flex flex-col gap-3 mt-6 w-full">
         <Link
           href={`tel:${landlord.phone}` || `mailto:${landlord.email}`}
           className={`${
-            landlord.phone ? "bg-green-500 hover:bg-green-600" : "bg-gray-500"
-          } text-white font-semibold py-3 rounded-lg shadow-md flex items-center justify-center gap-2 transition duration-300`}
+            landlord.phone
+              ? "bg-green-500 hover:bg-green-600 text-white shadow-lg hover:shadow-xl"
+              : "bg-gray-500 hover:bg-gray-600 text-white shadow-md hover:shadow-lg"
+          } font-medium py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition-all duration-300 transform hover:scale-[1.02]`}
         >
           {landlord.phone ? (
             <MdPhone className="h-5 w-5" />
           ) : (
             <MdEmail className="h-5 w-5" />
           )}
-          {landlord.phone || landlord.email}
+          <span className="font-medium">
+            {landlord.phone || landlord.email}
+          </span>
         </Link>
-        {/* <Link
-          href={
-            `https://zalo.me/${landlord.phone}` || `mailto:${landlord.email}`
-          }
-          target="_blank"
-          rel="noopener noreferrer"
-          className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 rounded-lg shadow-md flex items-center justify-center gap-2 transition duration-300"
-        >
-          <MdMessage className="h-5 w-5" />
-          Chat with Zalo
-        </Link> */}
+
         <button
           onClick={() => {
             if (!session?.user?.id) {
@@ -194,21 +203,35 @@ export default function UserInfoCard({ id }: { id: string }) {
             }
             setShowChat(true);
           }}
-          className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 rounded-lg shadow-md flex items-center justify-center gap-2 transition duration-300"
+          className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-medium py-3 px-4 rounded-xl shadow-lg hover:shadow-xl flex items-center justify-center gap-2 transition-all duration-300 transform hover:scale-[1.02]"
         >
-          Chat with landlord
+          <svg
+            className="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+            />
+          </svg>
+          Start conversation
         </button>
+
         {showChat && (
           <div
             className="fixed bottom-6 right-6 z-50 flex items-end"
             style={{ pointerEvents: "none" }}
           >
             <div
-              className=" rounded-xl shadow-2xl p-0 max-w-sm w-[600px] relative "
+              className="rounded-2xl shadow-2xl p-0 max-w-sm w-[600px] relative bg-white"
               style={{ pointerEvents: "auto" }}
             >
               <button
-                className="absolute top-4 right-6 text-gray-500 hover:text-gray-800 text-4xl z-50"
+                className="absolute top-4 right-6 text-gray-400 hover:text-gray-600 text-xl z-50 w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
                 onClick={() => setShowChat(false)}
               >
                 &times;
@@ -217,74 +240,81 @@ export default function UserInfoCard({ id }: { id: string }) {
                 senderId={session?.user?.id ? String(session.user.id) : ""}
                 recipientId={landlord.id ? String(landlord.id) : ""}
                 defaultToUserName={landlord.fullName}
-                // sendMessage={handleSendMessage}
               />
             </div>
           </div>
         )}
       </div>
 
-      <div className="flex justify-around w-full mt-6 text-gray-600 text-sm">
+      <div className="flex justify-between w-full mt-8 pt-4 border-t border-gray-200">
         <button
           onClick={handleSavePost}
-          className={`flex flex-col items-center transition w-28 ${
-            isSaved ? "text-red-500" : "hover:text-blue-600"
+          className={`flex flex-col items-center gap-1 py-2 px-3 rounded-xl transition-all duration-300 ${
+            isSaved
+              ? "text-blue-700 bg-gradient-to-br from-blue-50 to-indigo-50 shadow-md border border-blue-200/50"
+              : "text-slate-600 hover:text-blue-700 hover:bg-gradient-to-br hover:from-blue-50 hover:to-indigo-50 hover:shadow-md hover:border hover:border-blue-200/50"
           }`}
         >
           {isSaved ? (
-            <FaBookmark className="h-6 w-6" />
+            <FaBookmark className="h-4 w-4" />
           ) : (
-            <FaRegBookmark className="h-6 w-6" />
+            <FaRegBookmark className="h-4 w-4" />
           )}
-          {isSaved ? "Tin đã lưu" : "Lưu tin"}
+          <span className="text-xs font-medium">
+            {isSaved ? "Saved" : "Save"}
+          </span>
         </button>
+
         <button
-          onClick={() => {
-            setShowShareModal(true);
-          }}
-          className="flex flex-col items-center hover:text-blue-600 transition w-28"
+          onClick={() => setShowShareModal(true)}
+          className="flex flex-col items-center gap-1 py-2 px-3 rounded-xl text-slate-600 hover:text-emerald-700 hover:bg-gradient-to-br hover:from-emerald-50 hover:to-teal-50 hover:shadow-md hover:border hover:border-emerald-200/50 transition-all duration-300"
         >
-          <IoShareSocialOutline className="h-6 w-6" />
-          Chia sẻ
+          <IoShareSocialOutline className="h-4 w-4" />
+          <span className="text-xs font-medium">Share</span>
         </button>
+
         <button
           onClick={() => setShowReportModal(true)}
-          className="flex flex-col items-center hover:text-red-600 transition w-28"
+          className="flex flex-col items-center gap-1 py-2 px-3 rounded-xl text-slate-600 hover:text-red-700 hover:bg-gradient-to-br hover:from-red-50 hover:to-pink-50 hover:shadow-md hover:border hover:border-red-200/50 transition-all duration-300"
         >
-          <IoWarningOutline className="h-6 w-6" />
-          Báo xấu
+          <IoWarningOutline className="h-4 w-4" />
+          <span className="text-xs font-medium">Report</span>
         </button>
       </div>
 
       {showShareModal && (
         <div
-          className="fixed inset-0 bg-gray-800/50 flex items-center justify-end z-50"
+          className="fixed inset-0 bg-gradient-to-br from-black/10 via-blue-900/20 to-indigo-900/20 backdrop-blur-sm flex items-center justify-center z-50 p-4"
           onMouseDown={handleOverlayClick}
         >
           <div
-            className="bg-white rounded-lg p-6 shadow-xl h-full w-full max-w-sm relative transform transition-transform duration-300 ease-in-out"
+            className="bg-white rounded-2xl p-6 shadow-2xl w-full max-w-md relative border border-blue-100/50"
             onMouseDown={(e) => e.stopPropagation()}
           >
             <button
               onClick={() => setShowShareModal(false)}
-              className="absolute top-3 right-3 text-gray-500 hover:text-gray-800"
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
             >
-              <FaTimes className="h-6 w-6" />
+              <FaTimes className="h-4 w-4" />
             </button>
-            <h2 className="text-xl font-bold mb-4 text-gray-800">Share</h2>
-            <p className="mb-4 text-gray-700">Share this post</p>
-            <div className="flex items-center border border-gray-300 rounded-md overflow-hidden mb-4">
+            <h2 className="text-2xl font-semibold mb-2 bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+              Share this listing
+            </h2>
+            <p className="mb-6 text-slate-600">
+              Copy the link to share with others
+            </p>
+            <div className="flex items-center border border-blue-200/60 rounded-xl overflow-hidden shadow-sm">
               <input
                 type="text"
                 readOnly
                 value={currentPostUrl}
-                className="flex-grow p-2 text-gray-700 bg-gray-100 outline-none"
+                className="flex-grow p-3 text-slate-700 bg-gradient-to-r from-blue-50/30 to-indigo-50/30 outline-none text-sm"
               />
               <button
                 onClick={handleCopyLink}
-                className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 transition duration-300"
+                className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium py-3 px-4 transition-all duration-300"
               >
-                Sao chép
+                Copy
               </button>
             </div>
           </div>
@@ -293,147 +323,114 @@ export default function UserInfoCard({ id }: { id: string }) {
 
       {showReportModal && (
         <div
-          className="fixed inset-0 bg-gray-800/50 flex items-center justify-end z-50"
+          className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50 p-4"
           onMouseDown={handleOverlayClick}
         >
           <div
-            className="bg-white rounded-lg p-5 shadow-xl h-full w-full max-w-sm relative transform transition-transform duration-300 ease-in-out overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] "
+            className="bg-white rounded-2xl p-6 shadow-xl w-full max-w-md max-h-[80vh] relative overflow-y-auto"
             onMouseDown={(e) => e.stopPropagation()}
           >
             <button
               onClick={() => setShowReportModal(false)}
-              className="absolute top-3 right-3 text-gray-500 hover:text-gray-800"
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors z-10"
             >
-              <FaTimes className="h-6 w-6" />
+              <FaTimes className="h-4 w-4" />
             </button>
-            <h2 className="text-2xl font-bold mb-4 text-gray-800">
-              Report Post
+            <h2 className="text-2xl font-semibold mb-6 text-gray-900 pr-8">
+              Report this listing
             </h2>
-            <p className="mb-3 text-gray-700 text-base font-bold">
-              Contact Information
-            </p>
-            <div className="mb-4">
-              <label className="block text-left text-gray-700 text-base mb-2">
-                Your Name
-              </label>
-              <input
-                type="text"
-                id="contactName"
-                value={contactName}
-                onChange={(e) => setContactName(e.target.value)}
-                className="w-full p-3 border border-gray-300 rounded-md text-gray-800 text-base"
-                placeholder="Nhập họ tên của bạn"
-              />
-            </div>
-            <div className="mb-6">
-              <label className="block text-left text-gray-700 text-base mb-2">
-                Your Phone Number
-              </label>
-              <input
-                type="tel"
-                id="contactPhone"
-                value={contactPhone}
-                onChange={(e) => setContactPhone(e.target.value)}
-                className="w-full p-3 border border-gray-300 rounded-md text-gray-800 text-base"
-                placeholder="Nhập số điện thoại của bạn"
-              />
-            </div>
-            <p className="mb-2 text-gray-700 text-lg">Reason for Reporting:</p>
-            <div className="flex flex-col space-y-3 mb-6">
-              <label className="inline-flex items-center text-gray-700 text-base">
-                <input
-                  type="radio"
-                  name="reportReason"
-                  value="Thông tin đã hết/không còn hiệu lực"
-                  checked={
-                    reportReason === "Thông tin đã hết/không còn hiệu lực"
-                  }
-                  onChange={(e) => setReportReason(e.target.value)}
-                  className="form-radio text-blue-600 h-5 w-5"
+
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-sm font-medium text-gray-700 mb-3">
+                  Contact Information
+                </h3>
+                <div className="space-y-3">
+                  <div>
+                    <input
+                      type="text"
+                      id="contactName"
+                      value={contactName}
+                      onChange={(e) => setContactName(e.target.value)}
+                      className="w-full p-3 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all"
+                      placeholder="Your full name"
+                    />
+                  </div>
+                  <div>
+                    <input
+                      type="tel"
+                      id="contactPhone"
+                      value={contactPhone}
+                      onChange={(e) => setContactPhone(e.target.value)}
+                      className="w-full p-3 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all"
+                      placeholder="Your phone number"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <h3 className="text-sm font-medium text-gray-700 mb-3">
+                  Reason for reporting
+                </h3>
+                <div className="space-y-2">
+                  {[
+                    "Information has expired/no longer valid",
+                    "Duplicate content",
+                    "Unable to contact the listing owner",
+                    "Information in the listing is inaccurate (price, area, images...)",
+                    "Other reasons",
+                  ].map((reason) => (
+                    <label
+                      key={reason}
+                      className="flex items-start gap-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer"
+                    >
+                      <input
+                        type="radio"
+                        name="reportReason"
+                        value={reason}
+                        checked={reportReason === reason}
+                        onChange={(e) => setReportReason(e.target.value)}
+                        className="mt-0.5 text-blue-600 focus:ring-blue-500"
+                      />
+                      <span className="text-sm text-gray-700">{reason}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <h3 className="text-sm font-medium text-gray-700 mb-3">
+                  Additional details
+                </h3>
+                <textarea
+                  value={reportDescription}
+                  onChange={(e) => setReportDescription(e.target.value)}
+                  className="w-full p-3 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all resize-none"
+                  rows={3}
+                  placeholder="Provide more details about the issue..."
                 />
-                <span className="ml-3">Information has expired</span>
-              </label>
-              <label className="inline-flex items-center text-gray-700 text-base">
+              </div>
+
+              <label className="flex items-start gap-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer">
                 <input
-                  type="radio"
-                  name="reportReason"
-                  value="Duplicate content"
-                  checked={reportReason === "Duplicate content"}
-                  onChange={(e) => setReportReason(e.target.value)}
-                  className="form-radio text-blue-600 h-5 w-5"
+                  type="checkbox"
+                  checked={isRobot}
+                  onChange={(e) => setIsRobot(e.target.checked)}
+                  className="mt-0.5 text-blue-600 focus:ring-blue-500"
                 />
-                <span className="ml-3">Duplicate content</span>
-              </label>
-              <label className="inline-flex items-center text-gray-700 text-base">
-                <input
-                  type="radio"
-                  name="reportReason"
-                  value="Unable to contact the listing owner"
-                  checked={
-                    reportReason === "Unable to contact the listing owner"
-                  }
-                  onChange={(e) => setReportReason(e.target.value)}
-                  className="form-radio text-blue-600 h-5 w-5"
-                />
-                <span className="ml-3">
-                  Unable to contact the listing owner
+                <span className="text-sm text-gray-700">
+                  I confirm that I am not a robot
                 </span>
               </label>
-              <label className="inline-flex items-center text-gray-700 text-base">
-                <input
-                  type="radio"
-                  name="reportReason"
-                  value="Information in the listing is inaccurate (price, area, images...)"
-                  checked={
-                    reportReason ===
-                    "Information in the listing is inaccurate (price, area, images...)"
-                  }
-                  onChange={(e) => setReportReason(e.target.value)}
-                  className="form-radio text-blue-600 h-5 w-5"
-                />
-                <span className="ml-3">
-                  Information in the listing is inaccurate (price, area,
-                  images...)
-                </span>
-              </label>
-              <label className="inline-flex items-center text-gray-700 text-base">
-                <input
-                  type="radio"
-                  name="reportReason"
-                  value="Lý do khác"
-                  checked={reportReason === "Lý do khác"}
-                  onChange={(e) => setReportReason(e.target.value)}
-                  className="form-radio text-blue-600 h-5 w-5"
-                />
-                <span className="ml-3">Other reasons</span>
-              </label>
+
+              <button
+                onClick={handleSubmitReport}
+                className="w-full bg-gray-900 hover:bg-gray-800 text-white font-medium py-3 rounded-xl transition-colors duration-200"
+              >
+                Submit Report
+              </button>
             </div>
-
-            <p className="mb-3 text-gray-700 text-base">More Description</p>
-            <textarea
-              value={reportDescription}
-              onChange={(e) => setReportDescription(e.target.value)}
-              className="w-full p-3 border border-gray-300 rounded-md mb-6 text-gray-800 text-base"
-              rows={3}
-              placeholder="Enter detailed description..."
-            ></textarea>
-
-            <label className="inline-flex items-center text-gray-700 text-base mb-6">
-              <input
-                type="checkbox"
-                checked={isRobot}
-                onChange={(e) => setIsRobot(e.target.checked)}
-                className="form-checkbox text-blue-600 h-5 w-5"
-              />
-              <span className="ml-3">I am not a robot</span>
-            </label>
-
-            <button
-              onClick={handleSubmitReport}
-              className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 rounded-lg shadow-md transition duration-300 text-lg"
-            >
-              Send Report
-            </button>
           </div>
         </div>
       )}

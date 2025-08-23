@@ -4,11 +4,8 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { RoomInUser } from "@/types/types";
 import { message } from "antd";
-import { useEffect, useState } from "react";
-import { FaRegCheckCircle } from "react-icons/fa";
+import { useState } from "react";
 import { FaHeart } from "react-icons/fa6";
-import { IoIosAddCircleOutline } from "react-icons/io";
-import { useCompareStore } from "@/stores/CompareStore";
 import { useFavoriteStore } from "@/stores/FavoriteStore";
 
 interface ButtonFavoriteProps {
@@ -24,8 +21,6 @@ export function ButtonForVipCard({
   onFavoriteChange,
   showHeartOnly,
 }: ButtonFavoriteProps) {
-  const { items, addItem } = useCompareStore((state) => state);
-  const [isCompared, setIsCompared] = useState(false);
   const [messageApi, contextHolder] = message.useMessage();
   const [loading, setLoading] = useState(false);
 
@@ -34,22 +29,6 @@ export function ButtonForVipCard({
 
   const { favoriteRoomIds, addFavorite, removeFavorite } = useFavoriteStore();
   const isFavorite = favoriteRoomIds.has(room.id);
-
-  const handleCompare = () => {
-    if (items.length >= 2) {
-      // ✅ Gọi message trong event handler
-      messageApi.warning({
-        content: "You can only compare up to 2 rooms.",
-        duration: 1.5,
-      });
-      return;
-    }
-    addItem({ room });
-  };
-
-  useEffect(() => {
-    setIsCompared(items.some((item) => item.room.id === room.id));
-  }, [items, room.id]);
 
   const handleFavorite = async () => {
     if (!session) {
@@ -115,35 +94,13 @@ export function ButtonForVipCard({
             ? "text-red-500 bg-red-50 border-red-200"
             : "text-gray-400 hover:text-red-500 hover:border-red-300"
         }
-        ${loading ? "opacity-60 cursor-not-allowed" : ""} mr-2`}
+        ${loading ? "opacity-60 cursor-not-allowed" : ""}`}
         onClick={handleFavorite}
         disabled={loading}
         type="button"
         title={isFavorite ? "Remove from favorites" : "Add to favorites"}
       >
         <FaHeart size={16} />
-      </button>
-      <button
-        className={`flex items-center justify-center gap-2 px-3 py-2 rounded-full shadow-sm border font-semibold text-sm transition-all duration-200 min-w-[92px]
-          ${
-            isCompared
-              ? "bg-gray-100 text-gray-400 border-gray-200 opacity-60 cursor-not-allowed"
-              : "bg-blue-600 text-white border-blue-600 hover:bg-white hover:text-blue-600 hover:border-blue-400 active:scale-95"
-          }
-        `}
-        onClick={handleCompare}
-        disabled={isCompared}
-        type="button"
-        title={isCompared ? "Already in compare list" : "Compare this room"}
-      >
-        <span className="flex items-center">
-          {isCompared ? (
-            <FaRegCheckCircle size={18} />
-          ) : (
-            <IoIosAddCircleOutline size={18} />
-          )}
-        </span>
-        <span>Compare</span>
       </button>
     </>
   );
