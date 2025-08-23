@@ -255,6 +255,81 @@ export default async function RentalRooms({
           </div>
         </div>
       </div>
+      {isEmptyFilter && (
+        <div className="flex flex-col items-center justify-center w-full gap-4 px-2 sm:px-4 my-6 max-w-7xl">
+          <div className="text-center space-y-6 mb-16">
+            <h3 className="text-4xl font-bold bg-gradient-to-r from-gray-800 to-blue-600 bg-clip-text text-transparent">
+              Featured Properties
+            </h3>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              Discover our most popular and highly-rated rental properties
+            </p>
+          </div>
+          <div
+            id="normal-rooms-list"
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 lg:gap-4 w-full"
+          >
+            {roomNormals.data.map((room, index) => (
+              <div key={index} className="flex justify-center">
+                <RoomCard
+                  room={room}
+                  isForSale={false}
+                  isFeatured={false}
+                  isFavorite={initialFavoriteIds.includes(room.id)}
+                  // custom={index}
+                />
+              </div>
+            ))}
+          </div>
+          <div className="flex items-center justify-center gap-4 mt-8">
+            {/* Previous Button */}
+            <Link
+              href={`?pageNormal=${page_normal - 1}`}
+              scroll={false}
+              className={`group flex items-center gap-3 px-6 py-3 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95 ${
+                page_normal === 0
+                  ? "bg-gradient-to-r from-gray-200 to-gray-300 text-gray-500 cursor-not-allowed pointer-events-none"
+                  : "bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-blue-500/30"
+              }`}
+              aria-disabled={page_normal === 0}
+            >
+              <BiChevronLeft
+                size={22}
+                className="transition-transform group-hover:-translate-x-1"
+              />
+              <span className="hidden sm:inline font-medium">Previous</span>
+            </Link>
+
+            {/* Page Info */}
+            <div className="flex flex-col items-center px-6 py-2 bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/50 shadow-sm">
+              <span className="text-lg font-bold bg-gradient-to-r from-blue-600 to-blue-700 bg-clip-text text-transparent">
+                Page {page_normal + 1} / {roomNormals.totalPages}
+              </span>
+              <span className="text-xs text-gray-500 font-medium">
+                {roomNormals.totalRecords} featured rooms
+              </span>
+            </div>
+
+            {/* Next Button */}
+            <Link
+              href={`?pageNormal=${page_normal + 1}`}
+              scroll={false}
+              className={`group flex items-center gap-3 px-6 py-3 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95 ${
+                page_normal + 1 >= roomNormals.totalPages
+                  ? "bg-gradient-to-r from-gray-200 to-gray-300 text-gray-500 cursor-not-allowed pointer-events-none"
+                  : "bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-blue-500/30"
+              }`}
+              aria-disabled={page_normal + 1 >= roomNormals.totalPages}
+            >
+              <span className="hidden sm:inline font-medium">Next</span>
+              <BiChevronRight
+                size={22}
+                className="transition-transform group-hover:translate-x-1"
+              />
+            </Link>
+          </div>
+        </div>
+      )}
     </>
   );
 }

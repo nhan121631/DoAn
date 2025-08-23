@@ -294,7 +294,7 @@ export default function RentalRoomsWithLocation({
         </div>
 
         {/* Normal Rooms Pagination */}
-        <div className="flex items-center justify-center gap-4 mt-8">
+        {/* <div className="flex items-center justify-center gap-4 mt-8">
           <Link
             href={`?pageNormal=${pageNormal - 1}`}
             scroll={false}
@@ -332,7 +332,7 @@ export default function RentalRoomsWithLocation({
             <span className="hidden sm:inline">Next</span>
             <BiChevronRight size={20} />
           </Link>
-        </div>
+        </div> */}
       </div>
     </div>
   );
