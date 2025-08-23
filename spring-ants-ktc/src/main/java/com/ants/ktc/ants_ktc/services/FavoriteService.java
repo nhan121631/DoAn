@@ -101,6 +101,7 @@ public class FavoriteService {
 
         private FavoriteRoomProjection mapToFavoriteRoomProjection(Favorite favorite) {
                 Room room = favorite.getRoom();
+                long favoriteCount = favoriteJpaRepository.countByRoomId(room.getId());
 
                 return FavoriteRoomProjection.builder()
                                 .id(room.getId())
@@ -186,6 +187,8 @@ public class FavoriteService {
                                                                                                                 .getAvatar())
                                                                                                 .build())
                                                                 .build())
+                                .favoriteCount(favoriteCount)
+                                // .favoriteCount(favoriteJpaRepository.countByRoomId(room.getId()))
                                 .build();
         }
 }

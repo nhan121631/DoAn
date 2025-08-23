@@ -1,12 +1,14 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { URL_IMAGE } from "@/services/Constant";
+import { URL_IMAGE, API_URL } from "@/services/Constant";
 import { RoomInUser } from "@/types/types";
 import Image from "next/image";
 import { IoCameraOutline } from "react-icons/io5";
 import { ButtonForVipCard } from "./ButtonForVipCard";
 import RoomCartActionsWrapper from "./RoomCardActionsWrapper";
+import { useEffect, useRef, useState } from "react"; // THÊM useEffect, useRef, useState
+import { FaEye } from "react-icons/fa";
 
 interface RoomVipCardProps {
   room: RoomInUser;
@@ -37,8 +39,37 @@ export default function RoomVipCard({
   const showConveniences = conveniences.slice(0, maxShow);
   const moreCount = conveniences.length - maxShow;
 
+
+  const ref = useRef<HTMLDivElement>(null);
+  const [viewCount, setViewCount] = useState(room.viewCount ?? 0);
+
+  useEffect(() => {
+    let timer: NodeJS.Timeout | null = null;
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        timer = setTimeout(() => {
+          fetch(`${API_URL}/rooms/${room.id}/view`, { method: "POST" }).then(() => {
+            fetch(`${API_URL}/rooms/${room.id}`)
+              .then(res => res.json())
+              .then(data => setViewCount(data.viewCount ?? 0));
+          });
+        }, 5000);
+      } else {
+        if (timer) clearTimeout(timer);
+      }
+    });
+
+    if (ref.current) observer.observe(ref.current);
+
+    return () => {
+      observer.disconnect();
+      if (timer) clearTimeout(timer);
+    };
+  }, [room.id]);
+
   return (
     <motion.div
+      ref={ref}
       initial={{ opacity: 0, y: 30 }} // mờ, trượt nhẹ lên
       whileInView={{ opacity: 1, y: 0 }}  // hiện, về đúng vị trí
       viewport={{ once:true, amount: 0.18 }} // once: true để chỉ chạy một lần khi vào view
@@ -277,6 +308,9 @@ export default function RoomVipCard({
               onFavoriteChange={onFavoriteChange}
             />
           </div>
+          <span className="flex items-center ml-2 text-gray-500 dark:text-gray-300">
+        <FaEye className="mr-1" /> {viewCount}
+      </span>
         </div>
       </div>
     </motion.div>

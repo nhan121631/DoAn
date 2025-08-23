@@ -29,4 +29,6 @@ public class RoomInUserResponseDto {
     private List<ImageResponseDto> images;
     private List<ConvenientResponseDto> conveniences;
     private LandlordResponseDto landlord;
+    private long favoriteCount;
+    private long viewCount;
 }

@@ -3,11 +3,14 @@
 import Image from "next/image";
 import React from "react";
 import { motion } from "framer-motion";
-import { URL_IMAGE } from "@/services/Constant";
+import { URL_IMAGE, API_URL } from "@/services/Constant";
 import { RoomInUser } from "@/types/types";
 import { FaMapMarkerAlt } from "react-icons/fa";
 import { PiRuler } from "react-icons/pi";
 import RoomCardActions from "./RoomCardActions";
+import { useRef, useState } from "react";
+// import { FaEye } from "react-icons/fa";
+
 
 export interface RoomCardProps {
   room: RoomInUser;
@@ -26,8 +29,31 @@ const RoomCard: React.FC<RoomCardProps> = ({
   onFavoriteChange,
   custom = 0,
 }) => {
+  const [viewCount, setViewCount] = useState(room.viewCount ?? 0);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const [hasIncreasedView, setHasIncreasedView] = useState(false);
+const handleMouseEnter = () => {
+  if (hasIncreasedView) return; // Nếu đã tăng view thì không tăng nữa
+  timerRef.current = setTimeout(() => {
+    setViewCount((prev) => prev + 1);
+    setHasIncreasedView(true); // Đánh dấu đã tăng view
+    fetch(`${API_URL}/rooms/${room.id}/view`, { method: "POST" }).then(() => {
+      fetch(`${API_URL}/rooms/${room.id}`)
+        .then(res => res.json())
+        .then(data => setViewCount(data.viewCount ?? 0));
+    });
+  }, 5000);
+};
+
+const handleMouseLeave = () => {
+  if (timerRef.current) clearTimeout(timerRef.current);
+  setHasIncreasedView(false); // Cho phép tăng lại nếu rời chuột và hover lại
+};
+
   return (
     <motion.div
+    onMouseEnter={handleMouseEnter}
+    onMouseLeave={handleMouseLeave}
       initial={{ opacity: 0, y: 18 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.15 }} // once: true để chỉ chạy một lần khi vào view
@@ -73,6 +99,9 @@ const RoomCard: React.FC<RoomCardProps> = ({
               onFavoriteChange={onFavoriteChange}
             />
           </div>
+          {/* <span className="flex items-center ml-2 text-gray-500 dark:text-gray-300">
+      <FaEye className="mr-1" /> {viewCount}
+    </span> */}
         </div>
       </div>
       {/* Nội dung */}

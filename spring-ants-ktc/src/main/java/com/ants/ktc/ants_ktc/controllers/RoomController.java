@@ -239,4 +239,11 @@ public class RoomController {
         List<RoomInMapResponse> rooms = roomService.findRoomInMapWithRadius(lat, lng, radius);
         return ResponseEntity.ok(rooms);
     }
+
+    // tăng lượt xem
+    @PostMapping("/{roomId}/view")
+    public ResponseEntity<Long> increaseView(@PathVariable UUID roomId) {
+        long viewCount = roomService.increaseView(roomId);
+        return ResponseEntity.ok(viewCount);
+    }
 }

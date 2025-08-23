@@ -26,9 +26,9 @@ const FavoriteDashboardRoomCard: React.FC<RoomCardProps> = ({
     : "/images/useravt.png";
 
   const conveniences =
-    (room.conveniences || []).map((c: any) =>
-      typeof c === "string" ? c : c.name
-    ) || [];
+    (room.conveniences || []).map((c: { name: string } | string) =>
+  typeof c === "string" ? c : c.name
+) || [];
   const showConveniences = conveniences.slice(0, maxShowConveniences);
   const moreCount = conveniences.length - maxShowConveniences;
 

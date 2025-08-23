@@ -186,3 +186,15 @@ export async function removeFavorite(roomId: string): Promise<boolean> {
     return false;
   }
 }
+
+export async function getFavoriteCount(roomId: string): Promise<number> {
+  try {
+    const res = await fetch(`/api/favorites/rooms/${roomId}/count`);
+    if (!res.ok) return 0;
+    const count = await res.json();
+    return typeof count === "number" ? count : 0;
+  } catch (error) {
+    console.error("Failed to fetch favorite count:", error);
+    return 0;
+  }
+}

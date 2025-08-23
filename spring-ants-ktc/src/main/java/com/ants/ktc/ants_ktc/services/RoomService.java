@@ -140,6 +140,21 @@ public class RoomService {
                 return message;
         }
 
+        // view-rooms
+        // public void increaseView(UUID roomId) {
+        // Room room = roomJpaRepository.findById(roomId)
+        // .orElseThrow(() -> new IllegalArgumentException("Room not found"));
+        // room.setViewCount(room.getViewCount() + 1);
+        // roomJpaRepository.save(room);
+        // }
+        public long increaseView(UUID roomId) {
+                Room room = roomJpaRepository.findById(roomId)
+                                .orElseThrow(() -> new IllegalArgumentException("Room not found"));
+                room.setViewCount(room.getViewCount() + 1);
+                roomJpaRepository.save(room);
+                return room.getViewCount();
+        }
+
         /**
          * Enqueue image upload job vào Redis
          */
@@ -819,6 +834,7 @@ public class RoomService {
                                                 .toList())
                                 .images(convertImages(room.getImages()))
                                 .address(convertAddress(room.getAddress()))
+                                .viewCount(room.getViewCount())
                                 .build();
         }
 
@@ -1533,6 +1549,7 @@ public class RoomService {
         /**
          * Tính điểm price phù hợp dựa trên user preferences
          * trả về điểm cố định
+         * 
          * @return Điểm cố định 50 (trung bình)
          */
         private int calculatePriceScore(com.ants.ktc.ants_ktc.entities.UserProfile userProfile, Double roomPrice) {

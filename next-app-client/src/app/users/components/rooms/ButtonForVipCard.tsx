@@ -25,6 +25,8 @@ export function ButtonForVipCard({ room, onFavoriteChange, showHeartOnly }: Butt
   const [isCompared, setIsCompared] = useState(false);
   const [messageApi, contextHolder] = message.useMessage();
   const [loading, setLoading] = useState(false);
+  const [favoriteCount, setFavoriteCount] = useState(0);
+
 
   const { data: session } = useSession();
   const router = useRouter();
@@ -48,6 +50,12 @@ export function ButtonForVipCard({ room, onFavoriteChange, showHeartOnly }: Butt
     setIsCompared(items.some((item) => item.room.id === room.id));
   }, [items, room.id]);
 
+  useEffect(() => {
+  fetch(`/api/favorites/rooms/${room.id}/count`)
+    .then(res => res.json())
+    .then(setFavoriteCount);
+}, [room.id]);
+
   const handleFavorite = async () => {
     if (!session) {
       router.push("/auth/login");
@@ -69,6 +77,9 @@ export function ButtonForVipCard({ room, onFavoriteChange, showHeartOnly }: Butt
         addFavorite(room.id);
         messageApi.success("Added to favorites");
       }
+      const countRes = await fetch(`/api/favorites/rooms/${room.id}/count`);
+      const newCount = await countRes.json();
+      setFavoriteCount(newCount);
     } else {
       throw new Error("Failed to update favorite status");
     }
@@ -92,6 +103,12 @@ if (showHeartOnly) {
           type="button"
         >
           <FaHeart size={22} />
+          <span
+    className="absolute text-xs font-bold text-blue-500 top-1 right-1"
+    style={{ pointerEvents: "none" }}
+  >
+    {favoriteCount}
+  </span>
         </button>
       </>
     );
@@ -100,15 +117,22 @@ if (showHeartOnly) {
   return (
     <>
       {contextHolder}
-      <button
-      aria-label="Favorite"
-      className={`transition-colors ${isFavorite ? "text-red-500" : "text-gray-400 hover:text-red-500"}`}
-      onClick={handleFavorite}
-      disabled={loading}
-      type="button"
-    >
-      <FaHeart size={22} />
-    </button>
+<div className="flex items-center justify-center px-3 py-1 transition-all duration-200 rounded-full shadow bg-white/70">
+  <button
+    aria-label="Favorite"
+    className={`flex items-center justify-center w-8 h-8 rounded-full transition-colors
+      ${isFavorite ? "text-red-500" : "text-gray-400 hover:text-red-500"}
+      ${loading ? "opacity-60 cursor-not-allowed" : ""}
+      hover:bg-white/20 hover:scale-110`}
+    onClick={handleFavorite}
+    disabled={loading}
+    type="button"
+    style={{ background: "transparent" }}
+  >
+    <FaHeart size={22} />
+  </button>
+  <span className="ml-2 text-base font-bold text-blue-500">{favoriteCount}</span>
+</div>
       <button
         className={`flex items-center justify-center gap-2 px-5 py-2 rounded-full shadow-sm border border-gray-200 font-semibold text-base transition-all duration-200
           ${

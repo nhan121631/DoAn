@@ -29,9 +29,9 @@ export default function FavoriteDashboardRoomVipCard({ room, isFavorite, onFavor
 
   const truncatedTitle = truncateWords(room.title, 20);
   const conveniences =
-    (room.conveniences || []).map((c: any) =>
-      typeof c === "string" ? c : c.name
-    ) || [];
+    (room.conveniences || []).map((c: { name: string } | string) =>
+  typeof c === "string" ? c : c.name
+) || [];
   const showConveniences = conveniences.slice(0, maxShowConveniences);
   const moreCount = conveniences.length - maxShowConveniences;
 

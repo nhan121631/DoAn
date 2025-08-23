@@ -89,4 +89,6 @@ public class Room extends BaseEntity {
     public String getName() {
         return this.title;
     }
+
+    private long viewCount;
 }

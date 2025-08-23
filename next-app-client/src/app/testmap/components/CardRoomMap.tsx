@@ -1,6 +1,6 @@
 import { URL_IMAGE } from "@/services/Constant";
 import Image from "next/image";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { AiFillHeart, AiOutlineHeart } from "react-icons/ai";
 import { TbRulerMeasure } from "react-icons/tb";
@@ -35,30 +35,43 @@ const RoomCard: React.FC<RoomCardProps> = ({
   onFavorite,
   onClick,
 }) => {
-  // const [isFavorited, setIsFavorited] = useState(false);
   const [imageError, setImageError] = useState(false);
-  // const handleFavoriteClick = (e: React.MouseEvent) => {
-  //   e.stopPropagation();
-  //   setIsFavorited(!isFavorited);
-  //   onFavorite?.(id);
-  // };
   const [messageApi, contextHolder] = message.useMessage();
   const { favoriteRoomIds } = useFavoriteStore();
 const isFavorited = favoriteRoomIds.has(id);
-const handleFavoriteClick = async (e: React.MouseEvent) => {
-  e.stopPropagation();
-  try {
-    if (isFavorited) {
-      await removeFavorite(id);
-      messageApi.success("Removed from favorites");
-    } else {
-      await addFavorite(id);
-      messageApi.success("Added to favorites");
+  const [favoriteCount, setFavoriteCount] = useState(0);
+
+
+useEffect(() => {
+    // Fetch số lượt tim khi mount
+    async function fetchCount() {
+      if (id) {
+        const countRes = await fetch(`/api/favorites/rooms/${id}/count`);
+        const newCount = await countRes.json();
+        setFavoriteCount(newCount);
+      }
     }
-  } catch (error) {
-    messageApi.error("Failed to update favorite status");
-  }
-};
+    fetchCount();
+  }, [id]);
+
+  const handleFavoriteClick = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      if (isFavorited) {
+        await removeFavorite(id);
+        messageApi.success("Removed from favorites");
+      } else {
+        await addFavorite(id);
+        messageApi.success("Added to favorites");
+      }
+      // Fetch lại số lượt tim sau khi cập nhật
+      const countRes = await fetch(`/api/favorites/rooms/${id}/count`);
+      const newCount = await countRes.json();
+      setFavoriteCount(newCount);
+    } catch (error) {
+      messageApi.error("Failed to update favorite status");
+    }
+  };
 
   const handleCardClick = () => {
     onClick?.();
@@ -144,19 +157,22 @@ const handleFavoriteClick = async (e: React.MouseEvent) => {
           {/* Favorite Button */}
           <>
           {contextHolder}
-          <button
-            onClick={handleFavoriteClick}
-            className="absolute flex items-center justify-center transition-all duration-300 transform translate-y-2 rounded-full shadow-lg opacity-0 top-3 right-3 w-9 h-9 bg-white/95 hover:scale-110 hover:bg-white group-hover:opacity-100 group-hover:translate-y-0 hover:shadow-xl"
-          >
-            {isFavorited ? (
-              <AiFillHeart size={16} className="text-red-500 animate-pulse" />
-            ) : (
-              <AiOutlineHeart
-                size={16}
-                className="text-gray-600 transition-colors duration-200 hover:text-red-500"
-              />
-            )}
-          </button>
+          <div className="absolute flex items-center gap-1 px-2 py-1 rounded-full shadow-lg top-3 right-3 bg-white/95">
+              <button
+                onClick={handleFavoriteClick}
+                className="flex items-center justify-center transition-all duration-300 rounded-full w-7 h-7 hover:scale-110 hover:bg-white"
+              >
+                {isFavorited ? (
+                  <AiFillHeart size={16} className="text-red-500 animate-pulse" />
+                ) : (
+                  <AiOutlineHeart
+                    size={16}
+                    className="text-gray-600 transition-colors duration-200 hover:text-red-500"
+                  />
+                )}
+              </button>
+              <span className="text-sm font-bold text-blue-500">{favoriteCount}</span>
+            </div>
           </>
 
           {/* Corner decoration */}

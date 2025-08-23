@@ -1,10 +1,15 @@
 import BookingForm from "@/app/landlord/components/booking-room/BookingForm";
 import Convenient from "@/app/landlord/components/room-detail/convenient";
+import FavoriteCount from "@/app/landlord/components/room-detail/FavoriteCount";
+import RoomViewCount from "@/app/landlord/components/room-detail/IncreaseView";
+import IncreaseView from "@/app/landlord/components/room-detail/IncreaseView";
 import MapSection from "@/app/landlord/components/room-detail/map";
 import { Slide } from "@/app/landlord/components/room-detail/Slide";
 import RightSidebar from "@/app/users/components/RightSidebar";
 import { getRoomById, getRoomVipUser } from "@/services/RoomService";
 import { Image, RoomInUser } from "@/types/types";
+import { FaEye, FaHeart } from "react-icons/fa";
+
 
 export const dynamic = "force-static";
 export const dynamicParams = true;
@@ -33,6 +38,8 @@ export default async function Page({
   }
   return (
     <>
+          {/* {room && <IncreaseView roomId={room.id} />} */}
+
       <div className="w-full p-6 mb-6 bg-white lg:w-2/3 rounded-xl lg:mb-0">
         <div className="max-w-[900px] mx-auto my-8 bg-white dark:bg-[#181f2b] rounded-xl shadow-lg p-6 dark:text-white">
           {/* Image slider */}
@@ -60,7 +67,7 @@ export default async function Page({
           {/* Room Info Card */}
           <div className="mt-6 p-5 rounded-lg bg-[#f9f9f9] dark:bg-[#232b3b] shadow-sm flex flex-col gap-4">
             <div className="flex items-center mb-2">
-              <span className="text-white font-bold text-xl mr-2 bg-red-500 px-2 rounded">
+              <span className="px-2 mr-2 text-xl font-bold text-white bg-red-500 rounded">
                 {room.typepost
                   ? room.typepost.charAt(0).toUpperCase() +
                     room.typepost.slice(1)
@@ -71,14 +78,18 @@ export default async function Page({
               </span>
             </div>
             <div className="flex items-center gap-4 mb-2">
+              
               <span className="text-lg font-bold text-green-700 dark:text-green-400">
                 {room.priceMonth
                   ? `${room.priceMonth.toLocaleString("vi-VN")} VND/month`
                   : ""}
               </span>
+              
               <span className="text-base text-gray-500 dark:text-gray-300">
                 · {room.area ? `${room.area} m²` : ""}
               </span>
+              <IncreaseView roomId={room.id} />
+              <FavoriteCount roomId={room.id} />
             </div>
             <div className="text-gray-700 dark:text-gray-200 text-[15px] mb-1 flex justify-start">
               <span className="w-1/5">Ward</span>
