@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react";
 import Image from "next/image";
 import React, { useRef } from "react";
 import { db } from "@/lib/firebase";
+import { URL_IMAGE } from "@/services/Constant";
 import {
   collection,
   addDoc,
@@ -19,6 +20,7 @@ interface ChatClientProps {
   recipientId: string;
   defaultToUserName: string;
   fullHeight?: boolean;
+  urlAvatar?: string;
 }
 
 export default function ChatClient({
@@ -26,9 +28,11 @@ export default function ChatClient({
   recipientId,
   defaultToUserName,
   fullHeight = false,
+  urlAvatar
 }: ChatClientProps) {
   const [msg, setMsg] = useState<string>("");
   const { data: session } = useSession();
+  console.log("User avatar URL:", urlAvatar);
   const [sending, setSending] = useState<boolean>(false);
   const [messages, setMessages] = useState<
     { id: string; text: string; senderId: string; recipientId: string }[]
@@ -44,6 +48,7 @@ export default function ChatClient({
   >([]);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const q = query(collection(db, "messages"), orderBy("createdAt", "asc"));
@@ -72,6 +77,10 @@ export default function ChatClient({
 
   const sendMessage = async () => {
     if (!msg.trim() || !recipientId || !senderId) return;
+    if(session){
+  console.log("Sending message:", session.user.userProfile.avatar);
+
+    }
     const text = msg.trim();
     setMsg("");
     setSending(true);
@@ -86,6 +95,7 @@ export default function ChatClient({
       console.error("Send message error:", err);
       setMsg(text);
     } finally {
+      inputRef.current?.focus();
       setSending(false);
       // KHÔNG cập nhật chatHistory khi gửi tin nhắn
     }
@@ -111,9 +121,9 @@ export default function ChatClient({
         <div className="flex items-center space-x-4">
           {/* Avatar */}
           <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-white shadow-md">
-            {session?.user?.userProfile?.avatar ? (
+            {urlAvatar ? (
               <Image
-                src={session.user.userProfile.avatar}
+                src={`${urlAvatar}`}
                 alt="Avatar"
                 width={48}
                 height={48}
@@ -149,7 +159,6 @@ export default function ChatClient({
       <div
         className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 dark:bg-gray-800"
     ref={messagesEndRef}
-    style={{ paddingBottom: "80px" }}
       >
         {allMessages.map((m) => (
           <div
@@ -183,15 +192,21 @@ export default function ChatClient({
       </div>
 
       {/* Input */}
-      <div className="absolute bottom-0 left-0 w-full px-4 py-3 border-t border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/80 backdrop-blur flex items-center gap-3 shadow-lg">
+      <div className=" bottom-0 left-0 w-full px-4 py-3 border-t border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/80 backdrop-blur flex items-center gap-3 shadow-lg">
         <input
-          value={msg}
-          onChange={(e) => setMsg(e.target.value)}
-          placeholder="Type a message..."
-          onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-          disabled={sending}
-          className="flex-1 rounded-full border border-gray-300 dark:border-gray-600 px-5 py-3 text-base bg-white/70 dark:bg-gray-800/70 shadow focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all duration-200 outline-none"
-        />
+  value={msg}
+  ref={inputRef}
+  onChange={(e) => setMsg(e.target.value)}
+  placeholder="Type a message..."
+  onKeyDown={(e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      sendMessage();
+    }
+  }}
+  disabled={sending}
+  className="flex-1 rounded-full border border-gray-300 dark:border-gray-600 px-5 py-3 text-base bg-white/70 dark:bg-gray-800/70 shadow focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all duration-200 outline-none"
+/>
         <button
           onClick={sendMessage}
           disabled={sending || !msg.trim()}

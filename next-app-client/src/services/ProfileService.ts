@@ -12,7 +12,7 @@ export async function getFullName(id: string) {
   }
 
   const data = await response.json();
-  return data.fullName;
+  return data;
 };
 
 export async function updateProfile(avatar: File | null, profile: string) {
