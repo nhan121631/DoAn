@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+"use client";
+
 import { useEffect, useRef, useState } from "react";
 import { RoomMap } from "../page";
 import { getRoomsInMap } from "@/services/RoomService";
 import { URL_IMAGE } from "@/services/Constant";
-
-import goongjs from "@goongmaps/goong-js";
-import "@goongmaps/goong-js/dist/goong-js.css";
+import Link from "next/link";
 
 const GOONG_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 
@@ -16,10 +16,37 @@ type Props = {
 const MapRoom: React.FC<Props> = ({ onRoomClick }) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const mapRef = useRef<any>(null);
+  const [goongjs, setGoongjs] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   const [center, setCenter] = useState<[number, number]>([10.7769, 106.7009]);
   const [zoom, setZoom] = useState(13);
   const [rooms, setRooms] = useState<RoomMap[]>([]);
+
+  // Load Goong Maps library
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const loadGoongMaps = async () => {
+      try {
+        const goongModule = await import("@goongmaps/goong-js");
+        // Load CSS
+        const link = document.createElement("link");
+        link.rel = "stylesheet";
+        link.href =
+          "https://cdn.jsdelivr.net/npm/@goongmaps/goong-js@1.0.9/dist/goong-js.css";
+        document.head.appendChild(link);
+
+        setGoongjs(goongModule.default);
+        setIsLoading(false);
+      } catch (error) {
+        console.error("Failed to load Goong Maps:", error);
+        setIsLoading(false);
+      }
+    };
+
+    loadGoongMaps();
+  }, []);
 
   // Group rooms by location
   function groupRoomsByLocation(rooms: RoomMap[]) {
@@ -60,7 +87,7 @@ const MapRoom: React.FC<Props> = ({ onRoomClick }) => {
 
   // Initialize map
   useEffect(() => {
-    if (!mapContainer.current || mapRef.current) return;
+    if (!mapContainer.current || mapRef.current || !goongjs) return;
 
     mapRef.current = new goongjs.Map({
       container: mapContainer.current,
@@ -84,11 +111,11 @@ const MapRoom: React.FC<Props> = ({ onRoomClick }) => {
     mapRef.current.on("zoomend", () => {
       setZoom(mapRef.current.getZoom());
     });
-  }, [mapContainer]);
+  }, [mapContainer, goongjs]);
 
   // Render markers
   useEffect(() => {
-    if (!mapRef.current) return;
+    if (!mapRef.current || !goongjs) return;
 
     if (mapRef.current._markers) {
       mapRef.current._markers.forEach((m: any) => m.remove());
@@ -202,9 +229,63 @@ const MapRoom: React.FC<Props> = ({ onRoomClick }) => {
         .addTo(mapRef.current);
       mapRef.current._markers.push(marker);
     });
-  }, [rooms, zoom]);
+  }, [rooms, zoom, goongjs]);
 
-  return <div ref={mapContainer} style={{ width: "100%", height: "600px" }} />;
+  return (
+    <div className="relative w-full h-full">
+      {/* Loading state */}
+      {isLoading && (
+        <div className="absolute inset-0 bg-gray-100 flex items-center justify-center z-20">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading map...</p>
+          </div>
+        </div>
+      )}
+
+      {/* Close Map Button */}
+      <div className="absolute top-4 right-4 z-10">
+        <Link
+          href="/users"
+          className="h-12 px-6 text-white font-semibold text-sm rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-3 active:scale-95"
+          style={{
+            background: "linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)",
+            boxShadow: "0 10px 25px -5px rgba(59, 130, 246, 0.25)",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background =
+              "linear-gradient(135deg, #2563eb 0%, #1e40af 100%)";
+            e.currentTarget.style.boxShadow =
+              "0 15px 35px -5px rgba(59, 130, 246, 0.35)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background =
+              "linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)";
+            e.currentTarget.style.boxShadow =
+              "0 10px 25px -5px rgba(59, 130, 246, 0.25)";
+          }}
+        >
+          <svg
+            className="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M6 18L18 6M6 6l12 12"
+            />
+          </svg>
+          <span>Close Map</span>
+        </Link>
+      </div>
+
+      {/* Map Container */}
+      <div ref={mapContainer} className="w-full h-full" />
+    </div>
+  );
 };
 
 export default MapRoom;

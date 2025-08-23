@@ -1,10 +1,24 @@
 "use client";
 
 import { useState } from "react";
+import dynamic from "next/dynamic";
 import HeaderUserDashboard from "../user-dashboard/components/HeaderUserDashboard";
-import MapRoom from "./components/Map";
 import RoomCard from "./components/CardRoomMap";
 import Footer from "../users/components/Footer";
+import SuggestAddressBar from "../users/components/Filter/SuggestAddressBar";
+
+// Dynamic import for Map component to avoid SSR issues
+const MapRoom = dynamic(() => import("./components/Map"), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-full flex items-center justify-center bg-gray-100">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+        <p className="text-gray-600">Loading map...</p>
+      </div>
+    </div>
+  ),
+});
 
 export interface RoomMap {
   id: string;
@@ -74,6 +88,7 @@ export default function RoomMapPage() {
       <div className="flex justify-center items-center flex-1 w-full h-full py-4">
         <div className="flex gap-4 w-[1500px] h-full lg:flex-row flex-col">
           {/* Room List */}
+
           <div
             className={`flex flex-1 flex-col ${
               view === "map" ? "hidden" : ""
@@ -81,7 +96,7 @@ export default function RoomMapPage() {
           >
             <div className="flex-shrink-0 mb-4">
               <h1 className="text-xl font-semibold text-gray-900">
-                Danh sách phòng {rooms.length > 0 && `(${rooms.length})`}
+                List Rooms {rooms.length > 0 && `(${rooms.length})`}
               </h1>
             </div>
 
@@ -91,6 +106,9 @@ export default function RoomMapPage() {
                 maxHeight: "calc(100vh - 140px)",
               }}
             >
+              <div className="flex w-[750px]">
+                <SuggestAddressBar showSaveButton={true} width="100%" />
+              </div>
               {rooms.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full text-center text-gray-500 py-20">
                   <div className="mb-6">
