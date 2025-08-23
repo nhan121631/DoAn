@@ -7,7 +7,7 @@ import { URL_IMAGE } from "@/services/Constant";
 import goongjs from "@goongmaps/goong-js";
 import "@goongmaps/goong-js/dist/goong-js.css";
 
-const GOONG_API_KEY = process.env.NEXT_PUBLIC_GOONG_API_KEY_MAP;
+const GOONG_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 
 type Props = {
   onRoomClick: (room: RoomMap[]) => void;

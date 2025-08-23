@@ -86,7 +86,7 @@ export function ButtonForVipCard({
         {contextHolder}
         <button
           aria-label="Favorite"
-          className={`transition-all duration-200 p-2 rounded-full border border-gray-200 bg-white/80 shadow-sm hover:shadow-md focus:ring-2 focus:ring-blue-200
+          className={`transition-all duration-200 p-1 rounded-full border border-gray-200 bg-white/80 shadow-sm hover:shadow-md focus:ring-2 focus:ring-blue-200
           ${
             isFavorite
               ? "text-red-500 bg-red-50 border-red-200"
@@ -98,7 +98,7 @@ export function ButtonForVipCard({
           type="button"
           title={isFavorite ? "Remove from favorites" : "Add to favorites"}
         >
-          <FaHeart size={20} />
+          <FaHeart size={16} />
         </button>
       </>
     );
@@ -115,17 +115,16 @@ export function ButtonForVipCard({
             ? "text-red-500 bg-red-50 border-red-200"
             : "text-gray-400 hover:text-red-500 hover:border-red-300"
         }
-        ${loading ? "opacity-60 cursor-not-allowed" : ""}`}
+        ${loading ? "opacity-60 cursor-not-allowed" : ""} mr-2`}
         onClick={handleFavorite}
         disabled={loading}
         type="button"
         title={isFavorite ? "Remove from favorites" : "Add to favorites"}
-        style={{ marginRight: 8 }}
       >
-        <FaHeart size={20} />
+        <FaHeart size={16} />
       </button>
       <button
-        className={`flex items-center justify-center gap-2 px-4 py-2 rounded-full shadow-sm border font-semibold text-base transition-all duration-200
+        className={`flex items-center justify-center gap-2 px-3 py-2 rounded-full shadow-sm border font-semibold text-sm transition-all duration-200 min-w-[92px]
           ${
             isCompared
               ? "bg-gray-100 text-gray-400 border-gray-200 opacity-60 cursor-not-allowed"
@@ -135,14 +134,13 @@ export function ButtonForVipCard({
         onClick={handleCompare}
         disabled={isCompared}
         type="button"
-        style={{ minWidth: 110 }}
         title={isCompared ? "Already in compare list" : "Compare this room"}
       >
         <span className="flex items-center">
           {isCompared ? (
             <FaRegCheckCircle size={18} />
           ) : (
-            <IoIosAddCircleOutline size={20} />
+            <IoIosAddCircleOutline size={18} />
           )}
         </span>
         <span>Compare</span>
