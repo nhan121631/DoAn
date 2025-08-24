@@ -30,8 +30,15 @@ export default function RentalRoomsWithLocation({
   userLocationData,
 }: RentalRoomsWithLocationProps) {
   const { data: session } = useSession();
-  const { location, guestRooms, isSearching, setGuestRooms, setLocation } =
-    useLocationContext();
+  const {
+    location,
+    guestRooms,
+    userRooms,
+    isSearching,
+    setGuestRooms,
+    setUserRooms,
+    setLocation,
+  } = useLocationContext();
 
   // Debug logging
   console.log("🏠 RentalRoomsWithLocation Debug:");
@@ -43,17 +50,29 @@ export default function RentalRoomsWithLocation({
 
   const isGuestUser = !session?.user?.userProfile?.id;
   const hasGuestData = guestRooms && location; // Context data from guest search
+  const hasUserData = userRooms && location; // Context data from user search
   const hasUserLocationData =
     userLocationData?.hasLocationPreference && userLocationData.coordinates; // Server data for logged-in user
 
-  // Use guest rooms from context if available (for guest users with location search),
+  // Use rooms from context if available (for location search - both guest and user),
   // or use initial data which may be location-sorted for logged-in users with saved preferences
-  const vipRooms = hasGuestData ? guestRooms.vipRooms : initialVipRooms;
-  const normalRooms = hasGuestData
-    ? guestRooms.normalRooms
+  const vipRooms = isGuestUser
+    ? hasGuestData
+      ? guestRooms.vipRooms
+      : initialVipRooms
+    : hasUserData
+    ? userRooms.vipRooms
+    : initialVipRooms;
+  const normalRooms = isGuestUser
+    ? hasGuestData
+      ? guestRooms.normalRooms
+      : initialNormalRooms
+    : hasUserData
+    ? userRooms.normalRooms
     : initialNormalRooms;
 
   console.log("- Using guest data:", hasGuestData);
+  console.log("- Using user data:", hasUserData);
   console.log("- User has saved location:", hasUserLocationData);
   console.log("- VIP rooms count:", vipRooms?.data?.length || 0);
   console.log("- Normal rooms count:", normalRooms?.data?.length || 0);

@@ -39,6 +39,12 @@ interface LocationContextType {
     normalRooms: PaginatedResponse<RoomInUser> | null;
   } | null;
 
+  // Room data for logged-in users (with session)
+  userRooms: {
+    vipRooms: PaginatedResponse<RoomInUser> | null;
+    normalRooms: PaginatedResponse<RoomInUser> | null;
+  } | null;
+
   // Actions
   setLocation: (location: LocationData | null) => void;
   setIsSearching: (searching: boolean) => void;
@@ -48,7 +54,15 @@ interface LocationContextType {
       normalRooms: PaginatedResponse<RoomInUser>;
     } | null
   ) => void;
-  clearGuestRooms: () => void;
+  setUserRooms: (
+    rooms: {
+      vipRooms: PaginatedResponse<RoomInUser>;
+      normalRooms: PaginatedResponse<RoomInUser>;
+    } | null
+  ) => void;
+  // clearGuestRooms: () => void;
+  // clearUserRooms: () => void;
+  // clearAllRooms: () => void;
 }
 
 const LocationContext = createContext<LocationContextType | undefined>(
@@ -63,25 +77,44 @@ export function LocationProvider({ children }: { children: ReactNode }) {
     normalRooms: PaginatedResponse<RoomInUser> | null;
   } | null>(null);
 
+  const [userRooms, setUserRooms] = useState<{
+    vipRooms: PaginatedResponse<RoomInUser> | null;
+    normalRooms: PaginatedResponse<RoomInUser> | null;
+  } | null>(null);
+
   const setLocation = (newLocation: LocationData | null) => {
-    console.log("🌍 LocationContext.setLocation called:", newLocation);
+    // console.log("🌍 LocationContext.setLocation called:", newLocation);
     setLocationState(newLocation);
   };
 
-  const clearGuestRooms = () => {
-    setGuestRooms(null);
-  };
-  console.log("LocationContext location:", location);
+  // const clearGuestRooms = () => {
+  //   setGuestRooms(null);
+  // };
+
+  // const clearUserRooms = () => {
+  //   setUserRooms(null);
+  // };
+
+  // const clearAllRooms = () => {
+  //   setGuestRooms(null);
+  //   setUserRooms(null);
+  // };
+
+  // console.log("LocationContext location:", location);
   return (
     <LocationContext.Provider
       value={{
         location,
         isSearching,
         guestRooms,
+        userRooms,
         setLocation,
         setIsSearching,
         setGuestRooms,
-        clearGuestRooms,
+        setUserRooms,
+        // clearGuestRooms,
+        // clearUserRooms,
+        // clearAllRooms,
       }}
     >
       {children}
