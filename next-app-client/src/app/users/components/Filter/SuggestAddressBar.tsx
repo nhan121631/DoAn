@@ -232,7 +232,6 @@ function SuggestAddressBar({
   const { data: session } = useSession();
   const router = useRouter();
   const { setLocation, setIsSearching, setGuestRooms } = useLocationContext();
-  console.log("width: ", width);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -485,7 +484,6 @@ function SuggestAddressBar({
       showMessage("error", "Please fill in all address information!");
       return;
     }
-
     try {
       const selectedProvince = provinces.find(
         (p) => p.value === formData.province
@@ -507,6 +505,41 @@ function SuggestAddressBar({
       // If user is logged in, save preferences
       if (userId) {
         setIsSaving(true);
+
+        // Use Goong API to get coordinates from saved address
+        const GOONG_API_KEY = process.env.NEXT_PUBLIC_GOONG_API_KEY;
+        if (GOONG_API_KEY && searchAddress) {
+          try {
+            const geoResponse = await fetch(
+              `https://rsapi.goong.io/Geocode?address=${encodeURIComponent(
+                searchAddress
+              )}&api_key=${GOONG_API_KEY}`
+            );
+
+            if (geoResponse.ok) {
+              const geoData = await geoResponse.json();
+              if (geoData.results && geoData.results.length > 0) {
+                const location = geoData.results[0].geometry.location;
+                const { lat, lng } = location;
+
+                // Update location context for logged-in users too
+                console.log(
+                  "🌍 Updating location context for logged-in user:",
+                  {
+                    lat,
+                    lng,
+                    address: searchAddress,
+                  }
+                );
+                setLocation({ lat, lng, address: searchAddress });
+              }
+            }
+          } catch (geoError) {
+            console.error("Error geocoding saved address:", geoError);
+            // Continue with saving preferences even if geocoding fails
+          }
+        }
+
         await updatePreferences(
           userId,
           { searchAddress: searchAddress || undefined },
@@ -615,6 +648,11 @@ function SuggestAddressBar({
             { searchAddress: formattedAddress },
             session
           );
+          setLocation({
+            lat: latitude,
+            lng: longitude,
+            address: formattedAddress,
+          });
 
           setCurrentPreferences(formattedAddress);
           showMessage("success", "Current location updated successfully!");
@@ -1030,7 +1068,7 @@ function SuggestAddressBar({
                   {isSaving ? (
                     <>
                       <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                      <span>Saving...</span>
+                      <span>Searching...</span>
                     </>
                   ) : (
                     <>

@@ -56,17 +56,22 @@ const LocationContext = createContext<LocationContextType | undefined>(
 );
 
 export function LocationProvider({ children }: { children: ReactNode }) {
-  const [location, setLocation] = useState<LocationData | null>(null);
+  const [location, setLocationState] = useState<LocationData | null>(null);
   const [isSearching, setIsSearching] = useState(false);
   const [guestRooms, setGuestRooms] = useState<{
     vipRooms: PaginatedResponse<RoomInUser> | null;
     normalRooms: PaginatedResponse<RoomInUser> | null;
   } | null>(null);
 
+  const setLocation = (newLocation: LocationData | null) => {
+    console.log("🌍 LocationContext.setLocation called:", newLocation);
+    setLocationState(newLocation);
+  };
+
   const clearGuestRooms = () => {
     setGuestRooms(null);
   };
-
+  console.log("LocationContext location:", location);
   return (
     <LocationContext.Provider
       value={{
