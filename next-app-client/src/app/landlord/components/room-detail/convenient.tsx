@@ -2,17 +2,17 @@ import React from "react";
 import { BsCheckCircleFill } from "react-icons/bs";
 
 const convenients = [
-  { label: "furnished", enabled: false },
-  { label: "washing_machine", enabled: false },
-  { label: "no_curfew", enabled: false },
-  { label: "mezzanine", enabled: false },
-  { label: "fridge", enabled: false },
-  { label: "kitchen_shelf", enabled: false },
-  { label: "aircon", enabled: false },
-  { label: "private_entry", enabled: false },
-  { label: "elevator", enabled: false },
-  { label: "security_24h", enabled: false },
-  { label: "garage", enabled: false },
+  { label: "furnished", displayName: "Fully Furnished", enabled: false },
+  { label: "washing_machine", displayName: "Washing Machine", enabled: false },
+  { label: "no_curfew", displayName: "No Curfew", enabled: false },
+  { label: "mezzanine", displayName: "Mezzanine/Loft", enabled: false },
+  { label: "fridge", displayName: "Refrigerator", enabled: false },
+  { label: "kitchen_shelf", displayName: "Kitchen Cabinet", enabled: false },
+  { label: "aircon", displayName: "Air Conditioning", enabled: false },
+  { label: "private_entry", displayName: "Private Entrance", enabled: false },
+  { label: "elevator", displayName: "Elevator", enabled: false },
+  { label: "security_24h", displayName: "24/7 Security", enabled: false },
+  { label: "garage", displayName: "Parking/Garage", enabled: false },
 ];
 
 interface Feature {
@@ -28,6 +28,7 @@ export default function Convenient({ features }: ConvenientProps) {
   const featureMap = new Map(features.map((f) => [f.name, f]));
   const convenientFeatures = convenients.map((feature) => ({
     label: feature.label,
+    displayName: feature.displayName,
     enabled: featureMap.has(feature.label),
   }));
   return (
@@ -50,7 +51,7 @@ export default function Convenient({ features }: ConvenientProps) {
                   : "text-gray-400 "
               }
             >
-              {feature.label}
+              {feature.displayName}
             </span>
           </div>
         ))}
