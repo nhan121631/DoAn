@@ -51,7 +51,7 @@ export default async function Page({
             Room not found
           </h2>
           <p className="text-gray-600 dark:text-gray-400">
-            The room you're looking for doesn't exist or has been removed.
+            The room you&39;re looking for doesn&39;t exist or has been removed.
           </p>
         </div>
       </div>
