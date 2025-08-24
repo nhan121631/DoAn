@@ -8,6 +8,7 @@ export async function GET() {
     if (!session) {
         return new Response("Unauthorized", { status: 401 });
     }
+    console.log("Fetching bank info for user ID:", session.user.id);
 
     const response = await fetch(`${API_URL}/profile/ishavebank/${session.user.id}`, {
         method: "GET",

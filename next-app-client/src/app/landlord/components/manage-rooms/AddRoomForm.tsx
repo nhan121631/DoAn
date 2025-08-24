@@ -153,6 +153,7 @@ const AddRoomForm: React.FC<{ onFinish?: (values: RoomData) => void }> = (
     return <div>Please log in to add a room.</div>;
   }
 
+  console.log("isHaveBank:", isHaveBank);
   // Khi chọn tỉnh, load lại danh sách quận/huyện
   const handleProvinceChange = async (provinceId: string) => {
     setSelectedProvince(provinceId);
