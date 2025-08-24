@@ -2,13 +2,14 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { API_URL } from "@/services/Constant";
 
-export async function POST(request: Request, { params }: { params: { feedbackId: string } }) {
+export async function POST(request: Request, { params }: { params: Promise<{ feedbackId: string }> }) {
     const session = await getServerSession(authOptions);
     if (!session) {
         return new Response("Unauthorized", { status: 401 });
     }
+    const resolvedParams = await params;
     const body = await request.json();
-    const url = new URL(`${API_URL}/rooms/feedbacks/${params.feedbackId}/reply`);
+    const url = new URL(`${API_URL}/rooms/feedbacks/${resolvedParams.feedbackId}/reply`);
     url.searchParams.append("landlordId", body.landlordId);
 
     const response = await fetch(url.toString(), {

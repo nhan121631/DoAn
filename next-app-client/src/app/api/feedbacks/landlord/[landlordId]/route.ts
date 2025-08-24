@@ -2,12 +2,13 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { API_URL } from "@/services/Constant";
 
-export async function GET(request: Request, { params }: { params: { landlordId: string } }) {
+export async function GET(request: Request, { params }: { params: Promise<{ landlordId: string }> }) {
     const session = await getServerSession(authOptions);
     if (!session) {
         return new Response("Unauthorized", { status: 401 });
     }
-    const response = await fetch(`${API_URL}/rooms/landlords/${params.landlordId}/feedbacks`, {
+    const resolvedParams = await params;
+    const response = await fetch(`${API_URL}/rooms/landlords/${resolvedParams.landlordId}/feedbacks`, {
         headers: {
             "Authorization": `Bearer ${session.user.accessToken}`,
         },
