@@ -4,9 +4,10 @@ import { API_URL } from "@/services/Constant";
 
 export async function GET(
   request: Request,
-  { params }: { params: { roomId: string } }
+  { params }: { params: Promise<{ roomId: string }> }
 ) {
-    if (!params?.roomId) {
+    const resolvedParams = await params;
+    if (!resolvedParams?.roomId) {
         return new Response("roomId is missing", { status: 400 });
     }
 
@@ -18,7 +19,7 @@ export async function GET(
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get("userId") ?? "";
 
-    const url = new URL(`${API_URL}/rooms/${params.roomId}/feedback-access`);
+    const url = new URL(`${API_URL}/rooms/${resolvedParams.roomId}/feedback-access`);
     url.searchParams.append("userId", userId);
 
     const response = await fetch(url.toString(), {

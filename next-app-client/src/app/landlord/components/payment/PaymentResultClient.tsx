@@ -85,7 +85,7 @@ export default function PaymentResultClient() {
     const fetchPaymentResult = async () => {
       try {
         const params = new URLSearchParams();
-        searchParams.forEach((value, key) => {
+        searchParams?.forEach((value, key) => {
           params.append(key, value);
         });
 
@@ -123,7 +123,7 @@ export default function PaymentResultClient() {
       }
     };
 
-    if (searchParams.toString()) {
+    if (searchParams?.toString()) {
       fetchPaymentResult();
     } else {
       setError("No payment information found");
