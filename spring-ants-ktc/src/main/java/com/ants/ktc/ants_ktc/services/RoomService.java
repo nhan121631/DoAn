@@ -9,6 +9,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -460,11 +461,17 @@ public class RoomService {
         }
 
         // update room
+        // update room
         @Transactional
         public RoomResponseDto updateRoom(UUID id, List<MultipartFile> images, RoomRequestUpdateDto request)
                         throws Exception {
                 Room room = roomJpaRepository.findById(id)
                                 .orElseThrow(() -> new IllegalArgumentException("Room not found"));
+
+                // Lưu dữ liệu cũ để so sánh
+                String oldTitle = room.getTitle();
+                String oldDescription = room.getDescription();
+                List<Image> oldImages = imageJpaRepository.findByRoomId(id);
 
                 // Cập nhật thông tin cơ bản
                 room.setTitle(request.getTitle());
@@ -520,12 +527,10 @@ public class RoomService {
                 });
                 room.setConvenients(convenients);
 
-                room.setApproval(0);
-
                 // Xử lý cập nhật ảnh
                 // 1. Lấy danh sách ảnh cũ
-                List<Image> oldImages = imageJpaRepository.findByRoomId(id);
                 List<Image> imagesToKeep = new ArrayList<>();
+                boolean imageChanged = false;
 
                 if (request.getExistingImages() != null) {
                         // Xóa các ảnh nằm trong existingImages, giữ lại phần còn lại
@@ -534,6 +539,7 @@ public class RoomService {
                                 if (existingImageUrls.contains(img.getUrl())) {
                                         imageJpaRepository.delete(img);
                                         deleteFileFromStorage(img.getUrl());
+                                        imageChanged = true;
                                 } else {
                                         imagesToKeep.add(img);
                                 }
@@ -578,6 +584,8 @@ public class RoomService {
 
                                                 // Enqueue upload job
                                                 enqueueImageUpload(message);
+
+                                                imageChanged = true;
                                         } catch (Exception e) {
                                                 // Log error nhưng không fail toàn bộ quá trình
                                                 System.err.println("Failed to prepare async upload for file: "
@@ -591,6 +599,13 @@ public class RoomService {
                 room.setImages(imagesToKeep);
 
                 List<Image> updatedImages = imagesToKeep;
+
+                // ✅ Chỉ setApproval = 0 nếu có thay đổi title, description hoặc image
+                if (!Objects.equals(oldTitle, request.getTitle()) ||
+                                !Objects.equals(oldDescription, request.getDescription()) ||
+                                imageChanged) {
+                        room.setApproval(0);
+                }
 
                 // 4. Lưu room
                 roomJpaRepository.save(room);
