@@ -94,7 +94,7 @@ const AddRoomForm: React.FC<{ onFinish?: (values: RoomData) => void }> = (
       }
     };
     fetchIsHaveBank();
-  }, [session]);
+  }, []);
 
   // Tính giá khi thay đổi ngày hoặc loại bài đăng
   useEffect(() => {
@@ -128,7 +128,7 @@ const AddRoomForm: React.FC<{ onFinish?: (values: RoomData) => void }> = (
       }
     };
     fetchTypePosts();
-  }, [session]);
+  }, []);
 
   useEffect(() => {
     if (!session) return;
@@ -146,7 +146,7 @@ const AddRoomForm: React.FC<{ onFinish?: (values: RoomData) => void }> = (
       }
     };
     fetchProvinces();
-  }, [session]);
+  }, []);
 
   if (!session) {
     return <div>Please log in to add a room.</div>;
