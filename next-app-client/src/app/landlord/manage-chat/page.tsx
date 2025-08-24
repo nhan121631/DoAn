@@ -2,6 +2,7 @@
 
 import ChatClient from "@/app/components/chat/ChatClient";
 import { db } from "@/lib/firebase";
+import { URL_IMAGE } from "@/services/Constant";
 import { getFullName } from "@/services/ProfileService";
 import {
   collection,
@@ -322,7 +323,7 @@ export default function LandlordManageChatPage() {
                         >
                           {user.avatar ? (
                             <Image
-                              src={user.avatar}
+                              src={URL_IMAGE + user.avatar}
                               alt="Avatar"
                               width={56}
                               height={56}
