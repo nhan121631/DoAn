@@ -3,6 +3,7 @@
 import { useLocationContext } from "@/context/LocationContext";
 import { PaginatedResponse, RoomInUser } from "@/types/types";
 import NormalRoomsDisplay from "./NormalRoomsDisplay";
+import { useSession } from "next-auth/react";
 
 interface LocationAwareNormalRoomsProps {
   initialNormalRooms: PaginatedResponse<RoomInUser>;
@@ -17,14 +18,21 @@ export default function LocationAwareNormalRooms({
   currentPage,
   isEmptyFilter,
 }: LocationAwareNormalRoomsProps) {
-  const { location, guestRooms } = useLocationContext();
+  const { data: session } = useSession();
+  const { location, guestRooms, userRooms } = useLocationContext();
 
+  const isGuestUser = !session?.user?.userProfile?.id;
   const hasGuestData = !!(guestRooms && location); // Context data from guest search
+  const hasUserData = !!(userRooms && location); // Context data from user search
 
-  // Use guest rooms from context if available (for guest users with location search),
+  // Use rooms from context if available (for location search - both guest and user),
   // or use initial data for default display
-  const normalRooms = hasGuestData
-    ? guestRooms.normalRooms
+  const normalRooms = isGuestUser
+    ? hasGuestData
+      ? guestRooms.normalRooms
+      : initialNormalRooms
+    : hasUserData
+    ? userRooms.normalRooms
     : initialNormalRooms;
 
   // Only show when no filters are applied and we have rooms
@@ -37,7 +45,7 @@ export default function LocationAwareNormalRooms({
       rooms={normalRooms as PaginatedResponse<RoomInUser>}
       favoriteIds={initialFavoriteIds}
       currentPage={currentPage}
-      hasGuestData={hasGuestData}
+      hasGuestData={hasGuestData || hasUserData}
       location={location}
     />
   );

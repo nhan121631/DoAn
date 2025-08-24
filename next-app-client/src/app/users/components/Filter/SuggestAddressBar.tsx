@@ -231,7 +231,8 @@ function SuggestAddressBar({
 }: SuggestAddressBarProps) {
   const { data: session } = useSession();
   const router = useRouter();
-  const { setLocation, setIsSearching, setGuestRooms } = useLocationContext();
+  const { setLocation, setIsSearching, setGuestRooms, setUserRooms } =
+    useLocationContext();
 
   // Form state
   const [formData, setFormData] = useState({
@@ -401,12 +402,75 @@ function SuggestAddressBar({
     }
   };
 
-  // NEW FUNCTION: Fetch rooms based on address location for non-logged users
+  // Unified function to fetch rooms by location for both guest and logged-in users
+  const fetchRoomsByLocation = async (
+    lat: number,
+    lng: number,
+    address: string,
+    context: "search" | "current"
+  ) => {
+    const userId = session?.user?.userProfile?.id;
+
+    // Clear previous data
+    setGuestRooms(null);
+    setUserRooms(null);
+
+    try {
+      console.log("🌍 Fetching rooms by location:");
+      console.log("- Address:", address);
+      console.log("- Coordinates:", { lat, lng });
+      console.log("- User ID:", userId);
+      console.log("- Context:", context);
+
+      // Update location context
+      setLocation({ lat, lng, address });
+
+      // Fetch rooms using location-based APIs
+      const [vipResponse, normalResponse] = await Promise.all([
+        getRoomVipWithLocation(0, 4, lat, lng),
+        getRoomNormalWithLocation(0, 6, lat, lng),
+      ]);
+
+      if (vipResponse && normalResponse) {
+        const newRoomsData = {
+          vipRooms: { ...vipResponse },
+          normalRooms: { ...normalResponse },
+        };
+
+        // Set rooms data based on user type
+        if (userId) {
+          setUserRooms(newRoomsData);
+        } else {
+          setGuestRooms(newRoomsData);
+        }
+
+        const totalRooms =
+          vipResponse.totalRecords + normalResponse.totalRecords;
+        const locationText =
+          context === "current"
+            ? userId
+              ? "bạn"
+              : "vị trí của bạn"
+            : `"${address}"`;
+
+        showMessage(
+          "success",
+          `🎯 Đã ${
+            userId && context === "current" ? "lưu vị trí và " : ""
+          }tìm thấy ${totalRooms} phòng gần ${locationText} - Đã sắp xếp theo khoảng cách!`
+        );
+      } else {
+        showMessage("error", "Không thể tải danh sách phòng!");
+      }
+    } catch (error) {
+      console.error("Error fetching rooms by location:", error);
+      showMessage("error", "Có lỗi xảy ra khi tìm kiếm phòng!");
+    }
+  };
+
+  // Fetch rooms based on address location - works for both guest and logged-in users
   const fetchRoomsByAddress = async (searchAddress: string) => {
     setIsSearching(true);
-
-    // Clear previous guest data to ensure fresh results
-    setGuestRooms(null);
 
     try {
       // Use Goong API to get coordinates from address
@@ -432,42 +496,8 @@ function SuggestAddressBar({
         const location = geoData.results[0].geometry.location;
         const { lat, lng } = location;
 
-        console.log("🌍 Fetching rooms by location:");
-        console.log("- Address:", searchAddress);
-        console.log("- Coordinates:", { lat, lng });
-
-        // Update location context FIRST
-        setLocation({ lat, lng, address: searchAddress });
-
-        // Add a small delay to ensure state is updated
-        await new Promise((resolve) => setTimeout(resolve, 100));
-
-        // Fetch rooms using location-based APIs
-        const [vipResponse, normalResponse] = await Promise.all([
-          getRoomVipWithLocation(0, 4, lat, lng),
-          getRoomNormalWithLocation(0, 6, lat, lng),
-        ]);
-
-        console.log("🏠 API Responses:");
-        console.log("- VIP rooms:", vipResponse);
-        console.log("- Normal rooms:", normalResponse);
-
-        if (vipResponse && normalResponse) {
-          // Force a new object to trigger re-render
-          const newGuestRooms = {
-            vipRooms: { ...vipResponse },
-            normalRooms: { ...normalResponse },
-          };
-          setGuestRooms(newGuestRooms);
-          showMessage(
-            "success",
-            `🎯 Đã tìm thấy ${
-              vipResponse.totalRecords + normalResponse.totalRecords
-            } phòng gần "${searchAddress}" - Đã sắp xếp theo khoảng cách!`
-          );
-        } else {
-          showMessage("error", "Không thể tải danh sách phòng!");
-        }
+        // Use unified function to fetch rooms
+        await fetchRoomsByLocation(lat, lng, searchAddress, "search");
       } else {
         showMessage("error", "Không tìm thấy địa chỉ này!");
       }
@@ -484,6 +514,9 @@ function SuggestAddressBar({
       showMessage("error", "Please fill in all address information!");
       return;
     }
+
+    setIsSaving(true);
+
     try {
       const selectedProvince = provinces.find(
         (p) => p.value === formData.province
@@ -502,58 +535,28 @@ function SuggestAddressBar({
 
       const userId = session?.user?.userProfile?.id;
 
-      // If user is logged in, save preferences
+      // If user is logged in, save preferences first
       if (userId) {
-        setIsSaving(true);
-
-        // Use Goong API to get coordinates from saved address
-        const GOONG_API_KEY = process.env.NEXT_PUBLIC_GOONG_API_KEY;
-        if (GOONG_API_KEY && searchAddress) {
-          try {
-            const geoResponse = await fetch(
-              `https://rsapi.goong.io/Geocode?address=${encodeURIComponent(
-                searchAddress
-              )}&api_key=${GOONG_API_KEY}`
-            );
-
-            if (geoResponse.ok) {
-              const geoData = await geoResponse.json();
-              if (geoData.results && geoData.results.length > 0) {
-                const location = geoData.results[0].geometry.location;
-                const { lat, lng } = location;
-
-                // Update location context for logged-in users too
-                console.log(
-                  "🌍 Updating location context for logged-in user:",
-                  {
-                    lat,
-                    lng,
-                    address: searchAddress,
-                  }
-                );
-                setLocation({ lat, lng, address: searchAddress });
-              }
-            }
-          } catch (geoError) {
-            console.error("Error geocoding saved address:", geoError);
-            // Continue with saving preferences even if geocoding fails
-          }
-        }
-
         await updatePreferences(
           userId,
           { searchAddress: searchAddress || undefined },
           session
         );
 
-        showMessage("success", "Address saved successfully!");
         await loadUserPreferences();
+        setCurrentPreferences(searchAddress);
 
         if (onSaveSuccess) onSaveSuccess();
         setShowTooltip(true);
-      } else {
-        // If user is NOT logged in, fetch rooms by address location
+      }
+
+      // Fetch rooms for both guest and logged-in users
+      if (searchAddress) {
         await fetchRoomsByAddress(searchAddress);
+      }
+
+      if (userId) {
+        showMessage("success", "Address saved successfully!");
       }
     } catch (error) {
       console.error("Error saving address:", error);
@@ -641,81 +644,27 @@ function SuggestAddressBar({
         handleInputChange("specificAddress", formattedAddress);
 
         const userId = session?.user?.userProfile?.id;
+
+        // If user is logged in, save preferences
         if (userId && formattedAddress) {
-          // User is logged in - save preferences
           await updatePreferences(
             userId,
             { searchAddress: formattedAddress },
             session
           );
-          setLocation({
-            lat: latitude,
-            lng: longitude,
-            address: formattedAddress,
-          });
-
           setCurrentPreferences(formattedAddress);
-          showMessage("success", "Current location updated successfully!");
 
           if (onSaveSuccess) onSaveSuccess();
           setShowTooltip(true);
-        } else if (!userId) {
-          // User is NOT logged in - fetch rooms with coordinates and update context
-          try {
-            console.log("🌍 Fetching rooms by current location:");
-            console.log("- Address:", formattedAddress);
-            console.log("- Coordinates:", { latitude, longitude });
-
-            // Clear previous guest data first
-            setGuestRooms(null);
-
-            setLocation({
-              lat: latitude,
-              lng: longitude,
-              address: formattedAddress,
-            });
-
-            // Add small delay to ensure state is updated
-            await new Promise((resolve) => setTimeout(resolve, 100));
-
-            const [vipResponse, normalResponse] = await Promise.all([
-              getRoomVipWithLocation(0, 4, latitude, longitude),
-              getRoomNormalWithLocation(0, 6, latitude, longitude),
-            ]);
-
-            console.log("🏠 Current Location API Responses:");
-            console.log("- VIP rooms:", vipResponse);
-            console.log("- Normal rooms:", normalResponse);
-
-            if (vipResponse && normalResponse) {
-              // Force new object to trigger re-render
-              const newGuestRooms = {
-                vipRooms: { ...vipResponse },
-                normalRooms: { ...normalResponse },
-              };
-              setGuestRooms(newGuestRooms);
-              showMessage(
-                "success",
-                `🎯 Đã tìm thấy ${
-                  vipResponse.totalRecords + normalResponse.totalRecords
-                } phòng gần vị trí của bạn - Đã sắp xếp theo khoảng cách!`
-              );
-            } else {
-              showMessage(
-                "warning",
-                "Lấy vị trí thành công nhưng không thể tải danh sách phòng!"
-              );
-            }
-          } catch (error) {
-            console.error("Error fetching rooms by location:", error);
-            showMessage(
-              "warning",
-              "Lấy vị trí thành công nhưng không thể tải danh sách phòng!"
-            );
-          }
-        } else {
-          showMessage("success", "Current location retrieved successfully!");
         }
+
+        // Use unified function to fetch rooms by current location
+        await fetchRoomsByLocation(
+          latitude,
+          longitude,
+          formattedAddress,
+          "current"
+        );
       } else {
         showMessage(
           "warning",
