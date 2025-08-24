@@ -61,6 +61,11 @@ export type RoomDetail = {
   };
   priceMonth: number;
   priceDeposit: number;
+  roomLength: number;
+  roomWidth: number;
+  elecPrice: number;
+  waterPrice: number;
+  maxPeople: number;
   area: number;
   postStartDate: string;
   postEndDate: string;

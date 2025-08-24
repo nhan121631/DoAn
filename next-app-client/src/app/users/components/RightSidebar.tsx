@@ -3,9 +3,13 @@ import FeaturedListingsCard from "./InfoCardAndFeatured/FeaturedListingsCard";
 
 export default function RightSidebar({ id }: { id: string }) {
   return (
-    <div className="w-full lg:w-[350px] flex flex-col mt-15">
+    <div className="w-full lg:w-[350px] relative">
       <UserInfoCard id={id} />
-      <FeaturedListingsCard />
+      {/* Spacer div to prevent overlap when UserInfoCard becomes sticky */}
+      <div className="h-4 lg:h-6"></div>
+      <div className="relative z-0">
+        <FeaturedListingsCard />
+      </div>
     </div>
   );
 }
