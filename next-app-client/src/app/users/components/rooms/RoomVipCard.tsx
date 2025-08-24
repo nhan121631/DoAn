@@ -13,7 +13,7 @@ import { useRouter } from "next/navigation";
 import { useCompareStore } from "@/stores/CompareStore";
 import { message } from "antd";
 import { useEffect, useRef, useState } from "react"; // THÊM useEffect, useRef, useState
-import { FaEye } from "react-icons/fa";
+// import { FaEye } from "react-icons/fa";
 
 interface RoomVipCardProps {
   room: RoomInUser;
@@ -102,7 +102,8 @@ export default function RoomVipCard({
     <>
       {contextHolder}
       <div className="w-full max-w-5xl px-2 mx-auto sm:px-4">
-        <div className="overflow-hidden transition-all duration-300 bg-white border shadow-sm cursor-pointer rounded-2xl border-gray-100/60 hover:shadow-xl hover:border-slate-200 hover:-translate-y-1 group/card backdrop-blur-sm">
+        
+        <div ref={ref} className="overflow-hidden transition-all duration-300 bg-white border shadow-sm cursor-pointer rounded-2xl border-gray-100/60 hover:shadow-xl hover:border-slate-200 hover:-translate-y-1 group/card backdrop-blur-sm">
           <div className="flex flex-col items-stretch sm:flex-row">
             {/* IMAGE SECTION */}
             <RoomCartActionsWrapper room={room}>
@@ -351,7 +352,7 @@ export default function RoomVipCard({
             </div>
           </div>
           <span className="flex items-center ml-2 text-gray-500 dark:text-gray-300">
-        <FaEye className="mr-1" /> {viewCount}
+        {/* <FaEye className="mr-1" /> {viewCount} */}
       </span>
         </div>
       </div>

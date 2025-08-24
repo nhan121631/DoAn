@@ -84,9 +84,10 @@ const handleMouseLeave = () => {
   return (
     <>
       {contextHolder}
+      <div
       onMouseEnter={handleMouseEnter}
-    onMouseLeave={handleMouseLeave}
-      <div className="group relative w-full max-w-sm mx-auto bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 hover:scale-[1.02] border border-gray-100/50 backdrop-blur-sm">
+      onMouseLeave={handleMouseLeave}
+       className="group relative w-full max-w-sm mx-auto bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 hover:scale-[1.02] border border-gray-100/50 backdrop-blur-sm">
         {/* Image Container */}
         <div className="relative w-full h-64 overflow-hidden">
           <Image
@@ -113,10 +114,11 @@ const handleMouseLeave = () => {
               onFavoriteChange={onFavoriteChange}
               showHeartOnly={true}
             />
-          </div>
-          {/* <span className="flex items-center ml-2 text-gray-500 dark:text-gray-300">
+            {/* <span className="flex items-center ml-2 text-gray-500 dark:text-gray-300">
       <FaEye className="mr-1" /> {viewCount}
     </span> */}
+          </div>
+          
 
           {/* Status Badges - Top Left */}
           <div className="absolute z-30 flex gap-2 top-4 left-4">

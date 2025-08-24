@@ -27,12 +27,6 @@ import {
 import { PiElevatorLight } from "react-icons/pi";
 
 // Enhanced amenities with better labels and icons
-import { Convenient, RoomInUser } from "@/types/types";
-import React from "react";
-import { BsCheckCircleFill } from "react-icons/bs";
-import { FaTimesCircle } from "react-icons/fa";
-import BookingForm from "@/app/landlord/components/booking-room/BookingForm";
-
 const allPossibleConvenients = [
   { key: "furnished", label: "Furnished", icon: Package },
   { key: "washing_machine", label: "Washing Machine", icon: Package },
@@ -198,36 +192,6 @@ export default function ListingComparisonDisplay({
             roomTitle={listing1.title || "Room for rent"}
             priceMonth={listing1.priceMonth || 0}
           />
-      <style jsx>{`
-        .overflow-hidden::-webkit-scrollbar {
-          display: none;
-        }
-      `}</style>
-      <div className="flex items-center justify-center w-full mb-6 gap-x-100">
-  <div className="flex justify-end flex-1">
-    <div className="w-full max-w-xs">
-      <BookingForm
-        roomId={listing1.id}
-        roomTitle={listing1.title}
-        priceMonth={listing1.priceMonth}
-      />
-    </div>
-  </div>
-  <div className="flex justify-start flex-1">
-    <div className="w-full max-w-xs">
-      <BookingForm
-        roomId={listing2.id}
-        roomTitle={listing2.title}
-        priceMonth={listing2.priceMonth}
-      />
-    </div>
-  </div>
-</div>
-      {/* Comparison Details Table */}
-      <div className="grid  text-gray-700 [grid-template-columns:150px_1fr_1fr] gap-y-4 gap-x-6">
-        {/* Header Row for Comparison Table */}
-        <div className="pb-2 text-lg font-bold text-gray-900 border-b md:col-span-1">
-          Feature
         </div>
         <div className="p-6 border border-purple-200 shadow-lg bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl">
           <h3 className="flex items-center gap-2 mb-4 text-lg font-semibold text-purple-800">
