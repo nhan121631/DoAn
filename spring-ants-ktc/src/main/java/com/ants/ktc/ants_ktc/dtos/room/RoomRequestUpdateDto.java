@@ -24,7 +24,12 @@ public class RoomRequestUpdateDto {
     private String description;
     private Double priceMonth;
     private Double priceDeposit;
-    private Double area;
+    // private Double area;
+    private Double roomLength;
+    private Double roomWidth;
+    private Double elecPrice;
+    private Double waterPrice;
+    private Integer maxPeople;
     private AddressCreateRequestDto address;
     private UUID userId;
     private List<Long> convenientIds;

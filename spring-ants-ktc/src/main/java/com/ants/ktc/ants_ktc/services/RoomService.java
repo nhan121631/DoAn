@@ -9,6 +9,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -243,8 +244,17 @@ public class RoomService {
                 room.setDescription(requestDto.getDescription());
                 room.setPrice_month(requestDto.getPriceMonth());
                 room.setPrice_deposit(requestDto.getPriceDeposit());
-                room.setArea(requestDto.getArea());
-
+                room.setRoomLength(requestDto.getRoomLength());
+                room.setRoomWidth(requestDto.getRoomWidth());
+                room.setElecPrice(requestDto.getElecPrice());
+                room.setWaterPrice(requestDto.getWaterPrice());
+                room.setMaxPeople(requestDto.getMaxPeople());
+                // tính diện tích
+                if (requestDto.getRoomLength() != null && requestDto.getRoomWidth() != null) {
+                        room.setArea(requestDto.getRoomLength() * requestDto.getRoomWidth());
+                } else {
+                        room.setArea(0.0);
+                }
                 // Lấy PostType và User
                 PostType postType = postTypeJpaRepository.findById(requestDto.getTypepostId())
                                 .orElseThrow(() -> new IllegalArgumentException("PostType not found"));
@@ -447,6 +457,11 @@ public class RoomService {
                                 .postStartDate(room.getPost_start_date())
                                 .postEndDate(room.getPost_end_date())
                                 .area(room.getArea())
+                                .roomLength(room.getRoomLength())
+                                .roomWidth(room.getRoomWidth())
+                                .elecPrice(room.getElecPrice())
+                                .waterPrice(room.getWaterPrice())
+                                .maxPeople(room.getMaxPeople())
                                 .typepost(postType.getName())
                                 .userId(user.getId())
                                 .convenients(convenients.stream()
@@ -461,18 +476,34 @@ public class RoomService {
         }
 
         // update room
+        // update room
         @Transactional
         public RoomResponseDto updateRoom(UUID id, List<MultipartFile> images, RoomRequestUpdateDto request)
                         throws Exception {
                 Room room = roomJpaRepository.findById(id)
                                 .orElseThrow(() -> new IllegalArgumentException("Room not found"));
 
+                // Lưu dữ liệu cũ để so sánh
+                String oldTitle = room.getTitle();
+                String oldDescription = room.getDescription();
+                List<Image> oldImages = imageJpaRepository.findByRoomId(id);
+
                 // Cập nhật thông tin cơ bản
                 room.setTitle(request.getTitle());
                 room.setDescription(request.getDescription());
                 room.setPrice_month(request.getPriceMonth());
                 room.setPrice_deposit(request.getPriceDeposit());
-                room.setArea(request.getArea());
+                room.setRoomLength(request.getRoomLength());
+                room.setRoomWidth(request.getRoomWidth());
+                room.setElecPrice(request.getElecPrice());
+                room.setWaterPrice(request.getWaterPrice());
+                room.setMaxPeople(request.getMaxPeople());
+                // tính diện tích
+                if (request.getRoomLength() != null && request.getRoomWidth() != null) {
+                        room.setArea(request.getRoomLength() * request.getRoomWidth());
+                } else {
+                        room.setArea(0.0);
+                }
 
                 // Set địa chỉ
                 Address address = room.getAddress();
@@ -511,12 +542,10 @@ public class RoomService {
                 });
                 room.setConvenients(convenients);
 
-                room.setApproval(0);
-
                 // Xử lý cập nhật ảnh
                 // 1. Lấy danh sách ảnh cũ
-                List<Image> oldImages = imageJpaRepository.findByRoomId(id);
                 List<Image> imagesToKeep = new ArrayList<>();
+                boolean imageChanged = false;
 
                 if (request.getExistingImages() != null) {
                         // Xóa các ảnh nằm trong existingImages, giữ lại phần còn lại
@@ -525,6 +554,7 @@ public class RoomService {
                                 if (existingImageUrls.contains(img.getUrl())) {
                                         imageJpaRepository.delete(img);
                                         deleteFileFromStorage(img.getUrl());
+                                        imageChanged = true;
                                 } else {
                                         imagesToKeep.add(img);
                                 }
@@ -569,6 +599,8 @@ public class RoomService {
 
                                                 // Enqueue upload job
                                                 enqueueImageUpload(message);
+
+                                                imageChanged = true;
                                         } catch (Exception e) {
                                                 // Log error nhưng không fail toàn bộ quá trình
                                                 System.err.println("Failed to prepare async upload for file: "
@@ -583,6 +615,13 @@ public class RoomService {
 
                 List<Image> updatedImages = imagesToKeep;
 
+                // ✅ Chỉ setApproval = 0 nếu có thay đổi title, description hoặc image
+                if (!Objects.equals(oldTitle, request.getTitle()) ||
+                                !Objects.equals(oldDescription, request.getDescription()) ||
+                                imageChanged) {
+                        room.setApproval(0);
+                }
+
                 // 4. Lưu room
                 roomJpaRepository.save(room);
                 return RoomResponseDto.builder()
@@ -594,6 +633,11 @@ public class RoomService {
                                 .postStartDate(room.getPost_start_date())
                                 .postEndDate(room.getPost_end_date())
                                 .area(room.getArea())
+                                .roomLength(room.getRoomLength())
+                                .roomWidth(room.getRoomWidth())
+                                .elecPrice(room.getElecPrice())
+                                .waterPrice(room.getWaterPrice())
+                                .maxPeople(room.getMaxPeople())
                                 .typepost(room.getPostType().getName())
                                 .userId(room.getUser().getId())
                                 .convenients(convenients.stream()
@@ -823,6 +867,11 @@ public class RoomService {
                                 .priceDeposit(room.getPrice_deposit())
                                 .postStartDate(room.getPost_start_date())
                                 .area(room.getArea())
+                                .roomLength(room.getRoomLength())
+                                .roomWidth(room.getRoomWidth())
+                                .elecPrice(room.getElecPrice())
+                                .waterPrice(room.getWaterPrice())
+                                .maxPeople(room.getMaxPeople())
                                 .postEndDate(room.getPost_end_date())
                                 .typepost(room.getPostType().getName())
                                 .userId(room.getUser().getId())
@@ -847,6 +896,12 @@ public class RoomService {
                                 .approval(room.getApproval())
                                 .hidden(room.getHidden())
                                 .isRemoved(room.getIsRemoved())
+                                .area(room.getArea())
+                                .elecPrice(room.getElecPrice())
+                                .waterPrice(room.getWaterPrice())
+                                .roomLength(room.getRoomLength())
+                                .roomWidth(room.getRoomWidth())
+                                .maxPeople(room.getMaxPeople())
                                 .priceMonth(room.getPrice_month())
                                 .priceDeposit(room.getPrice_deposit())
                                 .postStartDate(room.getPost_start_date())
@@ -1117,6 +1172,7 @@ public class RoomService {
                                                 .description(room.getDescription())
                                                 .priceMonth(room.getPrice_month()) // chú ý đúng tên getter
                                                 .area(room.getArea())
+                                                .maxPeople(room.getMaxPeople())
                                                 .postStartDate(room.getPost_start_date())
                                                 .address(convertAddress(room.getAddress()))
                                                 .images(convertImages(room.getImages()))
@@ -1177,6 +1233,7 @@ public class RoomService {
                                                         .description(room.getDescription())
                                                         .priceMonth(room.getPrice_month())
                                                         .area(room.getArea())
+                                                        .maxPeople(room.getMaxPeople())
                                                         .postStartDate(room.getPost_start_date())
                                                         .address(convertAddress(room.getAddress()))
                                                         .images(convertImages(room.getImages()))
@@ -1197,6 +1254,58 @@ public class RoomService {
 
                 } catch (Exception e) {
                         System.err.println("Error in getAllRoomInUserSortedByDistance: " + e.getMessage());
+                        e.printStackTrace();
+
+                        // Fallback về method cơ bản nếu có lỗi
+                        return getAllRoomInUser(pageNumber, pageSize, code);
+                }
+        }
+
+        // Method mới - sắp xếp theo tọa độ trực tiếp (cho user chưa đăng nhập)
+        public PaginationRoomInUserResponseDto getAllRoomInUserWithLocation(int pageNumber, int pageSize,
+                        String code, Double latitude, Double longitude) {
+                try {
+                        Pageable pageable = PageRequest.of(pageNumber, pageSize);
+                        Page<Room> roomPage;
+
+                        // Sử dụng query có sắp xếp theo khoảng cách nếu có tọa độ
+                        if (latitude != null && longitude != null) {
+                                roomPage = roomJpaRepository.findAllRoomInUserSortedByDistance(code, latitude,
+                                                longitude,
+                                                pageable);
+                        } else {
+                                // Fallback về query cơ bản nếu không có tọa độ
+                                roomPage = roomJpaRepository.findAllRoomInUser(code, pageable);
+                        }
+
+                        List<RoomInUserResponseDto> rooms = roomPage.getContent().stream()
+                                        .map(room -> RoomInUserResponseDto.builder()
+                                                        .id(room.getId())
+                                                        .title(room.getTitle())
+                                                        .description(room.getDescription())
+                                                        .priceMonth(room.getPrice_month())
+                                                        .area(room.getArea())
+                                                        .maxPeople(room.getMaxPeople())
+                                                        .postStartDate(room.getPost_start_date())
+                                                        .address(convertAddress(room.getAddress()))
+                                                        .images(convertImages(room.getImages()))
+                                                        .conveniences(convertConveniences(room.getConvenients()))
+                                                        .landlord(convertLandlord(room.getUser()))
+                                                        .build())
+                                        .collect(Collectors.toList());
+
+                        return PaginationRoomInUserResponseDto.builder()
+                                        .data(rooms)
+                                        .pageNumber(roomPage.getNumber())
+                                        .pageSize(roomPage.getSize())
+                                        .totalRecords(roomPage.getTotalElements())
+                                        .totalPages(roomPage.getTotalPages())
+                                        .hasNext(roomPage.hasNext())
+                                        .hasPrevious(roomPage.hasPrevious())
+                                        .build();
+
+                } catch (Exception e) {
+                        System.err.println("Error in getAllRoomInUserWithLocation: " + e.getMessage());
                         e.printStackTrace();
 
                         // Fallback về method cơ bản nếu có lỗi
@@ -1283,6 +1392,7 @@ public class RoomService {
                                                         .description(room.getDescription())
                                                         .priceMonth(room.getPrice_month())
                                                         .area(room.getArea())
+                                                        .maxPeople(room.getMaxPeople())
                                                         .postStartDate(room.getPost_start_date())
                                                         .address(convertAddress(room.getAddress()))
                                                         .images(convertImages(room.getImages()))
@@ -1361,6 +1471,7 @@ public class RoomService {
                                                                 .description(room.getDescription())
                                                                 .priceMonth(room.getPrice_month())
                                                                 .area(room.getArea())
+                                                                .maxPeople(room.getMaxPeople())
                                                                 .postStartDate(room.getPost_start_date())
                                                                 .address(convertAddress(room.getAddress()))
                                                                 .images(convertImages(room.getImages()))
@@ -1485,6 +1596,7 @@ public class RoomService {
                                                                 .description(room.getDescription())
                                                                 .priceMonth(room.getPrice_month())
                                                                 .area(room.getArea())
+                                                                .maxPeople(room.getMaxPeople())
                                                                 .postStartDate(room.getPost_start_date())
                                                                 .address(convertAddress(room.getAddress()))
                                                                 .images(convertImages(room.getImages()))
@@ -1574,9 +1686,7 @@ public class RoomService {
                 }
 
                 if (address.getWard() != null) {
-                        if (addressBuilder.length() > 0)
-                                addressBuilder.append(", ");
-                        addressBuilder.append(address.getWard().getName());
+                        addressBuilder.append(", ").append(address.getWard().getName());
 
                         if (address.getWard().getDistrict() != null) {
                                 addressBuilder.append(", ").append(address.getWard().getDistrict().getName());

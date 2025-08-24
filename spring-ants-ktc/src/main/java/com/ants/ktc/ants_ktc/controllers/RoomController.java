@@ -8,6 +8,7 @@ import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -20,6 +21,9 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.ants.ktc.ants_ktc.dtos.filters.FilterRoomRequestDto;
+import com.ants.ktc.ants_ktc.dtos.rating.RatingCreateDto;
+import com.ants.ktc.ants_ktc.dtos.rating.RatingReplyDto;
+import com.ants.ktc.ants_ktc.dtos.rating.RatingResponseDto;
 import com.ants.ktc.ants_ktc.dtos.room.PaginationRoomAdminResponseDto;
 import com.ants.ktc.ants_ktc.dtos.room.PaginationRoomInUserResponseDto;
 import com.ants.ktc.ants_ktc.dtos.room.PaginationRoomResponseDto;
@@ -34,6 +38,8 @@ import com.ants.ktc.ants_ktc.dtos.room.RoomShowHideProjectionDto;
 import com.ants.ktc.ants_ktc.dtos.room.RoomUpdateExpireDateRequestDto;
 import com.ants.ktc.ants_ktc.dtos.room.RoomUpdateExpireDateResponseDto;
 import com.ants.ktc.ants_ktc.dtos.user.LandlordResponseByRoomDto;
+import com.ants.ktc.ants_ktc.enums.FeedbackAccess;
+import com.ants.ktc.ants_ktc.services.RatingService;
 import com.ants.ktc.ants_ktc.services.RoomService;
 import com.ants.ktc.ants_ktc.services.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -41,7 +47,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Valid;
 import jakarta.validation.Validator;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/rooms")
 public class RoomController {
@@ -51,6 +59,8 @@ public class RoomController {
     private Validator validator;
     @Autowired
     private UserService userService;
+    @Autowired
+    private RatingService ratingService;
 
     @PostMapping
     public ResponseEntity<RoomResponseDto> createRoom(
@@ -210,6 +220,32 @@ public class RoomController {
         return ResponseEntity.ok(response);
     }
 
+    // API mới - Lấy rooms VIP với tọa độ trực tiếp (cho user chưa đăng nhập)
+    @GetMapping("allroom-vip-location")
+    public ResponseEntity<PaginationRoomInUserResponseDto> getRoomVipWithLocation(
+            @RequestParam(name = "page", defaultValue = "0") int pageNumber,
+            @RequestParam(name = "size", defaultValue = "5") int pageSize,
+            @RequestParam(name = "lat", required = false) Double latitude,
+            @RequestParam(name = "lng", required = false) Double longitude) {
+        String code = "VIP";
+        PaginationRoomInUserResponseDto response = roomService.getAllRoomInUserWithLocation(
+                pageNumber, pageSize, code, latitude, longitude);
+        return ResponseEntity.ok(response);
+    }
+
+    // API mới - Lấy rooms Normal với tọa độ trực tiếp (cho user chưa đăng nhập)
+    @GetMapping("allroom-normal-location")
+    public ResponseEntity<PaginationRoomInUserResponseDto> getRoomNormalWithLocation(
+            @RequestParam(name = "page", defaultValue = "0") int pageNumber,
+            @RequestParam(name = "size", defaultValue = "5") int pageSize,
+            @RequestParam(name = "lat", required = false) Double latitude,
+            @RequestParam(name = "lng", required = false) Double longitude) {
+        String code = "NORMAL";
+        PaginationRoomInUserResponseDto response = roomService.getAllRoomInUserWithLocation(
+                pageNumber, pageSize, code, latitude, longitude);
+        return ResponseEntity.ok(response);
+    }
+
     @PostMapping("filter-rooms")
     public ResponseEntity<PaginationRoomInUserResponseDto> filterRooms(
             @RequestParam(name = "page", defaultValue = "0") int pageNumber,
@@ -238,6 +274,54 @@ public class RoomController {
             @RequestParam(value = "radius", defaultValue = "15") double radius) {
         List<RoomInMapResponse> rooms = roomService.findRoomInMapWithRadius(lat, lng, radius);
         return ResponseEntity.ok(rooms);
+    }
+
+    @GetMapping("/{id}/feedbacks")
+    public ResponseEntity<List<RatingResponseDto>> getFeedbacksByRoom(@PathVariable("id") UUID id) {
+        List<RatingResponseDto> feedbacks = ratingService.getAllRatingsByRoom(id);
+        return ResponseEntity.ok(feedbacks);
+    }
+
+    @PostMapping("/{id}/feedbacks")
+    public ResponseEntity<RatingResponseDto> createFeedback(
+            @PathVariable("id") UUID id,
+            @RequestBody RatingCreateDto dto) {
+        dto.setRoomId(id);
+        RatingResponseDto response = ratingService.createRating(dto);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/feedbacks/{feedbackId}/reply")
+    public ResponseEntity<RatingResponseDto> replyFeedback(
+            @PathVariable("feedbackId") UUID feedbackId,
+            @RequestBody RatingReplyDto dto,
+            @RequestParam("landlordId") UUID landlordId) {
+
+        RatingResponseDto response = ratingService.replyRating(landlordId, feedbackId, dto);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/{roomId}/feedback-access")
+    public ResponseEntity<FeedbackAccess> checkFeedbackAccess(
+            @PathVariable("roomId") UUID roomId,
+            @RequestParam UUID userId) {
+        FeedbackAccess access = ratingService.checkUserFeedbackAccess(userId, roomId);
+        return ResponseEntity.ok(access);
+    }
+
+    @GetMapping("/landlords/{landlordId}/feedbacks")
+    public ResponseEntity<List<RatingResponseDto>> getFeedbacksByLandlord(
+            @PathVariable("landlordId") UUID landlordId) {
+        List<RatingResponseDto> feedbacks = ratingService.getAllRatingsByLandlord(landlordId);
+        return ResponseEntity.ok(feedbacks);
+    }
+
+    @DeleteMapping("/feedbacks/{feedbackId}")
+    public ResponseEntity<String> deleteFeedback(
+            @PathVariable("feedbackId") UUID feedbackId,
+            @RequestParam("userId") UUID userId) {
+        String result = ratingService.deleteRating(feedbackId, userId);
+        return ResponseEntity.ok(result);
     }
 
     // tăng lượt xem

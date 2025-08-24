@@ -58,7 +58,7 @@ export default function AuthForms({ csrfToken }: { csrfToken?: string }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("callbackUrl");
+  const callbackUrl = searchParams?.get("callbackUrl");
   const { data: session, status } = useSession();
 
   // Hàm xác định route dựa trên role

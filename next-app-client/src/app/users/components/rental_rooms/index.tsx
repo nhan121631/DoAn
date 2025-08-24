@@ -13,19 +13,15 @@ import { BiChevronLeft, BiChevronRight } from "react-icons/bi";
 import CardFilter from "../Filter/CardFilter";
 import FeaturedListingsCard from "../InfoCardAndFeatured/FeaturedListingsCard";
 import RoomCard from "../rooms/RoomCard";
-import RoomVipCard from "../rooms/RoomVipCard";
+import RentalRoomsWithLocation from "./RentalRoomsWithLocation";
+import LocationAwareNormalRooms from "./LocationAwareNormalRooms";
 
 import NoLookingForFilter from "../Filter/NoLookingForFilter";
-
-// import { getFavoriteRoomIds } from "@/services/FavoriteService";
 import { getAllFavoriteIds } from "@/services/FavoriteService";
 import FilterForm from "../Filter/FilterForm";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-
-// Lấy danh sách ID yêu thích trên Server
-// const initialFavoriteIds = await getFavoriteRoomIds();
-const initialFavoriteIds = await getAllFavoriteIds();
+import { HiLocationMarker } from "react-icons/hi";
 
 export interface RentalRoomsSearchParams {
   page?: string | string[];
@@ -47,13 +43,15 @@ export default async function RentalRooms({
 }: {
   searchParams?: RentalRoomsSearchParams;
 }) {
-  // Get session for user-specific sorting
+  // Session user
   const session = await getServerSession(authOptions);
   const userId = session?.user?.id;
 
-  const params: RentalRoomsSearchParams = searchParams ? searchParams : {};
+  // Favorite Ids
+  const initialFavoriteIds = await getAllFavoriteIds();
 
-  // Helper ép về string
+  const params: RentalRoomsSearchParams = searchParams ?? {};
+
   const getString = (v: string | string[] | undefined) =>
     Array.isArray(v) ? v[0] : v ?? "";
 
@@ -68,6 +66,7 @@ export default async function RentalRooms({
   const listConvenientIds = listConvenientIdsRaw
     ? listConvenientIdsRaw.split(",")
     : [];
+
   const filters = {
     provinceId,
     districtId,
@@ -82,57 +81,50 @@ export default async function RentalRooms({
   let filteredRooms: PaginatedResponse<RoomInUser> | null = null;
   let roomVips: PaginatedResponse<RoomInUser> | null = null;
   let roomNormals: PaginatedResponse<RoomInUser> | null = null;
+
   const sizeSearch = 6;
   const pageSearch = Number(params?.pageSearch ?? 0);
   const size = 4;
   const page = Number(params?.page ?? 0);
   const size_normal = 6;
   const page_normal = Number(params?.pageNormal ?? 0);
+
   try {
-    filteredRooms = (await filterRooms(
-      pageSearch,
-      sizeSearch,
-      filters
-    )) as PaginatedResponse<RoomInUser>;
-    roomVips = (await getRoomVipUser(
-      page,
-      size,
-      userId
-    )) as PaginatedResponse<RoomInUser>;
-    roomNormals = (await getRoomNormalUser(
-      page_normal,
-      size_normal,
-      userId
-    )) as PaginatedResponse<RoomInUser>;
+    filteredRooms = await filterRooms(pageSearch, sizeSearch, filters);
+    roomVips = await getRoomVipUser(page, size, userId);
+    roomNormals = await getRoomNormalUser(page_normal, size_normal, userId);
   } catch (e) {
     console.error("Error fetching rental rooms:", e);
     return notFound();
   }
 
-  // Nếu fetch thành công nhưng dữ liệu không hợp lệ (null hoặc không có data)
   if (!filteredRooms || !roomVips || !roomNormals) {
     return notFound();
   }
+
   const isEmptyFilter = Object.entries(filters).every(([, value]) => {
     if (Array.isArray(value)) return value.length === 0;
-    return value === undefined || value === null || value === "";
+    return !value;
   });
+
   const buildFilterQuery = (filters: any, pageSearch: number) => {
     const queryObj = { ...filters, pageSearch };
-    Object.keys(queryObj).forEach(
-      (key) =>
-        (queryObj[key] === undefined ||
-          queryObj[key] === "" ||
-          (Array.isArray(queryObj[key]) && queryObj[key].length === 0)) &&
-        delete queryObj[key]
-    );
+    Object.keys(queryObj).forEach((key) => {
+      const val = queryObj[key];
+      if (
+        val === undefined ||
+        val === "" ||
+        (Array.isArray(val) && val.length === 0)
+      ) {
+        delete queryObj[key];
+      }
+    });
     if (Array.isArray(queryObj.listConvenientIds)) {
       queryObj.listConvenientIds = queryObj.listConvenientIds.join(",");
     }
     return "?" + new URLSearchParams(queryObj).toString();
   };
 
-  console.log("isEmpty Filter:", isEmptyFilter);
   return (
     <>
       <div
@@ -140,38 +132,50 @@ export default async function RentalRooms({
         className="flex flex-col w-full mx-auto bg-white max-w-7xl lg:flex-row lg:gap-x-2"
       >
         {/* Main Content */}
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0 px-2 sm:px-4 md:px-6">
           {!isEmptyFilter ? (
             filteredRooms.data.length > 0 ? (
-              <div className="flex flex-col items-center w-full gap-4 px-4 my-8 bg-white max-w-7xl lg:px-0 lg:w-auto">
-                <h1 className="w-full text-2xl font-bold text-left">
-                  The room you&#39;re looking for
-                </h1>
-                <span className="w-full italic text-left">
-                  We found {filteredRooms.totalRecords} rooms matching your
-                  search criteria
-                </span>
+              <div className="flex flex-col items-center w-full gap-4 px-2 sm:px-4 my-8 bg-white max-w-7xl lg:px-0 lg:w-auto">
+                <div className="w-full text-center space-y-4">
+                  <h1 className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-gray-900 via-blue-700 to-purple-700 bg-clip-text text-transparent leading-tight">
+                    Rooms You&#39;re Looking For
+                  </h1>
+                  <div className="flex items-center justify-center gap-2 text-lg text-gray-600">
+                    <HiLocationMarker className="text-blue-500" />
+                    <span className="font-medium">
+                      Found{" "}
+                      <span className="text-blue-600 font-bold">
+                        {filteredRooms.totalRecords}
+                      </span>{" "}
+                      perfect matches
+                    </span>
+                  </div>
+                </div>
+
                 <div
                   id="normal-rooms-list"
-                  className="flex flex-wrap items-start justify-center w-full gap-8"
+                  className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4 md:gap-6 lg:gap-4 w-full"
                 >
-                  {filteredRooms.data.map((room, index) => (
-                    <RoomCard
-                      key={index}
-                      room={room}
-                      isForSale={false}
-                      isFeatured={false}
-                    />
+                  {filteredRooms.data.map((room) => (
+                    <div key={room.id} className="flex justify-center">
+                      <RoomCard
+                        room={room}
+                        isForSale={false}
+                        isFeatured={false}
+                        isFavorite={initialFavoriteIds.includes(room.id)}
+                      />
+                    </div>
                   ))}
                 </div>
-                {/* Previous Button */}
+
+                {/* Pagination */}
                 <div className="flex items-center justify-center gap-4 mt-8">
                   <Link
                     href={buildFilterQuery(filters, pageSearch - 1)}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-full font-medium border transition-all duration-200 shadow ${
+                    className={`group flex items-center gap-3 px-6 py-3 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95 ${
                       pageSearch === 0
-                        ? "text-gray-400 bg-gray-100 cursor-not-allowed pointer-events-none border-gray-200"
-                        : "text-blue-600 bg-white hover:bg-blue-50 hover:shadow-lg border-blue-300"
+                        ? "bg-gradient-to-r from-gray-200 to-gray-300 text-gray-500 cursor-not-allowed pointer-events-none"
+                        : "bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-blue-500/30"
                     }`}
                     scroll={false}
                     aria-disabled={pageSearch === 0}
@@ -179,7 +183,6 @@ export default async function RentalRooms({
                     <BiChevronLeft size={20} />
                     <span className="hidden sm:inline">Previous</span>
                   </Link>
-                  {/* Page Info */}
                   <div className="flex flex-col items-center px-4">
                     <span className="text-base font-semibold text-gray-700">
                       Page{" "}
@@ -189,22 +192,24 @@ export default async function RentalRooms({
                       </span>
                     </span>
                     <span className="text-xs text-gray-400">
-                      {filteredRooms.totalPages} rooms found
+                      {filteredRooms.totalRecords} rooms found
                     </span>
                   </div>
-                  {/* Next Button */}
                   <Link
                     href={buildFilterQuery(filters, pageSearch + 1)}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-full font-medium border transition-all duration-200 shadow ${
+                    className={`group flex items-center gap-3 px-6 py-3 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95 ${
                       pageSearch + 1 >= filteredRooms.totalPages
-                        ? "text-gray-400 bg-gray-100 cursor-not-allowed pointer-events-none border-gray-200"
-                        : "text-blue-600 bg-white hover:bg-blue-50 hover:shadow-lg border-blue-300"
+                        ? "bg-gradient-to-r from-gray-200 to-gray-300 text-gray-500 cursor-not-allowed pointer-events-none"
+                        : "bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-blue-500/30"
                     }`}
                     scroll={false}
                     aria-disabled={pageSearch + 1 >= filteredRooms.totalPages}
                   >
-                    <span className="hidden sm:inline">Next</span>
-                    <BiChevronRight size={20} />
+                    <span className="hidden sm:inline font-medium">Next</span>
+                    <BiChevronRight
+                      size={22}
+                      className="transition-transform group-hover:translate-x-1"
+                    />
                   </Link>
                 </div>
               </div>
@@ -212,151 +217,49 @@ export default async function RentalRooms({
               <NoLookingForFilter />
             )
           ) : (
-            <div className="flex flex-col items-center w-full gap-4 px-4 my-8 bg-white max-w-7xl lg:px-0 lg:w-auto">
-              <h1 className="w-full text-2xl font-bold text-left">
-                Vietnam’s No.1 Rental Room Platform
-              </h1>
-              <span className="w-full italic text-left">
-                Find thousands of verified rooms, apartments, and affordable
-                rentals across Vietnam – quickly and easily
-              </span>
-              <div className="flex flex-col items-center w-full gap-4">
-                <h3 className="w-full text-xl font-semibold text-left">
-                  Highlighted Post
-                </h3>
-                <div className="flex flex-col items-center w-full gap-4">
-                  {roomVips.data.map((room, index) => (
-                    <RoomVipCard
-                      key={index}
-                      room={room}
-                      isFavorite={initialFavoriteIds.includes(room.id)}
-                    />
-                  ))}
-                  <div className="flex items-center justify-center gap-4 mt-8">
-                    {/* Previous Button */}
-                    <Link
-                      href={`?page=${page - 1}#rental-rooms`}
-                      className={`flex items-center gap-2 px-4 py-2 rounded-full font-medium border transition-all duration-200 shadow ${
-                        page === 0
-                          ? "text-gray-400 bg-gray-100 cursor-not-allowed pointer-events-none border-gray-200"
-                          : "text-blue-600 bg-white hover:bg-blue-50 hover:shadow-lg border-blue-300"
-                      }`}
-                      scroll={true}
-                      aria-disabled={page === 0}
-                    >
-                      <BiChevronLeft size={20} />
-                      <span className="hidden sm:inline">Previous</span>
-                    </Link>
-                    {/* Page Info */}
-                    <div className="flex flex-col items-center px-4">
-                      <span className="text-base font-semibold text-gray-700">
-                        Page <span className="text-blue-600">{page + 1}</span> /{" "}
-                        <span className="text-blue-600">
-                          {roomVips.totalPages}
-                        </span>
-                      </span>
-                      <span className="text-xs text-gray-400">
-                        {roomVips.totalPages} rooms found
-                      </span>
-                    </div>
-                    {/* Next Button */}
-                    <Link
-                      href={`?page=${page + 1}#rental-rooms`}
-                      className={`flex items-center gap-2 px-4 py-2 rounded-full font-medium border transition-all duration-200 shadow ${
-                        page + 1 >= roomVips.totalPages
-                          ? "text-gray-400 bg-gray-100 cursor-not-allowed pointer-events-none border-gray-200"
-                          : "text-blue-600 bg-white hover:bg-blue-50 hover:shadow-lg border-blue-300"
-                      }`}
-                      scroll={true}
-                      aria-disabled={page + 1 >= roomVips.totalPages}
-                    >
-                      <span className="hidden sm:inline">Next</span>
-                      <BiChevronRight size={20} />
-                    </Link>
-                  </div>
-                </div>
-              </div>
+            <div className="flex flex-col items-center w-full gap-4 px-2 sm:px-4 my-8 bg-white max-w-7xl lg:px-0 lg:w-auto">
+              {/* Hero Section placeholder nếu muốn */}
             </div>
           )}
+
+          {/* Location-aware display - only VIP rooms */}
+          <RentalRoomsWithLocation
+            initialVipRooms={roomVips}
+            initialFavoriteIds={initialFavoriteIds}
+            page={page}
+            isEmptyFilter={isEmptyFilter}
+          />
         </div>
-        {/* Sidebar - always fixed on the right */}
-        <div className="w-full lg:w-[350px] flex flex-col items-center">
-          <div className="hidden lg:block">
+
+        {/* Sidebar */}
+        <div className="w-full mt-6 lg:mt-0 lg:w-[350px] flex flex-col items-center">
+          <div className="block lg:hidden w-full max-w-md mx-auto mb-4">
             <CardFilter />
           </div>
-          <div className="mt-3 hidden lg:block">
+          <div className="block lg:hidden w-full max-w-md mx-auto mb-4">
             <FilterForm />
           </div>
-          <div className="w-[80%] lg:w-[300px]">
+          <div className="block lg:hidden w-full max-w-md mx-auto mb-4">
             <FeaturedListingsCard />
+          </div>
+
+          <div className="hidden lg:block w-full">
+            <CardFilter />
+            <div className="mt-3">
+              <FilterForm />
+            </div>
+            <div className="w-[80%] lg:w-[300px] mt-3">
+              <FeaturedListingsCard />
+            </div>
           </div>
         </div>
       </div>
-      {isEmptyFilter && (
-        <div className="flex flex-col items-center justify-center w-full gap-4 px-4 my-6 max-w-7xl">
-          <h3 className="w-full text-2xl font-semibold text-center">
-            Featured Listings
-          </h3>
-          <h5 className="w-full mb-3 font-normal text-center text-md">
-            Some description about the featured listings
-          </h5>
-          <div
-            id="normal-rooms-list"
-            className="flex flex-wrap items-start justify-center w-full gap-8"
-          >
-            {roomNormals.data.map((room, index) => (
-              <RoomCard
-                key={index}
-                room={room}
-                isForSale={false}
-                isFeatured={false}
-                isFavorite={initialFavoriteIds.includes(room.id)}
-                custom={index}
-              />
-            ))}
-          </div>
-          <div className="flex items-center justify-center gap-4 mt-8">
-            {/* Previous Button */}
-            <Link
-              href={`?pageNormal=${page_normal - 1}`}
-              scroll={false}
-              className={`flex items-center gap-2 px-4 py-2 rounded-full font-medium border transition-all duration-200 shadow ${
-                page_normal === 0
-                  ? "text-gray-400 bg-gray-100 cursor-not-allowed pointer-events-none border-gray-200"
-                  : "text-blue-600 bg-white hover:bg-blue-50 hover:shadow-lg border-blue-300"
-              }`}
-              aria-disabled={page_normal === 0}
-            >
-              <BiChevronLeft size={20} />
-              <span className="hidden sm:inline">Previous</span>
-            </Link>
-            {/* Page Info */}
-            <div className="flex flex-col items-center px-4">
-              <span className="text-base font-semibold text-gray-700">
-                Page <span className="text-blue-600">{page_normal + 1}</span> /{" "}
-                <span className="text-blue-600">{roomNormals.totalPages}</span>
-              </span>
-              <span className="text-xs text-gray-400">
-                {roomNormals.totalPages} rooms found
-              </span>
-            </div>
-            {/* Next Button */}
-            <Link
-              href={`?pageNormal=${page_normal + 1}`}
-              scroll={false}
-              className={`flex items-center gap-2 px-4 py-2 rounded-full font-medium border transition-all duration-200 shadow ${
-                page_normal + 1 >= roomNormals.totalPages
-                  ? "text-gray-400 bg-gray-100 cursor-not-allowed pointer-events-none border-gray-200"
-                  : "text-blue-600 bg-white hover:bg-blue-50 hover:shadow-lg border-blue-300"
-              }`}
-              aria-disabled={page_normal + 1 >= roomNormals.totalPages}
-            >
-              <span className="hidden sm:inline">Next</span>
-              <BiChevronRight size={20} />
-            </Link>
-          </div>
-        </div>
-      )}
+      <LocationAwareNormalRooms
+        initialNormalRooms={roomNormals}
+        initialFavoriteIds={initialFavoriteIds}
+        currentPage={page_normal}
+        isEmptyFilter={isEmptyFilter}
+      />
     </>
   );
 }

@@ -1,19 +1,29 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useEffect } from "react";
-import { Form, Input, InputNumber, Button, Upload, Select } from "antd";
-import { PlusOutlined } from "@ant-design/icons";
-import type { UploadFile } from "antd/es/upload/interface";
-import { RoomData } from "../../types";
-import { Convenient, District, Province, TypePost, Ward } from "@/types/types";
 import {
   getDistricts,
   getProvinces,
   getWards,
 } from "@/services/AddressService";
-import { getPostTypes } from "@/services/TypePostService";
 import { getConvenients } from "@/services/Convenients";
+import { isHaveBankAccount } from "@/services/ProfileService";
 import { createRoom } from "@/services/RoomService";
-import { message } from "antd";
+import { getPostTypes } from "@/services/TypePostService";
+import { Convenient, District, Province, TypePost, Ward } from "@/types/types";
+import { PlusOutlined } from "@ant-design/icons";
+import {
+  Button,
+  Form,
+  Input,
+  InputNumber,
+  message,
+  Select,
+  Upload,
+  AutoComplete,
+} from "antd";
+import type { UploadFile } from "antd/es/upload/interface";
+import { useSession } from "next-auth/react";
+import React, { useEffect } from "react";
+import { RoomData } from "../../types";
 
 type ProvinceOption = {
   label: string;
@@ -57,6 +67,7 @@ const AddRoomForm: React.FC<{ onFinish?: (values: RoomData) => void }> = (
   );
   const [totalPrice, setTotalPrice] = React.useState<number>(0);
   const [convenients, setConvenients] = React.useState<Convenient[]>([]);
+  const [isHaveBank, setIsHaveBank] = React.useState<boolean>(false);
 
   useEffect(() => {
     const fetchConvenients = async () => {
@@ -68,6 +79,22 @@ const AddRoomForm: React.FC<{ onFinish?: (values: RoomData) => void }> = (
       }
     };
     fetchConvenients();
+  }, []);
+
+  const { data: session } = useSession();
+
+  useEffect(() => {
+    if (!session) return;
+
+    const fetchIsHaveBank = async () => {
+      try {
+        const data = await isHaveBankAccount();
+        setIsHaveBank(data);
+      } catch (error) {
+        console.error("Failed to check bank account existence:", error);
+      }
+    };
+    fetchIsHaveBank();
   }, []);
 
   // Tính giá khi thay đổi ngày hoặc loại bài đăng
@@ -89,7 +116,10 @@ const AddRoomForm: React.FC<{ onFinish?: (values: RoomData) => void }> = (
     );
     setTotalPrice(diffDays * typepost.pricePerDay);
   }, [selectedTypePostId, startDate, endDate, typeposts]);
+
   useEffect(() => {
+    if (!session) return;
+
     const fetchTypePosts = async () => {
       try {
         const data = await getPostTypes();
@@ -102,6 +132,8 @@ const AddRoomForm: React.FC<{ onFinish?: (values: RoomData) => void }> = (
   }, []);
 
   useEffect(() => {
+    if (!session) return;
+
     const fetchProvinces = async () => {
       try {
         const data = await getProvinces();
@@ -116,6 +148,10 @@ const AddRoomForm: React.FC<{ onFinish?: (values: RoomData) => void }> = (
     };
     fetchProvinces();
   }, []);
+
+  if (!session) {
+    return <div>Please log in to add a room.</div>;
+  }
 
   // Khi chọn tỉnh, load lại danh sách quận/huyện
   const handleProvinceChange = async (provinceId: string) => {
@@ -192,7 +228,12 @@ const AddRoomForm: React.FC<{ onFinish?: (values: RoomData) => void }> = (
         description: values.description,
         priceMonth: values.priceMonth,
         priceDeposit: values.priceDeposit,
-        area: values.area,
+        // area: values.area,
+        roomLength: values.roomLength,
+        roomWidth: values.roomWidth,
+        elecPrice: values.elecPrice,
+        waterPrice: values.waterPrice,
+        maxPeople: values.maxPeople,
         postStartDate: new Date().toISOString(), // Sử dụng thời gian hiện tại đầy đủ
         postEndDate: new Date(endDate + "T23:59:59").toISOString(), // Kết thúc vào cuối ngày được chọn
         typepostId: selectedTypePostId,
@@ -233,327 +274,514 @@ const AddRoomForm: React.FC<{ onFinish?: (values: RoomData) => void }> = (
   return (
     <>
       {contextHolder}
+      {!isHaveBank && (
+        <div className="flex-1 flex justify-center items-center bg-gradient-to-r from-amber-400 to-yellow-500 rounded-lg shadow-md p-6">
+          <div className="text-center">
+            <div className="text-white font-semibold text-xl mb-2">
+              Bank Account Required
+            </div>
+            <p className="text-amber-50 text-sm">
+              Please link a bank account in profile to add your room!!!
+            </p>
+          </div>
+        </div>
+      )}
 
       <div className="w-full min-h-screen flex items-center justify-center bg-gray-50 dark:bg-[#171f2f] dark:text-white p-0 m-0">
         <Form
           form={form}
           layout="vertical"
-          initialValues={{ area: 20, price: 1000000 }}
+          initialValues={{
+            /* area: 20, */
+            roomLength: 4,
+            roomWidth: 5,
+            elecPrice: 3000,
+            waterPrice: 15000,
+            maxPeople: 2,
+            priceMonth: 1000000,
+          }}
           className="w-full h-full bg-white dark:bg-[#232b3b] rounded-none shadow-none p-0"
         >
           <div className="flex flex-col md:flex-row gap-6 w-full h-full">
-            {/* Vùng thông tin phòng */}
-            <div className="flex-1 bg-white dark:bg-[#232b3b] rounded-none p-4 shadow-none flex flex-col gap-2">
-              <h3 className="font-semibold text-base mb-2">Room Infomation</h3>
-              <Form.Item label="Room Images" required>
-                <Upload
-                  listType="picture-card"
-                  fileList={fileList}
-                  onChange={({ fileList: newList }) => {
-                    if (newList.length <= 8) {
-                      setFileList(newList);
-                    }
-                  }}
-                  beforeUpload={() => false}
-                  multiple
-                >
-                  {fileList.length >= 8 ? null : (
-                    <div>
-                      <PlusOutlined />
-                      <div style={{ marginTop: 8 }}>Upload</div>
-                    </div>
-                  )}
-                </Upload>
-              </Form.Item>
-              <Form.Item
-                label="Room Name"
-                name="name"
-                rules={[{ required: true, message: "Please enter room name" }]}
-              >
-                <Input placeholder="Enter room name" />
-              </Form.Item>
-              <div className="flex gap-2 justify-between">
+            {/* Left column: group related fields into stacked cards */}
+            <div className="flex-1 flex flex-col gap-4 m-2">
+              {/* Card: Images & Basic Info */}
+              <div className="bg-white dark:bg-[#232b3b] border border-gray-200 dark:border-gray-700 rounded-lg p-4 shadow-sm">
+                <div className="mb-3">
+                  <h4 className="font-semibold text-base bg-gray-50 dark:bg-[#1b2636] p-2 rounded-md">
+                    Room Information
+                  </h4>
+                </div>
+                <div className="flex flex-col gap-3">
+                  <Form.Item label="Room Images" required>
+                    <Upload
+                      listType="picture-card"
+                      fileList={fileList}
+                      onChange={({ fileList: newList }) => {
+                        if (newList.length <= 8) {
+                          setFileList(newList);
+                        }
+                      }}
+                      beforeUpload={() => false}
+                      multiple
+                    >
+                      {fileList.length >= 8 ? null : (
+                        <div>
+                          <PlusOutlined />
+                          <div style={{ marginTop: 8 }}>Upload</div>
+                        </div>
+                      )}
+                    </Upload>
+                  </Form.Item>
+
+                  <Form.Item
+                    label="Room Name"
+                    name="name"
+                    rules={[
+                      { required: true, message: "Please enter room name" },
+                    ]}
+                  >
+                    <Input placeholder="Enter room name" />
+                  </Form.Item>
+                </div>
+              </div>
+
+              {/* Card: Location */}
+              <div className="bg-white dark:bg-[#232b3b] border border-gray-200 dark:border-gray-700 rounded-lg p-4 shadow-sm">
+                <div className="mb-3">
+                  <h4 className="font-semibold text-base bg-gray-50 dark:bg-[#1b2636] p-2 rounded-md">
+                    Location
+                  </h4>
+                </div>
+                <div className="flex gap-2">
+                  <Form.Item
+                    label="Province/City"
+                    name="province"
+                    rules={[
+                      { required: true, message: "Select province/city" },
+                    ]}
+                    className="flex-1"
+                  >
+                    <Select
+                      showSearch
+                      placeholder="Select province/city"
+                      options={provinces}
+                      optionFilterProp="label"
+                      filterOption={(input, option) =>
+                        (option?.label ?? "")
+                          .toLowerCase()
+                          .includes(input.toLowerCase())
+                      }
+                      onChange={handleProvinceChange}
+                    />
+                  </Form.Item>
+
+                  <Form.Item
+                    label="District"
+                    name="district"
+                    rules={[{ required: true, message: "Select district" }]}
+                    className="flex-1"
+                  >
+                    <Select
+                      placeholder="Select district"
+                      options={districts}
+                      disabled={!selectedProvince}
+                      loading={loadingDistricts}
+                      showSearch
+                      optionFilterProp="label"
+                      filterOption={(input, option) =>
+                        (option?.label ?? "")
+                          .toLowerCase()
+                          .includes(input.toLowerCase())
+                      }
+                      onChange={handleDistrictChange}
+                    />
+                  </Form.Item>
+
+                  <Form.Item
+                    label="Ward"
+                    name="ward"
+                    rules={[{ required: true, message: "Select ward" }]}
+                    className="flex-1"
+                  >
+                    <Select
+                      placeholder="Select ward"
+                      options={wards}
+                      disabled={!selectedDistrict}
+                      loading={loadingWards}
+                      showSearch
+                      optionFilterProp="label"
+                      filterOption={(input, option) =>
+                        (option?.label ?? "")
+                          .toLowerCase()
+                          .includes(input.toLowerCase())
+                      }
+                    />
+                  </Form.Item>
+                </div>
+
                 <Form.Item
-                  label="Province/City"
-                  name="province"
-                  rules={[{ required: true, message: "Select province/city" }]}
+                  label="Address"
+                  name="address"
+                  rules={[{ required: true, message: "Enter address" }]}
                 >
-                  <Select
-                    showSearch
-                    placeholder="Select province/city"
-                    options={provinces}
-                    optionFilterProp="label"
-                    filterOption={(input, option) =>
-                      (option?.label ?? "")
-                        .toLowerCase()
-                        .includes(input.toLowerCase())
-                    }
-                    onChange={handleProvinceChange}
-                  />
-                </Form.Item>
-                <Form.Item
-                  label="District"
-                  name="district"
-                  rules={[{ required: true, message: "Select district" }]}
-                >
-                  <Select
-                    placeholder="Select district"
-                    options={districts}
-                    disabled={!selectedProvince}
-                    loading={loadingDistricts}
-                    showSearch
-                    optionFilterProp="label"
-                    filterOption={(input, option) =>
-                      (option?.label ?? "")
-                        .toLowerCase()
-                        .includes(input.toLowerCase())
-                    }
-                    onChange={handleDistrictChange}
-                  />
-                </Form.Item>
-                <Form.Item
-                  label="Ward"
-                  name="ward"
-                  rules={[{ required: true, message: "Select ward" }]}
-                >
-                  <Select
-                    placeholder="Select ward"
-                    options={wards}
-                    disabled={!selectedDistrict}
-                    loading={loadingWards}
-                    showSearch
-                    optionFilterProp="label"
-                    filterOption={(input, option) =>
-                      (option?.label ?? "")
-                        .toLowerCase()
-                        .includes(input.toLowerCase())
-                    }
-                  />
+                  <Input placeholder="Enter address" />
                 </Form.Item>
               </div>
-              <Form.Item
-                label="Address"
-                name="address"
-                rules={[{ required: true, message: "Enter address" }]}
-              >
-                <Input placeholder="Enter address" />
-              </Form.Item>
 
-              <div className="flex gap-2">
-                <Form.Item
-                  label="Area (m²)"
-                  name="area"
-                  className="flex-1"
-                  rules={[
-                    {
-                      required: true,
-                      type: "number",
-                      min: 1,
-                      message: "Enter area",
-                    },
-                  ]}
-                >
-                  <InputNumber min={1} max={200} style={{ width: "100%" }} />
-                </Form.Item>
-                <Form.Item
-                  label="Monthly Price"
-                  name="priceMonth"
-                  className="flex-1"
-                  rules={[
-                    {
-                      required: true,
-                      type: "number",
-                      min: 1000,
-                      message: "Enter monthly price",
-                    },
-                  ]}
-                >
-                  <InputNumber
-                    min={1000}
-                    step={100000}
-                    style={{ width: "100%" }}
-                    formatter={(value) =>
-                      `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-                    }
-                    addonAfter="₫"
-                  />
-                </Form.Item>
-                <Form.Item
-                  label="Deposit Price"
-                  name="priceDeposit"
-                  className="flex-1"
-                  rules={[
-                    {
-                      required: true,
-                      type: "number",
-                      min: 1000,
-                      message: "Enter deposit price",
-                    },
-                  ]}
-                >
-                  <InputNumber
-                    min={1000}
-                    step={10000}
-                    style={{ width: "100%" }}
-                    formatter={(value) =>
-                      `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-                    }
-                    addonAfter="₫"
-                  />
-                </Form.Item>
+              {/* Card: Room Details & Pricing */}
+              <div className="bg-white dark:bg-[#232b3b] border border-gray-200 dark:border-gray-700 rounded-lg p-4 shadow-sm">
+                <div className="mb-3">
+                  <h4 className="font-semibold text-base bg-gray-50 dark:bg-[#1b2636] p-2 rounded-md">
+                    Room Details & Pricing
+                  </h4>
+                </div>
+                <div className="flex flex-col gap-3">
+                  <div className="flex gap-2">
+                    {/* Commented out old area field as requested (do not delete) */}
+                    {/**
+                     * <Form.Item
+                     *   label="Area (m²)"
+                     *   name="area"
+                     *   className="flex-1"
+                     *   rules={[{ required: true, type: 'number', min: 1, message: 'Enter area' }]}
+                     * >
+                     *   <InputNumber min={1} max={200} style={{ width: '100%' }} />
+                     * </Form.Item>
+                     */}
+
+                    <Form.Item
+                      label="Room Length (m)"
+                      name="roomLength"
+                      normalize={(value) => {
+                        const n =
+                          typeof value === "string" ? parseFloat(value) : value;
+                        return Number.isFinite(n) ? n : undefined;
+                      }}
+                      className="flex-1"
+                      rules={[
+                        {
+                          required: true,
+                          type: "number",
+                          min: 0.1,
+                          message: "Enter room length",
+                        },
+                      ]}
+                    >
+                      <AutoComplete
+                        options={["2", "2.5", "3", "3.5", "4", "4.5", "5"].map(
+                          (v) => ({ value: v })
+                        )}
+                        placeholder="Type or choose preset"
+                        style={{ width: "100%" }}
+                        onSelect={(value) => {
+                          const n = parseFloat(String(value));
+                          if (!isNaN(n)) form.setFieldsValue({ roomLength: n });
+                        }}
+                        onChange={(value) => {
+                          const n = parseFloat(String(value));
+                          if (!isNaN(n)) form.setFieldsValue({ roomLength: n });
+                          else form.setFieldsValue({ roomLength: undefined });
+                        }}
+                        filterOption={(inputValue, option) =>
+                          String(option?.value ?? "").includes(inputValue)
+                        }
+                      />
+                    </Form.Item>
+
+                    <Form.Item
+                      label="Room Width (m)"
+                      name="roomWidth"
+                      normalize={(value) => {
+                        const n =
+                          typeof value === "string" ? parseFloat(value) : value;
+                        return Number.isFinite(n) ? n : undefined;
+                      }}
+                      className="flex-1"
+                      rules={[
+                        {
+                          required: true,
+                          type: "number",
+                          min: 0.1,
+                          message: "Enter room width",
+                        },
+                      ]}
+                    >
+                      <AutoComplete
+                        options={["2", "2.5", "3", "3.5", "4", "4.5", "5"].map(
+                          (v) => ({ value: v })
+                        )}
+                        placeholder="Type or choose preset"
+                        style={{ width: "100%" }}
+                        onSelect={(value) => {
+                          const n = parseFloat(String(value));
+                          if (!isNaN(n)) form.setFieldsValue({ roomWidth: n });
+                        }}
+                        onChange={(value) => {
+                          const n = parseFloat(String(value));
+                          if (!isNaN(n)) form.setFieldsValue({ roomWidth: n });
+                          else form.setFieldsValue({ roomWidth: undefined });
+                        }}
+                        filterOption={(inputValue, option) =>
+                          String(option?.value ?? "").includes(inputValue)
+                        }
+                      />
+                    </Form.Item>
+
+                    <Form.Item
+                      label="Max People"
+                      name="maxPeople"
+                      className="flex-1"
+                      rules={[{ required: true, message: "Select max people" }]}
+                    >
+                      <Select
+                        placeholder="Select max people"
+                        options={Array.from({ length: 8 }, (_, i) => ({
+                          label: `${i + 1}`,
+                          value: i + 1,
+                        }))}
+                        style={{ width: "100%" }}
+                      />
+                    </Form.Item>
+                  </div>
+
+                  <div className="flex gap-2">
+                    <Form.Item
+                      label="Electricity Price (₫/kW)"
+                      name="elecPrice"
+                      className="flex-1"
+                      rules={[
+                        {
+                          required: true,
+                          type: "number",
+                          min: 0,
+                          message: "Enter electricity price",
+                        },
+                      ]}
+                    >
+                      <InputNumber
+                        min={0}
+                        step={500}
+                        style={{ width: "100%" }}
+                        formatter={(value) =>
+                          `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                        }
+                        addonAfter="₫/kW"
+                      />
+                    </Form.Item>
+
+                    <Form.Item
+                      label="Water Price (₫/m³)"
+                      name="waterPrice"
+                      className="flex-1"
+                      rules={[
+                        {
+                          required: true,
+                          type: "number",
+                          min: 0,
+                          message: "Enter water price",
+                        },
+                      ]}
+                    >
+                      <InputNumber
+                        min={0}
+                        step={500}
+                        style={{ width: "100%" }}
+                        formatter={(value) =>
+                          `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                        }
+                        addonAfter="₫/m³"
+                      />
+                    </Form.Item>
+                  </div>
+
+                  <div className="flex gap-2">
+                    <Form.Item
+                      label="Monthly Price"
+                      name="priceMonth"
+                      className="flex-1"
+                      rules={[
+                        {
+                          required: true,
+                          type: "number",
+                          min: 1000,
+                          message: "Enter monthly price",
+                        },
+                      ]}
+                    >
+                      <InputNumber
+                        min={1000}
+                        step={100000}
+                        style={{ width: "100%" }}
+                        formatter={(value) =>
+                          `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                        }
+                        addonAfter="₫"
+                      />
+                    </Form.Item>
+
+                    <Form.Item
+                      label="Deposit Price"
+                      name="priceDeposit"
+                      className="flex-1"
+                      rules={[
+                        {
+                          required: true,
+                          type: "number",
+                          min: 1000,
+                          message: "Enter deposit price",
+                        },
+                      ]}
+                    >
+                      <InputNumber
+                        min={1000}
+                        step={10000}
+                        style={{ width: "100%" }}
+                        formatter={(value) =>
+                          `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                        }
+                        addonAfter="₫"
+                      />
+                    </Form.Item>
+                  </div>
+                </div>
               </div>
             </div>
-            {/* Vùng thông tin liên hệ */}
-            <div className="flex-1 bg-white dark:bg-[#232b3b] rounded-none p-4 shadow-none flex flex-col gap-2">
-              {/* <h3 className="font-semibold text-base mb-2">
-              Thông tin liên hệ người đăng
-            </h3>
-            <Form.Item
-              label="Tên chủ phòng"
-              name="landlordName"
-              rules={[{ required: true, message: "Nhập tên chủ phòng" }]}
-            >
-              <Input placeholder="Nhập tên chủ phòng" />
-            </Form.Item>
-            <Form.Item
-              label="Số điện thoại"
-              name="phoneNumber"
-              rules={[
-                {
-                  required: true,
-                  pattern: /^\d{9,11}$/,
-                  message: "Số điện thoại không hợp lệ",
-                },
-              ]}
-            >
-              <Input placeholder="Nhập số điện thoại" maxLength={11} />
-            </Form.Item> */}
 
-              {/* Phần tiện nghi (convenient) */}
-              <h3 className="font-semibold text-base mb-2">Convenient Part</h3>
-              <Form.Item
-                label="Convenients"
-                name="convenients"
-                rules={[{ required: true, message: "Select convenients" }]}
-              >
-                <Select
-                  mode="multiple"
-                  placeholder="Select convenients"
-                  options={convenients.map((c) => ({
-                    label: c.name,
-                    value: c.id,
-                  }))}
-                  style={{ width: "100%" }}
-                />
-              </Form.Item>
-
-              <h3 className="font-semibold text-base mb-2">
-                Post Price Information
-              </h3>
-              <Form.Item
-                label="Post Type"
-                name="typepostId"
-                rules={[{ required: true, message: "Select post type" }]}
-              >
-                <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
-                  <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                    <thead className="bg-gray-100 dark:bg-[#232b3b]">
-                      <tr>
-                        <th className="px-4 py-2 text-left font-semibold">
-                          Post Type
-                        </th>
-                        <th className="px-4 py-2 text-left font-semibold">
-                          Price/Day (₫)
-                        </th>
-                        <th className="px-4 py-2 text-left font-semibold">
-                          Description
-                        </th>
-                        <th className="px-4 py-2 text-center font-semibold">
-                          Select
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white dark:bg-[#232b3b]">
-                      {typeposts.map((typepost) => (
-                        <tr
-                          key={typepost.id}
-                          className="hover:bg-gray-50 dark:hover:bg-[#1a2233] transition"
-                        >
-                          <td className="px-4 py-2 border-b border-gray-200 dark:border-gray-700">
-                            {typepost.name}
-                          </td>
-                          <td className="px-4 py-2 border-b border-gray-200 dark:border-gray-700">
-                            {typepost.pricePerDay.toLocaleString("vi-VN")}
-                          </td>
-                          <td className="px-4 py-2 border-b border-gray-200 dark:border-gray-700">
-                            {typepost.description || "Không có mô tả"}
-                          </td>
-                          <td className="px-4 py-2 border-b border-gray-200 dark:border-gray-700 text-center">
-                            <input
-                              type="radio"
-                              name="typepostId"
-                              value={typepost.id}
-                              checked={selectedTypePostId === typepost.id}
-                              onChange={() =>
-                                setSelectedTypePostId(typepost.id)
-                              }
-                              className="accent-blue-600 scale-125 cursor-pointer"
-                              style={{ margin: 0 }}
-                            />
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+            {/* Right column: Convenients and Post Info as separate cards */}
+            <div className="flex-1 flex flex-col gap-4 m-2">
+              <div className="bg-white dark:bg-[#232b3b] border border-gray-200 dark:border-gray-700 rounded-lg p-4 shadow-sm">
+                <div className="mb-3">
+                  <h4 className="font-semibold text-base bg-gray-50 dark:bg-[#1b2636] p-2 rounded-md">
+                    Convenient Part
+                  </h4>
                 </div>
-              </Form.Item>
-              {/* Start Date: always today, disabled input */}
-              <Form.Item
-                label="Start Date"
-                name="startDate"
-                initialValue={startDate}
-                rules={[]}
-              >
-                <Input
-                  type="date"
-                  value={startDate}
-                  disabled
-                  className="w-full"
-                />
-              </Form.Item>
-              <Form.Item
-                label="End Date"
-                name="endDate"
-                rules={[
-                  {
-                    required: true,
-                    message: "Select end date",
-                  },
-                ]}
-              >
-                <Input
-                  type="date"
-                  value={endDate}
-                  min={(() => {
-                    const d = new Date();
-                    d.setDate(d.getDate() + 1);
-                    return d.toISOString().split("T")[0];
-                  })()}
-                  onChange={(e) => setEndDate(e.target.value)}
-                  className="w-full"
-                />
-              </Form.Item>
-              {/* Hiển thị tổng giá */}
-              <div className="mb-2">
-                <label className="font-semibold">Total Post Price:</label>
-                <div className="text-lg text-blue-600 font-bold">
-                  {totalPrice.toLocaleString("vi-VN")} ₫
+                <Form.Item
+                  label="Convenients"
+                  name="convenients"
+                  rules={[{ required: true, message: "Select convenients" }]}
+                >
+                  <Select
+                    mode="multiple"
+                    placeholder="Select convenients"
+                    options={convenients.map((c) => ({
+                      label: c.name,
+                      value: c.id,
+                    }))}
+                    style={{ width: "100%" }}
+                  />
+                </Form.Item>
+              </div>
+
+              <div className="bg-white dark:bg-[#232b3b] border border-gray-200 dark:border-gray-700 rounded-lg p-4 shadow-sm">
+                <div className="mb-3">
+                  <h4 className="font-semibold text-base bg-gray-50 dark:bg-[#1b2636] p-2 rounded-md">
+                    Post Price Information
+                  </h4>
+                </div>
+
+                <Form.Item
+                  label="Post Type"
+                  name="typepostId"
+                  rules={[{ required: true, message: "Select post type" }]}
+                >
+                  <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
+                    <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                      <thead className="bg-gray-100 dark:bg-[#232b3b]">
+                        <tr>
+                          <th className="px-4 py-2 text-left font-semibold">
+                            Post Type
+                          </th>
+                          <th className="px-4 py-2 text-left font-semibold">
+                            Price/Day (₫)
+                          </th>
+                          <th className="px-4 py-2 text-left font-semibold">
+                            Description
+                          </th>
+                          <th className="px-4 py-2 text-center font-semibold">
+                            Select
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white dark:bg-[#232b3b]">
+                        {typeposts.map((typepost) => (
+                          <tr
+                            key={typepost.id}
+                            className="hover:bg-gray-50 dark:hover:bg-[#1a2233] transition"
+                          >
+                            <td className="px-4 py-2 border-b border-gray-200 dark:border-gray-700">
+                              {typepost.name}
+                            </td>
+                            <td className="px-4 py-2 border-b border-gray-200 dark:border-gray-700">
+                              {typepost.pricePerDay.toLocaleString("vi-VN")}
+                            </td>
+                            <td className="px-4 py-2 border-b border-gray-200 dark:border-gray-700">
+                              {typepost.description || "Không có mô tả"}
+                            </td>
+                            <td className="px-4 py-2 border-b border-gray-200 dark:border-gray-700 text-center">
+                              <input
+                                type="radio"
+                                name="typepostId"
+                                value={typepost.id}
+                                checked={selectedTypePostId === typepost.id}
+                                onChange={() =>
+                                  setSelectedTypePostId(typepost.id)
+                                }
+                                className="accent-blue-600 scale-125 cursor-pointer"
+                                style={{ margin: 0 }}
+                              />
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </Form.Item>
+
+                <Form.Item
+                  label="Start Date"
+                  name="startDate"
+                  initialValue={startDate}
+                  rules={[]}
+                >
+                  <Input
+                    type="date"
+                    value={startDate}
+                    disabled
+                    className="w-full"
+                  />
+                </Form.Item>
+
+                <Form.Item
+                  label="End Date"
+                  name="endDate"
+                  rules={[{ required: true, message: "Select end date" }]}
+                >
+                  <Input
+                    type="date"
+                    value={endDate}
+                    min={(() => {
+                      const d = new Date();
+                      d.setDate(d.getDate() + 1);
+                      return d.toISOString().split("T")[0];
+                    })()}
+                    onChange={(e) => setEndDate(e.target.value)}
+                    className="w-full"
+                  />
+                </Form.Item>
+
+                <div className="mb-2">
+                  <label className="font-semibold">Total Post Price:</label>
+                  <div className="text-lg text-blue-600 font-bold">
+                    {totalPrice.toLocaleString("vi-VN")} ₫
+                  </div>
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="flex-1 bg-white dark:bg-[#232b3b] rounded-none p-4 shadow-none flex flex-col gap-2">
+          {/* Full width: Description + Submit */}
+          <div className=" my-4 mx-2 bg-white dark:bg-[#232b3b] border border-gray-200 dark:border-gray-700 rounded-lg p-4 shadow-sm">
             <Form.Item
               label="Description"
               name="description"

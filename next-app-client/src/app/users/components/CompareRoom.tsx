@@ -1,17 +1,13 @@
 "use client";
 
-import { useCompareStore } from "@/stores/CompareStore";
 import { URL_IMAGE } from "@/services/Constant";
-import {
-  TableOutlined,
-  CloseOutlined,
-  DeleteOutlined,
-} from "@ant-design/icons";
+import { useCompareStore } from "@/stores/CompareStore";
+import { CloseOutlined } from "@ant-design/icons";
 import { Avatar, Badge, Button, Drawer, List, message } from "antd";
-import styles from "./CompareRoom.module.css";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { FaBalanceScale, FaPlus, FaTrash, FaEye } from "react-icons/fa";
+import { FaBalanceScale, FaEye, FaPlus, FaTrash } from "react-icons/fa";
+import styles from "./CompareRoom.module.css";
 
 export default function CompareRoom() {
   const { items, clearItems, removeItem } = useCompareStore((state) => state);
@@ -150,7 +146,7 @@ export default function CompareRoom() {
               dataSource={items.slice(0, 2)}
               renderItem={(item, index) => (
                 <div
-                  className={`${styles.animateSlideInLeft} bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100 hover:border-blue-200`}
+                  className={`${styles.animateSlideInLeft} bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100 hover:border-blue-200 my-4`}
                   style={{ animationDelay: `${index * 0.1}s` }}
                 >
                   <List.Item className="p-4 border-0">

@@ -1,39 +1,39 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import { Avatar, Dropdown } from "antd";
+import { signOut, useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import React, { useEffect, useState } from "react";
 import { AiOutlineUserAdd } from "react-icons/ai";
 import { FaRegEdit } from "react-icons/fa";
-import { IoClose, IoLogInOutline } from "react-icons/io5";
-import { RxHamburgerMenu } from "react-icons/rx";
-import { signOut, useSession } from "next-auth/react";
-import { Avatar, Dropdown } from "antd";
-import { IoIosLogOut } from "react-icons/io";
 import {
   HiOutlineHome,
   HiOutlineOfficeBuilding,
-  HiOutlineUsers,
   HiOutlinePhone,
+  HiOutlineUsers,
 } from "react-icons/hi";
+import { IoIosLogOut } from "react-icons/io";
+import { IoClose, IoLogInOutline } from "react-icons/io5";
+import { RxHamburgerMenu } from "react-icons/rx";
 
 export default function HeaderUserDashboard() {
   const { data: session } = useSession();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(false);
+  // const [isScrolled, setIsScrolled] = useState(false);
   const [activeItem, setActiveItem] = useState("");
   const router = useRouter();
 
   // Handle scroll effect with enhanced animation
-  useEffect(() => {
-    const handleScroll = () => {
-      const scrollY = window.scrollY;
-      setIsScrolled(scrollY > 20);
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  // useEffect(() => {
+  //   const handleScroll = () => {
+  //     // const scrollY = window.scrollY;
+  //     // setIsScrolled(scrollY > 20);
+  //   };
+  //   window.addEventListener("scroll", handleScroll);
+  //   return () => window.removeEventListener("scroll", handleScroll);
+  // }, []);
 
   // Close mobile menu on resize
   useEffect(() => {
@@ -121,13 +121,7 @@ export default function HeaderUserDashboard() {
 
   return (
     <>
-      <header
-        className={`fixed top-0 left-0 w-full z-50 transition-all duration-500 ease-in-out ${
-          isScrolled
-            ? "h-[65px] bg-white/90 backdrop-blur-xl shadow-xl border-b border-blue-200/30"
-            : "h-[85px] bg-white/95 shadow-lg border-b border-gray-200/50"
-        }`}
-      >
+      <header className="fixed top-0 left-0 w-full z-50 h-[85px] bg-white/95 shadow-lg border-b border-gray-200/50">
         {/* Animated background gradient */}
         <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 via-purple-500/5 to-pink-500/5 opacity-0 hover:opacity-100 transition-opacity duration-700"></div>
 
@@ -138,7 +132,7 @@ export default function HeaderUserDashboard() {
               <div className="absolute inset-0 bg-gradient-to-br from-blue-400 via-purple-500 to-pink-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl"></div>
               <Image
                 src="/images/logo-ant.png"
-                alt="JustHome"
+                alt="Ants"
                 width={48}
                 height={48}
                 priority
@@ -147,7 +141,7 @@ export default function HeaderUserDashboard() {
             </div>
             <div className="hidden sm:block">
               <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent transition-all duration-300 group-hover:scale-105 group-hover:tracking-wide">
-                JustHome
+                Ants
               </h1>
               <div className="h-0.5 w-0 bg-gradient-to-r from-blue-600 to-purple-600 group-hover:w-full transition-all duration-500"></div>
             </div>
@@ -375,17 +369,13 @@ export default function HeaderUserDashboard() {
         <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-gray-50/80 to-transparent">
           <div className="text-center text-sm text-gray-500">
             <div className="w-full h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent mb-3"></div>
-            JustHome © 2024
+            Ants © 2025
           </div>
         </div>
       </div>
 
       {/* Spacer with smooth transition */}
-      <div
-        className={`${
-          isScrolled ? "h-[65px]" : "h-[85px]"
-        } transition-all duration-500 ease-in-out`}
-      ></div>
+      <div className="h-[85px]"></div>
 
       {/* Custom styles */}
       <style jsx>{`

@@ -17,7 +17,12 @@ export type RoomData = {
   electricityRate?: number;
   waterRate?: number;
   address: string;
-  area: number;
+  area?: number;
+  roomLength?: number;
+  roomWidth?: number;
+  elecPrice?: number;
+  waterPrice?: number;
+  maxPeople?: number;
   price: number;
   postStartDate: string;
   postEndDate: string;
@@ -36,3 +41,33 @@ export type LandLordInfo = {
   avatar?: string; // URL to the avatar image
   rooms?: RoomData[]; // Optional, if you want to include rooms managed by the landlord
 };
+export type RatingResponseDto = {
+  id: string;
+  userId: string;
+  userName: string;
+  landLordUserName: string; // Name of the landlord who replied
+  avatar: string;
+  landLordAvatar: string; // Avatar of the landlord who replied
+  roomId: string;
+  roomTitle: string;
+  score: number;
+  comment?: string;
+  dateRated: string;
+  reply?: string | null; // Reply from the landlord
+};
+
+export type RatingCreateDto = {
+  userId: string;
+  score: number;
+  comment?: string;
+};
+
+export type RatingReplyDto = {
+  reply: string;
+};
+
+export enum FeedbackAccess {
+  CAN_RATE = "CAN_RATE",
+  ALREADY_RATED = "ALREADY_RATED",
+  NOT_USED = "NOT_USED",
+}

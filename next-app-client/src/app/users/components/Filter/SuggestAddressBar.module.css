@@ -1,0 +1,73 @@
+.provinceSelect .ant-select-selector,
+.districtSelect .ant-select-selector,
+.wardSelect .ant-select-selector {
+  height: 36px !important;
+  border: 1px solid #d1d5db !important;
+  border-radius: 8px !important;
+  padding: 0 12px !important;
+  font-weight: 500 !important;
+  font-size: 13px !important;
+  transition: all 0.2s ease !important;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+}
+
+.provinceSelect .ant-select-selector:hover,
+.districtSelect .ant-select-selector:hover,
+.wardSelect .ant-select-selector:hover {
+  border-color: #93c5fd !important;
+  box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1) !important;
+}
+
+.provinceSelect.ant-select-focused .ant-select-selector,
+.districtSelect.ant-select-focused .ant-select-selector,
+.wardSelect.ant-select-focused .ant-select-selector {
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1) !important;
+}
+
+.provinceSelect .ant-select-selection-placeholder,
+.districtSelect .ant-select-selection-placeholder,
+.wardSelect .ant-select-selection-placeholder {
+  color: #9ca3af !important;
+  font-weight: 500 !important;
+}
+
+:global(.ant-select-dropdown) {
+  border-radius: 12px !important;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+}
+
+:global(.ant-select-item) {
+  border-radius: 8px !important;
+  margin: 2px 4px !important;
+  font-weight: 500 !important;
+}
+
+:global(.ant-select-item-option-selected) {
+  background-color: #eef2ff !important;
+  color: #4f46e5 !important;
+}
+
+@keyframes slideInFromTop2 {
+  from {
+    transform: translateY(-8px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animateIn {
+  animation-fill-mode: both;
+}
+
+.slideInFromTop2 {
+  animation-name: slideInFromTop2;
+}
+
+.duration200 {
+  animation-duration: 200ms;
+}

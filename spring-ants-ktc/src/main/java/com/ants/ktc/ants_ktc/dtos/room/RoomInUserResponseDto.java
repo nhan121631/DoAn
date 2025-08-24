@@ -24,6 +24,7 @@ public class RoomInUserResponseDto {
     private String description;
     private Double priceMonth;
     private Double area;
+    private Integer maxPeople;
     private Date postStartDate;
     private AddressResponseDto address;
     private List<ImageResponseDto> images;

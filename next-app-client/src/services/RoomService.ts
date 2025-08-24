@@ -163,6 +163,99 @@ export async function getRoomNormalUser(
   }
 }
 
+// New functions - get rooms with location coordinates (for users not logged in)
+export async function getRoomVipWithLocation(
+  page: number,
+  size: number,
+  latitude?: number,
+  longitude?: number
+) {
+  try {
+    let url = `${API_URL}/rooms/allroom-vip-location?page=${page}&size=${size}`;
+    if (latitude !== undefined && longitude !== undefined) {
+      url += `&lat=${latitude}&lng=${longitude}`;
+    }
+
+    console.log("🌍 VIP API Call:", url);
+    const response = await fetch(url);
+    if (!response.ok) {
+      const data = await response.json();
+      throw new Error(
+        data.message || "Failed to fetch VIP rooms with location"
+      );
+    }
+    const result = await response.json();
+    console.log("🏠 VIP API Response:", result);
+    return result;
+  } catch (error) {
+    console.error("Error fetching VIP rooms with location:", error);
+    return null;
+  }
+}
+
+export async function getRoomNormalWithLocation(
+  page: number,
+  size: number,
+  latitude?: number,
+  longitude?: number
+) {
+  try {
+    let url = `${API_URL}/rooms/allroom-normal-location?page=${page}&size=${size}`;
+    if (latitude !== undefined && longitude !== undefined) {
+      url += `&lat=${latitude}&lng=${longitude}`;
+    }
+
+    console.log("🌍 Normal API Call:", url);
+    const response = await fetch(url);
+    if (!response.ok) {
+      const data = await response.json();
+      throw new Error(
+        data.message || "Failed to fetch normal rooms with location"
+      );
+    }
+    const result = await response.json();
+    console.log("🏠 Normal API Response:", result);
+    return result;
+  } catch (error) {
+    console.error("Error fetching normal rooms with location:", error);
+    return null;
+  }
+}
+
+// Smart function - automatically chooses the right API based on user session and location
+export async function getRoomsSmartLocation(
+  page: number,
+  size: number,
+  roomType: "VIP" | "NORMAL" = "VIP",
+  userId?: string,
+  latitude?: number,
+  longitude?: number
+) {
+  try {
+    // If user is logged in, use userId-based API
+    if (userId) {
+      return roomType === "VIP"
+        ? await getRoomVipUser(page, size, userId)
+        : await getRoomNormalUser(page, size, userId);
+    }
+
+    // If user not logged in but has location, use location-based API
+    if (latitude !== undefined && longitude !== undefined) {
+      return roomType === "VIP"
+        ? await getRoomVipWithLocation(page, size, latitude, longitude)
+        : await getRoomNormalWithLocation(page, size, latitude, longitude);
+    }
+
+    // Fallback to basic API without any location sorting
+    return roomType === "VIP"
+      ? await getRoomVipUser(page, size)
+      : await getRoomNormalUser(page, size);
+  } catch (error) {
+    console.error("Error in smart room fetching:", error);
+    return null;
+  }
+}
+
 //------filter rooms------//
 
 export async function filterRooms(

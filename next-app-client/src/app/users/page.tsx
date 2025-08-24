@@ -23,7 +23,12 @@ export default async function UsersPage({
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-white">
-      <RentalRooms searchParams={normalizedParams as RentalRoomsSearchParams} />
+      <div className="w-full max-w-7xl mx-auto px-4">
+        {/* <SuggestAddressBar showSaveButton={true} /> */}
+        <RentalRooms
+          searchParams={normalizedParams as RentalRoomsSearchParams}
+        />
+      </div>
       <BackToTop />
       <CompareRoom />
       <Chatbot />

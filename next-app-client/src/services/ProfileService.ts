@@ -2,6 +2,19 @@
 import { API_URL } from "./Constant";
 import { UserSearchPreferences } from "../types/types";
 
+export async function getFullName(id: string) {
+  const response = await fetch(`${API_URL}/profile/getname/${id}`, {
+    method: "GET",
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch full name");
+  }
+
+  const data = await response.json();
+  return data;
+};
+
 export async function updateProfile(avatar: File | null, profile: string) {
   const formData = new FormData();
   if (avatar) {
@@ -114,6 +127,34 @@ export async function updatePreferences(
   return response.json();
 }
 
+export async function getUserPreferences() {
+  
+  const url = `/api/profile/matching-address`;
+
+  const response = await fetch(url, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    }
+  });
+
+  if (!response.ok) {
+    let errorMsg = "Failed to fetch user preferences";
+    try {
+      const error = await response.json();
+      errorMsg = Array.isArray(error.message)
+        ? error.message[0]
+        : error.message || error.error || errorMsg;
+      console.error("API error:", error);
+    } catch (e) {
+      console.error("Error parsing response:", e);
+    }
+    throw new Error(errorMsg);
+  }
+
+  return response.json();
+}
+
 export async function updateUserSearchPreferences(
   userId: string,
   preferences: UserSearchPreferences,
@@ -153,5 +194,31 @@ export async function updateUserSearchPreferences(
     throw new Error(errorMsg);
   }
 
+  return response.json();
+}
+
+//------is have a bank ------//
+
+export async function isHaveBankAccount() {
+  const response = await fetch(`/api/profile/ishavebank`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    let errorMsg = "Failed to check bank account existence";
+    try {
+      const error = await response.json();
+      errorMsg = Array.isArray(error.message)
+        ? error.message[0]
+        : error.message || error.error || errorMsg;
+      console.error("API error:", error);
+    } catch (e) {
+      console.error("Error parsing response:", e);
+    }
+    throw new Error(errorMsg);
+  }
   return response.json();
 }

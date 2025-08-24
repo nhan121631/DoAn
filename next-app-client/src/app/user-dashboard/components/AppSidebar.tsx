@@ -35,7 +35,7 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
     "/user-dashboard/change-password": "5",
   };
 
-  const selectedKey = pathToKey[pathname] || "1";
+  const selectedKey = pathToKey[pathname || ""] || "1";
 
   if (!mounted) {
     return (

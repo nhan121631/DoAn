@@ -1,12 +1,17 @@
 "use client";
 
-import { motion } from "framer-motion";
 import { URL_IMAGE, API_URL } from "@/services/Constant";
-import { RoomInUser } from "@/types/types";
+import type { RoomInUser } from "@/types/types";
 import Image from "next/image";
 import { IoCameraOutline } from "react-icons/io5";
+import { AiFillStar } from "react-icons/ai";
+import { FaRegCheckCircle } from "react-icons/fa";
+import { IoIosAddCircleOutline } from "react-icons/io";
 import { ButtonForVipCard } from "./ButtonForVipCard";
 import RoomCartActionsWrapper from "./RoomCardActionsWrapper";
+import { useRouter } from "next/navigation";
+import { useCompareStore } from "@/stores/CompareStore";
+import { message } from "antd";
 import { useEffect, useRef, useState } from "react"; // THÊM useEffect, useRef, useState
 import { FaEye } from "react-icons/fa";
 
@@ -21,6 +26,30 @@ export default function RoomVipCard({
   isFavorite,
   onFavoriteChange,
 }: RoomVipCardProps) {
+  const router = useRouter();
+  const { items, addItem } = useCompareStore((state) => state);
+  const [isCompared, setIsCompared] = useState(false);
+  const [messageApi, contextHolder] = message.useMessage();
+
+  useEffect(() => {
+    setIsCompared(items.some((item) => item.room.id === room.id));
+  }, [items, room.id]);
+
+  const handleViewRoom = () => {
+    router.push(`/detail/${room.id}`);
+  };
+
+  const handleCompare = () => {
+    if (items.length >= 2) {
+      messageApi.warning({
+        content: "You can only compare up to 2 rooms.",
+        duration: 1.5,
+      });
+      return;
+    }
+    addItem({ room });
+  };
+
   function getRelativeTime(dateString: string): string {
     const now = new Date();
     const date = new Date(dateString);
@@ -38,7 +67,9 @@ export default function RoomVipCard({
   const maxShow = 2;
   const showConveniences = conveniences.slice(0, maxShow);
   const moreCount = conveniences.length - maxShow;
-
+  const [hoveredImageIndex, setHoveredImageIndex] = useState<number | null>(
+    null
+  );
 
   const ref = useRef<HTMLDivElement>(null);
   const [viewCount, setViewCount] = useState(room.viewCount ?? 0);
@@ -68,251 +99,262 @@ export default function RoomVipCard({
   }, [room.id]);
 
   return (
-    <motion.div
-      ref={ref}
-      initial={{ opacity: 0, y: 30 }} // mờ, trượt nhẹ lên
-      whileInView={{ opacity: 1, y: 0 }}  // hiện, về đúng vị trí
-      viewport={{ once:true, amount: 0.18 }} // once: true để chỉ chạy một lần khi vào view
-      transition={{ duration: 0.85, ease: [0.22, 0.61, 0.36, 1] }} // cubic-bezier mượt
-      className=" hover:border-emerald-400"
-      style={{ willChange: "transform, box-shadow, border-color, background" }}
-    >
-      <div
-        className=" overflow-hidden shadow-lg bg-white border border-slate-200 mx-auto w-[790px] min-w-[320px] transition-all duration-300 group/card flex flex-col sm:flex-row sm:items-stretch relative cursor-pointer hover:shadow-2xl hover:border-blue-400 hover:scale-[1.015]"
-        style={{
-          willChange: "transform, box-shadow, border-color, background",
-        }}
-      >
-        {/* IMAGE SECTION */}
-        <RoomCartActionsWrapper room={room}>
-          <div className="flex flex-col gap-2 p-3 w-full sm:w-[34%] min-w-[200px] max-w-[280px] bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 justify-between items-center h-full pb-24">
-            {/* Ảnh lớn */}
-            <div className="relative rounded-2xl overflow-hidden group/image-main w-full min-h-[180px] max-h-[220px] h-auto shadow-md mb-2 border border-slate-200 flex items-center justify-center bg-white">
-              <Image
-                src={
-                  room.images && room.images.length > 0
-                    ? URL_IMAGE + room.images[0]?.url
-                    : "/images/default/room.png"
-                }
-                alt={room.title}
-                fill
-                className="object-cover w-full h-full transition-all duration-500 ease-in-out group-hover/image-main:scale-105 group-hover/image-main:shadow-2xl group-hover/image-main:brightness-95"
-                sizes="(max-width: 640px) 100vw, (max-width: 1200px) 50vw, 280px"
-                priority
-                style={{ objectFit: "cover", width: "100%", height: "100%" }}
-              />
-              <div className="absolute flex items-center gap-1 px-2.5 py-1 text-xs text-white rounded-lg left-2 bottom-2 bg-slate-900/80 backdrop-blur-sm shadow-lg">
-                <IoCameraOutline className="text-sm" />
-                {room.images?.length ?? 0}
-              </div>
-            </div>
-
-            {/* Nhóm ảnh nhỏ bên dưới */}
-            {room.images && room.images.length > 1 && (
-              <div className="flex flex-row justify-center w-full gap-2">
-                {room.images.slice(1, 4).map((img, idx) => {
-                  const isLast = idx === 2 && room.images.length > 4;
-                  if (isLast) {
-                    return (
-                      <div
-                        key={idx}
-                        className="relative flex-1 aspect-[1/1] max-w-[72px] rounded-xl overflow-hidden group/image-thumb shadow-md flex items-center justify-center bg-slate-200 cursor-pointer border border-slate-200"
-                      >
-                        <Image
-                          src={
-                            room.images[3]?.url
-                              ? URL_IMAGE + room.images[3].url
-                              : "/images/default/room.png"
-                          }
-                          alt={`${room.title} more`}
-                          fill
-                          className="object-cover w-full h-full opacity-60"
-                          sizes="72px"
-                        />
-                        <span className="absolute inset-0 flex items-center justify-center text-sm font-bold text-white bg-slate-900/70 backdrop-blur-sm">
-                          +{room.images.length - 3}
-                        </span>
-                      </div>
-                    );
-                  }
-                  return (
-                    <div
-                      key={idx}
-                      className="relative flex-1 aspect-[1/1] max-w-[72px] rounded-xl overflow-hidden group/image-thumb shadow-md border border-slate-200"
-                    >
-                      <Image
-                        src={
-                          img?.url
-                            ? URL_IMAGE + img.url
-                            : "/images/default/room.png"
-                        }
-                        alt={`${room.title} ${idx + 2}`}
-                        fill
-                        className="object-cover w-full h-full transition-all duration-500 ease-in-out group-hover/image-thumb:scale-105 group-hover/image-thumb:shadow-xl group-hover/image-thumb:brightness-95"
-                        sizes="72px"
-                      />
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        </RoomCartActionsWrapper>
-
-        {/* CONTENT SECTION */}
-        <div className="p-5 flex flex-col gap-2 min-h-[120px] flex-1 sm:max-w-[700px] bg-white pb-24">
-          {/* Tên phòng + sao */}
-          <div className="flex flex-wrap items-center gap-2 mb-1">
-            <span className="text-xl font-bold text-amber-400 drop-shadow-sm">
-              ★★★★★
-            </span>
+    <>
+      {contextHolder}
+      <div className="w-full max-w-5xl px-2 mx-auto sm:px-4">
+        <div className="overflow-hidden transition-all duration-300 bg-white border shadow-sm cursor-pointer rounded-2xl border-gray-100/60 hover:shadow-xl hover:border-slate-200 hover:-translate-y-1 group/card backdrop-blur-sm">
+          <div className="flex flex-col items-stretch sm:flex-row">
+            {/* IMAGE SECTION */}
             <RoomCartActionsWrapper room={room}>
-              <span
-                className="text-xl font-bold uppercase break-words transition-colors duration-200 text-slate-800 group-hover/card:text-blue-600 line-clamp-2 text-ellipsis"
-                style={{
-                  display: "-webkit-box",
-                  WebkitLineClamp: 2,
-                  WebkitBoxOrient: "vertical",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                  whiteSpace: "normal",
-                  wordBreak: "break-word",
-                  maxHeight: "3.2em",
-                }}
-                title={room.title}
-              >
-                {room.title}
-              </span>
+              <div className="relative flex-shrink-0 w-full h-48 sm:w-52 sm:h-auto lg:w-52">
+                {/* Main Image: use h-full and min-h so the left column stretches to card height */}
+                <div className="relative h-full min-h-[300px] sm:min-h-[300px] bg-gray-100 overflow-hidden">
+                  {/* Main image switches to hovered thumbnail (if any) with smooth zoom */}
+                  {(() => {
+                    const mainImageSrc =
+                      room.images && room.images.length > 0
+                        ? URL_IMAGE +
+                          (hoveredImageIndex !== null &&
+                          room.images[hoveredImageIndex]
+                            ? room.images[hoveredImageIndex].url
+                            : room.images[0].url)
+                        : "/images/default/room.png";
+                    return (
+                      <Image
+                        src={mainImageSrc}
+                        alt={room.title}
+                        fill
+                        className={`object-cover transition-transform duration-500 ${
+                          hoveredImageIndex !== null
+                            ? "scale-105"
+                            : "group-hover/card:scale-105"
+                        }`}
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 176px, 208px"
+                        priority
+                      />
+                    );
+                  })()}
+
+                  {/* Image Counter Badge */}
+                  <div className="absolute bottom-3 left-3 flex items-center gap-1 px-2.5 py-1.5 bg-slate-800/80 text-white text-xs rounded-lg backdrop-blur-md border border-white/10">
+                    <IoCameraOutline className="w-3 h-3" />
+                    <span>{room.images?.length ?? 0}</span>
+                  </div>
+
+                  {/* Small thumbnails - vertical stack centered alongside main image */}
+                  {room.images && room.images.length > 1 && (
+                    <div className="absolute z-20 flex-col hidden gap-2 right-3 bottom-6 sm:flex">
+                      {room.images.slice(1, 4).map((img, idx) => {
+                        const isLast = idx === 2 && room.images.length > 4;
+                        return (
+                          <div
+                            key={idx}
+                            onMouseEnter={() => setHoveredImageIndex(1 + idx)}
+                            onMouseLeave={() => setHoveredImageIndex(null)}
+                            className="relative flex-shrink-0 w-8 h-8 overflow-hidden transition-colors bg-white border-2 rounded-lg shadow-lg cursor-pointer md:w-10 md:h-10 border-white/90 hover:border-slate-200"
+                          >
+                            <Image
+                              src={
+                                img?.url
+                                  ? URL_IMAGE + img.url
+                                  : "/images/default/room.png"
+                              }
+                              alt={`${room.title} ${idx + 2}`}
+                              fill
+                              className={`object-cover ${
+                                isLast ? "opacity-70" : ""
+                              }`}
+                              sizes="40px"
+                            />
+                            {isLast && (
+                              <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+                                <span className="text-sm font-bold text-white">
+                                  +{room.images.length - 3}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              </div>
             </RoomCartActionsWrapper>
-          </div>
 
-          {/* Giá - Diện tích - Địa chỉ */}
-          <div className="flex flex-wrap items-center max-w-full gap-4 text-base font-semibold">
-            <span className="truncate max-w-[120px] text-lg font-bold text-rose-600">
-              {room.priceMonth.toLocaleString("en-US") + "đ"}
-            </span>
-            <span className="text-slate-600 font-medium truncate max-w-[80px]">
-              • {room.area}m²
-            </span>
-            <a
-              className="text-blue-600 font-medium truncate max-w-[220px] hover:text-blue-700 underline underline-offset-2 cursor-pointer transition-colors duration-150"
-              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-                `${room.address.street}, ${room.address.ward.name}, ${room.address.ward.district.name}, ${room.address.ward.district.province.name}`
-              )}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              title="Xem vị trí trên Google Maps"
-            >
-              • {room.address.street}, {room.address.ward.name},{" "}
-              {room.address.ward.district.name},{" "}
-              {room.address.ward.district.province.name}
-            </a>
-          </div>
+            {/* CONTENT SECTION */}
+            <div className="flex flex-col flex-1 p-2 sm:p-3">
+              {/* Top row: Stars + Favorite */}
+              <div className="flex items-center justify-between mb-1">
+                <div className="flex items-center gap-2">
+                  <div className="inline-flex items-center gap-2">
+                    <div className="inline-flex items-center gap-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs font-bold px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full shadow-lg backdrop-blur-sm border border-white/20">
+                      <AiFillStar className="w-3 h-3" aria-hidden />
+                      <span className="tracking-wider uppercase">VIP</span>
+                    </div>
+                  </div>
+                  {/* <span className="text-sm text-gray-600">5.0</span> */}
+                </div>
+                <div className="flex items-center gap-2">
+                  <ButtonForVipCard
+                    room={room}
+                    isFavorite={isFavorite}
+                    onFavoriteChange={onFavoriteChange}
+                  />
+                </div>
+              </div>
 
-          {/* Conveniences (Tiện ích) - Modern UI */}
-          {conveniences.length > 0 && (
-            <div className="flex flex-wrap items-center gap-2 mb-2">
-              {showConveniences.map((item: string, idx: number) => (
-                <span
-                  key={idx}
-                  className="inline-flex items-center px-3 py-1.5 border border-blue-200 bg-blue-50 text-blue-700 text-xs font-medium rounded-full shadow-sm hover:bg-blue-100 hover:border-blue-300 transition-all duration-200 cursor-default"
-                  title={item}
-                  style={{
-                    minWidth: 60,
-                    justifyContent: "center",
-                    letterSpacing: 0.2,
-                  }}
+              {/* Room Title */}
+              <RoomCartActionsWrapper room={room}>
+                <h3 className="text-base sm:text-lg font-bold text-slate-900 mb-0.5 sm:mb-1 line-clamp-1 sm:line-clamp-2 cursor-pointer group-hover/card:text-indigo-600 transition-colors leading-tight">
+                  {room.title}
+                </h3>
+              </RoomCartActionsWrapper>
+
+              {/* Location + Area */}
+              <div className="flex items-center text-sm text-slate-600 mb-0.5 sm:mb-1">
+                <svg
+                  className="w-4 h-4 mr-1 text-slate-400"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
                 >
-                  <svg
-                    width="12"
-                    height="12"
-                    viewBox="0 0 20 20"
-                    fill="none"
-                    className="mr-1.5 text-blue-500"
-                    style={{ minWidth: 12 }}
-                  >
-                    <circle
-                      cx="10"
-                      cy="10"
-                      r="8"
-                      fill="currentColor"
-                      opacity="0.2"
-                    />
-                    <circle cx="10" cy="10" r="3" fill="currentColor" />
-                  </svg>
-                  {item}
-                </span>
-              ))}
-              {moreCount > 0 && (
-                <span
-                  className="inline-flex items-center px-3 py-1.5 border border-slate-300 bg-slate-50 text-slate-600 text-xs font-medium rounded-full shadow-sm cursor-pointer hover:bg-slate-100 hover:border-slate-400 transition-all duration-200"
-                  title={conveniences.slice(maxShow).join(", ")}
-                  style={{ minWidth: 40, justifyContent: "center" }}
+                  <path
+                    fillRule="evenodd"
+                    d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                <a
+                  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                    `${room.address.street}, ${room.address.ward.name}, ${room.address.ward.district.name}, ${room.address.ward.district.province.name}`
+                  )}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="transition-colors hover:text-indigo-600"
+                  title="Xem vị trí trên Google Maps"
                 >
-                  +{moreCount}
-                </span>
+                  {room.address.street}, {room.address.ward.name},{" "}
+                  {room.address.ward.district.name}
+                </a>
+                <span className="mx-2">•</span>
+                <span className="font-medium">{room.area}m²</span>
+              </div>
+
+              {/* Description */}
+              <div className="mb-1 text-sm italic leading-tight text-slate-500 sm:mb-2 line-clamp-1 sm:line-clamp-2">
+                {room.description && room.description.trim().length > 0
+                  ? room.description
+                      .replace(/\n+/g, " ")
+                      .replace(/\s+/g, " ")
+                      .trim()
+                  : "Không có mô tả cho phòng này."}
+              </div>
+
+              {/* Amenities */}
+              {conveniences.length > 0 && (
+                <div className="flex flex-wrap gap-1 mb-1 sm:mb-2">
+                  {showConveniences.map((item: string, idx: number) => (
+                    <span
+                      key={idx}
+                      className="inline-flex items-center px-2 py-0.5 sm:py-1 bg-indigo-50/70 text-indigo-700 text-sm rounded-full border border-indigo-100/80 backdrop-blur-sm"
+                    >
+                      {item}
+                    </span>
+                  ))}
+                  {moreCount > 0 && (
+                    <span className="inline-flex items-center px-2 py-0.5 sm:py-1 bg-slate-100/70 text-slate-600 text-sm rounded-full border border-slate-200/80">
+                      +{moreCount}
+                    </span>
+                  )}
+                </div>
               )}
+
+              {/* Spacer */}
+              <div className="flex-1"></div>
+
+              {/* Price and CTA */}
+              <div className="space-y-1.5 sm:space-y-2 pt-1.5 sm:pt-2 border-t border-slate-100">
+                <div>
+                  <span className="text-sm text-slate-600">
+                    Price per month
+                  </span>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-xl font-bold sm:text-2xl text-emerald-600">
+                      {room.priceMonth.toLocaleString("en-US")}
+                    </span>
+                    <span className="text-sm text-slate-600">VNĐ</span>
+                  </div>
+                </div>
+
+                {/* Buttons Row */}
+                <div className="flex gap-1.5 sm:gap-2">
+                  <button
+                    onClick={handleViewRoom}
+                    className="flex-1 px-2.5 sm:px-3 py-1.5 sm:py-2 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white text-sm font-semibold rounded-lg sm:rounded-xl transition-all duration-300 hover:shadow-lg hover:scale-105 active:scale-95 shadow-orange-500/25"
+                  >
+                    View room
+                  </button>
+
+                  <button
+                    onClick={handleCompare}
+                    disabled={isCompared}
+                    className={`px-2.5 sm:px-3 py-1.5 sm:py-2 text-sm font-semibold rounded-lg sm:rounded-xl transition-all duration-300 hover:scale-105 active:scale-95 ${
+                      isCompared
+                        ? "bg-gradient-to-r from-gray-300 to-gray-400 text-gray-600 cursor-not-allowed opacity-70"
+                        : "bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-white shadow-amber-500/25 hover:shadow-lg"
+                    }`}
+                  >
+                    {isCompared ? (
+                      <FaRegCheckCircle className="w-4 h-4" />
+                    ) : (
+                      <IoIosAddCircleOutline className="w-4 h-4" />
+                    )}
+                  </button>
+                </div>
+              </div>
             </div>
-          )}
-
-          {/* Mô tả */}
-          <div
-            className="max-w-full mb-2 text-[15px] text-slate-600 break-words line-clamp-3 text-ellipsis leading-relaxed px-1"
-            style={{
-              minHeight: 45,
-              display: "-webkit-box",
-              WebkitLineClamp: 3,
-              WebkitBoxOrient: "vertical",
-              overflow: "hidden",
-              textAlign: "left",
-            }}
-            title={room.description || "Không có mô tả"}
-          >
-            {room.description && room.description.trim().length > 0 ? (
-              room.description.replace(/\n+/g, " ").replace(/\s+/g, " ").trim()
-            ) : (
-              <span className="italic text-slate-400">
-                Không có mô tả cho phòng này.
-              </span>
-            )}
           </div>
-        </div>
 
-        {/* Thông tin người đăng - Modern footer */}
-        <div className="absolute bottom-0 left-0 z-10 flex items-center w-full gap-4 px-4 py-3 border-t border-slate-100 bg-gradient-to-r from-slate-50/80 to-blue-50/40 backdrop-blur-sm rounded-b-2xl">
-          <Image
-            src="/images/useravt.png"
-            alt="Avatar"
-            width={44}
-            height={44}
-            style={{ width: 44, height: 44 }}
-            className="border-2 border-blue-200 rounded-full shadow-md"
-          />
-          <div className="flex flex-col flex-1 min-w-0">
-            <span className="font-semibold truncate text-slate-800">
-              {room.landlord.landlordProfile.fullName}
-            </span>
-            <span className="text-xs truncate text-slate-500">
-              {getRelativeTime(room.postStartDate)}
-            </span>
-          </div>
-          <span className="px-3 py-1.5 text-sm font-medium rounded-full bg-indigo-100 text-indigo-700 shadow-sm truncate border border-indigo-200">
-            {room.landlord.landlordProfile.phoneNumber
-              ? room.landlord.landlordProfile.phoneNumber
-              : room.landlord.landlordProfile.email}
-          </span>
-          <div className="flex items-center gap-2 ml-2">
-            <ButtonForVipCard
-              room={room}
-              isFavorite={isFavorite}
-              onFavoriteChange={onFavoriteChange}
-            />
+          {/* Bottom Host Info */}
+          <div className="px-2 sm:px-3 py-1.5 sm:py-2 bg-slate-50/50 border-t border-slate-100/60 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1.5 sm:gap-0 backdrop-blur-sm">
+            <div className="flex items-center gap-2">
+              <Image
+                src="/images/useravt.png"
+                alt="Host avatar"
+                width={24}
+                height={24}
+                className="object-cover border rounded-full shadow-sm sm:w-7 sm:h-7 border-slate-200/60"
+              />
+              <div className="flex-1">
+                <div className="text-sm font-medium text-slate-900">
+                  {room.landlord.landlordProfile.fullName}
+                </div>
+                <div className="text-xs text-slate-500">
+                  {getRelativeTime(room.postStartDate)}
+                </div>
+              </div>
+            </div>
+
+            {/* Contact Info */}
+            <div className="flex items-center gap-1.5 bg-slate-100/80 px-2 py-1 sm:py-1.5 rounded-lg backdrop-blur-sm border border-slate-200/60 w-full sm:w-auto">
+              <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse flex-shrink-0"></div>
+              <div className="flex-1 min-w-0">
+                <div className="text-xs font-medium text-slate-500">
+                  Contact
+                </div>
+                <div className="text-sm font-semibold truncate text-slate-800">
+                  {room.landlord.landlordProfile.phoneNumber
+                    ? room.landlord.landlordProfile.phoneNumber
+                    : room.landlord.landlordProfile.email}
+                </div>
+              </div>
+            </div>
           </div>
           <span className="flex items-center ml-2 text-gray-500 dark:text-gray-300">
         <FaEye className="mr-1" /> {viewCount}
       </span>
         </div>
       </div>
-    </motion.div>
+    </>
   );
 }
