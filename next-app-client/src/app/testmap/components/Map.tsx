@@ -6,8 +6,9 @@ import { getUserPreferences } from "@/services/ProfileService";
 import { getRoomsInMap } from "@/services/RoomService";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { RoomMap } from "../page";
+import { useLocationContext } from "@/context/LocationContext";
 
 const GOONG_API_KEY_MAP = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 const GOONG_API_KEY = process.env.NEXT_PUBLIC_GOONG_API_KEY;
@@ -25,7 +26,53 @@ const MapRoom: React.FC<Props> = ({ onRoomClick }) => {
   const [center, setCenter] = useState<[number, number]>([10.7769, 106.7009]);
   const [zoom, setZoom] = useState(13);
   const [rooms, setRooms] = useState<RoomMap[]>([]);
+  const [isInitialized, setIsInitialized] = useState(false);
+  const [locationOverride, setLocationOverride] = useState(false); // Track if location is actively being used
   const { data: session } = useSession();
+  const { location } = useLocationContext();
+
+  // Debug location changes
+  useEffect(() => {
+    console.log("🌍 Location context value changed:", location);
+  }, [location]);
+
+  // Test function to manually trigger location change
+  const testLocationChange = () => {
+    console.log("🧪 Testing manual location change");
+    const testLocation = {
+      lat: 10.762622,
+      lng: 106.660172,
+      address: "District 1, Ho Chi Minh City",
+    };
+
+    setCenter([testLocation.lat, testLocation.lng]);
+    if (mapRef.current) {
+      mapRef.current.setCenter([testLocation.lng, testLocation.lat]);
+      mapRef.current.setZoom(14);
+    }
+
+    // Fetch rooms for test location
+    const fetchTestRooms = async () => {
+      try {
+        const rooms = await getRoomsInMap(
+          testLocation.lat,
+          testLocation.lng,
+          10
+        );
+        setRooms(rooms);
+        stableOnRoomClick(rooms);
+        console.log("✅ Test location change successful");
+      } catch (error) {
+        console.error("❌ Test location change failed:", error);
+      }
+    };
+    fetchTestRooms();
+  };
+
+  // Memoize onRoomClick to prevent useEffect re-runs
+  const stableOnRoomClick = useCallback((rooms: RoomMap[]) => {
+    onRoomClick(rooms);
+  }, []); // Empty deps to keep it stable
   // Load Goong Maps library
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -80,45 +127,155 @@ const MapRoom: React.FC<Props> = ({ onRoomClick }) => {
     }
   };
 
+  // Initial load: Priority order - Session > Default location
   useEffect(() => {
-    const loadUserPreferences = async () => {
-      if (session) {
+    const initializeMap = async () => {
+      if (isInitialized) return; // Prevent multiple initialization
+
+      console.log(
+        "Initializing map... Session status:",
+        session ? "Available" : "Not available"
+      );
+
+      // Try to load user preferences first if session exists
+      if (session?.user?.userProfile?.id) {
         try {
+          console.log("Loading user preferences from session...");
           const preferences = await getUserPreferences();
+
           if (preferences?.searchAddress) {
-            // Geocode address to coordinates using Goong API
+            console.log("Found saved address:", preferences.searchAddress);
             const coordinates = await geocodeAddress(preferences.searchAddress);
+
             if (coordinates) {
               const [lat, lng] = coordinates;
               setCenter([lat, lng]);
 
-              // Update map center if map is already initialized
-              if (mapRef.current) {
-                mapRef.current.setCenter([lng, lat]);
-                mapRef.current.setZoom(14); // Zoom in when address is set
-              }
-
-              // Load rooms for the geocoded location
+              // Load rooms for saved location
               try {
                 const fetchedRooms = await getRoomsInMap(lat, lng, 10);
                 setRooms(fetchedRooms);
-                onRoomClick(fetchedRooms);
+                stableOnRoomClick(fetchedRooms);
+                setIsInitialized(true);
+                console.log("✅ Map initialized with user preferences");
+                return; // Exit early - successful initialization
               } catch (roomError) {
                 console.error(
-                  "Error fetching rooms for geocoded location:",
+                  "Error fetching rooms for saved address:",
                   roomError
                 );
               }
             }
+          } else {
+            console.log("No saved address found in user preferences");
           }
         } catch (error) {
           console.error("Error loading user preferences:", error);
         }
       }
+
+      // Fallback to default location (Ho Chi Minh City) if session failed or not available
+      console.log("🏠 Initializing with default location (HCM City)...");
+      try {
+        const defaultRooms = await getRoomsInMap(10.7769, 106.7009, 10);
+        setRooms(defaultRooms);
+        stableOnRoomClick(defaultRooms);
+        setCenter([10.7769, 106.7009]); // Set default center
+        setIsInitialized(true);
+        console.log("✅ Map initialized with default location");
+      } catch (error) {
+        console.error("Error loading default rooms:", error);
+        setRooms([]);
+        stableOnRoomClick([]);
+        setIsInitialized(true);
+      }
     };
 
-    loadUserPreferences();
-  }, [session, onRoomClick]);
+    // Wait for session to be determined (not undefined) before initializing
+    if (session !== undefined && !isInitialized) {
+      console.log("🚀 Starting map initialization...");
+      initializeMap();
+    }
+  }, [session, isInitialized]); // Depend on both session and isInitialized
+
+  // Monitor session changes and re-initialize if needed
+  // TEMPORARILY DISABLED TO TEST LOCATION CONTEXT
+  useEffect(() => {
+    console.log(
+      "👤 Session status changed:",
+      session?.user?.userProfile?.id ? "Logged in" : "Not logged in",
+      "locationOverride:",
+      locationOverride
+    );
+
+    console.log(
+      "🚫 Session monitoring is DISABLED for testing location context"
+    );
+
+    // Completely disable session-based preference loading
+    // This allows location context to work properly
+  }, [session?.user?.userProfile?.id]); // Remove locationOverride to prevent loops
+
+  // Handle location context changes (higher priority than initial load)
+  useEffect(() => {
+    console.log("🔍 Location useEffect triggered:", {
+      location: location ? { lat: location.lat, lng: location.lng } : null,
+      isInitialized,
+      hasMapRef: !!mapRef.current,
+      locationOverride,
+    });
+
+    if (location) {
+      console.log("📍 Location context changed, updating map:", location);
+      setCenter([location.lat, location.lng]);
+      setLocationOverride(true); // Mark location as actively being used
+
+      if (mapRef.current) {
+        console.log("🗺️ Updating map center and zoom");
+        mapRef.current.setCenter([location.lng, location.lat]);
+        mapRef.current.setZoom(14);
+      } else {
+        console.log("⚠️ Map not ready yet, will update when map initializes");
+      }
+
+      // Fetch rooms for new location
+      const fetchRooms = async () => {
+        try {
+          console.log(
+            "🏠 Fetching rooms for location:",
+            location.lat,
+            location.lng
+          );
+          const fetchedRooms = await getRoomsInMap(
+            location.lat,
+            location.lng,
+            10
+          );
+          console.log(`✅ Found ${fetchedRooms.length} rooms for location`);
+          setRooms(fetchedRooms);
+          stableOnRoomClick(fetchedRooms);
+        } catch (error) {
+          console.error("❌ Error fetching rooms for location:", error);
+          setRooms([]);
+          stableOnRoomClick([]);
+        }
+      };
+      fetchRooms();
+    } else if (locationOverride) {
+      // Location context was cleared, reset override
+      console.log("🔄 Location context cleared, resetting override");
+      setLocationOverride(false);
+    }
+  }, [location]); // Remove isInitialized dependency to allow immediate updates
+
+  // Sync map center when center state changes (after map is initialized)
+  useEffect(() => {
+    if (mapRef.current) {
+      console.log("🎯 Syncing map center with state:", center);
+      mapRef.current.setCenter([center[1], center[0]]);
+    }
+  }, [center]);
+
   // Group rooms by location
   function groupRoomsByLocation(rooms: RoomMap[]) {
     const groups = new Map<string, RoomMap[]>();
@@ -133,56 +290,42 @@ const MapRoom: React.FC<Props> = ({ onRoomClick }) => {
       rooms: group,
     }));
   }
-
-  // Load initial location & rooms
-  // useEffect(() => {
-  //   if (typeof window === "undefined") return;
-  //   if (navigator.geolocation) {
-  //     navigator.geolocation.getCurrentPosition(
-  //       async (pos) => {
-  //         const lat = pos.coords.latitude;
-  //         const lng = pos.coords.longitude;
-  //         setCenter([lat, lng]);
-  //         if (mapRef.current) mapRef.current.setCenter([lng, lat]);
-
-  //         const fetchedRooms = await getRoomsInMap(lat, lng, 10);
-  //         setRooms(fetchedRooms);
-  //         onRoomClick(fetchedRooms);
-  //       },
-  //       () => {
-  //         setCenter([10.7769, 106.7009]);
-  //       }
-  //     );
-  //   }
-  // }, []);
-
-  // Initialize map
   useEffect(() => {
     if (!mapContainer.current || mapRef.current || !goongjs) return;
 
+    console.log("🗺️ Initializing Goong Map with center:", center);
     mapRef.current = new goongjs.Map({
       container: mapContainer.current,
       style: "https://tiles.goong.io/assets/goong_map_web.json",
-      center: [center[1], center[0]],
+      center: [center[1], center[0]], // Use current center state
       zoom,
       accessToken: GOONG_API_KEY_MAP,
     });
+
+    console.log("✅ Map initialized successfully");
 
     // Handle click
     mapRef.current.on("click", async (e: any) => {
       const lat = e.lngLat.lat;
       const lng = e.lngLat.lng;
+      console.log("🖱️ Map clicked at:", lat, lng);
       setCenter([lat, lng]);
-      const newRooms = await getRoomsInMap(lat, lng, 10);
-      setRooms(newRooms);
-      onRoomClick(newRooms);
+      try {
+        const newRooms = await getRoomsInMap(lat, lng, 10);
+        setRooms(newRooms);
+        stableOnRoomClick(newRooms);
+      } catch (error) {
+        console.error("Error fetching rooms on map click:", error);
+        setRooms([]);
+        stableOnRoomClick([]);
+      }
     });
 
     // Zoom tracking
     mapRef.current.on("zoomend", () => {
       setZoom(mapRef.current.getZoom());
     });
-  }, [mapContainer, goongjs, onRoomClick]);
+  }, [mapContainer, goongjs]); // Remove center from dependencies to prevent re-initialization
 
   // Render markers
   useEffect(() => {
@@ -352,6 +495,16 @@ const MapRoom: React.FC<Props> = ({ onRoomClick }) => {
           <span>Close Map</span>
         </Link>
       </div>
+
+      {/* Test Button - Remove this after testing */}
+      {/* <div className="absolute top-4 left-4 z-10">
+        <button
+          onClick={testLocationChange}
+          className="bg-red-500 text-white px-4 py-2 rounded shadow hover:bg-red-600"
+        >
+          🧪 Test Location Change
+        </button>
+      </div> */}
 
       {/* Map Container */}
       <div ref={mapContainer} className="w-full h-full" />
