@@ -17,7 +17,12 @@ export type RoomData = {
   electricityRate?: number;
   waterRate?: number;
   address: string;
-  area: number;
+  area?: number;
+  roomLength?: number;
+  roomWidth?: number;
+  elecPrice?: number;
+  waterPrice?: number;
+  maxPeople?: number;
   price: number;
   postStartDate: string;
   postEndDate: string;

@@ -24,7 +24,12 @@ public class RoomRequestCreateDto {
     @Length(max = 2000, message = "Description must be at most 2000 characters.")
     private String description;
     private Double priceMonth;
-    private Double area;
+    // private Double area;
+    private Double roomLength;
+    private Double roomWidth;
+    private Double elecPrice;
+    private Double waterPrice;
+    private Integer maxPeople;
     private Double priceDeposit;
     private Date postStartDate;
     private Date postEndDate;

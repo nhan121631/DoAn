@@ -43,6 +43,21 @@ public class Room extends BaseEntity {
     @Column(name = "area", nullable = false)
     private Double area;
 
+    @Column(name = "length", nullable = true)
+    private Double roomLength;
+
+    @Column(name = "width", nullable = true)
+    private Double roomWidth;
+
+    @Column(name = "elec_price")
+    private Double elecPrice;
+
+    @Column(name = "water_price")
+    private Double waterPrice;
+
+    @Column(name = "max_people")
+    private Integer maxPeople;
+
     @Column(name = "approval", nullable = false)
     private int approval = 0;
 

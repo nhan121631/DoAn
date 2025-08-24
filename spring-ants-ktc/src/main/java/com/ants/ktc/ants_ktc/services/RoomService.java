@@ -228,8 +228,17 @@ public class RoomService {
                 room.setDescription(requestDto.getDescription());
                 room.setPrice_month(requestDto.getPriceMonth());
                 room.setPrice_deposit(requestDto.getPriceDeposit());
-                room.setArea(requestDto.getArea());
-
+                room.setRoomLength(requestDto.getRoomLength());
+                room.setRoomWidth(requestDto.getRoomWidth());
+                room.setElecPrice(requestDto.getElecPrice());
+                room.setWaterPrice(requestDto.getWaterPrice());
+                room.setMaxPeople(requestDto.getMaxPeople());
+                // tính diện tích
+                if (requestDto.getRoomLength() != null && requestDto.getRoomWidth() != null) {
+                        room.setArea(requestDto.getRoomLength() * requestDto.getRoomWidth());
+                } else {
+                        room.setArea(0.0);
+                }
                 // Lấy PostType và User
                 PostType postType = postTypeJpaRepository.findById(requestDto.getTypepostId())
                                 .orElseThrow(() -> new IllegalArgumentException("PostType not found"));
@@ -432,6 +441,11 @@ public class RoomService {
                                 .postStartDate(room.getPost_start_date())
                                 .postEndDate(room.getPost_end_date())
                                 .area(room.getArea())
+                                .roomLength(room.getRoomLength())
+                                .roomWidth(room.getRoomWidth())
+                                .elecPrice(room.getElecPrice())
+                                .waterPrice(room.getWaterPrice())
+                                .maxPeople(room.getMaxPeople())
                                 .typepost(postType.getName())
                                 .userId(user.getId())
                                 .convenients(convenients.stream()
@@ -457,7 +471,17 @@ public class RoomService {
                 room.setDescription(request.getDescription());
                 room.setPrice_month(request.getPriceMonth());
                 room.setPrice_deposit(request.getPriceDeposit());
-                room.setArea(request.getArea());
+                room.setRoomLength(request.getRoomLength());
+                room.setRoomWidth(request.getRoomWidth());
+                room.setElecPrice(request.getElecPrice());
+                room.setWaterPrice(request.getWaterPrice());
+                room.setMaxPeople(request.getMaxPeople());
+                // tính diện tích
+                if (request.getRoomLength() != null && request.getRoomWidth() != null) {
+                        room.setArea(request.getRoomLength() * request.getRoomWidth());
+                } else {
+                        room.setArea(0.0);
+                }
 
                 // Set địa chỉ
                 Address address = room.getAddress();
@@ -579,6 +603,11 @@ public class RoomService {
                                 .postStartDate(room.getPost_start_date())
                                 .postEndDate(room.getPost_end_date())
                                 .area(room.getArea())
+                                .roomLength(room.getRoomLength())
+                                .roomWidth(room.getRoomWidth())
+                                .elecPrice(room.getElecPrice())
+                                .waterPrice(room.getWaterPrice())
+                                .maxPeople(room.getMaxPeople())
                                 .typepost(room.getPostType().getName())
                                 .userId(room.getUser().getId())
                                 .convenients(convenients.stream()
@@ -808,6 +837,11 @@ public class RoomService {
                                 .priceDeposit(room.getPrice_deposit())
                                 .postStartDate(room.getPost_start_date())
                                 .area(room.getArea())
+                                .roomLength(room.getRoomLength())
+                                .roomWidth(room.getRoomWidth())
+                                .elecPrice(room.getElecPrice())
+                                .waterPrice(room.getWaterPrice())
+                                .maxPeople(room.getMaxPeople())
                                 .postEndDate(room.getPost_end_date())
                                 .typepost(room.getPostType().getName())
                                 .userId(room.getUser().getId())
@@ -831,6 +865,12 @@ public class RoomService {
                                 .approval(room.getApproval())
                                 .hidden(room.getHidden())
                                 .isRemoved(room.getIsRemoved())
+                                .area(room.getArea())
+                                .elecPrice(room.getElecPrice())
+                                .waterPrice(room.getWaterPrice())
+                                .roomLength(room.getRoomLength())
+                                .roomWidth(room.getRoomWidth())
+                                .maxPeople(room.getMaxPeople())
                                 .priceMonth(room.getPrice_month())
                                 .priceDeposit(room.getPrice_deposit())
                                 .postStartDate(room.getPost_start_date())
@@ -1101,6 +1141,7 @@ public class RoomService {
                                                 .description(room.getDescription())
                                                 .priceMonth(room.getPrice_month()) // chú ý đúng tên getter
                                                 .area(room.getArea())
+                                                .maxPeople(room.getMaxPeople())
                                                 .postStartDate(room.getPost_start_date())
                                                 .address(convertAddress(room.getAddress()))
                                                 .images(convertImages(room.getImages()))
@@ -1161,6 +1202,7 @@ public class RoomService {
                                                         .description(room.getDescription())
                                                         .priceMonth(room.getPrice_month())
                                                         .area(room.getArea())
+                                                        .maxPeople(room.getMaxPeople())
                                                         .postStartDate(room.getPost_start_date())
                                                         .address(convertAddress(room.getAddress()))
                                                         .images(convertImages(room.getImages()))
@@ -1212,6 +1254,7 @@ public class RoomService {
                                                         .description(room.getDescription())
                                                         .priceMonth(room.getPrice_month())
                                                         .area(room.getArea())
+                                                        .maxPeople(room.getMaxPeople())
                                                         .postStartDate(room.getPost_start_date())
                                                         .address(convertAddress(room.getAddress()))
                                                         .images(convertImages(room.getImages()))
@@ -1318,6 +1361,7 @@ public class RoomService {
                                                         .description(room.getDescription())
                                                         .priceMonth(room.getPrice_month())
                                                         .area(room.getArea())
+                                                        .maxPeople(room.getMaxPeople())
                                                         .postStartDate(room.getPost_start_date())
                                                         .address(convertAddress(room.getAddress()))
                                                         .images(convertImages(room.getImages()))
@@ -1396,6 +1440,7 @@ public class RoomService {
                                                                 .description(room.getDescription())
                                                                 .priceMonth(room.getPrice_month())
                                                                 .area(room.getArea())
+                                                                .maxPeople(room.getMaxPeople())
                                                                 .postStartDate(room.getPost_start_date())
                                                                 .address(convertAddress(room.getAddress()))
                                                                 .images(convertImages(room.getImages()))
@@ -1520,6 +1565,7 @@ public class RoomService {
                                                                 .description(room.getDescription())
                                                                 .priceMonth(room.getPrice_month())
                                                                 .area(room.getArea())
+                                                                .maxPeople(room.getMaxPeople())
                                                                 .postStartDate(room.getPost_start_date())
                                                                 .address(convertAddress(room.getAddress()))
                                                                 .images(convertImages(room.getImages()))

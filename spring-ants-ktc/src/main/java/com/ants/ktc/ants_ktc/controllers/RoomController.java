@@ -9,15 +9,11 @@ import java.util.UUID;
 import com.ants.ktc.ants_ktc.dtos.rating.RatingCreateDto;
 import com.ants.ktc.ants_ktc.dtos.rating.RatingReplyDto;
 import com.ants.ktc.ants_ktc.dtos.rating.RatingResponseDto;
-import com.ants.ktc.ants_ktc.entities.User;
-import com.ants.ktc.ants_ktc.entities.UserDetailsImpl;
 import com.ants.ktc.ants_ktc.enums.FeedbackAccess;
 import com.ants.ktc.ants_ktc.services.RatingService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.Authentication;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 

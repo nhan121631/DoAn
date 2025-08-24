@@ -23,6 +23,15 @@ public interface RoomByLandlordPagingProjection {
 
     int getIsRemoved();
 
+    Double getArea();
+
+    Double getElecPrice();
+
+    Double getWaterPrice();
+    Double getRoomLength();
+    Double getRoomWidth();
+    Integer getMaxPeople();
+
     Date getPost_start_date();
 
     Date getPost_end_date();

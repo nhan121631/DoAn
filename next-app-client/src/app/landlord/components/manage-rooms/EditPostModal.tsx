@@ -17,6 +17,7 @@ import {
   Modal,
   Select,
   Upload,
+  AutoComplete,
 } from "antd";
 import type { UploadFile } from "antd/es/upload/interface";
 import React, { useEffect, useState } from "react";
@@ -59,6 +60,10 @@ const EditPostModal: React.FC<EditPostModalProps> = ({
   const [loadingWards, setLoadingWards] = useState(false);
   const [typeposts, setTypeposts] = useState<any[]>([]);
   const [convenients, setConvenients] = useState<any[]>([]);
+
+  // Preset options for length/width (meters) - user can also type free value
+  const lengthPresets = [2, 2.5, 3, 3.5, 4, 4.5, 5];
+  const widthPresets = [2, 2.5, 3, 3.5, 4, 4.5];
 
   // Fetch initial data
   useEffect(() => {
@@ -134,7 +139,13 @@ const EditPostModal: React.FC<EditPostModalProps> = ({
         description: roomData.description || "",
         priceMonth: roomData.priceMonth || 0,
         priceDeposit: roomData.priceDeposit || 0,
-        area: roomData.area || 0,
+        // area: roomData.area || 0,
+        // new explicit fields replacing area
+        roomLength: roomData.roomLength ?? roomData.length ?? 4,
+        roomWidth: roomData.roomWidth ?? roomData.width ?? 5,
+        elecPrice: roomData.elecPrice ?? 3000,
+        waterPrice: roomData.waterPrice ?? 15000,
+        maxPeople: roomData.maxPeople ?? 2,
         address: roomData.address?.street || "",
         convenients: roomData.convenients?.map((c: any) => c.id) || [],
         postStartDate: roomData.postStartDate
@@ -190,6 +201,12 @@ const EditPostModal: React.FC<EditPostModalProps> = ({
   const handleSubmit = async () => {
     try {
       const values = await form.validateFields();
+      // Normalize numeric fields to ensure correct types
+      const roomLength = Number(values.roomLength ?? 0);
+      const roomWidth = Number(values.roomWidth ?? 0);
+      const elecPrice = Number(values.elecPrice ?? 0);
+      const waterPrice = Number(values.waterPrice ?? 0);
+      const maxPeople = Number(values.maxPeople ?? 1);
       // Lấy danh sách URL ảnh gốc từ DB
       const originalImageUrls =
         roomData?.images?.map((img: any) => img.url) || [];
@@ -213,7 +230,13 @@ const EditPostModal: React.FC<EditPostModalProps> = ({
         description: values.description,
         priceMonth: values.priceMonth,
         priceDeposit: values.priceDeposit,
-        area: values.area,
+        // area: values.area,
+
+        roomLength,
+        roomWidth,
+        elecPrice,
+        waterPrice,
+        maxPeople,
         address: {
           street: values.address,
           wardId: values.ward,
@@ -402,22 +425,66 @@ const EditPostModal: React.FC<EditPostModalProps> = ({
                   <Input placeholder="Enter address" />
                 </Form.Item>
 
+                {/* Length & Width presets + free input (AutoComplete) */}
                 <div className="flex gap-2">
                   <Form.Item
-                    label="Area (m²)"
-                    name="area"
+                    label="Length (m)"
+                    name="roomLength"
                     className="flex-1"
-                    rules={[
-                      {
-                        required: true,
-                        type: "number",
-                        min: 1,
-                        message: "Enter area",
-                      },
-                    ]}
+                    rules={[{ required: true, message: "Enter room length" }]}
                   >
-                    <InputNumber min={1} max={200} style={{ width: "100%" }} />
+                    <AutoComplete
+                      options={lengthPresets.map((v) => ({ value: String(v) }))}
+                      onSelect={(value) =>
+                        form.setFieldsValue({ roomLength: Number(value) })
+                      }
+                      onChange={(value) =>
+                        form.setFieldsValue({ roomLength: value })
+                      }
+                      filterOption={(input, option) =>
+                        (option?.value ?? "")
+                          .toString()
+                          .toLowerCase()
+                          .includes(input.toLowerCase())
+                      }
+                    >
+                      <Input
+                        addonAfter="m"
+                        placeholder="e.g. 4 or choose preset"
+                      />
+                    </AutoComplete>
                   </Form.Item>
+
+                  <Form.Item
+                    label="Width (m)"
+                    name="roomWidth"
+                    className="flex-1"
+                    rules={[{ required: true, message: "Enter room width" }]}
+                  >
+                    <AutoComplete
+                      options={widthPresets.map((v) => ({ value: String(v) }))}
+                      onSelect={(value) =>
+                        form.setFieldsValue({ roomWidth: Number(value) })
+                      }
+                      onChange={(value) =>
+                        form.setFieldsValue({ roomWidth: value })
+                      }
+                      filterOption={(input, option) =>
+                        (option?.value ?? "")
+                          .toString()
+                          .toLowerCase()
+                          .includes(input.toLowerCase())
+                      }
+                    >
+                      <Input
+                        addonAfter="m"
+                        placeholder="e.g. 5 or choose preset"
+                      />
+                    </AutoComplete>
+                  </Form.Item>
+                </div>
+
+                <div className="flex gap-2">
                   <Form.Item
                     label="Monthly Price"
                     name="priceMonth"
@@ -555,6 +622,61 @@ const EditPostModal: React.FC<EditPostModalProps> = ({
                     </p>
                   </div>
                 )} */}
+
+                {/* Additional utilities and max people */}
+            <div className="mt-4 bg-white dark:bg-[#232b3b] border border-gray-200 dark:border-gray-700 rounded-lg p-4 shadow-sm">
+              <h4 className="font-semibold text-base bg-gray-50 dark:bg-[#1b2636] p-2 rounded-md mb-3">
+                Utilities & Occupancy
+              </h4>
+              <div className="flex gap-2">
+                <Form.Item
+                  label="Electricity Price"
+                  name="elecPrice"
+                  className="flex-1"
+                  rules={[{ required: true, type: "number" }]}
+                >
+                  <InputNumber
+                    min={0}
+                    step={100}
+                    style={{ width: "100%" }}
+                    formatter={(v) =>
+                      `${v}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                    }
+                    addonAfter="₫/kWh"
+                  />
+                </Form.Item>
+                <Form.Item
+                  label="Water Price"
+                  name="waterPrice"
+                  className="flex-1"
+                  rules={[{ required: true, type: "number" }]}
+                >
+                  <InputNumber
+                    min={0}
+                    step={1000}
+                    style={{ width: "100%" }}
+                    formatter={(v) =>
+                      `${v}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                    }
+                    addonAfter="₫"
+                  />
+                </Form.Item>
+                <Form.Item
+                  label="Max People"
+                  name="maxPeople"
+                  className="w-40"
+                  rules={[{ required: true, message: "Select max people" }]}
+                >
+                  <Select placeholder="Max people">
+                    {[1, 2, 3, 4, 5, 6, 7, 8].map((n) => (
+                      <Select.Option key={n} value={n}>
+                        {n}
+                      </Select.Option>
+                    ))}
+                  </Select>
+                </Form.Item>
+              </div>
+            </div>
               </div>
             </div>
 
