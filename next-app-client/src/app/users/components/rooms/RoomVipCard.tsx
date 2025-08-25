@@ -1,6 +1,6 @@
 "use client";
 
-import { URL_IMAGE } from "@/services/Constant";
+import { URL_IMAGE, API_URL } from "@/services/Constant";
 import type { RoomInUser } from "@/types/types";
 import Image from "next/image";
 import { IoCameraOutline } from "react-icons/io5";
@@ -9,10 +9,11 @@ import { FaRegCheckCircle } from "react-icons/fa";
 import { IoIosAddCircleOutline } from "react-icons/io";
 import { ButtonForVipCard } from "./ButtonForVipCard";
 import RoomCartActionsWrapper from "./RoomCardActionsWrapper";
-import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useCompareStore } from "@/stores/CompareStore";
 import { message } from "antd";
+import { useEffect, useRef, useState } from "react"; // THÊM useEffect, useRef, useState
+// import { FaEye } from "react-icons/fa";
 
 interface RoomVipCardProps {
   room: RoomInUser;
@@ -70,15 +71,43 @@ export default function RoomVipCard({
     null
   );
 
+  const ref = useRef<HTMLDivElement>(null);
+  const [viewCount, setViewCount] = useState(room.viewCount ?? 0);
+
+  useEffect(() => {
+    let timer: NodeJS.Timeout | null = null;
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        timer = setTimeout(() => {
+          fetch(`${API_URL}/rooms/${room.id}/view`, { method: "POST" }).then(() => {
+            fetch(`${API_URL}/rooms/${room.id}`)
+              .then(res => res.json())
+              .then(data => setViewCount(data.viewCount ?? 0));
+          });
+        }, 5000);
+      } else {
+        if (timer) clearTimeout(timer);
+      }
+    });
+
+    if (ref.current) observer.observe(ref.current);
+
+    return () => {
+      observer.disconnect();
+      if (timer) clearTimeout(timer);
+    };
+  }, [room.id]);
+
   return (
     <>
       {contextHolder}
-      <div className="w-full max-w-5xl mx-auto px-2 sm:px-4">
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100/60 overflow-hidden hover:shadow-xl hover:border-slate-200 hover:-translate-y-1 transition-all duration-300 group/card cursor-pointer backdrop-blur-sm">
-          <div className="flex flex-col sm:flex-row items-stretch">
+      <div className="w-full max-w-5xl px-2 mx-auto sm:px-4">
+        
+        <div ref={ref} className="overflow-hidden transition-all duration-300 bg-white border shadow-sm cursor-pointer rounded-2xl border-gray-100/60 hover:shadow-xl hover:border-slate-200 hover:-translate-y-1 group/card backdrop-blur-sm">
+          <div className="flex flex-col items-stretch sm:flex-row">
             {/* IMAGE SECTION */}
             <RoomCartActionsWrapper room={room}>
-              <div className="relative w-full h-48 sm:w-52 sm:h-auto lg:w-52 flex-shrink-0">
+              <div className="relative flex-shrink-0 w-full h-48 sm:w-52 sm:h-auto lg:w-52">
                 {/* Main Image: use h-full and min-h so the left column stretches to card height */}
                 <div className="relative h-full min-h-[300px] sm:min-h-[300px] bg-gray-100 overflow-hidden">
                   {/* Main image switches to hovered thumbnail (if any) with smooth zoom */}
@@ -115,7 +144,7 @@ export default function RoomVipCard({
 
                   {/* Small thumbnails - vertical stack centered alongside main image */}
                   {room.images && room.images.length > 1 && (
-                    <div className="absolute right-3 bottom-6 hidden sm:flex flex-col gap-2 z-20">
+                    <div className="absolute z-20 flex-col hidden gap-2 right-3 bottom-6 sm:flex">
                       {room.images.slice(1, 4).map((img, idx) => {
                         const isLast = idx === 2 && room.images.length > 4;
                         return (
@@ -123,7 +152,7 @@ export default function RoomVipCard({
                             key={idx}
                             onMouseEnter={() => setHoveredImageIndex(1 + idx)}
                             onMouseLeave={() => setHoveredImageIndex(null)}
-                            className="relative w-8 h-8 md:w-10 md:h-10 rounded-lg overflow-hidden border-2 border-white/90 shadow-lg bg-white flex-shrink-0 cursor-pointer hover:border-slate-200 transition-colors"
+                            className="relative flex-shrink-0 w-8 h-8 overflow-hidden transition-colors bg-white border-2 rounded-lg shadow-lg cursor-pointer md:w-10 md:h-10 border-white/90 hover:border-slate-200"
                           >
                             <Image
                               src={
@@ -139,8 +168,8 @@ export default function RoomVipCard({
                               sizes="40px"
                             />
                             {isLast && (
-                              <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                                <span className="text-white text-sm font-bold">
+                              <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+                                <span className="text-sm font-bold text-white">
                                   +{room.images.length - 3}
                                 </span>
                               </div>
@@ -155,14 +184,14 @@ export default function RoomVipCard({
             </RoomCartActionsWrapper>
 
             {/* CONTENT SECTION */}
-            <div className="flex-1 p-2 sm:p-3 flex flex-col">
+            <div className="flex flex-col flex-1 p-2 sm:p-3">
               {/* Top row: Stars + Favorite */}
               <div className="flex items-center justify-between mb-1">
                 <div className="flex items-center gap-2">
                   <div className="inline-flex items-center gap-2">
                     <div className="inline-flex items-center gap-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs font-bold px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full shadow-lg backdrop-blur-sm border border-white/20">
                       <AiFillStar className="w-3 h-3" aria-hidden />
-                      <span className="uppercase tracking-wider">VIP</span>
+                      <span className="tracking-wider uppercase">VIP</span>
                     </div>
                   </div>
                   {/* <span className="text-sm text-gray-600">5.0</span> */}
@@ -202,7 +231,7 @@ export default function RoomVipCard({
                   )}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="hover:text-indigo-600 transition-colors"
+                  className="transition-colors hover:text-indigo-600"
                   title="Xem vị trí trên Google Maps"
                 >
                   {room.address.street}, {room.address.ward.name},{" "}
@@ -213,7 +242,7 @@ export default function RoomVipCard({
               </div>
 
               {/* Description */}
-              <div className="text-sm text-slate-500 italic mb-1 sm:mb-2 line-clamp-1 sm:line-clamp-2 leading-tight">
+              <div className="mb-1 text-sm italic leading-tight text-slate-500 sm:mb-2 line-clamp-1 sm:line-clamp-2">
                 {room.description && room.description.trim().length > 0
                   ? room.description
                       .replace(/\n+/g, " ")
@@ -251,7 +280,7 @@ export default function RoomVipCard({
                     Price per month
                   </span>
                   <div className="flex items-baseline gap-1">
-                    <span className="text-xl sm:text-2xl font-bold text-emerald-600">
+                    <span className="text-xl font-bold sm:text-2xl text-emerald-600">
                       {room.priceMonth.toLocaleString("en-US")}
                     </span>
                     <span className="text-sm text-slate-600">VNĐ</span>
@@ -295,10 +324,10 @@ export default function RoomVipCard({
                 alt="Host avatar"
                 width={24}
                 height={24}
-                className="sm:w-7 sm:h-7 rounded-full border border-slate-200/60 object-cover shadow-sm"
+                className="object-cover border rounded-full shadow-sm sm:w-7 sm:h-7 border-slate-200/60"
               />
               <div className="flex-1">
-                <div className="font-medium text-slate-900 text-sm">
+                <div className="text-sm font-medium text-slate-900">
                   {room.landlord.landlordProfile.fullName}
                 </div>
                 <div className="text-xs text-slate-500">
@@ -310,11 +339,11 @@ export default function RoomVipCard({
             {/* Contact Info */}
             <div className="flex items-center gap-1.5 bg-slate-100/80 px-2 py-1 sm:py-1.5 rounded-lg backdrop-blur-sm border border-slate-200/60 w-full sm:w-auto">
               <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse flex-shrink-0"></div>
-              <div className="min-w-0 flex-1">
-                <div className="text-xs text-slate-500 font-medium">
+              <div className="flex-1 min-w-0">
+                <div className="text-xs font-medium text-slate-500">
                   Contact
                 </div>
-                <div className="text-sm font-semibold text-slate-800 truncate">
+                <div className="text-sm font-semibold truncate text-slate-800">
                   {room.landlord.landlordProfile.phoneNumber
                     ? room.landlord.landlordProfile.phoneNumber
                     : room.landlord.landlordProfile.email}
@@ -322,6 +351,9 @@ export default function RoomVipCard({
               </div>
             </div>
           </div>
+          <span className="flex items-center ml-2 text-gray-500 dark:text-gray-300">
+        {/* <FaEye className="mr-1" /> {viewCount} */}
+      </span>
         </div>
       </div>
     </>

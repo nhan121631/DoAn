@@ -1,9 +1,9 @@
 "use client";
 
 import Image from "next/image";
-import React, { useEffect, useState } from "react";
+import React, {useRef, useEffect, useState } from "react";
 // framer-motion import removed
-import { URL_IMAGE } from "@/services/Constant";
+import { URL_IMAGE, API_URL  } from "@/services/Constant";
 import { RoomInUser } from "@/types/types";
 import { FaMapMarkerAlt, FaRegCheckCircle } from "react-icons/fa";
 import { PiRuler } from "react-icons/pi";
@@ -12,6 +12,9 @@ import { useRouter } from "next/navigation";
 import { useCompareStore } from "@/stores/CompareStore";
 import { message } from "antd";
 import RoomCardActions from "./RoomCardActions";
+// import { useRef, useState } from "react";
+// import { FaEye } from "react-icons/fa";
+
 
 export interface RoomCardProps {
   room: RoomInUser;
@@ -58,10 +61,33 @@ const RoomCard: React.FC<RoomCardProps> = ({
     return new Intl.NumberFormat("vi-VN").format(price);
   };
 
+  const [viewCount, setViewCount] = useState(room.viewCount ?? 0);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const [hasIncreasedView, setHasIncreasedView] = useState(false);
+const handleMouseEnter = () => {
+  if (hasIncreasedView) return; // Nếu đã tăng view thì không tăng nữa
+  timerRef.current = setTimeout(() => {
+    setViewCount((prev) => prev + 1);
+    setHasIncreasedView(true); // Đánh dấu đã tăng view
+    fetch(`${API_URL}/rooms/${room.id}/view`, { method: "POST" }).then(() => {
+      fetch(`${API_URL}/rooms/${room.id}`)
+        .then(res => res.json())
+        .then(data => setViewCount(data.viewCount ?? 0));
+    });
+  }, 5000);
+};
+
+const handleMouseLeave = () => {
+  if (timerRef.current) clearTimeout(timerRef.current);
+  setHasIncreasedView(false); // Cho phép tăng lại nếu rời chuột và hover lại
+};
   return (
     <>
       {contextHolder}
-      <div className="group relative w-full max-w-sm mx-auto bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 hover:scale-[1.02] border border-gray-100/50 backdrop-blur-sm">
+      <div
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+       className="group relative w-full max-w-sm mx-auto bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 hover:scale-[1.02] border border-gray-100/50 backdrop-blur-sm">
         {/* Image Container */}
         <div className="relative w-full h-64 overflow-hidden">
           <Image
@@ -81,17 +107,21 @@ const RoomCard: React.FC<RoomCardProps> = ({
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20" />
 
           {/* Heart Button - Top Right */}
-          <div className="absolute top-4 right-4 z-30">
+          <div className="absolute z-30 top-4 right-4">
             <RoomCardActions
               room={room}
               isFavorite={isFavorite}
               onFavoriteChange={onFavoriteChange}
               showHeartOnly={true}
             />
+            {/* <span className="flex items-center ml-2 text-gray-500 dark:text-gray-300">
+      <FaEye className="mr-1" /> {viewCount}
+    </span> */}
           </div>
+          
 
           {/* Status Badges - Top Left */}
-          <div className="absolute top-4 left-4 z-30 flex gap-2">
+          <div className="absolute z-30 flex gap-2 top-4 left-4">
             {isForSale && (
               <span className="px-3 py-1.5 text-xs font-bold text-white bg-gradient-to-r from-green-500 to-emerald-600 rounded-full shadow-lg backdrop-blur-sm border border-white/20">
                 FOR SALE
@@ -131,7 +161,7 @@ const RoomCard: React.FC<RoomCardProps> = ({
 
           {/* Title */}
           <div>
-            <h3 className="text-lg font-bold text-gray-900 line-clamp-2 group-hover:text-blue-600 transition-colors duration-300">
+            <h3 className="text-lg font-bold text-gray-900 transition-colors duration-300 line-clamp-2 group-hover:text-blue-600">
               {room.title || "Beautiful Room Available"}
             </h3>
           </div>
@@ -167,7 +197,7 @@ const RoomCard: React.FC<RoomCardProps> = ({
           </p>
 
           {/* Price and CTA */}
-          <div className="space-y-3 pt-2 border-t border-gray-100">
+          <div className="pt-2 space-y-3 border-t border-gray-100">
             <div>
               <span className="text-sm text-gray-600">Price per month</span>
               <div className="flex items-baseline gap-1">

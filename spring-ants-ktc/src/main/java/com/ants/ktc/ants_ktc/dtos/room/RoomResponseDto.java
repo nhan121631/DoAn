@@ -40,5 +40,7 @@ public class RoomResponseDto {
     private List<ConvenientResponseDto> convenients;
     private String typepost;
     private UUID userId;
+    private long favoriteCount;
+    private long viewCount;
 
 }

@@ -1,6 +1,8 @@
 import BookingForm from "@/app/landlord/components/booking-room/BookingForm";
 import Convenient from "@/app/landlord/components/room-detail/convenient";
 import FeedbackLayout from "@/app/landlord/components/room-detail/Feedback";
+import FavoriteCount from "@/app/landlord/components/room-detail/FavoriteCount";
+import IncreaseView from "@/app/landlord/components/room-detail/IncreaseView";
 import MapSection from "@/app/landlord/components/room-detail/map";
 import { Slide } from "@/app/landlord/components/room-detail/Slide";
 import RightSidebar from "@/app/users/components/RightSidebar";
@@ -19,6 +21,7 @@ import {
   Users,
   Zap,
 } from "lucide-react";
+// import { FaEye, FaHeart } from "react-icons/fa";
 
 export const dynamic = "force-static";
 export const dynamicParams = true;
@@ -44,14 +47,14 @@ export default async function Page({
   const room = await getRoomById(id);
   if (!room) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
-        <div className="text-center p-8">
-          <div className="text-6xl text-gray-400 mb-4">🏠</div>
-          <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">
+      <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-900">
+        <div className="p-8 text-center">
+          <div className="mb-4 text-6xl text-gray-400">🏠</div>
+          <h2 className="mb-2 text-2xl font-bold text-gray-800 dark:text-white">
             Room not found
           </h2>
           <p className="text-gray-600 dark:text-gray-400">
-            The room you&39;re looking for doesn&39;t exist or has been removed.
+            The room you&#39;re looking for doesn&#39;t exist or has been removed.
           </p>
         </div>
       </div>
@@ -60,22 +63,22 @@ export default async function Page({
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
-      <div className="container mx-auto px-4 py-6">
-        <div className="flex flex-col lg:flex-row gap-6">
+      <div className="container px-4 py-6 mx-auto">
+        <div className="flex flex-col gap-6 lg:flex-row">
           {/* Main Content */}
           <div className="w-full lg:w-2/3">
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden">
+            <div className="overflow-hidden bg-white shadow-xl dark:bg-gray-800 rounded-2xl">
               {/* Header Section with Gradient */}
-              <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-6 text-white">
+              <div className="p-6 text-white bg-gradient-to-r from-blue-600 to-purple-600">
                 <div className="flex items-center gap-3 mb-3">
-                  <span className="bg-white/20 backdrop-blur-sm font-medium text-sm px-4 py-2 rounded-full border border-white/30">
+                  <span className="px-4 py-2 text-sm font-medium border rounded-full bg-white/20 backdrop-blur-sm border-white/30">
                     {room.typepost
                       ? room.typepost.charAt(0).toUpperCase() +
                         room.typepost.slice(1)
                       : "Room"}
                   </span>
                 </div>
-                <h1 className="text-3xl font-bold mb-2">
+                <h1 className="mb-2 text-3xl font-bold">
                   {room.title || "Premium Room for Rent"}
                 </h1>
                 <div className="flex items-center gap-2">
@@ -113,19 +116,19 @@ export default async function Page({
 
               {/* Room Details Grid - Enhanced */}
               <div className="p-6">
-                <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-6 flex items-center gap-2">
+                <h2 className="flex items-center gap-2 mb-6 text-2xl font-bold text-gray-800 dark:text-white">
                   <Home className="w-6 h-6 text-blue-600" />
                   Room Specifications
                 </h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+                <div className="grid grid-cols-1 gap-4 mb-8 sm:grid-cols-2 lg:grid-cols-3">
                   {/* Area */}
-                  <div className="group p-5 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-xl border border-blue-200 dark:border-blue-700 hover:shadow-lg transition-all duration-300 hover:scale-105">
+                  <div className="p-5 transition-all duration-300 border border-blue-200 group bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-xl dark:border-blue-700 hover:shadow-lg hover:scale-105">
                     <div className="flex items-center gap-4">
-                      <div className="p-3 bg-blue-500 rounded-xl shadow-lg group-hover:bg-blue-600 transition-colors">
+                      <div className="p-3 transition-colors bg-blue-500 shadow-lg rounded-xl group-hover:bg-blue-600">
                         <Home className="w-6 h-6 text-white" />
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-blue-700 dark:text-blue-300 mb-1">
+                        <p className="mb-1 text-sm font-medium text-blue-700 dark:text-blue-300">
                           Area
                         </p>
                         <p className="text-xl font-bold text-blue-900 dark:text-blue-100">
@@ -134,15 +137,14 @@ export default async function Page({
                       </div>
                     </div>
                   </div>
-
                   {/* Length */}
-                  <div className="group p-5 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 rounded-xl border border-green-200 dark:border-green-700 hover:shadow-lg transition-all duration-300 hover:scale-105">
+                  <div className="p-5 transition-all duration-300 border border-green-200 group bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 rounded-xl dark:border-green-700 hover:shadow-lg hover:scale-105">
                     <div className="flex items-center gap-4">
-                      <div className="p-3 bg-green-500 rounded-xl shadow-lg group-hover:bg-green-600 transition-colors">
+                      <div className="p-3 transition-colors bg-green-500 shadow-lg rounded-xl group-hover:bg-green-600">
                         <Ruler className="w-6 h-6 text-white" />
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-green-700 dark:text-green-300 mb-1">
+                        <p className="mb-1 text-sm font-medium text-green-700 dark:text-green-300">
                           Length
                         </p>
                         <p className="text-xl font-bold text-green-900 dark:text-green-100">
@@ -153,15 +155,14 @@ export default async function Page({
                       </div>
                     </div>
                   </div>
-
                   {/* Width */}
-                  <div className="group p-5 bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 rounded-xl border border-purple-200 dark:border-purple-700 hover:shadow-lg transition-all duration-300 hover:scale-105">
+                  <div className="p-5 transition-all duration-300 border border-purple-200 group bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 rounded-xl dark:border-purple-700 hover:shadow-lg hover:scale-105">
                     <div className="flex items-center gap-4">
-                      <div className="p-3 bg-purple-500 rounded-xl shadow-lg group-hover:bg-purple-600 transition-colors">
+                      <div className="p-3 transition-colors bg-purple-500 shadow-lg rounded-xl group-hover:bg-purple-600">
                         <Ruler className="w-6 h-6 text-white" />
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-purple-700 dark:text-purple-300 mb-1">
+                        <p className="mb-1 text-sm font-medium text-purple-700 dark:text-purple-300">
                           Width
                         </p>
                         <p className="text-xl font-bold text-purple-900 dark:text-purple-100">
@@ -172,15 +173,14 @@ export default async function Page({
                       </div>
                     </div>
                   </div>
-
                   {/* Max People */}
-                  <div className="group p-5 bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 rounded-xl border border-orange-200 dark:border-orange-700 hover:shadow-lg transition-all duration-300 hover:scale-105">
+                  <div className="p-5 transition-all duration-300 border border-orange-200 group bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 rounded-xl dark:border-orange-700 hover:shadow-lg hover:scale-105">
                     <div className="flex items-center gap-4">
-                      <div className="p-3 bg-orange-500 rounded-xl shadow-lg group-hover:bg-orange-600 transition-colors">
+                      <div className="p-3 transition-colors bg-orange-500 shadow-lg rounded-xl group-hover:bg-orange-600">
                         <Users className="w-6 h-6 text-white" />
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-orange-700 dark:text-orange-300 mb-1">
+                        <p className="mb-1 text-sm font-medium text-orange-700 dark:text-orange-300">
                           Max People
                         </p>
                         <p className="text-xl font-bold text-orange-900 dark:text-orange-100">
@@ -191,15 +191,14 @@ export default async function Page({
                       </div>
                     </div>
                   </div>
-
                   {/* Electricity Price */}
-                  <div className="group p-5 bg-gradient-to-br from-yellow-50 to-yellow-100 dark:from-yellow-900/20 dark:to-yellow-800/20 rounded-xl border border-yellow-200 dark:border-yellow-700 hover:shadow-lg transition-all duration-300 hover:scale-105">
+                  <div className="p-5 transition-all duration-300 border border-yellow-200 group bg-gradient-to-br from-yellow-50 to-yellow-100 dark:from-yellow-900/20 dark:to-yellow-800/20 rounded-xl dark:border-yellow-700 hover:shadow-lg hover:scale-105">
                     <div className="flex items-center gap-4">
-                      <div className="p-3 bg-yellow-500 rounded-xl shadow-lg group-hover:bg-yellow-600 transition-colors">
+                      <div className="p-3 transition-colors bg-yellow-500 shadow-lg rounded-xl group-hover:bg-yellow-600">
                         <Zap className="w-6 h-6 text-white" />
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-yellow-700 dark:text-yellow-300 mb-1">
+                        <p className="mb-1 text-sm font-medium text-yellow-700 dark:text-yellow-300">
                           Electricity
                         </p>
                         <p className="text-lg font-bold text-yellow-900 dark:text-yellow-100">
@@ -212,15 +211,14 @@ export default async function Page({
                       </div>
                     </div>
                   </div>
-
                   {/* Water Price */}
-                  <div className="group p-5 bg-gradient-to-br from-cyan-50 to-cyan-100 dark:from-cyan-900/20 dark:to-cyan-800/20 rounded-xl border border-cyan-200 dark:border-cyan-700 hover:shadow-lg transition-all duration-300 hover:scale-105">
+                  <div className="p-5 transition-all duration-300 border group bg-gradient-to-br from-cyan-50 to-cyan-100 dark:from-cyan-900/20 dark:to-cyan-800/20 rounded-xl border-cyan-200 dark:border-cyan-700 hover:shadow-lg hover:scale-105">
                     <div className="flex items-center gap-4">
-                      <div className="p-3 bg-cyan-500 rounded-xl shadow-lg group-hover:bg-cyan-600 transition-colors">
+                      <div className="p-3 transition-colors shadow-lg bg-cyan-500 rounded-xl group-hover:bg-cyan-600">
                         <Droplets className="w-6 h-6 text-white" />
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-cyan-700 dark:text-cyan-300 mb-1">
+                        <p className="mb-1 text-sm font-medium text-cyan-700 dark:text-cyan-300">
                           Water
                         </p>
                         <p className="text-lg font-bold text-cyan-900 dark:text-cyan-100">
@@ -237,12 +235,12 @@ export default async function Page({
 
                 {/* Address Section - Enhanced */}
                 <div className="mb-8">
-                  <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
+                  <h3 className="flex items-center gap-2 mb-4 text-xl font-bold text-gray-800 dark:text-white">
                     <MapPin className="w-5 h-5 text-red-600" />
                     Location Details
                   </h3>
-                  <div className="bg-gradient-to-r from-red-50 to-pink-50 dark:from-red-900/20 dark:to-pink-900/20 p-6 rounded-xl border border-red-200 dark:border-red-700">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                  <div className="p-6 border border-red-200 bg-gradient-to-r from-red-50 to-pink-50 dark:from-red-900/20 dark:to-pink-900/20 rounded-xl dark:border-red-700">
+                    <div className="grid grid-cols-1 gap-4 text-sm sm:grid-cols-2">
                       <div className="space-y-3">
                         <div className="flex items-start gap-2">
                           <span className="font-semibold text-red-700 dark:text-red-300 min-w-[70px]">
@@ -287,13 +285,13 @@ export default async function Page({
 
                 {/* Posted Date - Enhanced */}
                 <div className="mb-8">
-                  <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 p-5 rounded-xl border border-green-200 dark:border-green-700">
+                  <div className="p-5 border border-green-200 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-xl dark:border-green-700">
                     <div className="flex items-center gap-3">
                       <div className="p-2 bg-green-500 rounded-lg">
                         <Calendar className="w-5 h-5 text-white" />
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-green-700 dark:text-green-300 mb-1">
+                        <p className="mb-1 text-sm font-medium text-green-700 dark:text-green-300">
                           Posted Date
                         </p>
                         <p className="text-lg font-bold text-green-900 dark:text-green-100">
@@ -314,9 +312,74 @@ export default async function Page({
                   </div>
                 </div>
 
+                {/* Room Info Card */}
+                <div className="mt-6 p-5 rounded-lg bg-[#f9f9f9] dark:bg-[#232b3b] shadow-sm flex flex-col gap-4">
+                  <div className="flex items-center mb-2">
+                    <span className="px-2 mr-2 text-xl font-bold text-white bg-red-500 rounded">
+                      {room.typepost
+                        ? room.typepost.charAt(0).toUpperCase() +
+                          room.typepost.slice(1)
+                        : ""}
+                    </span>
+                    <span className="text-[#e53935] font-semibold text-xl mr-2 dark:text-[#ff6b6b]">
+                      {room.title || "Room for rent"}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-4 mb-2">
+                    <span className="text-lg font-bold text-green-700 dark:text-green-400">
+                      {room.priceMonth
+                        ? `${room.priceMonth.toLocaleString("vi-VN")} VND/month`
+                        : ""}
+                    </span>
+                    <span className="text-base text-gray-500 dark:text-gray-300">
+                      · {room.area ? `${room.area} m²` : ""}
+                    </span>
+                    <IncreaseView roomId={room.id} />
+                    <FavoriteCount roomId={room.id} />
+                  </div>
+                  <div className="text-gray-700 dark:text-gray-200 text-[15px] mb-1 flex justify-start">
+                    <span className="w-1/5">Ward</span>
+                    <span className="w-4/5 ml-1">
+                      {room.address?.ward?.name || ""}
+                    </span>
+                  </div>
+                  <div className="text-gray-700 dark:text-gray-200 text-[15px] mb-1 flex justify-start">
+                    <span className="w-1/5">District:</span>
+                    <span className="w-4/5 ml-1">
+                      {room.address?.ward?.district?.name || ""}
+                    </span>
+                  </div>
+                  <div className="text-gray-700 dark:text-gray-200 text-[15px] mb-1 flex justify-start">
+                    <span className="w-1/5">City/Province:</span>
+                    <span className="w-4/5 ml-1">
+                      {room.address?.ward?.district?.province?.name || ""}
+                    </span>
+                  </div>
+                  <div className="text-gray-700 dark:text-gray-200 text-[15px] mb-1 flex justify-start">
+                    <span className="w-1/5">Address:</span>
+                    <span className="w-4/5 ml-1">{room.address?.street || ""}</span>
+                  </div>
+                  <div className="text-gray-700 dark:text-gray-200 text-[15px] mb-1 flex justify-start">
+                    <span className="w-1/5">Post Start Date:</span>
+                    <span className="ml-1">
+                      {room.postStartDate
+                        ? new Date(room.postStartDate).toLocaleString()
+                        : ""}
+                    </span>
+                  </div>
+                  <div className="text-gray-700 dark:text-gray-200 text-[15px] mb-1 flex justify-start">
+                    <span className="w-1/5">Post End Date:</span>
+                    <span className="ml-1">
+                      {room.postEndDate
+                        ? new Date(room.postEndDate).toLocaleString()
+                        : ""}
+                    </span>
+                  </div>
+                </div>
+
                 {/* Booking Form - Enhanced */}
                 <div className="mb-8">
-                  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-6 rounded-xl border border-blue-200 dark:border-blue-700">
+                  <div className="p-6 border border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl dark:border-blue-700">
                     <BookingForm
                       roomId={room.id}
                       roomTitle={room.title || "Room for rent"}
@@ -331,7 +394,7 @@ export default async function Page({
                     <div className="w-full border-t border-gray-200 dark:border-gray-700"></div>
                   </div>
                   <div className="relative flex justify-center text-sm">
-                    <span className="px-4 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">
+                    <span className="px-4 text-gray-500 bg-white dark:bg-gray-800 dark:text-gray-400">
                       Room Details
                     </span>
                   </div>
@@ -339,11 +402,11 @@ export default async function Page({
 
                 {/* Description Section - Enhanced */}
                 <div className="mb-8">
-                  <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
+                  <h2 className="flex items-center gap-2 mb-4 text-xl font-bold text-gray-800 dark:text-white">
                     <FileText className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                     Description
                   </h2>
-                  <div className="bg-gray-50 dark:bg-gray-800/50 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
+                  <div className="p-6 border border-gray-200 bg-gray-50 dark:bg-gray-800/50 rounded-xl dark:border-gray-700">
                     <div className="prose dark:prose-invert max-w-none">
                       {room.description ? (
                         room.description
@@ -351,15 +414,15 @@ export default async function Page({
                           .map((line: string, idx: number) => (
                             <p
                               key={idx}
-                              className="mb-3 text-gray-700 dark:text-gray-300 leading-relaxed"
+                              className="mb-3 leading-relaxed text-gray-700 dark:text-gray-300"
                             >
                               {line || <span className="opacity-50">•</span>}
                             </p>
                           ))
                       ) : (
-                        <div className="text-center py-8">
-                          <FileText className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-                          <p className="text-gray-500 dark:text-gray-400 italic">
+                        <div className="py-8 text-center">
+                          <FileText className="w-12 h-12 mx-auto mb-3 text-gray-400" />
+                          <p className="italic text-gray-500 dark:text-gray-400">
                             No description available for this room
                           </p>
                         </div>
@@ -379,7 +442,7 @@ export default async function Page({
                     <div className="w-full border-t border-gray-200 dark:border-gray-700"></div>
                   </div>
                   <div className="relative flex justify-center text-sm">
-                    <span className="px-4 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">
+                    <span className="px-4 text-gray-500 bg-white dark:bg-gray-800 dark:text-gray-400">
                       Community & Location
                     </span>
                   </div>
@@ -387,22 +450,22 @@ export default async function Page({
 
                 {/* Feedback Section - Enhanced */}
                 <div className="mb-8">
-                  <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
+                  <h2 className="flex items-center gap-2 mb-4 text-xl font-bold text-gray-800 dark:text-white">
                     <MessageSquare className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                     Reviews & Comments
                   </h2>
-                  <div className="bg-white dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+                  <div className="overflow-hidden bg-white border border-gray-200 dark:bg-gray-800/50 rounded-xl dark:border-gray-700">
                     <FeedbackLayout roomId={id} />
                   </div>
                 </div>
 
                 {/* Map Section - Enhanced */}
                 <div className="mb-8">
-                  <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
+                  <h2 className="flex items-center gap-2 mb-4 text-xl font-bold text-gray-800 dark:text-white">
                     <Map className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                     Location & Map
                   </h2>
-                  <div className="bg-white dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden shadow-lg">
+                  <div className="overflow-hidden bg-white border border-gray-200 shadow-lg dark:bg-gray-800/50 rounded-xl dark:border-gray-700">
                     <MapSection
                       address={
                         room.address.street +

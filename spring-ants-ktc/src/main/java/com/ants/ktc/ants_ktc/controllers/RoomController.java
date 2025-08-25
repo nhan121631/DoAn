@@ -324,4 +324,10 @@ public class RoomController {
         return ResponseEntity.ok(result);
     }
 
+    // tăng lượt xem
+    @PostMapping("/{roomId}/view")
+    public ResponseEntity<Long> increaseView(@PathVariable UUID roomId) {
+        long viewCount = roomService.increaseView(roomId);
+        return ResponseEntity.ok(viewCount);
+    }
 }
