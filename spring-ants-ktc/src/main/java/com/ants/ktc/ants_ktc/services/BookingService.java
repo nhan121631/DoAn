@@ -86,8 +86,8 @@ public class BookingService {
                 booking.setTenantCount(request.getTenantCount());
                 booking.setStatus(0);
 
-                room.setAvailable(1);
-                roomJpaRepository.save(room);
+                // room.setAvailable(1);
+                // roomJpaRepository.save(room);
                 Booking savedBooking = bookingJpaRepository.save(booking);
                 return convertToResponseDto(savedBooking);
         }
@@ -191,15 +191,31 @@ public class BookingService {
                                 booking.setStatus(newStatus);
 
                                 Room room = booking.getRoom();
-                                room.setAvailable(0);
+                                // Previously set available = 0 here; change to 1 when landlord accepts
+                                // room.setAvailable(0);
+                                room.setAvailable(1);
                                 roomJpaRepository.save(room);
+
+                                // Reject other pending bookings (status = 0) for this room
+                                try {
+                                        int updated = bookingJpaRepository
+                                                        .updateStatusByRoomIdAndOldStatusExcludeBookingId(
+                                                                        room.getId(), 0, 2, booking.getId());
+                                        System.out.println("Updated and rejected " + updated
+                                                        + " other pending bookings for room " + room.getId());
+                                } catch (Exception e) {
+                                        // Log and continue - we don't want to stop the accept flow if this fails
+                                        System.err.println("Failed to reject other pending bookings for room "
+                                                        + room.getId() + ": " + e.getMessage());
+                                }
+
                                 message = "Booking accepted successfully";
                         } else if (currentStatus == 0 && newStatus == 2) {
                                 booking.setStatus(newStatus);
 
-                                Room room = booking.getRoom();
-                                room.setAvailable(0);
-                                roomJpaRepository.save(room);
+                                // Room room = booking.getRoom();
+                                // room.setAvailable(0);
+                                // roomJpaRepository.save(room);
                                 message = "Booking rejected successfully";
                         }
                         // Landlord từ 3 -> 4 (confirm deposit)
