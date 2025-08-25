@@ -9,7 +9,6 @@ export default function FavoriteInitializer() {
   const { status } = useSession();
   
   useEffect(() => {
-    // Chỉ gọi API khi đã đăng nhập
     if (status === "authenticated") {
       initializeFavorites();
     }

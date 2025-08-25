@@ -141,6 +141,21 @@ public class RoomService {
                 return message;
         }
 
+        // view-rooms
+        // public void increaseView(UUID roomId) {
+        // Room room = roomJpaRepository.findById(roomId)
+        // .orElseThrow(() -> new IllegalArgumentException("Room not found"));
+        // room.setViewCount(room.getViewCount() + 1);
+        // roomJpaRepository.save(room);
+        // }
+        public long increaseView(UUID roomId) {
+                Room room = roomJpaRepository.findById(roomId)
+                                .orElseThrow(() -> new IllegalArgumentException("Room not found"));
+                room.setViewCount(room.getViewCount() + 1);
+                roomJpaRepository.save(room);
+                return room.getViewCount();
+        }
+
         /**
          * Enqueue image upload job vào Redis
          */
@@ -868,6 +883,7 @@ public class RoomService {
                                                 .toList())
                                 .images(convertImages(room.getImages()))
                                 .address(convertAddress(room.getAddress()))
+                                .viewCount(room.getViewCount())
                                 .build();
         }
 

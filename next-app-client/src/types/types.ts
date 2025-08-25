@@ -158,6 +158,8 @@ export type RoomInUser = {
   landlord: Landlord;
   isVip?: boolean;
   mainImage?: string;
+  favoriteCount?: number
+  viewCount?: number;
 };
 export type LandlordProfile = {
   id: string;

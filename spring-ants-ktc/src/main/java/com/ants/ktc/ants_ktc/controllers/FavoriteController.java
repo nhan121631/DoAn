@@ -54,4 +54,11 @@ public class FavoriteController {
 
         return ResponseEntity.ok(response);
     }
+
+    // tăng lượt yt
+    @GetMapping("/rooms/{roomId}/count")
+    public ResponseEntity<Long> getFavoriteCount(@PathVariable("roomId") UUID roomId) {
+        long count = favoriteService.countFavoriteByRoom(roomId);
+        return ResponseEntity.ok(count);
+    }
 }

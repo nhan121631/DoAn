@@ -29,4 +29,8 @@ public interface FavoriteJpaRepository extends JpaRepository<Favorite, UUID> {
     @Query("SELECT DISTINCT f.user FROM Favorite f WHERE f.user.profile.email IS NOT NULL")
     List<User> findUsersWithFavorites();
 
+    // tăng lượt yt
+    @Query("SELECT COUNT(f) FROM Favorite f WHERE f.room.id = :roomId")
+    long countByRoomId(@Param("roomId") UUID roomId);
+
 }
