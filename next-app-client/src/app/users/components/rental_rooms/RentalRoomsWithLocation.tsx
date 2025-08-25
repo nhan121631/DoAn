@@ -36,7 +36,7 @@ export default function RentalRoomsWithLocation({
     userRooms,
     isSearching,
     setGuestRooms,
-    setUserRooms,
+    // setUserRooms,
     setLocation,
   } = useLocationContext();
 
