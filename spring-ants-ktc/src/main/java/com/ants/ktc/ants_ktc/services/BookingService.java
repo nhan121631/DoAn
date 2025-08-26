@@ -49,6 +49,9 @@ public class BookingService {
         @Autowired
         private UserJpaRepository userJpaRepository;
 
+        @Autowired
+        private MailService mailService;
+
         @Transactional
         public BookingRoomByUserResponseDto createBooking(UUID userId, BookingRoomRequestDto request) {
                 User user = userJpaRepository.findById(userId)
@@ -251,6 +254,13 @@ public class BookingService {
 
                 bookingJpaRepository.save(booking);
 
+                // Gửi email thông báo cho bên còn lại (không gửi cho người thực hiện action)
+                try {
+                        notifyUsersAboutStatusChange(booking, currentStatus, newStatus, actorRole);
+                } catch (Exception e) {
+                        System.err.println("Failed to send notification emails: " + e.getMessage());
+                }
+
                 return BookingStatusResponseDto.builder()
                                 .bookingId(bookingId)
                                 .oldStatus(currentStatus)
@@ -285,6 +295,75 @@ public class BookingService {
 
                 // Update only isRemoved field for performance
                 bookingJpaRepository.updateIsRemovedById(bookingId, 1);
+        }
+
+        // ======================== Email Notification Helper Methods========================//
+
+        private void notifyUsersAboutStatusChange(Booking booking, int oldStatus, int newStatus, String actorRole) {
+                if (booking == null)
+                        return;
+
+                String roomTitle = booking.getRoom() != null ? booking.getRoom().getTitle() : "(phòng)";
+                String bookingId = booking.getId() != null ? booking.getId().toString() : "";
+
+                String statusTextOld = statusText(oldStatus);
+                String statusTextNew = statusText(newStatus);
+
+                if ("landlords".equalsIgnoreCase(actorRole)) {
+                        // Landlord thực hiện action -> gửi email cho Tenant
+                        String tenantEmail = getUserEmail(booking.getUser());
+                        if (tenantEmail != null && !tenantEmail.isBlank()) {
+                                String tenantName = getUserName(booking.getUser());
+                                try {
+                                        mailService.sendBookingStatusNotification(tenantEmail, tenantName, roomTitle,
+                                                        bookingId, statusTextOld, statusTextNew);
+                                        System.out.println("✅ Notification email sent to tenant: " + tenantEmail);
+                                } catch (Exception e) {
+                                        System.err.println("❌ Failed to send email to tenant " + tenantEmail + ": "
+                                                        + e.getMessage());
+                                }
+                        }
+                } else if ("users".equalsIgnoreCase(actorRole)) {
+                        // User thực hiện action -> gửi email cho Landlord
+                        String landlordEmail = booking.getRoom() != null ? getUserEmail(booking.getRoom().getUser()) : null;
+                        if (landlordEmail != null && !landlordEmail.isBlank()) {
+                                String landlordName = booking.getRoom() != null ? getUserName(booking.getRoom().getUser())
+                                                : "Chủ nhà";
+                                try {
+                                        mailService.sendBookingStatusNotification(landlordEmail, landlordName, roomTitle,
+                                                        bookingId, statusTextOld, statusTextNew);
+                                        System.out.println("✅ Notification email sent to landlord: " + landlordEmail);
+                                } catch (Exception e) {
+                                        System.err.println("❌ Failed to send email to landlord " + landlordEmail + ": "
+                                                        + e.getMessage());
+                                }
+                        }
+                }
+        }
+
+        private String getUserEmail(User user) {
+                if (user == null || user.getProfile() == null)
+                        return null;
+                String email = user.getProfile().getEmail();
+                return (email != null && !email.isBlank()) ? email : null;
+        }
+
+        private String getUserName(User user) {
+                if (user == null || user.getProfile() == null)
+                        return "Người dùng";
+                String fullName = user.getProfile().getFullName();
+                return (fullName != null && !fullName.isBlank()) ? fullName : "Người dùng";
+        }
+
+        private String statusText(int status) {
+                return switch (status) {
+                        case 0 -> "Chờ xử lý";
+                        case 1 -> "Đã chấp nhận";
+                        case 2 -> "Bị từ chối";
+                        case 3 -> "Người thuê đã đặt cọc";
+                        case 4 -> "Đang thuê/Đã xác nhận đặt cọc";
+                        default -> "Trạng thái khác";
+                };
         }
 
         // ======================== Scheduled Tasks
