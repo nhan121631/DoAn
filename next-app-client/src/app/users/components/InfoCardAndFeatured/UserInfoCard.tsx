@@ -395,7 +395,7 @@ export default function UserInfoCard({ id }: { id: string }) {
   
   {/* Like và số gộp chung */}
   <span className="text-xs font-semibold">
-    {isFavorited ? "Favorited" : "Favorite"} {favoriteCount}
+    {isFavorited ? "Favorites" : "Favorite"} {favoriteCount}
   </span>
 </button>
 
