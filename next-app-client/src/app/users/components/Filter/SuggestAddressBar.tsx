@@ -234,6 +234,30 @@ function SuggestAddressBar({
   const { setLocation, setIsSearching, setGuestRooms, setUserRooms } =
     useLocationContext();
 
+  // Hide bar when #why-choose-us is in viewport
+  const [hideBar, setHideBar] = useState(false);
+
+  useEffect(() => {
+    const section = document.getElementById("why-choose-us");
+    if (!section) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setHideBar(true);
+          } else {
+            setHideBar(false);
+          }
+        });
+      },
+      { threshold: 0.1 }
+    );
+
+    observer.observe(section);
+    return () => observer.disconnect();
+  }, []);
+
   // Form state
   const [formData, setFormData] = useState({
     specificAddress: initialValue?.specificAddress || "",
@@ -701,7 +725,9 @@ function SuggestAddressBar({
     <div
       className={`sticky ${
         width ? `w-[100%]` : `lg:w-[80%] md:w-[800px] w-full`
-      }  top-0 z-40 bg-gradient-to-r from-white/95 via-blue-50/80 to-indigo-50/80 backdrop-blur-xl border-b border-blue-200/30 transition-all duration-300`}
+      }  top-0 z-40 bg-gradient-to-r from-white/95 via-blue-50/80 to-indigo-50/80 backdrop-blur-xl border-b border-blue-200/30 transition-all duration-300 ${
+        hideBar ? "opacity-0 pointer-events-none" : "opacity-100"
+      }`}
     >
       {/* Message Toast */}
       {message && (

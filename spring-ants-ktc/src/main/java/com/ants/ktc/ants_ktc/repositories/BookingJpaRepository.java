@@ -6,6 +6,7 @@ import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -94,6 +95,12 @@ public interface BookingJpaRepository extends JpaRepository<Booking, UUID> {
                         "WHERE b.status = 4 AND b.isRemoved = 0")
         List<Booking> findActiveBookingsForAvailabilityCheck();
 
+        // New: Update status for other bookings of the same room (used when one booking is accepted)
+        @Modifying(clearAutomatically = true)
+        @Query("UPDATE Booking b SET b.status = :newStatus WHERE b.room.id = :roomId AND b.status = :oldStatus AND b.id <> :bookingId")
+        int updateStatusByRoomIdAndOldStatusExcludeBookingId(@Param("roomId") UUID roomId,
+                        @Param("oldStatus") int oldStatus, @Param("newStatus") int newStatus,
+                        @Param("bookingId") UUID bookingId);
 
         // Lấy danh sách booking theo user
         // @Query(value = "SELECT b FROM Booking b " +

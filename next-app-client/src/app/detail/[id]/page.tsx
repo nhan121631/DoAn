@@ -21,7 +21,7 @@ import {
   Users,
   Zap,
 } from "lucide-react";
-import { FaEye, FaHeart } from "react-icons/fa";
+// import { FaEye, FaHeart } from "react-icons/fa";
 
 export const dynamic = "force-static";
 export const dynamicParams = true;
