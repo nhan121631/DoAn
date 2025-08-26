@@ -1,7 +1,7 @@
 import BookingForm from "@/app/landlord/components/booking-room/BookingForm";
 import Convenient from "@/app/landlord/components/room-detail/convenient";
-import FeedbackLayout from "@/app/landlord/components/room-detail/Feedback";
 import FavoriteCount from "@/app/landlord/components/room-detail/FavoriteCount";
+import FeedbackLayout from "@/app/landlord/components/room-detail/Feedback";
 import IncreaseView from "@/app/landlord/components/room-detail/IncreaseView";
 import MapSection from "@/app/landlord/components/room-detail/map";
 import { Slide } from "@/app/landlord/components/room-detail/Slide";
@@ -54,7 +54,8 @@ export default async function Page({
             Room not found
           </h2>
           <p className="text-gray-600 dark:text-gray-400">
-            The room you&#39;re looking for doesn&#39;t exist or has been removed.
+            The room you&#39;re looking for doesn&#39;t exist or has been
+            removed.
           </p>
         </div>
       </div>
@@ -116,10 +117,16 @@ export default async function Page({
 
               {/* Room Details Grid - Enhanced */}
               <div className="p-6">
-                <h2 className="flex items-center gap-2 mb-6 text-2xl font-bold text-gray-800 dark:text-white">
-                  <Home className="w-6 h-6 text-blue-600" />
-                  Room Specifications
-                </h2>
+                <div className="flex mb-4 items-left gap-4">
+                  <h2 className="flex items-center gap-2 text-2xl font-bold text-gray-800 dark:text-white m-0">
+                    <Home className="w-6 h-6 text-blue-600" />
+                    Room Specifications
+                  </h2>
+                  <div className="flex items-center gap-3 ml-4">
+                    <IncreaseView roomId={room.id} />
+                    <FavoriteCount roomId={room.id} />
+                  </div>
+                </div>
                 <div className="grid grid-cols-1 gap-4 mb-8 sm:grid-cols-2 lg:grid-cols-3">
                   {/* Area */}
                   <div className="p-5 transition-all duration-300 border border-blue-200 group bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-xl dark:border-blue-700 hover:shadow-lg hover:scale-105">
@@ -309,71 +316,6 @@ export default async function Page({
                         </p>
                       </div>
                     </div>
-                  </div>
-                </div>
-
-                {/* Room Info Card */}
-                <div className="mt-6 p-5 rounded-lg bg-[#f9f9f9] dark:bg-[#232b3b] shadow-sm flex flex-col gap-4">
-                  <div className="flex items-center mb-2">
-                    <span className="px-2 mr-2 text-xl font-bold text-white bg-red-500 rounded">
-                      {room.typepost
-                        ? room.typepost.charAt(0).toUpperCase() +
-                          room.typepost.slice(1)
-                        : ""}
-                    </span>
-                    <span className="text-[#e53935] font-semibold text-xl mr-2 dark:text-[#ff6b6b]">
-                      {room.title || "Room for rent"}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-4 mb-2">
-                    <span className="text-lg font-bold text-green-700 dark:text-green-400">
-                      {room.priceMonth
-                        ? `${room.priceMonth.toLocaleString("vi-VN")} VND/month`
-                        : ""}
-                    </span>
-                    <span className="text-base text-gray-500 dark:text-gray-300">
-                      · {room.area ? `${room.area} m²` : ""}
-                    </span>
-                    <IncreaseView roomId={room.id} />
-                    <FavoriteCount roomId={room.id} />
-                  </div>
-                  <div className="text-gray-700 dark:text-gray-200 text-[15px] mb-1 flex justify-start">
-                    <span className="w-1/5">Ward</span>
-                    <span className="w-4/5 ml-1">
-                      {room.address?.ward?.name || ""}
-                    </span>
-                  </div>
-                  <div className="text-gray-700 dark:text-gray-200 text-[15px] mb-1 flex justify-start">
-                    <span className="w-1/5">District:</span>
-                    <span className="w-4/5 ml-1">
-                      {room.address?.ward?.district?.name || ""}
-                    </span>
-                  </div>
-                  <div className="text-gray-700 dark:text-gray-200 text-[15px] mb-1 flex justify-start">
-                    <span className="w-1/5">City/Province:</span>
-                    <span className="w-4/5 ml-1">
-                      {room.address?.ward?.district?.province?.name || ""}
-                    </span>
-                  </div>
-                  <div className="text-gray-700 dark:text-gray-200 text-[15px] mb-1 flex justify-start">
-                    <span className="w-1/5">Address:</span>
-                    <span className="w-4/5 ml-1">{room.address?.street || ""}</span>
-                  </div>
-                  <div className="text-gray-700 dark:text-gray-200 text-[15px] mb-1 flex justify-start">
-                    <span className="w-1/5">Post Start Date:</span>
-                    <span className="ml-1">
-                      {room.postStartDate
-                        ? new Date(room.postStartDate).toLocaleString()
-                        : ""}
-                    </span>
-                  </div>
-                  <div className="text-gray-700 dark:text-gray-200 text-[15px] mb-1 flex justify-start">
-                    <span className="w-1/5">Post End Date:</span>
-                    <span className="ml-1">
-                      {room.postEndDate
-                        ? new Date(room.postEndDate).toLocaleString()
-                        : ""}
-                    </span>
                   </div>
                 </div>
 

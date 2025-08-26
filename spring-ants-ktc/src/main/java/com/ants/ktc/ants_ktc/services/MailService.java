@@ -180,4 +180,58 @@ public class MailService {
     }
   }
 
+  @Async
+  public void sendBookingStatusNotification(String to, String userName, String roomTitle, String bookingId,
+      String oldStatus, String newStatus) {
+    String subject = "🔔 Cập nhật trạng thái đặt phòng: " + roomTitle;
+
+    String html = String.format(
+        """
+            <div style='font-family: Arial, sans-serif; background: #f6f6f6; padding: 24px;'>
+              <div style='max-width: 500px; margin: auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px #eee; padding: 24px;'>
+                <h2 style='color: #1976d2; text-align: center; margin-bottom: 24px;'>🔔 Cập nhật trạng thái đặt phòng</h2>
+                <p style='font-size: 16px; color: #333; margin-bottom: 16px;'>Xin chào <strong>%s</strong>,</p>
+                <div style='background: #f8f9fa; padding: 16px; border-radius: 8px; margin: 16px 0;'>
+                  <p style='margin: 8px 0; font-size: 16px;'><strong>🏠 Phòng:</strong> %s</p>
+                  <p style='margin: 8px 0; font-size: 16px;'><strong>🆔 Mã đặt phòng:</strong> %s</p>
+                  <p style='margin: 8px 0; font-size: 16px;'><strong>📋 Trạng thái:</strong>
+                    <span style='color: #666;'>%s</span> ➜
+                    <span style='color: #1976d2; font-weight: bold;'>%s</span>
+                  </p>
+                </div>
+                <div style='background: #e3f2fd; padding: 12px; border-radius: 6px; margin: 16px 0;'>
+                  <p style='margin: 4px 0; font-size: 14px; color: #1565c0;'>
+                    📱 Vui lòng đăng nhập vào tài khoản để xem chi tiết và thực hiện các bước tiếp theo.
+                  </p>
+                </div>
+                <hr style='margin: 24px 0;'>
+                <p style='font-size: 14px; color: #888; text-align: center;'>
+                  Email này được gửi tự động từ hệ thống quản lý phòng trọ.<br>
+                  Nếu có thắc mắc, vui lòng liên hệ với chúng tôi.
+                </p>
+              </div>
+            </div>
+            """,
+        userName, roomTitle, bookingId, oldStatus, newStatus);
+
+    try {
+      MimeMessage mimeMessage = emailSender.createMimeMessage();
+      MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+      helper.setTo(to);
+      helper.setSubject(subject);
+      helper.setText(html, true);
+      emailSender.send(mimeMessage);
+      System.out.println("[MailService] Booking status notification sent to: " + to);
+    } catch (Exception e) {
+      System.out.println("[MailService] Failed to send booking status notification: " + e.getMessage());
+      e.printStackTrace();
+      // fallback: send simple text
+      SimpleMailMessage message = new SimpleMailMessage();
+      message.setTo(to);
+      message.setSubject(subject);
+      message.setText("Trạng thái đặt phòng '" + roomTitle + "' đã thay đổi: " + oldStatus + " → " + newStatus);
+      emailSender.send(message);
+    }
+  }
+
 }
