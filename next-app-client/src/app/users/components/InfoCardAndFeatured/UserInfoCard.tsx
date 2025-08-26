@@ -189,7 +189,11 @@ export default function UserInfoCard({ id }: { id: string }) {
             <div className="relative mb-4">
               <div className="relative">
                 <Image
-                  src={URL_IMAGE + landlord.avatar || "/images/useravt.png"}
+                  src={
+                    landlord.avatar
+                      ? URL_IMAGE + landlord.avatar
+                      : "/images/default/avatar.jpg"
+                  }
                   alt="User Avatar"
                   width={90}
                   height={90}

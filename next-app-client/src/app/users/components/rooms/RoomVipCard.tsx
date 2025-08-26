@@ -79,11 +79,13 @@ export default function RoomVipCard({
     const observer = new IntersectionObserver(([entry]) => {
       if (entry.isIntersecting) {
         timer = setTimeout(() => {
-          fetch(`${API_URL}/rooms/${room.id}/view`, { method: "POST" }).then(() => {
-            fetch(`${API_URL}/rooms/${room.id}`)
-              .then(res => res.json())
-              .then(data => setViewCount(data.viewCount ?? 0));
-          });
+          fetch(`${API_URL}/rooms/${room.id}/view`, { method: "POST" }).then(
+            () => {
+              fetch(`${API_URL}/rooms/${room.id}`)
+                .then((res) => res.json())
+                .then((data) => setViewCount(data.viewCount ?? 0));
+            }
+          );
         }, 5000);
       } else {
         if (timer) clearTimeout(timer);
@@ -102,8 +104,10 @@ export default function RoomVipCard({
     <>
       {contextHolder}
       <div className="w-full max-w-5xl px-2 mx-auto sm:px-4">
-        
-        <div ref={ref} className="overflow-hidden transition-all duration-300 bg-white border shadow-sm cursor-pointer rounded-2xl border-gray-100/60 hover:shadow-xl hover:border-slate-200 hover:-translate-y-1 group/card backdrop-blur-sm">
+        <div
+          ref={ref}
+          className="overflow-hidden transition-all duration-300 bg-white border shadow-sm cursor-pointer rounded-2xl border-gray-100/60 hover:shadow-xl hover:border-slate-200 hover:-translate-y-1 group/card backdrop-blur-sm"
+        >
           <div className="flex flex-col items-stretch sm:flex-row">
             {/* IMAGE SECTION */}
             <RoomCartActionsWrapper room={room}>
@@ -320,7 +324,11 @@ export default function RoomVipCard({
           <div className="px-2 sm:px-3 py-1.5 sm:py-2 bg-slate-50/50 border-t border-slate-100/60 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1.5 sm:gap-0 backdrop-blur-sm">
             <div className="flex items-center gap-2">
               <Image
-                src="/images/useravt.png"
+                src={
+                  room.landlord.landlordProfile.avatar
+                    ? URL_IMAGE + room.landlord.landlordProfile.avatar
+                    : "/images/default/avatar.jpg"
+                }
                 alt="Host avatar"
                 width={24}
                 height={24}
@@ -352,8 +360,8 @@ export default function RoomVipCard({
             </div>
           </div>
           <span className="flex items-center ml-2 text-gray-500 dark:text-gray-300">
-        {/* <FaEye className="mr-1" /> {viewCount} */}
-      </span>
+            {/* <FaEye className="mr-1" /> {viewCount} */}
+          </span>
         </div>
       </div>
     </>

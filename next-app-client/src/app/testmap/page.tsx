@@ -105,7 +105,7 @@ export default function RoomMapPage() {
               <div
                 className="flex-1 overflow-y-auto space-y-3 pr-2"
                 style={{
-                  maxHeight: "calc(100vh - 140px)",
+                  maxHeight: "calc(100vh - 100px)",
                 }}
               >
                 <div className="flex w-[750px]">
