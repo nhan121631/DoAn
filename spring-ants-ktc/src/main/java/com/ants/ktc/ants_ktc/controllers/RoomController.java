@@ -304,7 +304,7 @@ public class RoomController {
     @GetMapping("/{roomId}/feedback-access")
     public ResponseEntity<FeedbackAccess> checkFeedbackAccess(
             @PathVariable("roomId") UUID roomId,
-            @RequestParam UUID userId) {
+            @RequestParam("userId") UUID userId) {
         FeedbackAccess access = ratingService.checkUserFeedbackAccess(userId, roomId);
         return ResponseEntity.ok(access);
     }
@@ -326,7 +326,7 @@ public class RoomController {
 
     // tăng lượt xem
     @PostMapping("/{roomId}/view")
-    public ResponseEntity<Long> increaseView(@PathVariable UUID roomId) {
+    public ResponseEntity<Long> increaseView(@PathVariable("roomId") UUID roomId) {
         long viewCount = roomService.increaseView(roomId);
         return ResponseEntity.ok(viewCount);
     }
