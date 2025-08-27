@@ -9,6 +9,7 @@ import {
   MdFavoriteBorder,
   MdHistory,
   MdOutlineLockReset,
+  MdOutlineMessage,
 } from "react-icons/md";
 
 const { Sider } = Layout;
@@ -33,6 +34,7 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
     "/user-dashboard/request-status": "3",
     "/user-dashboard/favorited-rooms": "4",
     "/user-dashboard/change-password": "5",
+    "/user-dashboard/message": "6",
   };
 
   const selectedKey = pathToKey[pathname || ""] || "1";
@@ -162,6 +164,26 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
             label: (
               <Link href="/user-dashboard/change-password">
                 Change Password
+              </Link>
+            ),
+          },
+          {
+            key: "6",
+            icon: (
+              <span
+                style={{
+                  fontSize: 18,
+                  marginRight: 4,
+                  display: "inline-flex",
+                  alignItems: "center",
+                }}
+              >
+                <MdOutlineMessage />
+              </span>
+            ),
+            label: (
+              <Link href="/user-dashboard/message">
+                Message
               </Link>
             ),
           },
