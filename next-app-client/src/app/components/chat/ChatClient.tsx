@@ -32,11 +32,7 @@ export default function ChatClient({
 }: ChatClientProps) {
   const [msg, setMsg] = useState<string>("");
   const { data: session } = useSession();
-  console.log("User avatar URL:", urlAvatar);
   const [sending, setSending] = useState<boolean>(false);
-  // const [messages, setMessages] = useState<
-  //   { id: string; text: string; senderId: string; recipientId: string }[]
-  // >([]);
   const [allMessages, setAllMessages] = useState<
     {
       id: string;
@@ -50,6 +46,7 @@ export default function ChatClient({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // Lắng nghe tin nhắn
   useEffect(() => {
     const q = query(collection(db, "messages"), orderBy("createdAt", "asc"));
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -72,20 +69,22 @@ export default function ChatClient({
     });
     return () => unsubscribe();
   }, [recipientId, senderId]);
+
+  // Cuộn xuống cuối tin nhắn
   useEffect(() => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollTop = messagesEndRef.current.scrollHeight;
+      inputRef.current?.focus();
     }
   }, [allMessages]);
 
   const sendMessage = async () => {
-    if (!msg.trim() || !recipientId || !senderId) return;
-    if (session) {
-      console.log("Sending message:", session.user.userProfile.avatar);
-    }
+    if (!msg.trim() || !recipientId || !senderId || sending) return;
+
     const text = msg.trim();
     setMsg("");
     setSending(true);
+
     try {
       await addDoc(collection(db, "messages"), {
         text,
@@ -95,11 +94,17 @@ export default function ChatClient({
       });
     } catch (err) {
       console.error("Send message error:", err);
+      // Nếu gửi lỗi, giữ lại nội dung để người dùng có thể gửi lại
       setMsg(text);
     } finally {
-      inputRef.current?.focus();
       setSending(false);
-      // KHÔNG cập nhật chatHistory khi gửi tin nhắn
+      // Sử dụng setTimeout với thời gian chờ 0ms để đảm bảo focus
+      // được gọi sau khi component đã render lại
+      setTimeout(() => {
+        if (inputRef.current) {
+          inputRef.current.focus();
+        }
+      }, 0);
     }
   };
 
@@ -196,9 +201,10 @@ export default function ChatClient({
       </div>
 
       {/* Input */}
-      <div className=" bottom-0 left-0 w-full px-4 py-3 border-t border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/80 backdrop-blur flex items-center gap-3 shadow-lg">
+      <div className="bottom-0 left-0 w-full px-4 py-3 border-t border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/80 backdrop-blur flex items-center gap-3 shadow-lg">
         <input
           value={msg}
+          disabled={sending}
           ref={inputRef}
           onChange={(e) => setMsg(e.target.value)}
           placeholder="Type a message..."
@@ -208,7 +214,6 @@ export default function ChatClient({
               sendMessage();
             }
           }}
-          disabled={sending}
           className="flex-1 rounded-full border border-gray-300 dark:border-gray-600 px-5 py-3 text-base bg-white/70 dark:bg-gray-800/70 shadow focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all duration-200 outline-none"
         />
         <button
