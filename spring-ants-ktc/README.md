@@ -75,6 +75,8 @@
 |--------|----------|------|--------|
 | GET | `/profile/{id}` | Get profile by id | ✅ Done |
 | PATCH | `/profile/update` | Update profile | ✅ Done |
+| POST | `/profile/{userId}/preferences` | Add Preferences address | ✅ Done |
+| GET | `/profile/{userId}/preferences` | Get Preferences address by userId | ✅ Done |
 
 ---
 
@@ -84,6 +86,8 @@
 | GET | `/rooms/{id}` | Get room by id | ✅ Done |
 | GET | `/rooms/allroom-vip?page={page}&size={size}` | Get all VIP rooms | ✅ Done |
 | GET | `/rooms/allroom-normal?page={page}&size={size}` | Get all normal rooms | ✅ Done |
+| GET | `/rooms/allroom-normal?page={page}&size={size}&lat={lat}&lng={lng}` | Get all normal rooms with location | ✅ Done |
+| GET | `/rooms/allroom-normal?page={page}&size={size}&lat={lat}&lng={lng}` | Get all normal rooms with location | ✅ Done |
 
 ---
 
@@ -108,6 +112,17 @@
 
 ---
 
+## **Booking**
+| Method | Endpoint | Name | Status |
+|--------|----------|------|--------|
+| POST | `/bookings/user/{roomId}` | Create booking | ✅ Done |
+| GET | `/bookings/user/{userId}/paging?page={page}&size={size}` | Get bookings by userId | ✅ Done |
+| GET | `/bookings/landlord/{landlordId}/paging?page={page}&size={size}` | Get bookings by landlordId | ✅ Done |
+| PATCH | `/bookings/{bookingId}/status` | Update booking status(landlord/user) | ✅ Done |
+| PATCH | `/bookings/{bookingId}/delete?userId={userId}` | Delete booking | ✅ Done |
+
+---
+
 ## **ManageMaintain**
 | Method | Endpoint | Name | Status |
 |--------|----------|------|--------|
@@ -118,11 +133,41 @@
 
 ---
 
+## **Favorite**
+| Method | Endpoint | Name | Status |
+|--------|----------|------|--------|
+| GET | `/favorites?page={page}&size={size}` | Get all room to favorites | ✅ Done |
+| POST | `/favorites/rooms/{roomId}` | Add room to favorites | ✅ Done |
+| DELETE | `/favorites/rooms/{roomId}` | Remove room from favorites | ✅ Done |
+
+---
+
 ## **API Gemini**
 | Method | Endpoint | Name | Status |
 |--------|----------|------|--------|
 | POST | `/ai_search` | ai_search | ✅ Done |
 | POST | `/ai_chatbot` | ai_chatbot | ✅ Done |
+
+---
+
+## **API Contract**
+| Method | Endpoint | Name | Status |
+|--------|----------|------|--------|
+| POST | `/contracts` | Create contract | ✅ Done |
+| GET | `/contracts/tenants/{tenantId}` | Get contracts by tenantId | ✅ Done |
+| GET | `/contracts/landlords/{landlordId}` | Get contracts by landlordId | ✅ Done |
+| GET | | Get con tract by room | ✅ Done |
+| GET | | Get by contract id | ✅ Done |
+
+---
+
+## **API Create Bill**
+| Method | Endpoint | Name | Status |
+|--------|----------|------|--------|
+| POST | `/bills` | Create bill | ✅ Done |
+| GET | | Get bill by contract | ✅ Done |
+| GET | `/bills/tenants/{tenantId}` | Get bills by tenantId | ✅ Done |
+| GET | `/bills/{bill}/paid` | Get bills paid | ✅ Done |
 
 ## **API Chưa hoàn thành**
 Rental room

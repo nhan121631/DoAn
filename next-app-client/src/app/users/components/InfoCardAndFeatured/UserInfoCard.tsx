@@ -65,15 +65,45 @@ export default function UserInfoCard({ id }: { id: string }) {
       const scrollPosition = window.scrollY;
       const threshold = 200; // Sticky after scrolling 200px
 
-      // Get viewport height to ensure we don't make it sticky if there's not enough space
       const viewportHeight = window.innerHeight;
-      const cardElement = document.querySelector("[data-user-info-card]");
-      const cardHeight = cardElement?.getBoundingClientRect().height || 0;
+      const cardElement = document.querySelector(
+        "[data-user-info-card]"
+      ) as HTMLElement | null;
+      if (!cardElement) return;
+      const cardRect = cardElement.getBoundingClientRect();
+      const cardHeight = cardRect.height || 0;
 
       // Only make sticky if there's enough viewport space
       const hasEnoughSpace = viewportHeight > cardHeight + 100; // 100px buffer
 
-      setIsSticky(scrollPosition > threshold && hasEnoughSpace);
+      // By default decide sticky based on scroll and available space
+      let shouldStick = scrollPosition > threshold && hasEnoughSpace;
+
+      // If there's a featured listings card, ensure sticky placement won't overlap it.
+      const featured = document.querySelector(
+        "[data-featured-listings]"
+      ) as HTMLElement | null;
+      if (featured && shouldStick) {
+        const featuredRect = featured.getBoundingClientRect();
+        // When sticky, the card will be positioned at top:10 (top-10). Compute its bottom in viewport coords.
+        const stickyTop = 10; // matches 'top-10' class
+        const stickyBottom = stickyTop + cardHeight;
+        // If the sticky card's bottom would be below the featured card's top, disable sticky to avoid overlap
+        if (stickyBottom + 8 > featuredRect.top) {
+          shouldStick = false;
+        }
+      }
+
+      setIsSticky(shouldStick);
+
+      // Adjust featured card spacing when sticky, otherwise reset
+      if (featured && cardElement) {
+        if (shouldStick) {
+          featured.style.marginTop = cardHeight + 16 + "px";
+        } else {
+          featured.style.marginTop = "";
+        }
+      }
     };
 
     window.addEventListener("scroll", handleScroll);
