@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class RoomUpdateExpireDateResponseDto {
+    
     Date postStartDate;
     Date postEndDate;
     String message;
