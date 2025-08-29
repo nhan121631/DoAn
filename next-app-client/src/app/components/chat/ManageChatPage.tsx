@@ -23,6 +23,7 @@ export default function ManageChatPage() {
   const [selectedUserId, setSelectedUserId] = useState<string>("");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string>("");
+  const [showSidebar, setShowSidebar] = useState(true);
 
   // Use a ref for a value that doesn't trigger re-render
   const lastReadTimestamps = useRef(new Map<string, Date>());
@@ -70,9 +71,19 @@ export default function ManageChatPage() {
     async (user: ChatUser) => {
       setSelectedUserId(user.id);
       await markConversationAsRead(landlordId, user.id);
+      // Ẩn sidebar trên mobile khi chọn user
+      if (window.innerWidth < 768) {
+        setShowSidebar(false);
+      }
     },
     [landlordId]
   );
+
+  // Handle back to sidebar on mobile
+  const handleBackToSidebar = useCallback(() => {
+    setShowSidebar(true);
+    setSelectedUserId("");
+  }, []);
 
   // Sort user list
   const sortedUserList = useMemo(() => {
@@ -85,10 +96,14 @@ export default function ManageChatPage() {
 
   // Render logic remains the same
   return (
-    <div className="flex min-h-[calc(100vh-4rem)] bg-gradient-to-br from-slate-50 to-blue-50 dark:bg-gray-900">
+    <div className="flex h-full bg-gradient-to-br from-slate-50 to-blue-50 dark:bg-gray-900 overflow-hidden">
       {/* Sidebar */}
       <div
-        className={`w-80 transition-all duration-500 ease-in-out overflow-hidden bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-r border-slate-200/50 shadow-xl`}
+        className={`${
+          showSidebar ? 'w-80' : 'w-0'
+        } md:w-80 transition-all duration-500 ease-in-out overflow-hidden bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-r border-slate-200/50 shadow-xl flex flex-col ${
+          showSidebar ? 'block' : 'hidden md:flex'
+        }`}
       >
         <div className="p-6">
           <div className="mb-6">
@@ -120,7 +135,7 @@ export default function ManageChatPage() {
               ))}
             </div>
           ) : (
-            <div className="space-y-3 max-h-[calc(100vh-200px)] overflow-y-auto scrollbar-none">
+            <div className="space-y-3 flex-1 overflow-y-auto scrollbar-none">
               {sortedUserList.length === 0 && (
                 <div className="text-center py-12 animate-fade-in">
                   <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-slate-200 to-slate-300 dark:from-gray-800 dark:to-gray-700 flex items-center justify-center">
@@ -262,10 +277,27 @@ export default function ManageChatPage() {
       </div>
 
       {/* Chat Area */}
-      <div className="flex-1 flex flex-col bg-white/50 dark:bg-gray-900/60 backdrop-blur-sm">
-        <div className="flex-1 flex items-center justify-center w-full h-full">
+      <div className={`flex-1 flex flex-col bg-white/50 dark:bg-gray-900/60 backdrop-blur-sm ${
+        !showSidebar || selectedUserId ? 'block' : 'hidden md:flex'
+      }`}>
+        {/* Mobile Back Button */}
+        {selectedUserId && (
+          <div className="md:hidden flex items-center p-3 bg-white border-b border-gray-200 flex-shrink-0">
+            <button
+              onClick={handleBackToSidebar}
+              className="flex items-center gap-2 text-blue-600 hover:text-blue-700 transition-colors"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+              <span className="font-medium">Back to Conversations</span>
+            </button>
+          </div>
+        )}
+        
+        <div className="flex-1 min-h-0 flex items-center justify-center w-full">
           {selectedUserId ? (
-            <div className="flex-1 h-[calc(100vh-70px)] animate-fade-in flex flex-col">
+            <div className="w-full h-full animate-fade-in">
               <ChatClient
                 recipientId={selectedUserId}
                 senderId={landlordId}

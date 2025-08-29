@@ -10,8 +10,10 @@ import {
   doc,
   setDoc,
   serverTimestamp,
+  addDoc,
 } from "firebase/firestore";
 import { getFullName } from "@/services/ProfileService";
+import { API_URL, URL_IMAGE } from "@/services/Constant";
 
 // Interface for chat user data
 export interface ChatUser {
@@ -21,6 +23,18 @@ export interface ChatUser {
   lastMessageTime?: Date;
   lastMessageText?: string;
   unreadCount?: number;
+}
+
+// Interface for message data
+export interface Message {
+  id: string;
+  text?: string;
+  imageUrl?: string;
+  imageFileName?: string;
+  senderId: string;
+  recipientId: string;
+  createdAt: Date | null;
+  messageType: 'text' | 'image';
 }
 
 /**
@@ -73,7 +87,9 @@ export const listenForConversations = (
           const lastMessageTime = data.createdAt
             ? new Date(data.createdAt.seconds * 1000)
             : new Date();
-          const lastMessageText = data.text || "";
+          const lastMessageText = data.messageType === 'image' 
+            ? "📷 Đã gửi một ảnh" 
+            : (data.text || "");
           conversations.set(otherUserId, {
             id: otherUserId,
             lastMessageTime,
@@ -152,4 +168,77 @@ export const markConversationAsRead = async (
     },
     { merge: true }
   );
+};
+
+/**
+ * Upload ảnh lên backend API
+ * @param file File ảnh cần upload
+ * @returns Promise<{ imageUrl: string, fileName: string }>
+ */
+export const uploadImageToBackend = async (
+  file: File
+): Promise<{ imageUrl: string; fileName: string }> => {
+  const formData = new FormData();
+  formData.append('image', file);
+
+  const response = await fetch(`${API_URL.replace('/api', '')}/api/chat/upload-image`, {
+    method: 'POST',
+    body: formData,
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.error || 'Upload failed');
+  }
+
+  const result = await response.json();
+  return {
+    imageUrl: `${URL_IMAGE}${result.imageUrl}`,
+    fileName: result.fileName || file.name,
+  };
+};
+
+/**
+ * Gửi tin nhắn ảnh
+ * @param file File ảnh
+ * @param senderId ID người gửi
+ * @param recipientId ID người nhận
+ * @returns Promise<void>
+ */
+export const sendImageMessage = async (
+  file: File,
+  senderId: string,
+  recipientId: string
+): Promise<void> => {
+  const { imageUrl, fileName } = await uploadImageToBackend(file);
+
+  await addDoc(collection(db, "messages"), {
+    imageUrl: imageUrl,
+    imageFileName: fileName,
+    senderId: senderId,
+    recipientId: recipientId,
+    createdAt: serverTimestamp(),
+    messageType: 'image',
+  });
+};
+
+/**
+ * Gửi tin nhắn văn bản
+ * @param text Nội dung tin nhắn
+ * @param senderId ID người gửi
+ * @param recipientId ID người nhận
+ * @returns Promise<void>
+ */
+export const sendTextMessage = async (
+  text: string,
+  senderId: string,
+  recipientId: string
+): Promise<void> => {
+  await addDoc(collection(db, "messages"), {
+    text,
+    senderId: senderId,
+    recipientId: recipientId,
+    createdAt: serverTimestamp(),
+    messageType: 'text',
+  });
 };

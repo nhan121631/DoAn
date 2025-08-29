@@ -11,7 +11,7 @@ export async function GET(
     return new Response("Unauthorized", { status: 401 });
   }
 
-  const { id } = params;
+  const { id } = await params;
   const response = await fetch(`${API_URL}/profile/getname/${id}`, {
     method: "GET",
     

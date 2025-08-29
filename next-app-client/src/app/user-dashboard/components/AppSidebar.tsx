@@ -44,7 +44,7 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
       <div
         style={{
           width: collapsed ? 80 : 200,
-          height: "100vh",
+          height: "100%",
           backgroundColor: "#f5f5f5",
           borderRight: "1px solid #d9d9d9",
         }}
@@ -64,7 +64,7 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
       collapsed={collapsed}
       theme={isDark ? "dark" : "light"}
       style={{
-        height: "full",
+        height: "100%",
         borderRight: isDark
           ? "1px solid #4A5565" // dark: slate-700
           : "1px solid #F8FAFC", // light: ant design default

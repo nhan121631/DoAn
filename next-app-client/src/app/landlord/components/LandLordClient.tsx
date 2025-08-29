@@ -16,13 +16,13 @@ export default function LandlordLayoutClient({
 
   return (
     <ThemeProvider>
-      <AntLayout>
+      <div className="h-screen flex">
         <AppSidebar collapsed={collapsed} />
-        <AntLayout className="!min-h-screen bg-gray-50 dark:!bg-[#001529]">
+        <div className="flex-1 flex flex-col bg-gray-50 dark:bg-[#001529]">
           <AppHeader collapsed={collapsed} toggleCollapsed={toggleCollapsed} />
-          {children}
-        </AntLayout>
-      </AntLayout>
+          <div className="flex-1 overflow-auto">{children}</div>
+        </div>
+      </div>
     </ThemeProvider>
   );
 }
