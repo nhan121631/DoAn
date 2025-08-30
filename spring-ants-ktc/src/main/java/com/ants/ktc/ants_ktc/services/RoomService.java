@@ -116,7 +116,7 @@ public class RoomService {
         /**
          * Lưu file tạm thời và tạo message để upload async
          */
-        private ImageUploadMessage prepareAsyncImageUpload(MultipartFile file, Room room) throws Exception {
+        public ImageUploadMessage prepareAsyncImageUpload(MultipartFile file, UUID roomId) throws Exception {
                 // Tạo temporary file
                 String fileName = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
                 Path tempDir = Paths.get(System.getProperty("java.io.tmpdir"), TEMP_DIR_PREFIX);
@@ -125,6 +125,9 @@ public class RoomService {
 
                 // Ghi file vào disk tạm thời
                 Files.write(tempFilePath, file.getBytes());
+
+                Room room = roomJpaRepository.findById(roomId)
+                                .orElseThrow(() -> new IllegalArgumentException("Room not found"));
 
                 // Tạo Image entity với URL tạm thời và room đã có ID
                 Image image = new Image();
@@ -159,7 +162,7 @@ public class RoomService {
         /**
          * Enqueue image upload job vào Redis
          */
-        private void enqueueImageUpload(ImageUploadMessage message) {
+        public void enqueueImageUpload(ImageUploadMessage message) {
                 try {
                         redisTemplate.opsForList().rightPush(IMAGE_UPLOAD_QUEUE, message);
                 } catch (Exception ex) {
@@ -425,7 +428,8 @@ public class RoomService {
                                 if (file != null && !file.isEmpty()) {
                                         try {
                                                 // Tạo image record với URL tạm thời và enqueue upload job
-                                                ImageUploadMessage message = prepareAsyncImageUpload(file, room);
+                                                ImageUploadMessage message = prepareAsyncImageUpload(file,
+                                                                room.getId());
 
                                                 // Lấy image đã tạo
                                                 Image image = imageJpaRepository.findById(message.getImageId())
@@ -590,7 +594,8 @@ public class RoomService {
                                 if (file != null && !file.isEmpty()) {
                                         try {
                                                 // Tạo image record với URL tạm thời và enqueue upload job
-                                                ImageUploadMessage message = prepareAsyncImageUpload(file, room);
+                                                ImageUploadMessage message = prepareAsyncImageUpload(file,
+                                                                room.getId());
 
                                                 // Lấy image đã tạo
                                                 Image image = imageJpaRepository.findById(message.getImageId())
