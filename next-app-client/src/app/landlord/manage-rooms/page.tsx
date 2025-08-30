@@ -39,10 +39,10 @@ function TableManageRoom() {
 
   const router = useRouter();
 
-  const fetchRooms = async (page = 1, pageSize = 5) => {
+  const fetchRooms = async (page = 1, pageSize = pagination.pageSize) => {
     setLoading(true);
     try {
-      const res = await getRoomsByLandlord(page - 1, pageSize);
+      const res = await getRoomsByLandlord(page, pageSize);
       console.log("Rooms API response:", res);
       setData(res.rooms || []);
       setPagination({
