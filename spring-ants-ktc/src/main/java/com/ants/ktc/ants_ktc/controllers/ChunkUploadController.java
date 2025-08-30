@@ -20,7 +20,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -44,19 +43,18 @@ public class ChunkUploadController {
     @Autowired
     private RoomService roomService;
 
+    // Constructor
     public ChunkUploadController() {
         try {
-            this.tempRoot = Paths.get("C:/uploads/temp");
+            this.tempRoot = Paths.get(System.getProperty("java.io.tmpdir"), "chunks");
 
-            this.finalRoot = Paths.get("C:/uploads/final");
-            System.out
-                    .println("================== Created final directory: " + finalRoot
-                            + "============================");
+            // Use configurable upload directory or fallback to temp directory
+            String uploadDir = System.getProperty("app.upload.directory",
+                    System.getProperty("java.io.tmpdir") + "/uploads");
+            this.finalRoot = Paths.get(uploadDir);
 
             Files.createDirectories(tempRoot);
             Files.createDirectories(finalRoot);
-            System.out
-                    .println("================== Created temp directory: " + tempRoot + "============================");
         } catch (IOException e) {
             throw new RuntimeException("Failed to create upload directories", e);
         }

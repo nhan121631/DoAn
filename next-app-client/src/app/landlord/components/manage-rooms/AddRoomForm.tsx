@@ -175,8 +175,8 @@ const AddRoomForm: React.FC<{ onFinish?: (values: RoomData) => void }> = (
     chunksHashed: 0,
     totalChunks: 0,
   });
-  const [statusText, setStatusText] = useState<string>("");
-  const [isUploading, setIsUploading] = useState<boolean>(false);
+  // const [statusText, setStatusText] = useState<string>("");
+  // const [isUploading, setIsUploading] = useState<boolean>(false);
   const [uploadId, setUploadId] = useState<string | null>(null);
   const abortRef = useRef<AbortRef>({ aborted: false });
 
@@ -201,7 +201,7 @@ const AddRoomForm: React.FC<{ onFinish?: (values: RoomData) => void }> = (
     console.log("Setting file state to:", f?.name);
     setFile(f || null);
     setProgress({ uploadedBytes: 0, totalBytes: f ? f.size : 0, percent: 0 });
-    setStatusText("");
+    // setStatusText("");
     setUploadId(null);
     if (f) {
       calculateFileHash(f);
@@ -284,8 +284,8 @@ const AddRoomForm: React.FC<{ onFinish?: (values: RoomData) => void }> = (
 
     console.log("Using file:", fileToUpload.name);
     abortRef.current.aborted = false;
-    setIsUploading(true);
-    setStatusText("Khởi tạo phiên upload…");
+    // setIsUploading(true);
+    // setStatusText("Khởi tạo phiên upload…");
     console.log("Starting upload for file:", fileToUpload.name);
 
     // 1) Cắt chunks
@@ -301,13 +301,13 @@ const AddRoomForm: React.FC<{ onFinish?: (values: RoomData) => void }> = (
     // Use existing file hash if available, otherwise calculate it
     let fileHash = hashProgress.fileHash;
     if (!fileHash) {
-      setStatusText("Calculating file hash...");
+      // setStatusText("Calculating file hash...");
       fileHash = await sha256OfBlob(fileToUpload);
       setHashProgress((prev: any) => ({ ...prev, fileHash }));
     }
 
     // Calculate chunk hashes for validation
-    setStatusText("Calculating chunk hashes...");
+    // setStatusText("Calculating chunk hashes...");
     setHashProgress((prev: any) => ({
       ...prev,
       isCalculating: true,
@@ -327,7 +327,7 @@ const AddRoomForm: React.FC<{ onFinish?: (values: RoomData) => void }> = (
     // 2) Sử dụng upload session hiện có hoặc tạo mới
     let realUploadId = uploadId;
     if (!realUploadId) {
-      setStatusText("Tạo phiên upload mới...");
+      // setStatusText("Tạo phiên upload mới...");
       const initResp: InitResponse = await API.init(
         fileToUpload.name,
         totalChunks,
@@ -338,7 +338,7 @@ const AddRoomForm: React.FC<{ onFinish?: (values: RoomData) => void }> = (
       setUploadId(realUploadId);
       console.log(`Upload session created with ID: ${realUploadId}`);
     } else {
-      setStatusText("Tiếp tục phiên upload hiện có...");
+      // setStatusText("Tiếp tục phiên upload hiện có...");
       console.log(`Resuming existing upload session: ${realUploadId}`);
     }
 
@@ -361,11 +361,11 @@ const AddRoomForm: React.FC<{ onFinish?: (values: RoomData) => void }> = (
         .join(", ")})`
     );
 
-    if (have.size > 0) {
-      setStatusText(
-        `📊 Resume detected: ${have.size}/${totalChunks} chunks already on server`
-      );
-    }
+    // if (have.size > 0) {
+    //   setStatusText(
+    //     `📊 Resume detected: ${have.size}/${totalChunks} chunks already on server`
+    //   );
+    // }
 
     // 4) Tính tổng bytes đã có (resume progress)
     let uploadedBytes = 0;
@@ -378,9 +378,9 @@ const AddRoomForm: React.FC<{ onFinish?: (values: RoomData) => void }> = (
       percent: Math.round((uploadedBytes / fileToUpload.size) * 100),
     });
 
-    setStatusText(
-      `Bắt đầu upload ${todo.length}/${chunks.length} chunks… (song song ${CONCURRENCY})`
-    );
+    // setStatusText(
+    //   `Bắt đầu upload ${todo.length}/${chunks.length} chunks… (song song ${CONCURRENCY})`
+    // );
 
     // 5) Hàm queue upload theo concurrency
     let cursor = 0;
@@ -432,22 +432,22 @@ const AddRoomForm: React.FC<{ onFinish?: (values: RoomData) => void }> = (
     try {
       await Promise.all(workers);
     } catch (error) {
-      console.error("Upload failed:", error); 
-      setStatusText(
-        `Upload failed: ${
-          error instanceof Error ? error.message : "Unknown error"
-        }`
-      );
-      setIsUploading(false);
+      console.error("Upload failed:", error);
+      // setStatusText(
+      //   `Upload failed: ${
+      //     error instanceof Error ? error.message : "Unknown error"
+      //   }`
+      // );
+      // setIsUploading(false);
       return;
     }
 
-    if (abortRef.current.aborted) {
-      setIsUploading(false);
-      return;
-    }
+    // if (abortRef.current.aborted) {
+    //   setIsUploading(false);
+    //   return;
+    // }
 
-    setStatusText("Hoàn tất chunks. Gọi /complete…");
+    // setStatusText("Hoàn tất chunks. Gọi /complete…");
     const done = await API.complete(
       realUploadId!,
       fileToUpload!.name,
@@ -466,8 +466,8 @@ const AddRoomForm: React.FC<{ onFinish?: (values: RoomData) => void }> = (
     console.log(`   - File hash: ${fileHash}`);
     console.log(`   - Server response:`, done);
 
-    setStatusText("✅ Upload completed!");
-    setIsUploading(false);
+    // setStatusText("✅ Upload completed!");
+    // setIsUploading(false);
     setUploadId(null); // Reset upload session after completion
   }
   //==== eendchunk ====//
