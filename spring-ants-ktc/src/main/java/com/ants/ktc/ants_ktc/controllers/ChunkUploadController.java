@@ -419,6 +419,15 @@ public class ChunkUploadController {
                 resp.put("verified", true);
                 resp.put("hash", request.getFileHash());
             }
+
+            // Delete the final file after successful upload to save disk space
+            try {
+                Files.deleteIfExists(finalPath);
+                System.out.println("Final file deleted successfully: " + finalPath);
+            } catch (IOException e) {
+                System.out.println("Warning: Failed to delete final file: " + e.getMessage());
+            }
+
             return ResponseEntity.ok(resp);
 
         } catch (Exception e) {

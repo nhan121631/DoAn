@@ -12,8 +12,8 @@ import RoomCartActionsWrapper from "./RoomCardActionsWrapper";
 import { useRouter } from "next/navigation";
 import { useCompareStore } from "@/stores/CompareStore";
 import { message } from "antd";
-import { useEffect, useRef, useState } from "react"; // THÊM useEffect, useRef, useState
-// import { FaEye } from "react-icons/fa";
+import { useEffect, useRef, useState, useMemo } from "react"; // THÊM useEffect, useRef, useState
+import { FaPlay, FaPause } from "react-icons/fa";
 
 interface RoomVipCardProps {
   room: RoomInUser;
@@ -70,8 +70,10 @@ export default function RoomVipCard({
   const [hoveredImageIndex, setHoveredImageIndex] = useState<number | null>(
     null
   );
+  const [isMainHovered, setIsMainHovered] = useState(false);
 
   const ref = useRef<HTMLDivElement>(null);
+  const mainVideoRef = useRef<HTMLVideoElement>(null);
   const [viewCount, setViewCount] = useState(room.viewCount ?? 0);
 
   useEffect(() => {
@@ -100,6 +102,61 @@ export default function RoomVipCard({
     };
   }, [room.id]);
 
+  const isVideo = (url: string): boolean => {
+    const videoExtensions = [
+      ".mp4",
+      ".webm",
+      ".ogg",
+      ".avi",
+      ".mov",
+      ".wmv",
+      ".flv",
+    ];
+    return videoExtensions.some((ext) => url.toLowerCase().includes(ext));
+  };
+
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
+
+  const firstVideoIndex = useMemo(() => {
+    return room.images?.findIndex((img) => img?.url && isVideo(img.url)) ?? -1;
+  }, [room.images]);
+
+  useEffect(() => {
+    const mainIndex = firstVideoIndex !== -1 ? firstVideoIndex : 0;
+    const hoveredIndex = hoveredImageIndex !== null ? hoveredImageIndex : mainIndex;
+    if (hoveredImageIndex === null) {
+      if (hoveredIndex === mainIndex && isVideo(room.images[hoveredIndex]?.url)) {
+        if (mainVideoRef.current) {
+          mainVideoRef.current.play();
+          setIsPlaying(true);
+          setIsPaused(false);
+        }
+      } else {
+        if (mainVideoRef.current) {
+          mainVideoRef.current.pause();
+          setIsPlaying(false);
+          setIsPaused(false);
+        }
+      }
+    } else {
+      const currentImage = room.images[hoveredImageIndex];
+      if (currentImage?.url && isVideo(currentImage.url)) {
+        if (mainVideoRef.current) {
+          mainVideoRef.current.play();
+          setIsPlaying(true);
+          setIsPaused(false);
+        }
+      } else {
+        if (mainVideoRef.current) {
+          mainVideoRef.current.pause();
+          setIsPlaying(false);
+          setIsPaused(false);
+        }
+      }
+    }
+  }, [hoveredImageIndex, room.images, firstVideoIndex]);
+
   return (
     <>
       {contextHolder}
@@ -110,34 +167,103 @@ export default function RoomVipCard({
         >
           <div className="flex flex-col items-stretch sm:flex-row">
             {/* IMAGE SECTION */}
-            <RoomCartActionsWrapper room={room}>
+            {/* <RoomCartActionsWrapper room={room}> */}
               <div className="relative flex-shrink-0 w-full h-48 sm:w-52 sm:h-auto lg:w-52">
                 {/* Main Image: use h-full and min-h so the left column stretches to card height */}
-                <div className="relative h-full min-h-[300px] sm:min-h-[300px] bg-gray-100 overflow-hidden">
+                <div
+                  className="relative h-[300px] bg-gray-100 overflow-hidden"
+                  onMouseEnter={() => setIsMainHovered(true)}
+                  onMouseLeave={() => {
+                    setIsMainHovered(false);
+                  }}
+                >
                   {/* Main image switches to hovered thumbnail (if any) with smooth zoom */}
                   {(() => {
-                    const mainImageSrc =
+                    // Find the first video in the images list, or default to index 0
+                    const mainIndex = firstVideoIndex !== -1 ? firstVideoIndex : 0;
+                    const hoveredIndex =
+                      hoveredImageIndex !== null ? hoveredImageIndex : mainIndex;
+                    const currentImage =
                       room.images && room.images.length > 0
-                        ? URL_IMAGE +
-                          (hoveredImageIndex !== null &&
-                          room.images[hoveredImageIndex]
-                            ? room.images[hoveredImageIndex].url
-                            : room.images[0].url)
-                        : "/images/default/room.png";
-                    return (
-                      <Image
-                        src={mainImageSrc}
-                        alt={room.title}
-                        fill
-                        className={`object-cover transition-transform duration-500 ${
-                          hoveredImageIndex !== null
-                            ? "scale-105"
-                            : "group-hover/card:scale-105"
-                        }`}
-                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 176px, 208px"
-                        priority
-                      />
-                    );
+                        ? room.images[hoveredIndex]
+                        : null;
+                    const mainImageSrc = currentImage?.url
+                      ? URL_IMAGE + currentImage.url
+                      : "/images/default/room.png";
+                    const isVid = currentImage?.url ? isVideo(currentImage.url) : false;
+
+                    if (isVid) {
+                      return (
+                        <div className="relative w-full h-full">
+                          <video
+                            ref={mainVideoRef}
+                            className={`object-cover w-full h-full transition-transform duration-500 ${
+                              hoveredImageIndex !== null
+                                ? "scale-105"
+                                : "group-hover/card:scale-105"
+                            }`}
+                            src={mainImageSrc}
+                            muted
+                            loop
+                            playsInline
+                            autoPlay={false}
+                            preload="metadata"
+                            style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0 }}
+                            onLoadedData={() => {
+                              // Video loaded, but play is handled by useEffect
+                            }}
+                            onPlay={() => setIsPlaying(true)}
+                            onPause={() => setIsPaused(true)}
+                          />
+                          {/* Play/Pause icon overlay */}
+                          {isMainHovered && isPlaying && !isPaused && (
+                            <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+                              <button
+                                onClick={() => {
+                                  if (mainVideoRef.current) {
+                                    mainVideoRef.current.pause();
+                                    setIsPaused(true);
+                                  }
+                                }}
+                                className="text-white text-lg"
+                              >
+                                <FaPause />
+                              </button>
+                            </div>
+                          )}
+                          {isMainHovered && isPaused && (
+                            <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+                              <button
+                                onClick={() => {
+                                  if (mainVideoRef.current) {
+                                    mainVideoRef.current.play();
+                                    setIsPaused(false);
+                                  }
+                                }}
+                                className="text-white text-lg"
+                              >
+                                <FaPlay />
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    } else {
+                      return (
+                        <Image
+                          src={mainImageSrc}
+                          alt={room.title}
+                          fill
+                          className={`object-cover transition-transform duration-500 ${
+                            hoveredImageIndex !== null
+                              ? "scale-105"
+                              : "group-hover/card:scale-105"
+                          }`}
+                          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 176px, 208px"
+                          priority
+                        />
+                      );
+                    }
                   })()}
 
                   {/* Image Counter Badge */}
@@ -151,26 +277,57 @@ export default function RoomVipCard({
                     <div className="absolute z-20 flex-col hidden gap-2 right-3 bottom-6 sm:flex">
                       {room.images.slice(1, 4).map((img, idx) => {
                         const isLast = idx === 2 && room.images.length > 4;
+                        const imageUrl = img?.url
+                          ? URL_IMAGE + img.url
+                          : "/images/default/room.png";
+                        const isVid = img?.url ? isVideo(img.url) : false;
                         return (
                           <div
                             key={idx}
-                            onMouseEnter={() => setHoveredImageIndex(1 + idx)}
-                            onMouseLeave={() => setHoveredImageIndex(null)}
+                            onMouseEnter={() => {
+                              setHoveredImageIndex(1 + idx);
+                              const img = room.images[1 + idx];
+                              if (img?.url && isVideo(img.url)) {
+                                setIsPlaying(true);
+                                setIsPaused(false);
+                              }
+                            }}
+                            onMouseLeave={() => {
+                              setHoveredImageIndex(null);
+                              setIsPlaying(false);
+                              setIsPaused(false);
+                              if (mainVideoRef.current) {
+                                mainVideoRef.current.pause();
+                              }
+                            }}
                             className="relative flex-shrink-0 w-8 h-8 overflow-hidden transition-colors bg-white border-2 rounded-lg shadow-lg cursor-pointer md:w-10 md:h-10 border-white/90 hover:border-slate-200"
                           >
-                            <Image
-                              src={
-                                img?.url
-                                  ? URL_IMAGE + img.url
-                                  : "/images/default/room.png"
-                              }
-                              alt={`${room.title} ${idx + 2}`}
-                              fill
-                              className={`object-cover ${
-                                isLast ? "opacity-70" : ""
-                              }`}
-                              sizes="40px"
-                            />
+                            {!isVid ? (
+                              <Image
+                                src={imageUrl}
+                                alt={`${room.title} ${idx + 2}`}
+                                fill
+                                className={`object-cover ${
+                                  isLast ? "opacity-70" : ""
+                                }`}
+                                sizes="40px"
+                              />
+                            ) : (
+                              <div className="relative w-full h-full">
+                                <video
+                                  className="object-cover w-full h-full"
+                                  src={imageUrl}
+                                  width={40}
+                                  height={40}
+                                  muted
+                                  preload="metadata"
+                                />
+                                {/* Play icon overlay */}
+                                <div className="absolute inset-0 flex items-center justify-center bg-black/40 pointer-events-none">
+                                  <FaPlay className="text-white text-sm" />
+                                </div>
+                              </div>
+                            )}
                             {isLast && (
                               <div className="absolute inset-0 flex items-center justify-center bg-black/40">
                                 <span className="text-sm font-bold text-white">
@@ -185,7 +342,7 @@ export default function RoomVipCard({
                   )}
                 </div>
               </div>
-            </RoomCartActionsWrapper>
+            {/* </RoomCartActionsWrapper> */}
 
             {/* CONTENT SECTION */}
             <div className="flex flex-col flex-1 p-2 sm:p-3">

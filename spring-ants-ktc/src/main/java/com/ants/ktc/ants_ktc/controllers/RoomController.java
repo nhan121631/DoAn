@@ -250,7 +250,7 @@ public class RoomController {
     public ResponseEntity<PaginationRoomInUserResponseDto> filterRooms(
             @RequestParam(name = "page", defaultValue = "0") int pageNumber,
             @RequestParam(name = "size", defaultValue = "5") int pageSize,
-            @RequestBody FilterRoomRequestDto filterDto) {
+            @Valid @RequestBody FilterRoomRequestDto filterDto) {
         PaginationRoomInUserResponseDto response = roomService.filterRooms(pageNumber, pageSize, filterDto);
         return ResponseEntity.ok(response);
     }

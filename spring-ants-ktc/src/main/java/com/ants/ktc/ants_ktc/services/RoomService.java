@@ -659,7 +659,9 @@ public class RoomService {
         @Transactional(readOnly = true)
         public PaginationRoomResponseDto getAllRoomByLandlordIdPaginated(UUID userId, int page, int size) {
 
-                Pageable pageable = PageRequest.of(page, size);
+                // Ensure page is at least 1 (1-based)
+                if (page < 1) page = 1;
+                Pageable pageable = PageRequest.of(page - 1, size);
 
                 Page<RoomByLandlordPagingProjection> roomPage = roomJpaRepository.findAllByLandlord(userId, pageable);
 
