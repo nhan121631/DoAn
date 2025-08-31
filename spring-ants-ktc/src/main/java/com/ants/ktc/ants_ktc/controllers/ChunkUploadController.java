@@ -44,17 +44,15 @@ public class ChunkUploadController {
 
     public ChunkUploadController() {
         try {
-            this.tempRoot = Paths.get("C:/uploads/temp");
+            this.tempRoot = Paths.get(System.getProperty("java.io.tmpdir"), "chunks");
 
-            this.finalRoot = Paths.get("C:/uploads/final");
-            System.out
-                    .println("================== Created final directory: " + finalRoot
-                            + "============================");
+            // Use configurable upload directory or fallback to temp directory
+            String uploadDir = System.getProperty("app.upload.directory",
+                    System.getProperty("java.io.tmpdir") + "/uploads");
+            this.finalRoot = Paths.get(uploadDir);
 
             Files.createDirectories(tempRoot);
             Files.createDirectories(finalRoot);
-            System.out
-                    .println("================== Created temp directory: " + tempRoot + "============================");
         } catch (IOException e) {
             throw new RuntimeException("Failed to create upload directories", e);
         }

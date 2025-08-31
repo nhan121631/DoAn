@@ -1,3 +1,4 @@
+import { Image } from "antd";
 import React from "react";
 import { FaAngleLeft } from "react-icons/fa";
 
@@ -42,7 +43,8 @@ export const Slide: React.FC<Props> = ({ images }) => {
           {images.length > 0 &&
           images[indexImg] &&
           typeof images[indexImg].url === "string" ? (
-            <img
+            
+            <Image
               className="object-cover rounded-lg"
               src={
                 images[indexImg].url.startsWith("http")
