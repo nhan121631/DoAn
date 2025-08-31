@@ -6,7 +6,6 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -43,18 +42,19 @@ public class ChunkUploadController {
     @Autowired
     private RoomService roomService;
 
-    // Constructor
     public ChunkUploadController() {
         try {
-            this.tempRoot = Paths.get(System.getProperty("java.io.tmpdir"), "chunks");
+            this.tempRoot = Paths.get("C:/uploads/temp");
 
-            // Use configurable upload directory or fallback to temp directory
-            String uploadDir = System.getProperty("app.upload.directory",
-                    System.getProperty("java.io.tmpdir") + "/uploads");
-            this.finalRoot = Paths.get(uploadDir);
+            this.finalRoot = Paths.get("C:/uploads/final");
+            System.out
+                    .println("================== Created final directory: " + finalRoot
+                            + "============================");
 
             Files.createDirectories(tempRoot);
             Files.createDirectories(finalRoot);
+            System.out
+                    .println("================== Created temp directory: " + tempRoot + "============================");
         } catch (IOException e) {
             throw new RuntimeException("Failed to create upload directories", e);
         }
@@ -317,8 +317,6 @@ public class ChunkUploadController {
 
     @PostMapping(value = "/complete", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Map<String, Object>> complete(@RequestBody CompleteRequestDto request) {
-        System.out.println("=== COMPLETE ENDPOINT CALLED ===");
-        System.out.println("Request: " + request);
         try {
             // Validate required fields
             if (request.getUploadId() == null || request.getUploadId().trim().isEmpty()) {
@@ -334,10 +332,6 @@ public class ChunkUploadController {
             }
 
             Path dir = tempRoot.resolve(request.getUploadId());
-            System.out.println("Upload directory: " + dir.toAbsolutePath());
-            System.out.println("Directory exists: " + Files.exists(dir));
-            System.out.println("Is directory: " + Files.isDirectory(dir));
-
             if (!Files.isDirectory(dir)) {
                 Map<String, Object> errorResp = new HashMap<>();
                 errorResp.put("error", "Upload not found");
@@ -347,24 +341,15 @@ public class ChunkUploadController {
 
             // Merge chunks into final file
             Path finalPath = finalRoot.resolve(request.getFilename());
-            System.out.println("Final path: " + finalPath.toAbsolutePath());
-            System.out.println("Final directory exists: " + Files.exists(finalPath.getParent()));
-
             try (OutputStream out = Files.newOutputStream(finalPath)) {
                 var parts = Files.list(dir)
                         .filter(p -> p.getFileName().toString().endsWith(".part"))
                         .sorted(Comparator.comparing(Path::getFileName))
                         .toList();
 
-                System.out.println("Found " + parts.size() + " chunks to merge:");
-                for (Path p : parts) {
-                    System.out.println("  - " + p.getFileName() + " (" + Files.size(p) + " bytes)");
-                }
-
                 for (Path p : parts) {
                     Files.copy(p, out);
                 }
-                System.out.println("Chunks merged successfully");
             }
 
             // Verify whole file hash if provided
@@ -387,78 +372,20 @@ public class ChunkUploadController {
                     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResp);
                 }
             }
-            // Create a simple MultipartFile implementation
+            // Convert Path to MultipartFile using MockMultipartFile (requires spring-test
+            // dependency)
             MultipartFile mergedFile = null;
-            System.out.println("Creating custom MultipartFile from merged file...");
             try {
-                final Path finalFilePath = finalPath;
-                final String fileName = request.getFilename();
-
-                @SuppressWarnings("null")
-                MultipartFile tempFile = new MultipartFile() {
-                    @Override
-                    public String getName() {
-                        return fileName != null ? fileName : "";
-                    }
-
-                    @Override
-                    public String getOriginalFilename() {
-                        return fileName;
-                    }
-
-                    @Override
-                    public String getContentType() {
-                        return MediaType.APPLICATION_OCTET_STREAM_VALUE;
-                    }
-
-                    @Override
-                    public boolean isEmpty() {
-                        try {
-                            return Files.size(finalFilePath) == 0;
-                        } catch (IOException e) {
-                            return true;
-                        }
-                    }
-
-                    @Override
-                    public long getSize() {
-                        try {
-                            return Files.size(finalFilePath);
-                        } catch (IOException e) {
-                            return 0;
-                        }
-                    }
-
-                    @Override
-                    public byte[] getBytes() throws IOException {
-                        byte[] bytes = Files.readAllBytes(finalFilePath);
-                        return bytes != null ? bytes : new byte[0];
-                    }
-
-                    @Override
-                    public InputStream getInputStream() throws IOException {
-                        InputStream stream = Files.newInputStream(finalFilePath);
-                        if (stream == null) {
-                            throw new IOException("Cannot create InputStream from file");
-                        }
-                        return stream;
-                    }
-
-                    @Override
-                    public void transferTo(java.io.File dest) throws IOException {
-                        if (dest == null) {
-                            throw new IllegalArgumentException("Destination file cannot be null");
-                        }
-                        Files.copy(finalFilePath, dest.toPath(), StandardCopyOption.REPLACE_EXISTING);
-                    }
-                };
-                mergedFile = tempFile;
-                System.out.println("Custom MultipartFile created successfully");
-            } catch (Exception e) {
-                System.out.println("ERROR creating custom MultipartFile: " + e.getMessage());
+                Class<?> mockMultipartFileClass = Class.forName("org.springframework.mock.web.MockMultipartFile");
+                try (InputStream is = Files.newInputStream(finalPath)) {
+                    mergedFile = (MultipartFile) mockMultipartFileClass
+                            .getConstructor(String.class, String.class, String.class, InputStream.class)
+                            .newInstance(request.getFilename(), request.getFilename(),
+                                    MediaType.APPLICATION_OCTET_STREAM_VALUE, is);
+                }
+            } catch (ClassNotFoundException e) {
                 Map<String, Object> errorResp = new HashMap<>();
-                errorResp.put("error", "Failed to create MultipartFile from merged chunks");
-                errorResp.put("message", e.getMessage());
+                errorResp.put("error", "MockMultipartFile class not found. Please add spring-test dependency.");
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResp);
             }
 
@@ -466,14 +393,8 @@ public class ChunkUploadController {
             // similar)
 
             // Call the async image upload method via a public wrapper
-            System.out.println("Calling roomService.prepareAsyncImageUpload with roomId: " + request.getRoomId());
             ImageUploadMessage result = roomService.prepareAsyncImageUpload(mergedFile, request.getRoomId());
-            System.out.println("RoomService result: " + result);
-
-            // IMPORTANT: Enqueue the upload job to Redis for async processing
-            System.out.println("Enqueuing upload job for async processing...");
-            roomService.enqueueImageUpload(result);
-            System.out.println("Upload job enqueued successfully");
+            System.out.println(result);
             // Cleanup chunks
             try (var s = Files.list(dir)) {
                 s.forEach(p -> {
@@ -501,12 +422,9 @@ public class ChunkUploadController {
             return ResponseEntity.ok(resp);
 
         } catch (Exception e) {
-            System.out.println("ERROR in complete endpoint: " + e.getClass().getSimpleName() + " - " + e.getMessage());
-            e.printStackTrace();
             Map<String, Object> errorResp = new HashMap<>();
             errorResp.put("error", "Failed to complete file upload");
             errorResp.put("message", e.getMessage());
-            errorResp.put("type", e.getClass().getSimpleName());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResp);
         }
     }

@@ -20,8 +20,7 @@ import {
   AutoComplete,
 } from "antd";
 import type { UploadFile } from "antd/es/upload/interface";
-import React, { useEffect, useRef, useState } from "react";
-import API from "@/services/UploadChunk";
+import React, { useEffect, useState } from "react";
 
 type ProvinceOption = {
   label: string;
@@ -33,98 +32,6 @@ interface EditPostModalProps {
   onClose: () => void;
   roomId: string | null;
   onSuccess?: () => void;
-}
-
-// Types and interfaces for chunk upload
-interface ChunkInfo {
-  index: number;
-  blob: Blob;
-  start: number;
-  end: number;
-}
-
-interface SliceResult {
-  chunks: ChunkInfo[];
-  totalChunks: number;
-}
-
-interface UploadProgress {
-  uploadedBytes: number;
-  totalBytes: number;
-  percent: number;
-}
-
-interface HashProgress {
-  isCalculating: boolean;
-  currentStep: string;
-  fileHash?: string;
-  chunksHashed: number;
-  totalChunks: number;
-  expectedHash?: string;
-  hashMatch?: boolean;
-}
-
-interface AbortRef {
-  aborted: boolean;
-}
-
-interface InitResponse {
-  uploadId: string;
-  chunkSize?: number;
-}
-
-interface StatusResponse {
-  chunks?: number[];
-}
-
-// Chunk upload utility functions
-function sliceIntoChunks(file: File, chunkSize: number): SliceResult {
-  const totalChunks = Math.ceil(file.size / chunkSize);
-  const chunks: ChunkInfo[] = [];
-  for (let i = 0; i < totalChunks; i++) {
-    const start = i * chunkSize;
-    const end = Math.min(start + chunkSize, file.size);
-    const blob = file.slice(start, end);
-    chunks.push({ index: i, blob, start, end });
-  }
-  return { chunks, totalChunks };
-}
-
-async function sha256OfBlob(blob: Blob): Promise<string> {
-  const buf = await blob.arrayBuffer();
-  const hash = await crypto.subtle.digest("SHA-256", buf);
-  return [...new Uint8Array(hash)]
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
-}
-
-// Calculate hash for individual chunks with progress
-async function calculateChunksHash(
-  chunks: ChunkInfo[],
-  onProgress: (progress: {
-    current: number;
-    total: number;
-    step: string;
-  }) => void
-): Promise<Map<number, string>> {
-  const chunkHashes = new Map<number, string>();
-
-  for (let i = 0; i < chunks.length; i++) {
-    const chunk = chunks[i];
-    onProgress({
-      current: i + 1,
-      total: chunks.length,
-      step: `Hashing chunk ${i + 1}/${chunks.length}`,
-    });
-
-    const hash = await sha256OfBlob(chunk.blob);
-    chunkHashes.set(chunk.index, hash);
-    console.log(
-      `Chunk ${i + 1}/${chunks.length} hash: ${hash.substring(0, 16)}...`
-    );
-  }
-
-  return chunkHashes;
 }
 
 const EditPostModal: React.FC<EditPostModalProps> = ({
@@ -157,265 +64,6 @@ const EditPostModal: React.FC<EditPostModalProps> = ({
   // Preset options for length/width (meters) - user can also type free value
   const lengthPresets = [2, 2.5, 3, 3.5, 4, 4.5, 5];
   const widthPresets = [2, 2.5, 3, 3.5, 4, 4.5];
-
-  //===chunk upload state===//
-  const CHUNK_SIZE = 2 * 1024 * 1024; // 2MB
-  const CONCURRENCY = 4; // 4 chunk song song
-  const [file, setFile] = useState<File | null>(null);
-  const [progress, setProgress] = useState<UploadProgress>({
-    uploadedBytes: 0,
-    totalBytes: 0,
-    percent: 0,
-  });
-  const [hashProgress, setHashProgress] = useState<HashProgress>({
-    isCalculating: false,
-    currentStep: "",
-    chunksHashed: 0,
-    totalChunks: 0,
-  });
-  const [uploadId, setUploadId] = useState<string | null>(null);
-  const abortRef = useRef<AbortRef>({ aborted: false });
-
-  // Hàm đa năng: nhận event input hoặc object {file, roomId} để upload chunk video
-  async function onFileChange(
-    eOrObj: React.ChangeEvent<HTMLInputElement> | { file: File }
-  ): Promise<void> {
-    console.log("=== onFileChange CALLED ===");
-    console.log("eOrObj:", eOrObj);
-
-    let f: File | undefined;
-    if ("target" in eOrObj) {
-      // Trường hợp chọn file từ input
-      f = eOrObj.target.files?.[0];
-      console.log("Input event detected, file:", f?.name);
-    } else {
-      // Trường hợp truyền file trực tiếp từ handleSubmit
-      f = eOrObj.file;
-      console.log("Direct file object detected, file:", f?.name);
-    }
-
-    console.log("Setting file state to:", f?.name);
-    setFile(f || null);
-    setProgress({ uploadedBytes: 0, totalBytes: f ? f.size : 0, percent: 0 });
-    setUploadId(null);
-    if (f) {
-      calculateFileHash(f);
-      console.log(
-        `File selected: ${f.name}, Size: ${(f.size / 1024 / 1024).toFixed(
-          2
-        )} MB`
-      );
-    } else {
-      setHashProgress({
-        isCalculating: false,
-        currentStep: "",
-        chunksHashed: 0,
-        totalChunks: 0,
-      });
-    }
-  }
-
-  async function calculateFileHash(selectedFile: File): Promise<void> {
-    setHashProgress({
-      isCalculating: true,
-      currentStep: "Calculating file hash...",
-      chunksHashed: 0,
-      totalChunks: 0,
-    });
-
-    try {
-      const hash = await sha256OfBlob(selectedFile);
-
-      setHashProgress({
-        isCalculating: false,
-        currentStep: "File hash calculated",
-        fileHash: hash,
-        chunksHashed: 0,
-        totalChunks: 0,
-      });
-
-      console.log(`File hash calculated: ${hash}`);
-    } catch (error) {
-      setHashProgress({
-        isCalculating: false,
-        currentStep: "Error calculating hash",
-        chunksHashed: 0,
-        totalChunks: 0,
-      });
-      console.error("Error calculating file hash:", error);
-    }
-  }
-
-  async function upload(roomId: string, videoFile?: File): Promise<void> {
-    console.log("=== UPLOAD FUNCTION CALLED ===");
-    console.log("roomId:", roomId);
-    console.log("videoFile parameter:", videoFile?.name);
-    console.log("file state:", file);
-
-    const fileToUpload = videoFile || file;
-    if (!fileToUpload) {
-      console.log("No file to upload, returning early");
-      return;
-    }
-
-    console.log("Using file:", fileToUpload.name);
-    abortRef.current.aborted = false;
-    console.log("Starting upload for file:", fileToUpload.name);
-
-    // 1) Cắt chunks
-    const { chunks, totalChunks } = sliceIntoChunks(fileToUpload, CHUNK_SIZE);
-
-    console.log(
-      `Tổng số chunks: ${totalChunks}, mỗi chunk: ${
-        CHUNK_SIZE / 1024 / 1024
-      } MB`
-    );
-
-    // Use existing file hash if available, otherwise calculate it
-    let fileHash = hashProgress.fileHash;
-    if (!fileHash) {
-      fileHash = await sha256OfBlob(fileToUpload);
-      setHashProgress((prev: any) => ({ ...prev, fileHash }));
-    }
-
-    // Calculate chunk hashes for validation
-    setHashProgress((prev: any) => ({
-      ...prev,
-      isCalculating: true,
-      totalChunks,
-    }));
-
-    const chunkHashes = await calculateChunksHash(chunks, (progress) => {
-      setHashProgress((prev: any) => ({
-        ...prev,
-        chunksHashed: progress.current,
-        currentStep: progress.step,
-      }));
-    });
-
-    setHashProgress((prev: any) => ({ ...prev, isCalculating: false }));
-
-    // 2) Sử dụng upload session hiện có hoặc tạo mới
-    let realUploadId = uploadId;
-    if (!realUploadId) {
-      const initResp: InitResponse = await API.init(
-        fileToUpload.name,
-        totalChunks,
-        fileToUpload.size,
-        fileHash
-      );
-      realUploadId = initResp.uploadId;
-      setUploadId(realUploadId);
-      console.log(`Upload session created with ID: ${realUploadId}`);
-    } else {
-      console.log(`Resuming existing upload session: ${realUploadId}`);
-    }
-
-    // 3) Resume: hỏi server có những chunk nào
-    const st: StatusResponse = await API.status(realUploadId);
-    const have = new Set(st.chunks || []);
-    const todo = chunks.filter((c) => !have.has(c.index));
-
-    console.log(`📋 Upload status check:`);
-    console.log(`   - Total chunks: ${totalChunks}`);
-    console.log(
-      `   - Chunks on server: ${have.size} (${Array.from(have)
-        .sort((a, b) => a - b)
-        .join(", ")})`
-    );
-    console.log(
-      `   - Chunks to upload: ${todo.length} (${todo
-        .map((c) => c.index)
-        .sort((a, b) => a - b)
-        .join(", ")})`
-    );
-
-    // 4) Tính tổng bytes đã có (resume progress)
-    let uploadedBytes = 0;
-    for (const c of chunks) {
-      if (have.has(c.index)) uploadedBytes += c.end - c.start;
-    }
-    setProgress({
-      uploadedBytes,
-      totalBytes: fileToUpload.size,
-      percent: Math.round((uploadedBytes / fileToUpload.size) * 100),
-    });
-
-    // 5) Hàm queue upload theo concurrency
-    let cursor = 0;
-    let uploadedChunksCount = 0;
-    const workers: Promise<void>[] = [];
-
-    async function worker(): Promise<void> {
-      while (cursor < todo.length && !abortRef.current.aborted) {
-        const job = todo[cursor++];
-
-        // Get the pre-calculated chunk hash
-        const chunkHash = chunkHashes.get(job.index);
-
-        console.log(
-          `📤 Uploading chunk ${job.index}/${totalChunks} (${
-            uploadedChunksCount + 1
-          }/${todo.length} in this session) - Hash: ${chunkHash?.substring(
-            0,
-            8
-          )}...`
-        );
-
-        await API.uploadChunk({
-          uploadId: realUploadId!,
-          chunkIndex: job.index,
-          totalChunks,
-          filename: fileToUpload!.name,
-          blob: job.blob,
-          chunkHash,
-        });
-
-        uploadedChunksCount++;
-        uploadedBytes += job.end - job.start;
-        setProgress(() => {
-          const percent = Math.round(
-            (uploadedBytes / fileToUpload!.size) * 100
-          );
-          return { uploadedBytes, totalBytes: fileToUpload!.size, percent };
-        });
-
-        console.log(
-          `✅ Chunk ${job.index} uploaded successfully (${uploadedChunksCount}/${todo.length} chunks in this session)`
-        );
-      }
-    }
-
-    for (let i = 0; i < CONCURRENCY; i++) workers.push(worker());
-
-    try {
-      await Promise.all(workers);
-    } catch (error) {
-      console.error("Upload failed:", error);
-      return;
-    }
-
-    const done = await API.complete(
-      realUploadId!,
-      fileToUpload!.name,
-      fileHash!,
-      roomId
-    );
-
-    // Verify file hash integrity
-    console.log(`🎉 Upload completed successfully!`);
-    console.log(`📊 Final statistics:`);
-    console.log(`   - File: ${fileToUpload.name}`);
-    console.log(
-      `   - Size: ${(fileToUpload.size / 1024 / 1024).toFixed(2)} MB`
-    );
-    console.log(`   - Total chunks: ${totalChunks}`);
-    console.log(`   - File hash: ${fileHash}`);
-    console.log(`   - Server response:`, done);
-
-    setUploadId(null); // Reset upload session after completion
-  }
-  //==== end chunk ====//
 
   // Fetch initial data
   useEffect(() => {
@@ -562,10 +210,10 @@ const EditPostModal: React.FC<EditPostModalProps> = ({
       // Lấy danh sách URL ảnh gốc từ DB
       const originalImageUrls =
         roomData?.images?.map((img: any) => img.url) || [];
-      // Ảnh mới upload (filter out videos)
+      // Ảnh mới upload
       const images = fileList
         .map((file) => file.originFileObj)
-        .filter((f) => f && f.type && f.type.startsWith("image/")) as File[];
+        .filter(Boolean) as File[];
 
       // Logic existingImages
       let existingImages: string[] | null = null;
@@ -582,6 +230,8 @@ const EditPostModal: React.FC<EditPostModalProps> = ({
         description: values.description,
         priceMonth: values.priceMonth,
         priceDeposit: values.priceDeposit,
+        // area: values.area,
+
         roomLength,
         roomWidth,
         elecPrice,
@@ -612,77 +262,11 @@ const EditPostModal: React.FC<EditPostModalProps> = ({
       formData.append("room", JSON.stringify(roomPayload));
       await updateRoom(roomId!, formData);
 
-      // Handle video files upload
-      const videoFiles = fileList
-        .map((f) => f.originFileObj)
-        .filter((f) => f && f.type && f.type.startsWith("video/")) as File[];
-
-      // Upload video files with progress notifications
-      let allVideoSuccess = true;
-      for (const videoFile of videoFiles) {
-        try {
-          console.log(
-            "Starting upload for video:",
-            videoFile.name,
-            "to room:",
-            roomId
-          );
-
-          messageApi.open({
-            type: "loading",
-            content: `Uploading video: ${videoFile.name}...`,
-            duration: 0,
-            key: `uploading_${videoFile.name}`,
-          });
-
-          console.log("Calling onFileChange with video file:", videoFile.name);
-          await onFileChange({ file: videoFile });
-
-          console.log(
-            "Calling upload function with roomId:",
-            roomId,
-            "and videoFile:",
-            videoFile.name
-          );
-          await upload(roomId!, videoFile);
-          messageApi.open({
-            type: "success",
-            content: `Video ${videoFile.name} uploaded successfully!`,
-            duration: 1.5,
-            key: `uploading_${videoFile.name}`,
-          });
-        } catch (videoError) {
-          allVideoSuccess = false;
-          messageApi.open({
-            type: "error",
-            content: `Failed to upload video: ${videoFile.name}`,
-            duration: 2,
-            key: `uploading_${videoFile.name}`,
-          });
-          console.error("Video upload failed:", videoError);
-        }
-      }
-
       // Show success message and close modal
-      if (videoFiles.length > 0) {
-        if (allVideoSuccess) {
-          messageApi.success({
-            content: "Room updated & all videos uploaded successfully!",
-            duration: 2,
-          });
-        } else {
-          messageApi.warning({
-            content: "Room updated, but some videos failed to upload.",
-            duration: 2,
-          });
-        }
-      } else {
-        messageApi.success({
-          content: "Room updated successfully!",
-          duration: 2,
-        });
-      }
-
+      messageApi.success({
+        content: "Room updated successfully!",
+        duration: 2,
+      });
       handleClose();
 
       // Refresh parent page data
@@ -710,17 +294,6 @@ const EditPostModal: React.FC<EditPostModalProps> = ({
     setDistricts([]);
     setWards([]);
     setRoomData(null);
-    // Reset chunk upload states
-    setFile(null);
-    setProgress({ uploadedBytes: 0, totalBytes: 0, percent: 0 });
-    setHashProgress({
-      isCalculating: false,
-      currentStep: "",
-      chunksHashed: 0,
-      totalChunks: 0,
-    });
-    setUploadId(null);
-    abortRef.current.aborted = true;
     onClose();
   };
 
@@ -759,11 +332,7 @@ const EditPostModal: React.FC<EditPostModalProps> = ({
                   <Upload
                     listType="picture-card"
                     fileList={fileList}
-                    onChange={({ fileList: newList }) => {
-                      if (newList.length <= 8) {
-                        setFileList(newList);
-                      }
-                    }}
+                    onChange={({ fileList: newList }) => setFileList(newList)}
                     beforeUpload={() => false}
                     multiple
                   >
@@ -1055,59 +624,59 @@ const EditPostModal: React.FC<EditPostModalProps> = ({
                 )} */}
 
                 {/* Additional utilities and max people */}
-                <div className="mt-4 bg-white dark:bg-[#232b3b] border border-gray-200 dark:border-gray-700 rounded-lg p-4 shadow-sm">
-                  <h4 className="font-semibold text-base bg-gray-50 dark:bg-[#1b2636] p-2 rounded-md mb-3">
-                    Utilities & Occupancy
-                  </h4>
-                  <div className="flex gap-2">
-                    <Form.Item
-                      label="Electricity Price"
-                      name="elecPrice"
-                      className="flex-1"
-                      rules={[{ required: true, type: "number" }]}
-                    >
-                      <InputNumber
-                        min={0}
-                        step={100}
-                        style={{ width: "100%" }}
-                        formatter={(v) =>
-                          `${v}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-                        }
-                        addonAfter="₫/kWh"
-                      />
-                    </Form.Item>
-                    <Form.Item
-                      label="Water Price"
-                      name="waterPrice"
-                      className="flex-1"
-                      rules={[{ required: true, type: "number" }]}
-                    >
-                      <InputNumber
-                        min={0}
-                        step={1000}
-                        style={{ width: "100%" }}
-                        formatter={(v) =>
-                          `${v}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-                        }
-                        addonAfter="₫"
-                      />
-                    </Form.Item>
-                    <Form.Item
-                      label="Max People"
-                      name="maxPeople"
-                      className="w-40"
-                      rules={[{ required: true, message: "Select max people" }]}
-                    >
-                      <Select placeholder="Max people">
-                        {[1, 2, 3, 4, 5, 6, 7, 8].map((n) => (
-                          <Select.Option key={n} value={n}>
-                            {n}
-                          </Select.Option>
-                        ))}
-                      </Select>
-                    </Form.Item>
-                  </div>
-                </div>
+            <div className="mt-4 bg-white dark:bg-[#232b3b] border border-gray-200 dark:border-gray-700 rounded-lg p-4 shadow-sm">
+              <h4 className="font-semibold text-base bg-gray-50 dark:bg-[#1b2636] p-2 rounded-md mb-3">
+                Utilities & Occupancy
+              </h4>
+              <div className="flex gap-2">
+                <Form.Item
+                  label="Electricity Price"
+                  name="elecPrice"
+                  className="flex-1"
+                  rules={[{ required: true, type: "number" }]}
+                >
+                  <InputNumber
+                    min={0}
+                    step={100}
+                    style={{ width: "100%" }}
+                    formatter={(v) =>
+                      `${v}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                    }
+                    addonAfter="₫/kWh"
+                  />
+                </Form.Item>
+                <Form.Item
+                  label="Water Price"
+                  name="waterPrice"
+                  className="flex-1"
+                  rules={[{ required: true, type: "number" }]}
+                >
+                  <InputNumber
+                    min={0}
+                    step={1000}
+                    style={{ width: "100%" }}
+                    formatter={(v) =>
+                      `${v}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                    }
+                    addonAfter="₫"
+                  />
+                </Form.Item>
+                <Form.Item
+                  label="Max People"
+                  name="maxPeople"
+                  className="w-40"
+                  rules={[{ required: true, message: "Select max people" }]}
+                >
+                  <Select placeholder="Max people">
+                    {[1, 2, 3, 4, 5, 6, 7, 8].map((n) => (
+                      <Select.Option key={n} value={n}>
+                        {n}
+                      </Select.Option>
+                    ))}
+                  </Select>
+                </Form.Item>
+              </div>
+            </div>
               </div>
             </div>
 

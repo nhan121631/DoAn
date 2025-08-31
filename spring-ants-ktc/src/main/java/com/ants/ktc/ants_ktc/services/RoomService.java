@@ -162,7 +162,7 @@ public class RoomService {
         /**
          * Enqueue image upload job vào Redis
          */
-        public void enqueueImageUpload(ImageUploadMessage message) {
+        private void enqueueImageUpload(ImageUploadMessage message) {
                 try {
                         redisTemplate.opsForList().rightPush(IMAGE_UPLOAD_QUEUE, message);
                 } catch (Exception ex) {
