@@ -56,6 +56,9 @@ public class UserProfile extends BaseEntity {
     @Column(name = "search_longitude")
     private Double searchLongitude;
 
+    @Column(name = "email_notifications", nullable = false)
+    private boolean emailNotifications = false;
+
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "address_id", referencedColumnName = "id")
     private Address address;

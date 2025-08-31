@@ -222,3 +222,61 @@ export async function isHaveBankAccount() {
   }
   return response.json();
 }
+
+export async function setEmailNotifications(enabled: boolean) {
+  const formData = new FormData();
+  formData.append("emailNotifications", String(enabled));
+  const response = await fetch(`/api/profile/email-notifications`, {
+    method: "PATCH",
+    body: formData,
+    headers: {
+      "Accept": "application/json",
+    },
+  });
+  if (!response.ok) {
+    let errorMsg = "Failed to update email notifications";
+    try {
+      const contentType = response.headers.get("content-type"); 
+      if (contentType && contentType.includes("application/json")) {
+        const error = await response.json();
+        errorMsg = Array.isArray(error.message)
+          ? error.message[0]
+          : error.message || error.error || errorMsg;
+        console.error("API error (json):", error);
+      } else {
+        const text = await response.text();
+        errorMsg = text || errorMsg;
+        console.error("API error (text):", text);
+      }
+    } catch (e) {
+      console.error("Error parsing response:", e);
+    }
+    throw new Error(errorMsg);
+  }
+
+  return response.json();
+}
+
+export async function getEmailNotifications(userId: string) {
+  const response = await fetch(`/api/profile/email-notifications?userId=${userId}`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+  if (!response.ok) {
+    let errorMsg = "Failed to fetch email notifications";
+    try {
+      const error = await response.json();
+      errorMsg = Array.isArray(error.message)
+        ? error.message[0]
+        : error.message || error.error || errorMsg;
+      console.error("API error:", error);
+    } catch (e) {
+      console.error("Error parsing response:", e);
+    }
+    throw new Error(errorMsg);
+  }
+
+  return response.json();
+}

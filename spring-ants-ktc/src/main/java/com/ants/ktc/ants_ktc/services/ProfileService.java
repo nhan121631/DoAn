@@ -282,6 +282,23 @@ public class ProfileService {
                 return profile.getSearchAddress();
         }
 
+        // Set email notifications
+        public void setEmailNotifications(UUID userId, boolean enabled) {
+                UserProfile profile = profileJpaRepository.findByUserId(userId)
+                                .orElseThrow(() -> new IllegalArgumentException(
+                                                "Profile not found for user: " + userId));
+                profile.setEmailNotifications(enabled);
+                profileJpaRepository.save(profile);
+        }
+
+        // get email notifications
+        public boolean getEmailNotifications(UUID userId) {
+                UserProfile profile = profileJpaRepository.findByUserId(userId)
+                                .orElseThrow(() -> new IllegalArgumentException(
+                                                "Profile not found for user: " + userId));
+                return profile.isEmailNotifications();
+        }
+
         /**
          * Lấy UserProfile entity (không phải DTO) để tính toán trong các service khác
          */

@@ -92,6 +92,13 @@ public class RoomSuggestionService {
             emailSemaphore.acquire();
 
             try {
+                // Kiểm tra user có bật email notifications không
+                if (user.getProfile() == null || !user.getProfile().isEmailNotifications()) {
+                    System.out.println("[RoomSuggestionService] User " + user.getUsername()
+                            + " has email notifications disabled, skipping");
+                    return CompletableFuture.completedFuture(null);
+                }
+
                 List<RoomSuggestionInfoDto> suggestions = findSuggestedRoomsForUser(user);
 
                 if (!suggestions.isEmpty()) {
@@ -394,7 +401,7 @@ public class RoomSuggestionService {
     @Transactional(readOnly = true)
     public List<Room> findRoomsByCriteria(RoomCriteria criteria, UUID excludeUserId) {
         try {
-            Pageable pageable = PageRequest.of(0, 15); // Tăng từ 10 lên 15 phòng gợi ý
+            Pageable pageable = PageRequest.of(0, 8); // 8 phòng gợi ý
 
             System.out.println("[RoomSuggestionService] === QUERY DEBUG INFO ===");
             System.out.println("[RoomSuggestionService] User ID to exclude: " + excludeUserId);
