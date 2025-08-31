@@ -162,7 +162,7 @@ public class RoomService {
         /**
          * Enqueue image upload job vào Redis
          */
-        private void enqueueImageUpload(ImageUploadMessage message) {
+        public void enqueueImageUpload(ImageUploadMessage message) {
                 try {
                         redisTemplate.opsForList().rightPush(IMAGE_UPLOAD_QUEUE, message);
                 } catch (Exception ex) {
@@ -660,7 +660,8 @@ public class RoomService {
         public PaginationRoomResponseDto getAllRoomByLandlordIdPaginated(UUID userId, int page, int size) {
 
                 // Ensure page is at least 1 (1-based)
-                if (page < 1) page = 1;
+                if (page < 1)
+                        page = 1;
                 Pageable pageable = PageRequest.of(page - 1, size);
 
                 Page<RoomByLandlordPagingProjection> roomPage = roomJpaRepository.findAllByLandlord(userId, pageable);
