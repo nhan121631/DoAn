@@ -98,7 +98,29 @@ const API = {
       body: JSON.stringify(body),
     });
     if (!r.ok) throw new Error('complete failed');
-    return r.json() as Promise<CompleteResponse>;
+    
+    const result = await r.json() as CompleteResponse;
+    
+    // Call cleanup API after successful completion
+    try {
+      await API.cleanup(uploadId);
+    } catch (cleanupError) {
+      console.warn('Cleanup failed, but upload was successful:', cleanupError);
+      // Don't throw error as the main upload was successful
+    }
+    
+    return result;
+  },
+
+  cleanup: async (uploadId: string): Promise<{ message: string; uploadId: string; deletedFiles?: number }> => {
+    const r = await fetch(`${API_URL}/upload/cleanup?uploadId=${encodeURIComponent(uploadId)}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    if (!r.ok) throw new Error('cleanup failed');
+    return r.json();
   },
 };
 
