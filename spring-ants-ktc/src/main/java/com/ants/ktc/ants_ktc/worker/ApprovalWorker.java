@@ -7,6 +7,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 
@@ -30,6 +31,7 @@ import com.ants.ktc.ants_ktc.models.ApprovalMessage;
 import com.ants.ktc.ants_ktc.repositories.RoomJpaRepository;
 import com.ants.ktc.ants_ktc.repositories.projection.MailUserProjection;
 import com.ants.ktc.ants_ktc.services.ApprovalQueueService;
+import com.ants.ktc.ants_ktc.services.ApprovalLogService;
 import com.ants.ktc.ants_ktc.services.MailService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -49,6 +51,10 @@ public class ApprovalWorker {
 
     @Autowired
     private ApprovalQueueService approvalQueueService;
+
+    // Thêm ApprovalLogService
+    @Autowired
+    private ApprovalLogService approvalLogService;
 
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
@@ -420,8 +426,8 @@ public class ApprovalWorker {
     /**
      * Schedule để gửi CSV report hàng ngày vào 23:00
      */
-    @Scheduled(cron = "0 0 23 * * *") // 23:00 mỗi ngày
-    // @Scheduled(cron = "0 38 11 * * *") // 11:38 AM mỗi ngày (for testing)
+    // @Scheduled(cron = "0 0 23 * * *") // 23:00 mỗi ngày
+    @Scheduled(cron = "0 58 15 * * *") // 15:57 PM mỗi ngày (for testing)
     public void scheduleDailyReportToSlack() {
         try {
             System.out.println("[ApprovalWorker] 📊 Starting daily CSV report to Slack...");
@@ -439,27 +445,28 @@ public class ApprovalWorker {
                 return;
             }
 
-            // Gọi API để gửi CSV
-            String apiUrl = "http://localhost:3333/api/approval-log/send-and-clear";
+            // Gọi service trực tiếp thay vì HTTP call
             String message = String.format("📋 Daily Room Approval Report - %d rooms processed on %s",
                     lineCount - 1,
                     LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
 
             try {
-                RestTemplate restTemplate = new RestTemplate();
-                ResponseEntity<String> response = restTemplate.postForEntity(
-                        apiUrl + "?message=" + message,
-                        null,
-                        String.class);
+                // Gọi service method trực tiếp
+                Map<String, Object> result = approvalLogService.sendCsvToSlackAndClear("C09CM2NAF1P", message);
 
-                if (response.getStatusCode().is2xxSuccessful()) {
+                if (result != null && Boolean.TRUE.equals(result.get("success"))) {
                     System.out.println("[ApprovalWorker] ✅ Daily CSV report sent to Slack successfully");
+                    System.out.println("[ApprovalWorker] 📊 Records processed: " + result.get("records"));
+                    System.out.println("[ApprovalWorker] 🗑️ Records cleared: " + result.get("clearedRecords"));
                 } else {
-                    System.err.println("[ApprovalWorker] ❌ Failed to send daily report: " + response.getStatusCode());
+                    System.err.println("[ApprovalWorker] ❌ Failed to send daily report: " +
+                            (result != null ? result.get("message") : "Unknown error"));
                 }
 
-            } catch (Exception apiError) {
-                System.err.println("[ApprovalWorker] ❌ Error calling report API: " + apiError.getMessage());
+            } catch (Exception serviceError) {
+                System.err
+                        .println("[ApprovalWorker] ❌ Error calling approval log service: " + serviceError.getMessage());
+                serviceError.printStackTrace();
             }
 
         } catch (Exception e) {
