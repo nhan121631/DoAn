@@ -11,6 +11,7 @@ import {
   setDoc,
   serverTimestamp,
   addDoc,
+  deleteDoc,
 } from "firebase/firestore";
 import { getFullName } from "@/services/ProfileService";
 import { API_URL, URL_IMAGE } from "@/services/Constant";
@@ -241,4 +242,22 @@ export const sendTextMessage = async (
     createdAt: serverTimestamp(),
     messageType: 'text',
   });
+};
+
+/**
+ * Xóa tin nhắn
+ * @param messageId ID tin nhắn cần xóa
+ * @param senderId ID người gửi (để kiểm tra quyền xóa)
+ * @returns Promise<void>
+ */
+export const deleteMessage = async (
+  messageId: string,
+  senderId: string
+): Promise<void> => {
+  try {
+    await deleteDoc(doc(db, "messages", messageId));
+  } catch (error) {
+    console.error("Error deleting message:", error);
+    throw new Error("Không thể xóa tin nhắn");
+  }
 };

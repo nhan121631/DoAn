@@ -15,9 +15,11 @@ import {
 import { 
   sendTextMessage, 
   sendImageMessage, 
+  deleteMessage,
   Message 
 } from "@/services/ChatService";
 import ImageModal from "./ImageModal";
+import ContextMenu from "./ContextMenu";
 
 interface ChatClientProps {
   senderId: string;
@@ -42,6 +44,11 @@ export default function ChatClient({
   const [selectedImage, setSelectedImage] = useState<{
     url: string;
     fileName?: string;
+  } | null>(null);
+  const [contextMenu, setContextMenu] = useState<{
+    x: number;
+    y: number;
+    messageId: string;
   } | null>(null);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -82,6 +89,20 @@ export default function ChatClient({
       inputRef.current?.focus();
     }
   }, [allMessages]);
+
+  // Close context menu on click outside
+  useEffect(() => {
+    const handleClickOutside = () => {
+      if (contextMenu) {
+        setContextMenu(null);
+      }
+    };
+
+    if (contextMenu) {
+      document.addEventListener('click', handleClickOutside);
+      return () => document.removeEventListener('click', handleClickOutside);
+    }
+  }, [contextMenu]);
 
   const sendMessage = async () => {
     if (!msg.trim() || !recipientId || !senderId || sending) return;
@@ -137,6 +158,46 @@ export default function ChatClient({
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
+    }
+  };
+
+  const handleContextMenu = (event: React.MouseEvent, messageId: string, messageSenderId: string) => {
+    // Chỉ cho phép xóa tin nhắn của chính mình
+    if (messageSenderId !== senderId) return;
+    
+    event.preventDefault();
+    event.stopPropagation();
+    
+    console.log("Context menu triggered", { messageId, messageSenderId, senderId });
+    
+    setContextMenu({
+      x: event.clientX,
+      y: event.clientY,
+      messageId,
+    });
+  };
+
+  const handleDeleteMessage = async () => {
+    if (!contextMenu) return;
+
+    const confirmDelete = window.confirm("Bạn có chắc chắn muốn xóa tin nhắn này?");
+    if (!confirmDelete) {
+      setContextMenu(null);
+      return;
+    }
+
+    try {
+      console.log("Deleting message:", contextMenu.messageId);
+      await deleteMessage(contextMenu.messageId, senderId);
+      setContextMenu(null);
+      console.log("Message deleted successfully");
+      
+      // Optional: Show success feedback
+      // You can replace this with a toast notification
+      // alert("Tin nhắn đã được xóa thành công");
+    } catch (error) {
+      console.error("Error deleting message:", error);
+      alert("Không thể xóa tin nhắn. Vui lòng thử lại.");
     }
   };
 
@@ -211,9 +272,11 @@ export default function ChatClient({
             <div
               className={`px-3 sm:px-4 py-2 sm:py-3 rounded-2xl max-w-[85%] sm:max-w-[75%] ${
                 m.senderId === senderId
-                  ? "bg-blue-600 text-white rounded-br-md"
+                  ? "bg-blue-600 text-white rounded-br-md cursor-context-menu select-none"
                   : "bg-white text-gray-800 border border-gray-200 rounded-bl-md"
-              }`}
+              } ${m.senderId === senderId ? 'hover:bg-blue-700 transition-colors' : ''}`}
+              onContextMenu={(e) => handleContextMenu(e, m.id, m.senderId)}
+              style={{ userSelect: m.senderId === senderId ? 'none' : 'auto' }}
             >
               {/* Nội dung tin nhắn */}
               {m.messageType === 'image' && m.imageUrl ? (
@@ -340,6 +403,17 @@ export default function ChatClient({
           imageFileName={selectedImage.fileName}
           isOpen={!!selectedImage}
           onClose={() => setSelectedImage(null)}
+        />
+      )}
+
+      {/* Context Menu */}
+      {contextMenu && (
+        <ContextMenu
+          x={contextMenu.x}
+          y={contextMenu.y}
+          isVisible={!!contextMenu}
+          onDelete={handleDeleteMessage}
+          onClose={() => setContextMenu(null)}
         />
       )}
     </div>
