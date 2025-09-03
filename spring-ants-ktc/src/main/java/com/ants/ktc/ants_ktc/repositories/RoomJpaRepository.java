@@ -467,4 +467,6 @@ public interface RoomJpaRepository extends JpaRepository<Room, UUID> {
                         @Param("wards") List<String> wards,
                         @Param("excludeUserId") String excludeUserId);
 
+        @Query("SELECT up.email as email, up.fullName as fullName, r.title as title FROM Room r JOIN r.user u JOIN u.profile up WHERE r.id = :roomId")
+        List<MailUserProjection> findMailUsersByRoomId(@Param("roomId") UUID roomId);
 }

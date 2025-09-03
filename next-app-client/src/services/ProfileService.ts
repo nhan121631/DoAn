@@ -13,7 +13,7 @@ export async function getFullName(id: string) {
 
   const data = await response.json();
   return data;
-};
+}
 
 export async function updateProfile(avatar: File | null, profile: string) {
   const formData = new FormData();
@@ -128,14 +128,13 @@ export async function updatePreferences(
 }
 
 export async function getUserPreferences() {
-  
   const url = `/api/profile/matching-address`;
 
   const response = await fetch(url, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
-    }
+    },
   });
 
   if (!response.ok) {
@@ -224,19 +223,17 @@ export async function isHaveBankAccount() {
 }
 
 export async function setEmailNotifications(enabled: boolean) {
-  const formData = new FormData();
-  formData.append("emailNotifications", String(enabled));
   const response = await fetch(`/api/profile/email-notifications`, {
     method: "PATCH",
-    body: formData,
     headers: {
-      "Accept": "application/json",
+      "Content-Type": "application/json",
     },
+    body: JSON.stringify({ enabled }),
   });
   if (!response.ok) {
     let errorMsg = "Failed to update email notifications";
     try {
-      const contentType = response.headers.get("content-type"); 
+      const contentType = response.headers.get("content-type");
       if (contentType && contentType.includes("application/json")) {
         const error = await response.json();
         errorMsg = Array.isArray(error.message)
@@ -258,25 +255,70 @@ export async function setEmailNotifications(enabled: boolean) {
 }
 
 export async function getEmailNotifications(userId: string) {
-  const response = await fetch(`/api/profile/email-notifications?userId=${userId}`, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
+  const response = await fetch(
+    `/api/profile/email-notifications?userId=${userId}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }
+  );
   if (!response.ok) {
     let errorMsg = "Failed to fetch email notifications";
     try {
-      const error = await response.json();
-      errorMsg = Array.isArray(error.message)
-        ? error.message[0]
-        : error.message || error.error || errorMsg;
-      console.error("API error:", error);
+      const contentType = response.headers.get("content-type");
+      if (contentType && contentType.includes("application/json")) {
+        const error = await response.json();
+        errorMsg = Array.isArray(error.message)
+          ? error.message[0]
+          : error.message || error.error || errorMsg;
+        console.error("API error (json):", error);
+      } else {
+        const text = await response.text();
+        errorMsg = text || errorMsg;
+        console.error("API error (text):", text);
+      }
     } catch (e) {
       console.error("Error parsing response:", e);
     }
     throw new Error(errorMsg);
   }
 
-  return response.json();
+  // Backend returns JSON object with emailNotifications field
+  const data = await response.json();
+  console.log("getEmailNotifications - Raw response data:", data);
+  const raw = data?.emailNotifications;
+  console.log("getEmailNotifications - emailNotifications value:", raw);
+  console.log(
+    "getEmailNotifications - type of emailNotifications:",
+    typeof raw
+  );
+
+  // Normalize various backend representations: boolean, number (1/0), string
+  let emailNotifications = false;
+  if (typeof raw === "boolean") {
+    emailNotifications = raw;
+  } else if (typeof raw === "number") {
+    emailNotifications = raw === 1;
+  } else if (typeof raw === "string") {
+    const normalized = raw.trim().toLowerCase();
+    emailNotifications =
+      normalized === "1" ||
+      normalized === "true" ||
+      normalized === "yes" ||
+      normalized === "on";
+  } else if (raw == null) {
+    emailNotifications = false;
+  } else {
+    // Fallback: convert truthy values to boolean but be careful with strings like "0"
+    emailNotifications = Boolean(raw);
+  }
+
+  console.log(
+    "getEmailNotifications - Converted to boolean:",
+    emailNotifications
+  );
+
+  return { emailNotifications };
 }
