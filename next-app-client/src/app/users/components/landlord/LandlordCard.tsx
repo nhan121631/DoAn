@@ -8,31 +8,20 @@ interface LandLordInfoProps {
 
 const getAvatarSrc = (avatar?: string) => {
   console.log('Avatar value:', avatar);
-  
-  // Kiểm tra null, undefined, empty string
   if (!avatar || avatar.trim() === '' || avatar === 'null' || avatar === 'undefined') {
     return "/images/default/avatar.jpg";
   }
-  
-  // Nếu là đường dẫn Cloudinary partial, thêm domain
   if (avatar.startsWith('/dmvvs0ags/')) {
     return `https://res.cloudinary.com${avatar}`;
   }
-  
-  // Kiểm tra nếu avatar là URL đầy đủ
   if (avatar.startsWith('http') || avatar.startsWith('https://')) {
     return avatar;
   }
-  
-  // Nếu bắt đầu bằng '/' thì là local path
   if (avatar.startsWith('/')) {
     return avatar;
   }
-  
-  // Fallback
   return "/images/avatar.jpg";
 };
-
 
 
 export default function LandlordCard({ landlord }: LandLordInfoProps) {
