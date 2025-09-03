@@ -64,14 +64,16 @@ public class SecurityConfig {
                                                 .hasAnyRole("Landlords", "Administrators")
 
                                                 // feedback
-                                                .requestMatchers(HttpMethod.GET, "/api/rooms/*/feedbacks").permitAll() // xem
-                                                                                                                       // feedback
+                                                .requestMatchers(HttpMethod.GET, "/api/rooms/*/feedbacks").permitAll()
                                                 .requestMatchers(HttpMethod.POST, "/api/rooms/*/feedbacks")
                                                 .hasRole("Users") // viết feedback
                                                 .requestMatchers(HttpMethod.POST, "/api/rooms/feedbacks/*/reply")
                                                 .hasRole("Landlords") // reply feedback
                                                 // .requestMatchers(HttpMethod.GET,
                                                 // "/api/rooms/*/feedback-access").authenticated() // check quyền
+
+                                                //contract
+                                                .requestMatchers("/api/contracts/**").permitAll()
                                                 .requestMatchers(HttpMethod.GET, "/api/rooms/landlords/*/feedbacks")
                                                 .hasRole("Landlords") // landlord xem feedback
                                                 .requestMatchers(HttpMethod.DELETE, "/api/rooms/feedbacks/*")

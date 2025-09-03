@@ -229,20 +229,20 @@ export type CommentFormValues = {
 
 //--------------------------------------//
 
-export type ContractData = {
-  key: string;
-  contractName: string;
-  roomName: string;
-  tenantName: string;
-  phoneNumber: string;
-  numberOfPeople: number;
-  price: number;
-  durationMonths: number;
-  startDate: string;
-  endDate: string;
-  status: 0 | 1; // 0 = Rented, 1 = Checked Out
-  contractImageUrl?: string;
-};
+// export type ContractData = {
+//   key: string;
+//   contractName: string;
+//   roomName: string;
+//   tenantName: string;
+//   phoneNumber: string;
+//   numberOfPeople: number;
+//   price: number;
+//   durationMonths: number;
+//   startDate: string;
+//   endDate: string;
+//   status: 0 | 1; // 0 = Rented, 1 = Checked Out
+//   contractImageUrl?: string;
+// };
 
 export type ContractFormValues = {
   contractName: string;
@@ -289,3 +289,46 @@ export type UserSearchPreferences = {
 };
 
 export type SearchParamsType = { [key: string]: string | string[] | undefined };
+
+// types/index.ts
+export interface BillData {
+  id: string;
+  month: string;
+  electricityFee: number;
+  waterFee: number;
+  serviceFee: number;
+  totalAmount: number;
+  paid: boolean;
+}
+
+export interface ResidentData {
+  id: string;
+  contractId: string;
+  fullName: string;
+  idNumber: string;
+  relationship: string;
+  startDate: string;
+  endDate: string;
+  note: string;
+  idCardFrontUrl: string;
+  idCardBackUrl: string;
+}
+
+export interface ContractData {
+  id: string;
+  contractName: string;
+  roomId: string;
+  roomTitle: string;
+  tenantId: string;
+  tenantName: string;
+  tenantPhone: string;
+  landlordId: string;
+  landlordName: string;
+  startDate: string;
+  endDate: string;
+  depositAmount: number;
+  monthlyRent: number;
+  status: number; // 0: active, 1: terminated, 2: expired, 3: pending
+  bills: BillData[];
+  residents?: ResidentData[];
+}

@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import com.ants.ktc.ants_ktc.dtos.contract.ContractRequestDto;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -48,6 +50,9 @@ public class BookingService {
 
         @Autowired
         private UserJpaRepository userJpaRepository;
+
+        @Autowired
+        private ContractService  contractService;
 
         @Transactional
         public BookingRoomByUserResponseDto createBooking(UUID userId, BookingRoomRequestDto request) {
@@ -209,6 +214,20 @@ public class BookingService {
                                 // Room room = booking.getRoom();
                                 // room.setAvailable(1);
                                 // roomJpaRepository.save(room);
+
+                                ContractRequestDto contractRequest = ContractRequestDto.builder()
+                                        .roomId(booking.getRoom().getId())
+                                        .tenantId(booking.getUser().getId())
+                                        .landlordId(booking.getRoom().getUser().getId())
+                                        .startDate(booking.getRentalDate())
+                                        .endDate(booking.getRentalExpires())
+                                        .depositAmount(booking.getRoom().getPrice_deposit())
+                                        .monthlyRent(booking.getRoom().getPrice_month())
+                                        .status(0) // active
+                                        .build();
+
+                                contractService.createContract(contractRequest);
+
                                 message = "Deposit confirmed successfully. Room is now rented";
                         } else {
                                 throw new IllegalArgumentException(
