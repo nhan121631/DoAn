@@ -19,10 +19,12 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 @Entity
 @Table(name = "rooms")
 @Data
+@ToString(exclude = { "address", "user", "images", "maintenances", "requirements", "bookings", "convenients" })
 @EqualsAndHashCode(callSuper = true)
 public class Room extends BaseEntity {
     @Column(name = "title", nullable = false, length = 255)
