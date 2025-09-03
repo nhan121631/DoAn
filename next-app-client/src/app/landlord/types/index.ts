@@ -35,6 +35,7 @@ export type RoomData = {
 export type LandLordInfo = {
   id: number;
   name: string;
+  fullName: string;
   phone?: string;
   email?: string;
   address?: string;
@@ -70,4 +71,26 @@ export enum FeedbackAccess {
   CAN_RATE = "CAN_RATE",
   ALREADY_RATED = "ALREADY_RATED",
   NOT_USED = "NOT_USED",
+}
+
+
+export interface LandlordDetail {
+  id: string;
+  fullName: string;
+  username: string;
+  email: string;
+  phoneNumber: string;
+  avatar: string;
+  memberSince: string;
+  totalListings: number;
+}
+
+//landlord 
+export interface RoomListing {
+  id: string;
+  title: string;
+  address: string;
+  price: number;
+  area: number;
+  imageUrl?: string;
 }

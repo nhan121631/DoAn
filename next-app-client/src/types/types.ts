@@ -295,4 +295,15 @@ export type UserSearchPreferences = {
   // desiredMaxPrice?: number;
 };
 
+
+// export interface LandLordInfos {
+//   id: string;
+//   username: string;
+//   email: string;
+//   phoneNumber: string;
+//   avatar: string;
+//   // Thêm các fields tùy chọn cho frontend
+//   name?: string; // Sử dụng username làm name
+// }
+
 export type SearchParamsType = { [key: string]: string | string[] | undefined };
