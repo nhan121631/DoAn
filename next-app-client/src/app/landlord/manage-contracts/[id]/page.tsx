@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import { Spin, message, Tabs } from "antd";
 import { FileTextOutlined, DollarOutlined, TeamOutlined } from "@ant-design/icons";
 import { ContractData } from "@/types/types";
@@ -12,10 +12,12 @@ import ResidentsTab from "../../components/manage-contracts/ResidentsTab";
 
 export default function LandlordContractDetail() {
   const params = useParams();
+  const searchParams = useSearchParams();
   const contractId = params?.id as string;
   const [contract, setContract] = useState<ContractData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState("overview");
 
   useEffect(() => {
     const fetchContract = async () => {
@@ -32,6 +34,14 @@ export default function LandlordContractDetail() {
     };
     if (contractId) fetchContract();
   }, [contractId]);
+
+  useEffect(() => {
+    // Check URL params for auto-navigation
+    const tab = searchParams?.get("tab");
+    if (tab) {
+      setActiveTab(tab);
+    }
+  }, [searchParams]);
 
   const handleContractUpdate = (updatedContract: ContractData) => {
     setContract(updatedContract);
@@ -63,7 +73,13 @@ export default function LandlordContractDetail() {
           <FileTextOutlined /> Overview
         </span>
       ),
-      children: <ContractOverview contract={contract} />,
+      children: (
+        <ContractOverview 
+          contract={contract} 
+          onContractUpdate={handleContractUpdate}
+          autoEdit={searchParams?.get("edit") === "true"}
+        />
+      ),
     },
     {
       key: "bills",
@@ -103,7 +119,8 @@ export default function LandlordContractDetail() {
         <h2 className="text-xl font-bold mb-6">Contract Management</h2>
         
         <Tabs
-          defaultActiveKey="overview"
+          activeKey={activeTab}
+          onChange={setActiveTab}
           items={tabItems}
           size="large"
           tabPosition="top"

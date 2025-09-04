@@ -2,6 +2,7 @@ package com.ants.ktc.ants_ktc.controllers;
 
 import com.ants.ktc.ants_ktc.dtos.contract.ContractRequestDto;
 import com.ants.ktc.ants_ktc.dtos.contract.ContractResponseDto;
+import com.ants.ktc.ants_ktc.dtos.contract.ContractUpdateRequestDto;
 import com.ants.ktc.ants_ktc.services.BillExportService;
 import com.ants.ktc.ants_ktc.services.ContractService;
 import jakarta.validation.Valid;
@@ -31,6 +32,7 @@ public class ContractController {
     public ResponseEntity<ContractResponseDto> createContract(@RequestBody @Valid ContractRequestDto dto) {
         return ResponseEntity.ok(contractService.createContract(dto));
     }
+
     @GetMapping("/tenant/{tenantId}")
     public ResponseEntity<List<ContractResponseDto>> getContractsByTenant(@PathVariable("tenantId") UUID tenantId) {
         return ResponseEntity.ok(contractService.getContractsByTenant(tenantId));
@@ -49,6 +51,14 @@ public class ContractController {
     @GetMapping("/{contractId}")
     public ResponseEntity<ContractResponseDto> getContractById(@PathVariable("contractId") UUID contractId) {
         return ResponseEntity.ok(contractService.getContractById(contractId));
+    }
+    @PutMapping("/{id}")
+    public ResponseEntity<ContractResponseDto> updateContract(
+            @PathVariable("id") UUID id,
+            @RequestBody @Valid ContractUpdateRequestDto dto) {
+        dto.setId(id);
+
+        return ResponseEntity.ok(contractService.updateContract(dto));
     }
     @GetMapping("/status/{status}")
     public ResponseEntity<List<ContractResponseDto>> getContractsByStatus(@PathVariable int status) {

@@ -10,6 +10,10 @@ import {
   DatePicker,
   Form,
   Space,
+  Input,
+  Select,
+  Card,
+  Statistic,
 } from "antd";
 import {
   EyeOutlined,
@@ -17,6 +21,9 @@ import {
   DeleteOutlined,
   ExportOutlined,
   DownloadOutlined,
+  SearchOutlined,
+  FilterOutlined,
+  DollarOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 import { ContractData, BillData } from "@/types/types";
@@ -42,6 +49,8 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
   const [exportLoading, setExportLoading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [exportForm] = Form.useForm();
+  const [searchText, setSearchText] = useState("");
+  const [statusFilter, setStatusFilter] = useState<boolean | null>(null);
 
   const [editForm, setEditForm] = useState({
     month: "",
@@ -236,32 +245,118 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
     },
   ];
 
+  // Filter bills based on search and status - similar to tenant
+  const bills = contract.bills || [];
+  const filteredBills = bills.filter((bill: BillData) => {
+    const matchesSearch = 
+      bill.month.toLowerCase().includes(searchText.toLowerCase()) ||
+      bill.totalAmount.toString().includes(searchText);
+    
+    const matchesStatus = statusFilter === null || statusFilter === undefined || bill.paid === statusFilter;
+    
+    return matchesSearch && matchesStatus;
+  });
+
+  // Calculate bill statistics
+  const totalBills = filteredBills.length;
+  const paidBills = filteredBills.filter(bill => bill.paid).length;
+  const pendingBills = filteredBills.filter(bill => !bill.paid).length;
+  const totalAmount = filteredBills.reduce((sum, bill) => sum + bill.totalAmount, 0);
+  const unpaidAmount = filteredBills.filter(bill => !bill.paid).reduce((sum, bill) => sum + bill.totalAmount, 0);
+
   return (
-    <div className="p-6">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold">Bills Management</h3>
-        <Space>
-          <Button type="primary" onClick={() => setAddBillOpen(true)}>
-            Add Bill
-          </Button>
-          <Button 
-            type="default" 
-            icon={<ExportOutlined />}
-            onClick={() => setExportModalOpen(true)}
-          >
-            Export Bills
-          </Button>
-        </Space>
+    <div className="p-6 space-y-6">
+      {/* Bills Statistics */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <Card size="small">
+          <Statistic
+            title="Total Bills"
+            value={totalBills}
+            prefix={<DollarOutlined />}
+          />
+        </Card>
+        <Card size="small">
+          <Statistic
+            title="Paid Bills"
+            value={paidBills}
+            valueStyle={{ color: '#3f8600' }}
+          />
+        </Card>
+        <Card size="small">
+          <Statistic
+            title="Pending Bills"
+            value={pendingBills}
+            valueStyle={{ color: '#cf1322' }}
+          />
+        </Card>
+        <Card size="small">
+          <Statistic
+            title="Unpaid Amount"
+            value={unpaidAmount}
+            valueStyle={{ color: '#cf1322' }}
+            suffix="đ"
+          />
+        </Card>
       </div>
-      
-      <Table
-        columns={billColumns}
-        dataSource={contract.bills || []}
-        rowKey="id"
-        pagination={{ pageSize: 10 }}
-        scroll={{ y: 400 }}
-        loading={loading}
-      />
+
+      <Card 
+        title="Bills Management" 
+        className="shadow-sm"
+        extra={
+          <Space>
+            <Input
+              placeholder="Search bills..."
+              prefix={<SearchOutlined />}
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              style={{ width: 200 }}
+              allowClear
+            />
+            <Select
+              placeholder="Filter by status"
+              value={statusFilter}
+              onChange={setStatusFilter}
+              style={{ width: 150 }}
+              allowClear
+              suffixIcon={<FilterOutlined />}
+            >
+              <Select.Option value={true}>
+                <Tag color="green">Paid</Tag>
+              </Select.Option>
+              <Select.Option value={false}>
+                <Tag color="red">Unpaid</Tag>
+              </Select.Option>
+            </Select>
+            <Button type="primary" onClick={() => setAddBillOpen(true)}>
+              Add Bill
+            </Button>
+            <Button 
+              type="default" 
+              icon={<ExportOutlined />}
+              onClick={() => setExportModalOpen(true)}
+            >
+              Export Bills
+            </Button>
+          </Space>
+        }
+      >
+        <Table
+          columns={billColumns}
+          dataSource={filteredBills}
+          rowKey="id"
+          pagination={{ 
+            pageSize: 10,
+            showSizeChanger: true,
+            showQuickJumper: true,
+            showTotal: (total, range) =>
+              `${range[0]}-${range[1]} of ${total} bills`,
+            pageSizeOptions: ['5', '10', '20', '50'],
+          }}
+          scroll={{ y: 400 }}
+          loading={loading}
+          size="middle"
+        />
+      </Card>
 
       {/* Modal Bill Detail */}
       <BillDetailModal

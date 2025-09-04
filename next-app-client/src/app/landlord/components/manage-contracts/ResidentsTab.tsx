@@ -14,6 +14,7 @@ import {
   Input,
   DatePicker,
   Select,
+  Upload,
 } from "antd";
 import {
   EyeOutlined,
@@ -21,8 +22,12 @@ import {
   DeleteOutlined,
   PlusOutlined,
   UserOutlined,
+  UploadOutlined,
+  SearchOutlined,
+  FilterOutlined,
 } from "@ant-design/icons";
 import { ContractData, ResidentData } from "../../../../types/types";
+import { ResidentService } from "../../../../services/ResidentService";
 import dayjs from "dayjs";
 
 interface ResidentsTabProps {
@@ -38,6 +43,13 @@ const relationshipOptions = [
   { value: "Khác", label: "Khác" },
 ];
 
+// Helper function to convert Cloudinary relative path to full URL
+const getCloudinaryUrl = (relativePath: string): string => {
+  if (!relativePath) return "";
+  if (relativePath.startsWith("http")) return relativePath;
+  return `https://res.cloudinary.com${relativePath}`;
+};
+
 export default function ResidentsTab({ contract, onContractUpdate }: ResidentsTabProps) {
   const [residents, setResidents] = useState<ResidentData[]>([]);
   const [selectedResident, setSelectedResident] = useState<ResidentData | null>(null);
@@ -45,48 +57,87 @@ export default function ResidentsTab({ contract, onContractUpdate }: ResidentsTa
   const [addResidentOpen, setAddResidentOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [form] = Form.useForm();
+  const [frontImageFile, setFrontImageFile] = useState<File | null>(null);
+  const [backImageFile, setBackImageFile] = useState<File | null>(null);
+  const [frontImagePreview, setFrontImagePreview] = useState<string>("");
+  const [backImagePreview, setBackImagePreview] = useState<string>("");
+  const [searchText, setSearchText] = useState("");
+  const [relationshipFilter, setRelationshipFilter] = useState<string | null>(null);
 
-  // Mock data - replace with actual API call
+  // Load residents from API
   useEffect(() => {
-    const mockResidents: ResidentData[] = [
-      {
-        id: "090be935-1b89-4387-87a6-a71a5578b661",
-        contractId: contract.id,
-        fullName: "Nguyen Van A",
-        idNumber: "012345678901",
-        relationship: "Vợ/Chồng",
-        startDate: "2025-09-01T00:00:00.000+00:00",
-        endDate: "2025-12-31T00:00:00.000+00:00",
-        note: "Đăng ký cho vợ ở cùng",
-        idCardFrontUrl: "/dmvvs0ags/image/upload/v1756742930/wv0fj3lsryb6dmawdiqp.png",
-        idCardBackUrl: "/dmvvs0ags/image/upload/v1756742933/roahnybbmlstrohpklpl.png"
-      }
-    ];
-    setResidents(mockResidents);
+    loadResidents();
   }, [contract.id]);
+
+  const loadResidents = async () => {
+    try {
+      setLoading(true);
+      const data = await ResidentService.getByContract(contract.id);
+      setResidents(data);
+    } catch (error) {
+      console.error("Failed to load residents:", error);
+      message.error("Failed to load residents!");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Handle form reset and image cleanup
+  const resetForm = () => {
+    form.resetFields();
+    setFrontImageFile(null);
+    setBackImageFile(null);
+    setFrontImagePreview("");
+    setBackImagePreview("");
+  };
+
+  // Handle edit resident setup
+  useEffect(() => {
+    if (editResident) {
+      form.setFieldsValue({
+        fullName: editResident.fullName,
+        idNumber: editResident.idNumber,
+        relationship: editResident.relationship,
+        startDate: dayjs(editResident.startDate),
+        endDate: dayjs(editResident.endDate),
+        note: editResident.note,
+      });
+
+      // Set existing image previews
+      if (editResident.idCardFrontUrl) {
+        setFrontImagePreview(getCloudinaryUrl(editResident.idCardFrontUrl));
+      }
+      if (editResident.idCardBackUrl) {
+        setBackImagePreview(getCloudinaryUrl(editResident.idCardBackUrl));
+      }
+    }
+  }, [editResident, form]);
 
   const handleAddResident = async (values: any) => {
     try {
       setLoading(true);
-      // TODO: Replace with actual API call
-      const newResident: ResidentData = {
-        id: Date.now().toString(),
+
+      // Format dates to YYYY-MM-DD format for backend
+      const formattedData = {
+        ...values,
+        startDate: values.startDate.format('YYYY-MM-DD'),
+        endDate: values.endDate.format('YYYY-MM-DD'),
         contractId: contract.id,
-        fullName: values.fullName,
-        idNumber: values.idNumber,
-        relationship: values.relationship,
-        startDate: values.startDate.toISOString(),
-        endDate: values.endDate.toISOString(),
-        note: values.note || "",
-        idCardFrontUrl: values.idCardFrontUrl || "",
-        idCardBackUrl: values.idCardBackUrl || "",
       };
-      
-      setResidents(prev => [...prev, newResident]);
+
+      await ResidentService.createResident(
+        contract.id,
+        formattedData,
+        frontImageFile || undefined,
+        backImageFile || undefined
+      );
+
       message.success("Resident added successfully!");
       setAddResidentOpen(false);
-      form.resetFields();
+      resetForm();
+      loadResidents(); // Reload data
     } catch (error) {
+      console.error("Failed to add resident:", error);
       message.error("Failed to add resident!");
     } finally {
       setLoading(false);
@@ -95,24 +146,32 @@ export default function ResidentsTab({ contract, onContractUpdate }: ResidentsTa
 
   const handleEditResident = async (values: any) => {
     if (!editResident) return;
-    
+
     try {
       setLoading(true);
-      // TODO: Replace with actual API call
-      const updatedResident: ResidentData = {
-        ...editResident,
-        fullName: values.fullName,
-        idNumber: values.idNumber,
-        relationship: values.relationship,
-        startDate: values.startDate.toISOString(),
-        endDate: values.endDate.toISOString(),
-        note: values.note || "",
+
+      // Format dates to YYYY-MM-DD format for backend
+      const formattedData = {
+        ...values,
+        startDate: values.startDate.format('YYYY-MM-DD'),
+        endDate: values.endDate.format('YYYY-MM-DD'),
+        contractId: contract.id,
       };
-      
-      setResidents(prev => prev.map(r => r.id === editResident.id ? updatedResident : r));
+
+      await ResidentService.updateResident(
+        contract.id,
+        editResident.id,
+        formattedData,
+        frontImageFile || undefined,
+        backImageFile || undefined
+      );
+
       message.success("Resident updated successfully!");
       setEditResident(null);
+      resetForm();
+      loadResidents(); // Reload data
     } catch (error) {
+      console.error("Failed to update resident:", error);
       message.error("Failed to update resident!");
     } finally {
       setLoading(false);
@@ -122,14 +181,74 @@ export default function ResidentsTab({ contract, onContractUpdate }: ResidentsTa
   const handleDeleteResident = async (residentId: string) => {
     try {
       setLoading(true);
-      // TODO: Replace with actual API call
-      setResidents(prev => prev.filter(r => r.id !== residentId));
+      await ResidentService.deleteResident(contract.id, residentId);
       message.success("Resident deleted successfully!");
+      loadResidents(); // Reload data
     } catch (error) {
+      console.error("Failed to delete resident:", error);
       message.error("Failed to delete resident!");
     } finally {
       setLoading(false);
     }
+  };
+
+  // Handle file upload for front image
+  const handleFrontImageChange = async (file: File) => {
+    setFrontImageFile(file);
+    try {
+      const preview = await ResidentService.fileToBase64(file);
+      setFrontImagePreview(preview);
+    } catch (error) {
+      message.error("Failed to process image!");
+    }
+    return false; // Prevent auto upload
+  };
+
+  // Handle file upload for back image  
+  const handleBackImageChange = async (file: File) => {
+    setBackImageFile(file);
+    try {
+      const preview = await ResidentService.fileToBase64(file);
+      setBackImagePreview(preview);
+    } catch (error) {
+      message.error("Failed to process image!");
+    }
+    return false; // Prevent auto upload
+  };
+
+  // Date validation
+  const validateEndDate = (_: any, value: any) => {
+    const startDate = form.getFieldValue('startDate');
+    if (value && startDate && value.isBefore(startDate)) {
+      return Promise.reject(new Error('End date must be after start date!'));
+    }
+    return Promise.resolve();
+  };
+
+  const validateStartDate = (_: any, value: any) => {
+    const endDate = form.getFieldValue('endDate');
+    if (value && endDate && value.isAfter(endDate)) {
+      return Promise.reject(new Error('Start date must be before end date!'));
+    }
+    return Promise.resolve();
+  };
+
+  // Filter residents based on search and filter criteria
+  const filteredResidents = residents.filter((resident) => {
+    const matchesSearch = !searchText ||
+      resident.fullName?.toLowerCase().includes(searchText.toLowerCase()) ||
+      resident.idNumber?.toLowerCase().includes(searchText.toLowerCase()) ||
+      resident.note?.toLowerCase().includes(searchText.toLowerCase());
+
+    const matchesRelationship = !relationshipFilter || resident.relationship === relationshipFilter;
+
+    return matchesSearch && matchesRelationship;
+  });
+
+  // Clear all filters
+  const clearFilters = () => {
+    setSearchText("");
+    setRelationshipFilter(null);
   };
 
   const columns = [
@@ -188,17 +307,7 @@ export default function ResidentsTab({ contract, onContractUpdate }: ResidentsTa
           <Tooltip title="Edit">
             <Button
               icon={<EditOutlined />}
-              onClick={() => {
-                setEditResident(record);
-                form.setFieldsValue({
-                  fullName: record.fullName,
-                  idNumber: record.idNumber,
-                  relationship: record.relationship,
-                  startDate: dayjs(record.startDate),
-                  endDate: dayjs(record.endDate),
-                  note: record.note,
-                });
-              }}
+              onClick={() => setEditResident(record)}
             />
           </Tooltip>
           <Tooltip title="Delete">
@@ -217,24 +326,60 @@ export default function ResidentsTab({ contract, onContractUpdate }: ResidentsTa
   ];
 
   return (
-    <div className="p-6">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold">Residents Management</h3>
-        <Button
-          type="primary"
-          icon={<PlusOutlined />}
-          onClick={() => setAddResidentOpen(true)}
-        >
-          Add Resident
-        </Button>
-      </div>
-
+    <Card
+      title={<h3 className="text-lg font-semibold m-0">Residents Management</h3>}
+      extra={
+        <div className="flex items-center gap-3">
+          <Input
+            placeholder="Search residents..."
+            prefix={<SearchOutlined />}
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+            style={{ width: 200 }}
+            allowClear
+          />
+          <Select
+            placeholder={
+              <div className="flex items-center gap-1">
+                <FilterOutlined />
+                <span>Relationship</span>
+              </div>
+            }
+            value={relationshipFilter}
+            onChange={setRelationshipFilter}
+            options={relationshipOptions}
+            style={{ width: 150 }}
+            allowClear
+          />
+          {(searchText || relationshipFilter) && (
+            <Button onClick={clearFilters} size="small">
+              Clear filters
+            </Button>
+          )}
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={() => setAddResidentOpen(true)}
+          >
+            Add Resident
+          </Button>
+        </div>
+      }
+    >
       <Table
         columns={columns}
-        dataSource={residents}
+        dataSource={filteredResidents}
         rowKey="id"
-        pagination={{ pageSize: 10 }}
+        pagination={{
+          pageSize: 10,
+          showSizeChanger: true,
+          showQuickJumper: true,
+          showTotal: (total, range) =>
+            `${range[0]}-${range[1]} of ${total} residents`,
+          pageSizeOptions: ['5', '10', '20', '50'],
+        }}
         loading={loading}
+        size="middle"
       />
 
       {/* Resident Detail Modal */}
@@ -256,7 +401,7 @@ export default function ResidentsTab({ contract, onContractUpdate }: ResidentsTa
                   <strong>ID Number:</strong> {selectedResident.idNumber}
                 </div>
                 <div>
-                  <strong>Relationship:</strong> 
+                  <strong>Relationship:</strong>
                   <Tag color="blue" className="ml-2">{selectedResident.relationship}</Tag>
                 </div>
                 <div>
@@ -270,7 +415,7 @@ export default function ResidentsTab({ contract, onContractUpdate }: ResidentsTa
                 </div>
               </div>
             </Card>
-            
+
             {(selectedResident.idCardFrontUrl || selectedResident.idCardBackUrl) && (
               <Card title="ID Card Images">
                 <div className="flex gap-4">
@@ -278,7 +423,7 @@ export default function ResidentsTab({ contract, onContractUpdate }: ResidentsTa
                     <div>
                       <p className="mb-2 font-medium">Front</p>
                       <Image
-                        src={selectedResident.idCardFrontUrl}
+                        src={getCloudinaryUrl(selectedResident.idCardFrontUrl)}
                         alt="ID Card Front"
                         width={200}
                         height={120}
@@ -290,7 +435,7 @@ export default function ResidentsTab({ contract, onContractUpdate }: ResidentsTa
                     <div>
                       <p className="mb-2 font-medium">Back</p>
                       <Image
-                        src={selectedResident.idCardBackUrl}
+                        src={getCloudinaryUrl(selectedResident.idCardBackUrl)}
                         alt="ID Card Back"
                         width={200}
                         height={120}
@@ -312,7 +457,7 @@ export default function ResidentsTab({ contract, onContractUpdate }: ResidentsTa
         onCancel={() => {
           setAddResidentOpen(false);
           setEditResident(null);
-          form.resetFields();
+          resetForm();
         }}
         footer={null}
         destroyOnClose
@@ -353,7 +498,10 @@ export default function ResidentsTab({ contract, onContractUpdate }: ResidentsTa
             <Form.Item
               label="Start Date"
               name="startDate"
-              rules={[{ required: true, message: 'Please select start date!' }]}
+              rules={[
+                { required: true, message: 'Please select start date!' },
+                { validator: validateStartDate }
+              ]}
             >
               <DatePicker style={{ width: '100%' }} format="DD/MM/YYYY" />
             </Form.Item>
@@ -361,7 +509,10 @@ export default function ResidentsTab({ contract, onContractUpdate }: ResidentsTa
             <Form.Item
               label="End Date"
               name="endDate"
-              rules={[{ required: true, message: 'Please select end date!' }]}
+              rules={[
+                { required: true, message: 'Please select end date!' },
+                { validator: validateEndDate }
+              ]}
             >
               <DatePicker style={{ width: '100%' }} format="DD/MM/YYYY" />
             </Form.Item>
@@ -371,12 +522,57 @@ export default function ResidentsTab({ contract, onContractUpdate }: ResidentsTa
             <Input.TextArea placeholder="Enter additional notes" rows={3} />
           </Form.Item>
 
+          {/* ID Card Images Upload */}
+          <div className="grid grid-cols-2 gap-4">
+            <Form.Item label="ID Card Front Image">
+              <Upload
+                beforeUpload={handleFrontImageChange}
+                showUploadList={false}
+                accept="image/*"
+              >
+                <Button icon={<UploadOutlined />}>Select Front Image</Button>
+              </Upload>
+              {frontImagePreview && (
+                <div className="mt-2">
+                  <Image
+                    src={frontImagePreview}
+                    alt="Front Preview"
+                    width={100}
+                    height={60}
+                    style={{ objectFit: 'cover' }}
+                  />
+                </div>
+              )}
+            </Form.Item>
+
+            <Form.Item label="ID Card Back Image">
+              <Upload
+                beforeUpload={handleBackImageChange}
+                showUploadList={false}
+                accept="image/*"
+              >
+                <Button icon={<UploadOutlined />}>Select Back Image</Button>
+              </Upload>
+              {backImagePreview && (
+                <div className="mt-2">
+                  <Image
+                    src={backImagePreview}
+                    alt="Back Preview"
+                    width={100}
+                    height={60}
+                    style={{ objectFit: 'cover' }}
+                  />
+                </div>
+              )}
+            </Form.Item>
+          </div>
+
           <Form.Item className="mb-0 text-right">
             <Space>
               <Button onClick={() => {
                 setAddResidentOpen(false);
                 setEditResident(null);
-                form.resetFields();
+                resetForm();
               }}>
                 Cancel
               </Button>
@@ -387,6 +583,6 @@ export default function ResidentsTab({ contract, onContractUpdate }: ResidentsTa
           </Form.Item>
         </Form>
       </Modal>
-    </div>
+    </Card>
   );
 }
