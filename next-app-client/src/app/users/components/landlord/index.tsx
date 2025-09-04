@@ -1,7 +1,8 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import LandlordCard from "./LandlordCard";
-import { landlordService, PageResponse } from "@/services/LandlordService"; 
+import { landlordService } from "@/services/LandlordService"; 
+import { PageResponse } from "@/types/types";
 import { LandLordInfo } from "@/app/landlord/types";
 
 export default function LandlordListCard() {

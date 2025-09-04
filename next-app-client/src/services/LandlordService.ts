@@ -27,20 +27,12 @@
 // };
 
 
-// import { LandLordInfo } from "@/app/landlord/types";  // ← Dùng interface của bạn bạn
 import { LandLordInfo, LandlordDetail, RoomListing } from "@/app/landlord/types";
+import { PageResponse } from "@/types/types";
 
 import { API_URL } from "./Constant";
 
-export interface PageResponse<T> {
-  content: T[];
-  page: number;
-  size: number;
-  totalElements: number;
-  totalPages: number;
-  hasNext: boolean;
-  hasPrevious: boolean;
-}
+
 
 export const landlordService = {
   async getAllLandlords(page: number = 0, size: number = 6): Promise<PageResponse<LandLordInfo>> {
