@@ -14,4 +14,6 @@ public interface RoomProjectionForLandlord {
 
     String getImageUrl();
 
+    Integer getFavoriteCount();
+
 }

@@ -64,14 +64,14 @@ export default function LandlordDetailPage() {
   }
 
   return (
-    <div className="min-h-screen py-8 bg-gray-50">
+    <div className="min-h-screen py-8 bg-gray-50" >
       <div className="px-4 mx-auto max-w-7xl">
         {/* Header */}
-        <div className="mb-8">
+        {/* <div className="mb-8">
           <Link href="/users" className="inline-block mb-4 text-blue-600 hover:underline">
             ← Quay lại trang chính
           </Link>
-        </div>
+        </div> */}
 
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-4">
           {/* Left Sidebar - Landlord Info Card */}

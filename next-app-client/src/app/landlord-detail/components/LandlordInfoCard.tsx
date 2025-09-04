@@ -86,7 +86,7 @@ export default function LandlordInfoCard({ landlord, onStartChat }: LandlordInfo
             <div className="flex items-center justify-center gap-2 px-3 py-1 border rounded-full backdrop-blur-sm bg-green-400/20 border-green-300/30">
               <div className="w-2 h-2 bg-green-300 rounded-full animate-pulse"></div>
               <p className="text-xs font-medium text-green-100">
-                Online now
+                Online
               </p>
             </div>
           </div>

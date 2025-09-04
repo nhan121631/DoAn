@@ -93,4 +93,5 @@ export interface RoomListing {
   price: number;
   area: number;
   imageUrl?: string;
+  favoriteCount?: number;
 }
