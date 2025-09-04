@@ -21,13 +21,13 @@ public class BookingRoomRequestDto {
     private UUID roomId;
 
     @NotNull(message = "Rental date is required")
-    @FutureOrPresent(message = "Rental date must be today or in the future")
+    // @FutureOrPresent(message = "Rental date must be today or in the future")
     private Date rentalDate;
 
     @NotNull(message = "Rental expires date is required")
     @Future(message = "Rental expires date must be in the future")
     private Date rentalExpires;
-    
+
     @Min(value = 1, message = "Tenant count must be at least 1")
     private int tenantCount;
 }
