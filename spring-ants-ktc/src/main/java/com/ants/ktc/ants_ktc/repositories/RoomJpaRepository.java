@@ -289,7 +289,11 @@ public interface RoomJpaRepository extends JpaRepository<Room, UUID> {
                         AND (:maxPrice IS NULL OR r.price_month <= :maxPrice)
                         AND p.name IN :provinces
                         AND r.id NOT IN (
-                            SELECT f.room.id FROM Favorite f WHERE f.user.id = :excludeUserId
+                            SELECT f.room.id FROM Favorite f
+                            JOIN f.user fu
+                            JOIN fu.profile fup
+                            WHERE f.user.id = :excludeUserId
+                            AND fup.emailNotifications = true
                         )
                         ORDER BY
                             CASE
@@ -377,6 +381,13 @@ public interface RoomJpaRepository extends JpaRepository<Room, UUID> {
                         "AND r.hidden = 0 " +
                         "AND r.is_removed = 0 " +
                         "AND r.approval = 1 " +
+                        "AND NOT EXISTS (" +
+                        "    SELECT 1 FROM favorites f " +
+                        "    JOIN users fu ON f.user_id = fu.id " +
+                        "    JOIN user_profiles fup ON fu.profile_id = fup.id " +
+                        "    WHERE f.room_id = r.id " +
+                        "    AND fup.email_notifications = false" +
+                        ") " +
                         "HAVING distance <= :radiusKm " +
                         "ORDER BY distance", nativeQuery = true)
         List<RoomSuggestionProjection> findRoomSuggestionsWithRadius(
@@ -433,6 +444,13 @@ public interface RoomJpaRepository extends JpaRepository<Room, UUID> {
                         "AND (:minPrice IS NULL OR r.price_month >= :minPrice) " +
                         "AND (:maxPrice IS NULL OR r.price_month <= :maxPrice) " +
                         "AND f.id IS NULL " + // Exclude user's favorites
+                        "AND NOT EXISTS (" +
+                        "    SELECT 1 FROM favorites fu " +
+                        "    JOIN users fuser ON fu.user_id = fuser.id " +
+                        "    JOIN user_profiles fup ON fuser.profile_id = fup.id " +
+                        "    WHERE fu.room_id = r.id " +
+                        "    AND fup.email_notifications = false" +
+                        ") " +
                         "HAVING distance <= :radiusKm " +
                         "ORDER BY locationScore ASC, distance ASC, priceScore ASC, areaScore ASC, r.createddate DESC", nativeQuery = true)
         List<RoomSuggestionProjection> findRoomSuggestionsWithRadiusAndCriteria(
@@ -451,5 +469,4 @@ public interface RoomJpaRepository extends JpaRepository<Room, UUID> {
 
         @Query("SELECT up.email as email, up.fullName as fullName, r.title as title FROM Room r JOIN r.user u JOIN u.profile up WHERE r.id = :roomId")
         List<MailUserProjection> findMailUsersByRoomId(@Param("roomId") UUID roomId);
-
 }
