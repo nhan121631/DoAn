@@ -340,16 +340,17 @@ const MapRoom: React.FC<Props> = ({ onRoomClick }) => {
       const isVIP = group.rooms.some((r) => r.postType === "Post VIP");
       const isSingle = group.rooms.length === 1;
 
-      // Small dot marker
+      // Small icon marker
       if (!isVIP && isSingle && zoom < 15) {
-        const dot = document.createElement("div");
-        dot.style.width = "12px";
-        dot.style.height = "12px";
-        dot.style.background = "#00bdb7";
-        dot.style.border = "2px solid white";
-        dot.style.borderRadius = "50%";
+        const icon = document.createElement("img");
+        icon.src = "/images/icon/red_position_ants.png"; // Đường dẫn icon, chỉnh lại nếu cần
+        icon.style.width = "56px";
+        icon.style.height = "56px";
+        icon.style.objectFit = "contain";
+        icon.style.display = "block";
+        icon.style.borderRadius = "50%";
 
-        const marker = new goongjs.Marker({ element: dot })
+        const marker = new goongjs.Marker({ element: icon })
           .setLngLat([group.lng, group.lat])
           .addTo(mapRef.current);
         mapRef.current._markers.push(marker);
