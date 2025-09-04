@@ -1,15 +1,21 @@
 import http from 'k6/http';
 //performance testing tool
-// export const options = {
-//     vus: 1000,
-//   iterations: 1000,
-//     duration: '5s',
-//     thresholds: {
-//         http_req_duration: ['p(95)<200'], // 95% of requests should be below 200ms
-//         http_req_failed: ['rate<0.01'], // less than 1% of requests should fail
-//     },
-// };
-
+export const options = {
+ scenarios: {
+  constant_rps: {
+   executor: 'constant-arrival-rate',
+   rate: 100,       // 100 requests mỗi giây
+   timeUnit: '1s',
+   duration: '1m',
+   preAllocatedVUs: 50,
+   maxVUs: 200,
+  },
+ },
+ thresholds: {
+  http_req_duration: ['p(95)<1000'], // 95% request < 1s
+  http_req_failed: ['rate<0.01'],  // lỗi < 1%
+ },
+};
 // load test
 // export const options = {
 //   vus: 100, // simulate 100 users
