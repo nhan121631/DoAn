@@ -4,9 +4,11 @@ import { useLocationContext } from "@/context/LocationContext";
 import { useSession } from "next-auth/react";
 import { PaginatedResponse, RoomInUser } from "@/types/types";
 import RoomVipCard from "../rooms/RoomVipCard";
-import Link from "next/link";
 import { BiChevronLeft, BiChevronRight } from "react-icons/bi";
 import { HiSparkles } from "react-icons/hi";
+import { getRoomVipWithLocation, getRoomVipUser } from "@/services/RoomService";
+import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
 
 interface RentalRoomsWithLocationProps {
   initialVipRooms?: PaginatedResponse<RoomInUser>;
@@ -29,14 +31,19 @@ export default function RentalRoomsWithLocation({
   isEmptyFilter,
   userLocationData,
 }: RentalRoomsWithLocationProps) {
+  const router = useRouter();
   const { data: session } = useSession();
+  const [isLoadingPage, setIsLoadingPage] = useState(false);
+  const [optimisticPage, setOptimisticPage] = useState<number | null>(null);
+  const [paginatedVipRooms, setPaginatedVipRooms] =
+    useState<PaginatedResponse<RoomInUser> | null>(null);
   const {
     location,
     guestRooms,
     userRooms,
     isSearching,
     setGuestRooms,
-    // setUserRooms,
+    setUserRooms,
     setLocation,
   } = useLocationContext();
 
@@ -54,15 +61,33 @@ export default function RentalRoomsWithLocation({
   const hasUserLocationData =
     userLocationData?.hasLocationPreference && userLocationData.coordinates; // Server data for logged-in user
 
+  // When using location context data, pagination is handled differently
+  const isUsingLocationData = hasGuestData || hasUserData;
+
+  // Reset URL pagination when switching to location-based data
+  useEffect(() => {
+    if (isUsingLocationData && page !== undefined && page !== 0) {
+      // Reset URL to page 0 when location data is available but URL shows different page
+      router.push("?page=0", { scroll: false });
+    }
+  }, [isUsingLocationData, page, router]);
+
   // Use rooms from context if available (for location search - both guest and user),
   // or use initial data which may be location-sorted for logged-in users with saved preferences
-  const vipRooms = isGuestUser
-    ? hasGuestData
-      ? guestRooms.vipRooms
-      : initialVipRooms
-    : hasUserData
-    ? userRooms.vipRooms
-    : initialVipRooms;
+  // Use paginated data if available (from client-side pagination)
+  const vipRooms =
+    paginatedVipRooms ||
+    (isGuestUser
+      ? hasGuestData
+        ? guestRooms.vipRooms
+        : initialVipRooms
+      : hasUserData
+      ? userRooms.vipRooms
+      : initialVipRooms);
+
+  // Calculate effective current page - always 0 when using location data
+  const effectivePage = isUsingLocationData ? 0 : page || 0;
+
   const normalRooms = isGuestUser
     ? hasGuestData
       ? guestRooms.normalRooms
@@ -76,6 +101,51 @@ export default function RentalRoomsWithLocation({
   console.log("- User has saved location:", hasUserLocationData);
   console.log("- VIP rooms count:", vipRooms?.data?.length || 0);
   console.log("- Normal rooms count:", normalRooms?.data?.length || 0);
+
+  // Reset paginated data when context changes
+  useEffect(() => {
+    setPaginatedVipRooms(null);
+    setOptimisticPage(null);
+  }, [guestRooms, userRooms, location]);
+
+  // Handle pagination for location-based data
+  const handleVipPagination = async (newPage: number) => {
+    // Immediately set optimistic page and loading state
+    setOptimisticPage(newPage);
+    setIsLoadingPage(true);
+
+    // Update URL immediately for better UX
+    router.push(`?page=${newPage}`, { scroll: false });
+
+    try {
+      const userId = session?.user?.userProfile?.id;
+      let newVipRooms: PaginatedResponse<RoomInUser> | null = null;
+
+      if (isUsingLocationData && location) {
+        // For location-based data, fetch new data with coordinates
+        newVipRooms = await getRoomVipWithLocation(
+          newPage,
+          4,
+          location.lat,
+          location.lng
+        );
+      } else {
+        // For non-location data, fetch regular VIP rooms
+        newVipRooms = await getRoomVipUser(newPage, 4, userId);
+      }
+
+      if (newVipRooms) {
+        // Store paginated data in local state
+        setPaginatedVipRooms(newVipRooms);
+      }
+    } catch (error) {
+      console.error("Error fetching VIP rooms:", error);
+    } finally {
+      // Always reset states when done
+      setOptimisticPage(null);
+      setIsLoadingPage(false);
+    }
+  };
 
   // Check if we have VIP rooms to show
   const shouldShowVipRooms = vipRooms && vipRooms.data.length > 0;
@@ -203,71 +273,131 @@ export default function RentalRoomsWithLocation({
           </div>
 
           <div className="flex flex-col items-center w-full gap-4">
-            <div className="flex flex-wrap items-start justify-center w-full gap-4 md:gap-6 lg:gap-8">
-              {vipRooms?.data
-                .filter(
-                  (room): room is RoomInUser =>
-                    room &&
-                    typeof room === "object" &&
-                    "priceMonth" in room &&
-                    "postStartDate" in room &&
-                    "conveniences" in room &&
-                    "landlord" in room
-                )
-                .map((room, index) => (
-                  <div
-                    key={index}
-                    className="basis-full w-full max-w-xs sm:max-w-1/2 lg:max-w-none flex justify-center"
-                  >
-                    <RoomVipCard
-                      room={room}
-                      isFavorite={initialFavoriteIds.includes(room.id)}
-                    />
+            <div className="relative flex flex-wrap items-start justify-center w-full gap-4 md:gap-6 lg:gap-8">
+              {/* Loading overlay when fetching new page */}
+              {isLoadingPage && (
+                <div className="absolute inset-0 bg-white/80 backdrop-blur-sm z-10 flex items-center justify-center rounded-xl">
+                  <div className="flex items-center gap-3 bg-white px-6 py-3 rounded-full shadow-lg border border-gray-200">
+                    <div className="w-5 h-5 border-2 border-blue-500/30 border-t-blue-500 rounded-full animate-spin"></div>
+                    <span className="text-sm font-medium text-gray-700">
+                      Loading new page...
+                    </span>
                   </div>
-                ))}
+                </div>
+              )}
+
+              <div
+                className={`contents transition-opacity duration-300 ${
+                  isLoadingPage
+                    ? "opacity-30 pointer-events-none"
+                    : "opacity-100"
+                }`}
+              >
+                {vipRooms?.data
+                  .filter(
+                    (room): room is RoomInUser =>
+                      room &&
+                      typeof room === "object" &&
+                      "priceMonth" in room &&
+                      "postStartDate" in room &&
+                      "conveniences" in room &&
+                      "landlord" in room
+                  )
+                  .map((room, index) => (
+                    <div
+                      key={index}
+                      className="basis-full w-full max-w-xs sm:max-w-1/2 lg:max-w-none flex justify-center"
+                    >
+                      <RoomVipCard
+                        room={room}
+                        isFavorite={initialFavoriteIds.includes(room.id)}
+                      />
+                    </div>
+                  ))}
+              </div>
 
               {/* VIP Pagination */}
-              {vipRooms && page !== undefined && (
+              {vipRooms && page !== undefined && vipRooms.totalPages > 1 && (
                 <div className="flex flex-wrap items-center justify-center gap-4 mt-8">
-                  <Link
-                    href={`?page=${page - 1}#rental-rooms`}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-full font-medium border transition-all duration-200 shadow ${
-                      page === 0
-                        ? "text-gray-400 bg-gray-100 cursor-not-allowed pointer-events-none border-gray-200"
-                        : "text-blue-600 bg-white hover:bg-blue-50 hover:shadow-lg border-blue-300"
+                  <button
+                    onClick={() =>
+                      handleVipPagination(Math.max(0, effectivePage - 1))
+                    }
+                    disabled={
+                      (optimisticPage !== null
+                        ? optimisticPage
+                        : effectivePage) === 0 || isLoadingPage
+                    }
+                    className={`group flex items-center gap-3 px-6 py-3 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95 ${
+                      (optimisticPage !== null
+                        ? optimisticPage
+                        : effectivePage) === 0 || isLoadingPage
+                        ? "bg-gradient-to-r from-gray-200 to-gray-300 text-gray-500 cursor-not-allowed"
+                        : "bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-blue-500/30"
                     }`}
-                    scroll={true}
-                    aria-disabled={page === 0}
                   >
-                    <BiChevronLeft size={20} />
+                    {isLoadingPage &&
+                    optimisticPage === Math.max(0, effectivePage - 1) ? (
+                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    ) : (
+                      <BiChevronLeft
+                        size={20}
+                        className="transition-transform group-hover:-translate-x-1"
+                      />
+                    )}
                     <span className="hidden sm:inline">Previous</span>
-                  </Link>
+                  </button>
 
-                  <div className="flex flex-col items-center px-4">
-                    <span className="text-base font-semibold text-gray-700">
-                      Page <span className="text-blue-600">{page + 1}</span> /{" "}
-                      <span className="text-blue-600">
-                        {vipRooms.totalPages}
-                      </span>
+                  <div className="flex flex-col items-center px-6 py-2 bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/50 shadow-sm">
+                    <span className="text-lg font-bold bg-gradient-to-r from-yellow-500 to-orange-500 bg-clip-text text-transparent">
+                      Page{" "}
+                      {(optimisticPage !== null
+                        ? optimisticPage
+                        : effectivePage) + 1}{" "}
+                      / {vipRooms.totalPages}
                     </span>
-                    <span className="text-xs text-gray-400">
-                      {vipRooms.totalRecords} rooms found
+                    <span className="text-xs text-gray-500 font-medium">
+                      {vipRooms.totalRecords} premium rooms
+                      {isUsingLocationData && " (location-sorted)"}
+                      {isLoadingPage && " (loading...)"}
                     </span>
                   </div>
 
-                  <Link
-                    href={`?page=${page + 1}#rental-rooms`}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-full font-medium border transition-all duration-200 shadow ${
-                      page + 1 >= vipRooms.totalPages
-                        ? "text-gray-400 bg-gray-100 cursor-not-allowed pointer-events-none border-gray-200"
-                        : "text-blue-600 bg-white hover:bg-blue-50 hover:shadow-lg border-blue-300"
+                  <button
+                    onClick={() =>
+                      handleVipPagination(
+                        Math.min(vipRooms.totalPages - 1, effectivePage + 1)
+                      )
+                    }
+                    disabled={
+                      (optimisticPage !== null
+                        ? optimisticPage
+                        : effectivePage) +
+                        1 >=
+                        vipRooms.totalPages || isLoadingPage
+                    }
+                    className={`group flex items-center gap-3 px-6 py-3 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95 ${
+                      (optimisticPage !== null
+                        ? optimisticPage
+                        : effectivePage) +
+                        1 >=
+                        vipRooms.totalPages || isLoadingPage
+                        ? "bg-gradient-to-r from-gray-200 to-gray-300 text-gray-500 cursor-not-allowed"
+                        : "bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-blue-500/30"
                     }`}
-                    scroll={true}
-                    aria-disabled={page + 1 >= vipRooms.totalPages}
                   >
                     <span className="hidden sm:inline">Next</span>
-                    <BiChevronRight size={20} />
-                  </Link>
+                    {isLoadingPage &&
+                    optimisticPage ===
+                      Math.min(vipRooms.totalPages - 1, effectivePage + 1) ? (
+                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    ) : (
+                      <BiChevronRight
+                        size={20}
+                        className="transition-transform group-hover:translate-x-1"
+                      />
+                    )}
+                  </button>
                 </div>
               )}
             </div>

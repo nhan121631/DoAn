@@ -28,7 +28,10 @@ export default async function FeaturedListingsCard() {
     return `${Math.floor(diff / 86400)} days ago`;
   }
   return (
-    <div className="p-5 mt-6 border shadow-lg bg-white rounded-xl border-sky-200 max-w-full overflow-hidden">
+    <div
+      data-featured-listings
+      className="p-5 mt-6 border shadow-lg bg-white rounded-xl border-sky-200 max-w-full overflow-hidden"
+    >
       <h3 className="mb-4 text-xl font-bold text-red-600 flex items-center gap-2">
         <svg
           width="20"

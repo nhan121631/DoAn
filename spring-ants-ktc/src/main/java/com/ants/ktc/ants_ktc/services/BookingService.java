@@ -63,6 +63,10 @@ public class BookingService {
                         throw new IllegalArgumentException("Room is not available for booking");
                 }
 
+                if (room.getMaxPeople() != null && request.getTenantCount() > room.getMaxPeople()) {
+                        throw new IllegalArgumentException("Tenant count exceeds room's maximum capacity");
+                }
+
                 // Kiểm tra user đã đặt phòng này chưa
                 boolean exists = bookingJpaRepository.existsByUserIdAndRoomIdAndIsRemoved(userId, room.getId(), 0);
                 if (exists) {

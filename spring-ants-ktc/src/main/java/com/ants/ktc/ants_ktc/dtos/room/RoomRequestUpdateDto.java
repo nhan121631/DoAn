@@ -63,7 +63,7 @@ public class RoomRequestUpdateDto {
     @Min(value = 1, message = "Max people must be at least 1.")
     private Integer maxPeople;
     private AddressCreateRequestDto address;
-    @NotNull(message = "UserId is required.")
+    // @NotNull(message = "UserId is required.")
     private UUID userId;
     private List<Long> convenientIds;
     private List<ImageCreateRequestDto> imageUrls;
