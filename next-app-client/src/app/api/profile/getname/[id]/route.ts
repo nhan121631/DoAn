@@ -4,7 +4,7 @@ import { getServerSession } from "next-auth";
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await getServerSession(authOptions);
   if (!session) {
@@ -12,10 +12,8 @@ export async function GET(
   }
 
   const { id } = await params;
-  const response = await fetch(`${API_URL}/profile/getname/${id}`, {
-    method: "GET",
-    
-  });
+
+  const response = await fetch(`${API_URL}/profile/getname/${id}`);
 
   if (!response.ok) {
     const errorJson = await response.json();
