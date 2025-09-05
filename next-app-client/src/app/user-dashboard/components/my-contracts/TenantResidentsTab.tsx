@@ -70,6 +70,13 @@ export default function TenantResidentsTab({ contract }: TenantResidentsTabProps
   const [searchText, setSearchText] = useState("");
   const [relationshipFilter, setRelationshipFilter] = useState<string | null>(null);
 
+  // Helper to get current active form - với safety check
+  const getCurrentForm = () => {
+    if (editResident && editForm) return editForm;
+    if (!editResident && addForm) return addForm;
+    return null; // fallback
+  };
+
   useEffect(() => {
     const fetchResidents = async () => {
       try {
@@ -128,12 +135,11 @@ export default function TenantResidentsTab({ contract }: TenantResidentsTabProps
       setFrontIdFileList(frontImageList);
       setBackIdFileList(backImageList);
     } else {
-      // Reset form and file lists when not editing
-      editForm.resetFields();
+      // Only reset file lists when not editing, not forms
       setFrontIdFileList([]);
       setBackIdFileList([]);
     }
-  }, [editResident, editForm]);
+  }, [editResident]);
 
   // Handle file upload for ID card images
   const handleUpload = (file: File, type: 'front' | 'back') => {
@@ -507,18 +513,26 @@ export default function TenantResidentsTab({ contract }: TenantResidentsTabProps
 
       {/* Add/Edit Resident Modal */}
       <Modal
+        key={editResident ? `edit-${editResident.id}` : 'add-new'}
         title={editResident ? "Edit Resident" : "Add Resident"}
         open={addResidentOpen || !!editResident}
         onCancel={() => {
           setAddResidentOpen(false);
           setEditResident(null);
-          addForm.resetFields();
-          // editForm will be reset in useEffect when editResident becomes null
+          // Reset only the forms that were being used
+          if (editResident) {
+            editForm.resetFields();
+          } else {
+            addForm.resetFields();
+          }
+          setFrontIdFileList([]);
+          setBackIdFileList([]);
         }}
         footer={null}
         width={600}
       >
         <Form
+          key={editResident ? `edit-${editResident.id}` : 'add-new'}
           form={editResident ? editForm : addForm}
           layout="vertical"
           onFinish={editResident ? handleEditResident : handleAddResident}
@@ -564,8 +578,10 @@ export default function TenantResidentsTab({ contract }: TenantResidentsTabProps
                 format="DD/MM/YYYY"
                 onChange={() => {
                   // Trigger validation for end date when start date changes
-                  const currentForm = editResident ? editForm : addForm;
-                  currentForm.validateFields(['endDate']);
+                  const currentForm = getCurrentForm();
+                  if (currentForm) {
+                    currentForm.validateFields(['endDate']);
+                  }
                 }}
                 // Allow all dates including future dates
                 disabledDate={() => false}
@@ -598,7 +614,8 @@ export default function TenantResidentsTab({ contract }: TenantResidentsTabProps
                 style={{ width: '100%' }} 
                 format="DD/MM/YYYY"
                 disabledDate={(current) => {
-                  const currentForm = editResident ? editForm : addForm;
+                  const currentForm = getCurrentForm();
+                  if (!currentForm) return false;
                   const startDate = currentForm.getFieldValue('startDate');
                   if (!startDate) return false;
                   // Only disable dates before or equal to start date
@@ -665,8 +682,14 @@ export default function TenantResidentsTab({ contract }: TenantResidentsTabProps
               <Button onClick={() => {
                 setAddResidentOpen(false);
                 setEditResident(null);
-                addForm.resetFields();
-                // editForm will be reset in useEffect when editResident becomes null
+                // Reset only the forms that were being used
+                if (editResident) {
+                  editForm.resetFields();
+                } else {
+                  addForm.resetFields();
+                }
+                setFrontIdFileList([]);
+                setBackIdFileList([]);
               }}>
                 Cancel
               </Button>

@@ -191,8 +191,8 @@ const LandlordContracts: React.FC<LandlordContractsProps> = ({ contracts }) => {
   return (
     <div className="space-y-6">
       <Card 
-        title="Contract Management" 
-        className="shadow-md"
+        title={<span className="text-gray-900 dark:text-white">Contract Management</span>}
+        className="shadow-md bg-white dark:bg-[#22304a] border-gray-200 dark:border-gray-600 transition-colors duration-300"
         extra={
           <Space>
             <Input

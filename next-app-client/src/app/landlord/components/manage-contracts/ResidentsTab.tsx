@@ -56,7 +56,8 @@ export default function ResidentsTab({ contract, onContractUpdate }: ResidentsTa
   const [editResident, setEditResident] = useState<ResidentData | null>(null);
   const [addResidentOpen, setAddResidentOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [form] = Form.useForm();
+  const [addForm] = Form.useForm();
+  const [editForm] = Form.useForm();
   const [frontImageFile, setFrontImageFile] = useState<File | null>(null);
   const [backImageFile, setBackImageFile] = useState<File | null>(null);
   const [frontImagePreview, setFrontImagePreview] = useState<string>("");
@@ -84,7 +85,8 @@ export default function ResidentsTab({ contract, onContractUpdate }: ResidentsTa
 
   // Handle form reset and image cleanup
   const resetForm = () => {
-    form.resetFields();
+    addForm.resetFields();
+    editForm.resetFields();
     setFrontImageFile(null);
     setBackImageFile(null);
     setFrontImagePreview("");
@@ -94,7 +96,7 @@ export default function ResidentsTab({ contract, onContractUpdate }: ResidentsTa
   // Handle edit resident setup
   useEffect(() => {
     if (editResident) {
-      form.setFieldsValue({
+      editForm.setFieldsValue({
         fullName: editResident.fullName,
         idNumber: editResident.idNumber,
         relationship: editResident.relationship,
@@ -111,7 +113,14 @@ export default function ResidentsTab({ contract, onContractUpdate }: ResidentsTa
         setBackImagePreview(getCloudinaryUrl(editResident.idCardBackUrl));
       }
     }
-  }, [editResident, form]);
+  }, [editResident, editForm]);
+
+  // Handle add resident modal opening - reset form
+  useEffect(() => {
+    if (addResidentOpen && !editResident) {
+      resetForm();
+    }
+  }, [addResidentOpen, editResident]);
 
   const handleAddResident = async (values: any) => {
     try {
@@ -216,17 +225,34 @@ export default function ResidentsTab({ contract, onContractUpdate }: ResidentsTa
     return false; // Prevent auto upload
   };
 
-  // Date validation
-  const validateEndDate = (_: any, value: any) => {
-    const startDate = form.getFieldValue('startDate');
+  // Date validation for add form
+  const validateEndDateAdd = (_: any, value: any) => {
+    const startDate = addForm.getFieldValue('startDate');
     if (value && startDate && value.isBefore(startDate)) {
       return Promise.reject(new Error('End date must be after start date!'));
     }
     return Promise.resolve();
   };
 
-  const validateStartDate = (_: any, value: any) => {
-    const endDate = form.getFieldValue('endDate');
+  const validateStartDateAdd = (_: any, value: any) => {
+    const endDate = addForm.getFieldValue('endDate');
+    if (value && endDate && value.isAfter(endDate)) {
+      return Promise.reject(new Error('Start date must be before end date!'));
+    }
+    return Promise.resolve();
+  };
+
+  // Date validation for edit form
+  const validateEndDateEdit = (_: any, value: any) => {
+    const startDate = editForm.getFieldValue('startDate');
+    if (value && startDate && value.isBefore(startDate)) {
+      return Promise.reject(new Error('End date must be after start date!'));
+    }
+    return Promise.resolve();
+  };
+
+  const validateStartDateEdit = (_: any, value: any) => {
+    const endDate = editForm.getFieldValue('endDate');
     if (value && endDate && value.isAfter(endDate)) {
       return Promise.reject(new Error('Start date must be before end date!'));
     }
@@ -258,8 +284,8 @@ export default function ResidentsTab({ contract, onContractUpdate }: ResidentsTa
       key: "fullName",
       render: (name: string) => (
         <div className="flex items-center gap-2">
-          <UserOutlined />
-          <span className="font-medium">{name}</span>
+          <UserOutlined className="dark:text-gray-300" />
+          <span className="font-medium dark:text-white transition-colors duration-300">{name}</span>
         </div>
       ),
     },
@@ -281,8 +307,8 @@ export default function ResidentsTab({ contract, onContractUpdate }: ResidentsTa
       key: "period",
       render: (_: any, record: ResidentData) => (
         <div>
-          <div>{new Date(record.startDate).toLocaleDateString()}</div>
-          <div className="text-gray-500 text-sm">to {new Date(record.endDate).toLocaleDateString()}</div>
+          <div className="dark:text-white transition-colors duration-300">{new Date(record.startDate).toLocaleDateString()}</div>
+          <div className="text-gray-500 dark:text-gray-400 text-sm transition-colors duration-300">to {new Date(record.endDate).toLocaleDateString()}</div>
         </div>
       ),
     },
@@ -327,7 +353,8 @@ export default function ResidentsTab({ contract, onContractUpdate }: ResidentsTa
 
   return (
     <Card
-      title={<h3 className="text-lg font-semibold m-0">Residents Management</h3>}
+      title={<h3 className="text-lg font-semibold m-0 text-gray-900 dark:text-white transition-colors duration-300">Residents Management</h3>}
+      className="shadow-sm bg-white dark:bg-[#17223b] border-gray-200 dark:border-gray-600 transition-colors duration-300"
       extra={
         <div className="flex items-center gap-3">
           <Input
@@ -392,36 +419,39 @@ export default function ResidentsTab({ contract, onContractUpdate }: ResidentsTa
       >
         {selectedResident && (
           <div className="space-y-4">
-            <Card>
+            <Card className="bg-white dark:bg-[#22304a] border-gray-200 dark:border-gray-600 transition-colors duration-300">
               <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <strong>Full Name:</strong> {selectedResident.fullName}
+                <div className="dark:text-gray-300 transition-colors duration-300">
+                  <strong className="dark:text-white">Full Name:</strong> {selectedResident.fullName}
                 </div>
-                <div>
-                  <strong>ID Number:</strong> {selectedResident.idNumber}
+                <div className="dark:text-gray-300 transition-colors duration-300">
+                  <strong className="dark:text-white">ID Number:</strong> {selectedResident.idNumber}
                 </div>
-                <div>
-                  <strong>Relationship:</strong>
+                <div className="dark:text-gray-300 transition-colors duration-300">
+                  <strong className="dark:text-white">Relationship:</strong>
                   <Tag color="blue" className="ml-2">{selectedResident.relationship}</Tag>
                 </div>
-                <div>
-                  <strong>Start Date:</strong> {new Date(selectedResident.startDate).toLocaleDateString()}
+                <div className="dark:text-gray-300 transition-colors duration-300">
+                  <strong className="dark:text-white">Start Date:</strong> {new Date(selectedResident.startDate).toLocaleDateString()}
                 </div>
-                <div>
-                  <strong>End Date:</strong> {new Date(selectedResident.endDate).toLocaleDateString()}
+                <div className="dark:text-gray-300 transition-colors duration-300">
+                  <strong className="dark:text-white">End Date:</strong> {new Date(selectedResident.endDate).toLocaleDateString()}
                 </div>
-                <div className="col-span-2">
-                  <strong>Note:</strong> {selectedResident.note}
+                <div className="col-span-2 dark:text-gray-300 transition-colors duration-300">
+                  <strong className="dark:text-white">Note:</strong> {selectedResident.note}
                 </div>
               </div>
             </Card>
 
             {(selectedResident.idCardFrontUrl || selectedResident.idCardBackUrl) && (
-              <Card title="ID Card Images">
+              <Card 
+                title={<span className="dark:text-white transition-colors duration-300">ID Card Images</span>}
+                className="bg-white dark:bg-[#22304a] border-gray-200 dark:border-gray-600 transition-colors duration-300"
+              >
                 <div className="flex gap-4">
                   {selectedResident.idCardFrontUrl && (
                     <div>
-                      <p className="mb-2 font-medium">Front</p>
+                      <p className="mb-2 font-medium dark:text-white transition-colors duration-300">Front</p>
                       <Image
                         src={getCloudinaryUrl(selectedResident.idCardFrontUrl)}
                         alt="ID Card Front"
@@ -433,7 +463,7 @@ export default function ResidentsTab({ contract, onContractUpdate }: ResidentsTa
                   )}
                   {selectedResident.idCardBackUrl && (
                     <div>
-                      <p className="mb-2 font-medium">Back</p>
+                      <p className="mb-2 font-medium dark:text-white transition-colors duration-300">Back</p>
                       <Image
                         src={getCloudinaryUrl(selectedResident.idCardBackUrl)}
                         alt="ID Card Back"
@@ -452,6 +482,7 @@ export default function ResidentsTab({ contract, onContractUpdate }: ResidentsTa
 
       {/* Add/Edit Resident Modal */}
       <Modal
+        key={editResident ? `edit-${editResident.id}` : 'add-new'}
         title={editResident ? "Edit Resident" : "Add Resident"}
         open={addResidentOpen || !!editResident}
         onCancel={() => {
@@ -460,10 +491,10 @@ export default function ResidentsTab({ contract, onContractUpdate }: ResidentsTa
           resetForm();
         }}
         footer={null}
-        destroyOnClose
+        destroyOnHidden
       >
         <Form
-          form={form}
+          form={editResident ? editForm : addForm}
           layout="vertical"
           onFinish={editResident ? handleEditResident : handleAddResident}
         >
@@ -500,7 +531,7 @@ export default function ResidentsTab({ contract, onContractUpdate }: ResidentsTa
               name="startDate"
               rules={[
                 { required: true, message: 'Please select start date!' },
-                { validator: validateStartDate }
+                { validator: editResident ? validateStartDateEdit : validateStartDateAdd }
               ]}
             >
               <DatePicker style={{ width: '100%' }} format="DD/MM/YYYY" />
@@ -511,7 +542,7 @@ export default function ResidentsTab({ contract, onContractUpdate }: ResidentsTa
               name="endDate"
               rules={[
                 { required: true, message: 'Please select end date!' },
-                { validator: validateEndDate }
+                { validator: editResident ? validateEndDateEdit : validateEndDateAdd }
               ]}
             >
               <DatePicker style={{ width: '100%' }} format="DD/MM/YYYY" />

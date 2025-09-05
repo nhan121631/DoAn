@@ -49,10 +49,11 @@ export default function TenantContractDetail() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-96">
-        <Spin tip="Loading contract" size="large">
-          <div style={{ height: 0, width: 0 }} />
-        </Spin>
+      <div className="flex flex-col justify-center items-center h-full bg-white dark:bg-[#001529] transition-colors duration-300">
+        <Spin size="large" />
+        <span className="mt-3 text-center whitespace-nowrap text-gray-900 dark:text-white">
+          Loading contracts...
+        </span>
       </div>
     );
   }
@@ -74,8 +75,8 @@ export default function TenantContractDetail() {
         </span>
       ),
       children: (
-        <TenantContractOverview 
-          contract={contract} 
+        <TenantContractOverview
+          contract={contract}
           onContractUpdate={handleContractUpdate}
         />
       ),
@@ -89,9 +90,9 @@ export default function TenantContractDetail() {
         </span>
       ),
       children: (
-        <TenantBillsTab 
-          contract={contract} 
-          onContractUpdate={handleContractUpdate} 
+        <TenantBillsTab
+          contract={contract}
+          onContractUpdate={handleContractUpdate}
         />
       ),
     },
@@ -104,9 +105,9 @@ export default function TenantContractDetail() {
         </span>
       ),
       children: (
-        <TenantResidentsTab 
-          contract={contract} 
-          onContractUpdate={handleContractUpdate} 
+        <TenantResidentsTab
+          contract={contract}
+          onContractUpdate={handleContractUpdate}
         />
       ),
     },
@@ -116,7 +117,7 @@ export default function TenantContractDetail() {
     <div className="flex flex-col flex-1 h-full w-full bg-white dark:bg-[#001529] text-gray-900 dark:text-white p-8 overflow-auto">
       <div className="bg-white rounded-2xl shadow-md w-full mx-auto p-6">
         <h2 className="text-xl font-bold mb-6">Contract Details</h2>
-        
+
         <Tabs
           activeKey={activeTab}
           onChange={setActiveTab}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Descriptions, Tag, Button, Modal, Form, Input, DatePicker, InputNumber, Select, message, Space } from "antd";
 import { EditOutlined } from "@ant-design/icons";
 import { ContractData } from "@/types/types";
@@ -23,13 +23,7 @@ export default function ContractOverview({ contract, onContractUpdate, autoEdit 
   const [loading, setLoading] = useState(false);
   const [form] = Form.useForm();
 
-  useEffect(() => {
-    if (autoEdit) {
-      handleEdit();
-    }
-  }, [autoEdit]);
-
-  const handleEdit = () => {
+  const handleEdit = useCallback(() => {
     form.setFieldsValue({
       contractName: contract.contractName,
       tenantName: contract.tenantName,
@@ -41,7 +35,13 @@ export default function ContractOverview({ contract, onContractUpdate, autoEdit 
       status: contract.status,
     });
     setEditModalOpen(true);
-  };
+  }, [form, contract]);
+
+  useEffect(() => {
+    if (autoEdit) {
+      handleEdit();
+    }
+  }, [autoEdit, handleEdit]);
 
   const handleSubmit = async (values: any) => {
     try {
@@ -75,9 +75,9 @@ export default function ContractOverview({ contract, onContractUpdate, autoEdit 
   };
 
   return (
-    <div className="p-6">
+    <div className="p-6 bg-white dark:bg-transparent transition-colors duration-300">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold">Contract Information</h3>
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Contract Information</h3>
         <Button 
           type="primary" 
           icon={<EditOutlined />}
@@ -127,7 +127,7 @@ export default function ContractOverview({ contract, onContractUpdate, autoEdit 
           form.resetFields();
         }}
         footer={null}
-        destroyOnClose
+        destroyOnHidden
         width={800}
       >
         <Form
@@ -135,8 +135,8 @@ export default function ContractOverview({ contract, onContractUpdate, autoEdit 
           layout="vertical"
           onFinish={handleSubmit}
         >
-          <div className="mb-4 p-3 bg-blue-50 border-l-4 border-blue-400 rounded">
-            <p className="text-sm text-blue-700">
+          <div className="mb-4 p-3 bg-blue-50 dark:bg-[#22304a] border-l-4 border-blue-400 dark:border-blue-300 rounded transition-colors duration-300">
+            <p className="text-sm text-blue-700 dark:text-blue-300">
               <strong>Note:</strong> Only Status, Start Date, End Date, Deposit Amount, and Monthly Rent can be edited. 
               Other fields are read-only for data integrity.
             </p>

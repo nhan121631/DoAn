@@ -265,33 +265,34 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
   const unpaidAmount = filteredBills.filter(bill => !bill.paid).reduce((sum, bill) => sum + bill.totalAmount, 0);
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-6 space-y-6 bg-white dark:bg-transparent transition-colors duration-300">
       {/* Bills Statistics */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card size="small">
+        <Card size="small" className="bg-white dark:bg-[#17223b] border-gray-200 dark:border-gray-600 transition-colors duration-300">
           <Statistic
-            title="Total Bills"
+            title={<span className="text-gray-600 dark:text-gray-300">Total Bills</span>}
             value={totalBills}
-            prefix={<DollarOutlined />}
+            prefix={<DollarOutlined className="text-blue-600 dark:text-blue-400" />}
+            valueStyle={{ color: '#1890ff' }}
           />
         </Card>
-        <Card size="small">
+        <Card size="small" className="bg-white dark:bg-[#17223b] border-gray-200 dark:border-gray-600 transition-colors duration-300">
           <Statistic
-            title="Paid Bills"
+            title={<span className="text-gray-600 dark:text-gray-300">Paid Bills</span>}
             value={paidBills}
             valueStyle={{ color: '#3f8600' }}
           />
         </Card>
-        <Card size="small">
+        <Card size="small" className="bg-white dark:bg-[#17223b] border-gray-200 dark:border-gray-600 transition-colors duration-300">
           <Statistic
-            title="Pending Bills"
+            title={<span className="text-gray-600 dark:text-gray-300">Pending Bills</span>}
             value={pendingBills}
             valueStyle={{ color: '#cf1322' }}
           />
         </Card>
-        <Card size="small">
+        <Card size="small" className="bg-white dark:bg-[#17223b] border-gray-200 dark:border-gray-600 transition-colors duration-300">
           <Statistic
-            title="Unpaid Amount"
+            title={<span className="text-gray-600 dark:text-gray-300">Unpaid Amount</span>}
             value={unpaidAmount}
             valueStyle={{ color: '#cf1322' }}
             suffix="đ"
@@ -300,8 +301,8 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
       </div>
 
       <Card 
-        title="Bills Management" 
-        className="shadow-sm"
+        title={<span className="text-gray-900 dark:text-white">Bills Management</span>}
+        className="shadow-sm bg-white dark:bg-[#17223b] border-gray-200 dark:border-gray-600 transition-colors duration-300"
         extra={
           <Space>
             <Input
@@ -375,7 +376,7 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
           exportForm.resetFields();
         }}
         footer={null}
-        destroyOnClose
+        destroyOnHidden
       >
         <Form
           form={exportForm}
@@ -472,54 +473,54 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
         {editBill && (
           <form className="space-y-3" onSubmit={e => { e.preventDefault(); handleEditBillSubmit(); }}>
             <div>
-              <label className="block font-medium">Month</label>
+              <label className="block font-medium dark:text-gray-300 transition-colors duration-300">Month</label>
               <input
                 type="text"
-                className="border rounded px-2 py-1 w-full"
+                className="border rounded px-2 py-1 w-full dark:bg-[#17223b] dark:border-gray-600 dark:text-white transition-colors duration-300"
                 value={editForm.month}
                 onChange={e => setEditForm(f => ({ ...f, month: e.target.value }))}
               />
             </div>
             <div>
-              <label className="block font-medium">Electricity</label>
+              <label className="block font-medium dark:text-gray-300 transition-colors duration-300">Electricity</label>
               <input
                 type="number"
-                className="border rounded px-2 py-1 w-full"
+                className="border rounded px-2 py-1 w-full dark:bg-[#17223b] dark:border-gray-600 dark:text-white transition-colors duration-300"
                 value={editForm.electricityFee}
                 onChange={e => setEditForm(f => ({ ...f, electricityFee: Number(e.target.value), totalAmount: Number(e.target.value) + f.waterFee + f.serviceFee }))}
               />
             </div>
             <div>
-              <label className="block font-medium">Water</label>
+              <label className="block font-medium dark:text-gray-300 transition-colors duration-300">Water</label>
               <input
                 type="number"
-                className="border rounded px-2 py-1 w-full"
+                className="border rounded px-2 py-1 w-full dark:bg-[#17223b] dark:border-gray-600 dark:text-white transition-colors duration-300"
                 value={editForm.waterFee}
                 onChange={e => setEditForm(f => ({ ...f, waterFee: Number(e.target.value), totalAmount: f.electricityFee + Number(e.target.value) + f.serviceFee }))}
               />
             </div>
             <div>
-              <label className="block font-medium">Service</label>
+              <label className="block font-medium dark:text-gray-300 transition-colors duration-300">Service</label>
               <input
                 type="number"
-                className="border rounded px-2 py-1 w-full"
+                className="border rounded px-2 py-1 w-full dark:bg-[#17223b] dark:border-gray-600 dark:text-white transition-colors duration-300"
                 value={editForm.serviceFee}
                 onChange={e => setEditForm(f => ({ ...f, serviceFee: Number(e.target.value), totalAmount: f.electricityFee + f.waterFee + Number(e.target.value) }))}
               />
             </div>
             <div>
-              <label className="block font-medium">Total</label>
+              <label className="block font-medium dark:text-gray-300 transition-colors duration-300">Total</label>
               <input
                 type="number"
-                className="border rounded px-2 py-1 w-full bg-gray-100"
+                className="border rounded px-2 py-1 w-full bg-gray-100 dark:bg-[#22304a] dark:border-gray-600 dark:text-white transition-colors duration-300"
                 value={editForm.totalAmount}
                 readOnly
               />
             </div>
             <div>
-              <label className="block font-medium">Paid</label>
+              <label className="block font-medium dark:text-gray-300 transition-colors duration-300">Paid</label>
               <select
-                className="border rounded px-2 py-1 w-full"
+                className="border rounded px-2 py-1 w-full dark:bg-[#17223b] dark:border-gray-600 dark:text-white transition-colors duration-300"
                 value={editForm.paid ? "1" : "0"}
                 onChange={e => setEditForm(f => ({ ...f, paid: e.target.value === "1" }))}
               >
@@ -541,54 +542,54 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
       >
         <form className="space-y-3" onSubmit={e => { e.preventDefault(); handleAddBillSubmit(); }}>
           <div>
-            <label className="block font-medium">Month</label>
+            <label className="block font-medium dark:text-gray-300 transition-colors duration-300">Month</label>
             <input
               type="text"
-              className="border rounded px-2 py-1 w-full"
+              className="border rounded px-2 py-1 w-full dark:bg-[#17223b] dark:border-gray-600 dark:text-white transition-colors duration-300"
               value={addForm.month}
               onChange={e => setAddForm(f => ({ ...f, month: e.target.value }))}
             />
           </div>
           <div>
-            <label className="block font-medium">Electricity</label>
+            <label className="block font-medium dark:text-gray-300 transition-colors duration-300">Electricity</label>
             <input
               type="number"
-              className="border rounded px-2 py-1 w-full"
+              className="border rounded px-2 py-1 w-full dark:bg-[#17223b] dark:border-gray-600 dark:text-white transition-colors duration-300"
               value={addForm.electricityFee}
               onChange={e => setAddForm(f => ({ ...f, electricityFee: Number(e.target.value), totalAmount: Number(e.target.value) + f.waterFee + f.serviceFee }))}
             />
           </div>
           <div>
-            <label className="block font-medium">Water</label>
+            <label className="block font-medium dark:text-gray-300 transition-colors duration-300">Water</label>
             <input
               type="number"
-              className="border rounded px-2 py-1 w-full"
+              className="border rounded px-2 py-1 w-full dark:bg-[#17223b] dark:border-gray-600 dark:text-white transition-colors duration-300"
               value={addForm.waterFee}
               onChange={e => setAddForm(f => ({ ...f, waterFee: Number(e.target.value), totalAmount: f.electricityFee + Number(e.target.value) + f.serviceFee }))}
             />
           </div>
           <div>
-            <label className="block font-medium">Service</label>
+            <label className="block font-medium dark:text-gray-300 transition-colors duration-300">Service</label>
             <input
               type="number"
-              className="border rounded px-2 py-1 w-full"
+              className="border rounded px-2 py-1 w-full dark:bg-[#17223b] dark:border-gray-600 dark:text-white transition-colors duration-300"
               value={addForm.serviceFee}
               onChange={e => setAddForm(f => ({ ...f, serviceFee: Number(e.target.value), totalAmount: f.electricityFee + f.waterFee + Number(e.target.value) }))}
             />
           </div>
           <div>
-            <label className="block font-medium">Total</label>
+            <label className="block font-medium dark:text-gray-300 transition-colors duration-300">Total</label>
             <input
               type="number"
-              className="border rounded px-2 py-1 w-full bg-gray-100"
+              className="border rounded px-2 py-1 w-full bg-gray-100 dark:bg-[#22304a] dark:border-gray-600 dark:text-white transition-colors duration-300"
               value={addForm.totalAmount}
               readOnly
             />
           </div>
           <div>
-            <label className="block font-medium">Paid</label>
+            <label className="block font-medium dark:text-gray-300 transition-colors duration-300">Paid</label>
             <select
-              className="border rounded px-2 py-1 w-full"
+              className="border rounded px-2 py-1 w-full dark:bg-[#17223b] dark:border-gray-600 dark:text-white transition-colors duration-300"
               value={addForm.paid ? "1" : "0"}
               onChange={e => setAddForm(f => ({ ...f, paid: e.target.value === "1" }))}
             >
