@@ -2,7 +2,7 @@
 
 import React from "react";
 import Image from "next/image";
-import { FaAngleLeft } from "react-icons/fa";
+import { FaAngleLeft, FaPlay } from "react-icons/fa";
 import OpenImages from "./OpenImages";
 import { URL_IMAGE } from "@/services/Constant";
 
@@ -42,6 +42,19 @@ export const Slide = ({ images, address }: Props) => {
     }
   };
 
+  const isVideo = (url: string): boolean => {
+    const videoExtensions = [
+      ".mp4",
+      ".webm",
+      ".ogg",
+      ".avi",
+      ".mov",
+      ".wmv",
+      ".flv",
+    ];
+    return videoExtensions.some((ext) => url.toLowerCase().includes(ext));
+  };
+
   return (
     <>
       <div className=" bg-stone-900 flex flex-col shadow  w-full max-w-4xl mx-auto dark:bg-gray-800">
@@ -59,20 +72,37 @@ export const Slide = ({ images, address }: Props) => {
             {images.length > 0 &&
             images[indexImg] &&
             typeof images[indexImg].url === "string" ? (
-              <Image
-                className="object-cover"
-                src={
-                  images[indexImg].url.startsWith("http")
-                    ? images[indexImg].url
-                    : `${URL_IMAGE}${images[indexImg].url}`
-                }
-                alt="room image"
-                width={600}
-                height={300}
-                sizes="600px"
-                style={{ width: "600px", height: "500px" }}
-                priority
-              />
+              !isVideo(images[indexImg].url) ? (
+                <Image
+                  className="object-cover"
+                  src={
+                    images[indexImg].url.startsWith("http")
+                      ? images[indexImg].url
+                      : `${URL_IMAGE}${images[indexImg].url}`
+                  }
+                  alt="room image"
+                  width={600}
+                  height={300}
+                  sizes="600px"
+                  style={{ width: "600px", height: "500px" }}
+                  priority
+                />
+              ) : (
+                <video
+                  className="object-cover"
+                  src={
+                    images[indexImg].url.startsWith("http")
+                      ? images[indexImg].url
+                      : `${URL_IMAGE}${images[indexImg].url}`
+                  }
+                  // alt="room video"
+                  width={600}
+                  height={300}
+                  // sizes="600px"
+                  style={{ width: "600px", height: "500px" }}
+                  controls
+                />
+              )
             ) : (
               <div className="w-full h-[180px] flex items-center justify-center bg-gray-200 text-gray-500">
                 No image available
@@ -101,17 +131,38 @@ export const Slide = ({ images, address }: Props) => {
               style={{ cursor: "pointer" }}
               onClick={() => handleItem(idx)}
             >
-              <Image
-                className="object-cover w-full h-full"
-                src={
-                  item.url.startsWith("http")
-                    ? item.url
-                    : `${URL_IMAGE}${item.url}`
-                }
-                alt={`Thumbnail for image ${item.id}`}
-                width={100}
-                height={100}
-              />
+              {!isVideo(item.url) ? (
+                <Image
+                  className="object-cover w-full h-full"
+                  src={
+                    item.url.startsWith("http")
+                      ? item.url
+                      : `${URL_IMAGE}${item.url}`
+                  }
+                  alt={`Thumbnail for image ${item.id}`}
+                  width={100}
+                  height={100}
+                />
+              ) : (
+                <div className="relative w-full h-full">
+                  <video
+                    className="object-cover w-full h-full"
+                    src={
+                      item.url.startsWith("http")
+                        ? item.url
+                        : `${URL_IMAGE}${item.url}`
+                    }
+                    width={100}
+                    height={100}
+                    muted
+                    preload="metadata"
+                  />
+                  {/* Play icon overlay */}
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/40 pointer-events-none">
+                    <FaPlay className="text-white text-lg" />
+                  </div>
+                </div>
+              )}
             </div>
           ))}
         </div>

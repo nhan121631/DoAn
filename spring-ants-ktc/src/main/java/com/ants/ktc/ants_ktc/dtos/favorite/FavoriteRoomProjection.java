@@ -46,4 +46,5 @@ public class FavoriteRoomProjection {
     private List<ImageResponseDto> images;
     private List<ConvenientResponseDto> conveniences;
     private LandlordResponseDto landlord;
+    private long favoriteCount;
 }

@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
 import com.ants.ktc.ants_ktc.dtos.booking.BookingRoomByUserResponseDto;
 import com.ants.ktc.ants_ktc.dtos.booking.BookingRoomRequestDto;
 import com.ants.ktc.ants_ktc.dtos.booking.BookingStatusResponseDto;
@@ -21,6 +22,8 @@ import com.ants.ktc.ants_ktc.dtos.booking.LandlordPaymentInfoDto;
 import com.ants.ktc.ants_ktc.dtos.booking.PaginationLandlordResponseDto;
 import com.ants.ktc.ants_ktc.dtos.booking.PaginationUserBookingRoomResponseDto;
 import com.ants.ktc.ants_ktc.services.BookingService;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/bookings")
@@ -33,7 +36,7 @@ public class BookingController {
     @PostMapping("/user/{userId}")
     public ResponseEntity<?> createBooking(
             @PathVariable("userId") UUID userId,
-            @RequestBody BookingRoomRequestDto request) {
+            @Valid @RequestBody BookingRoomRequestDto request) {
         try {
             BookingRoomByUserResponseDto response = bookingService.createBooking(userId, request);
             return ResponseEntity.ok(response);
@@ -80,7 +83,7 @@ public class BookingController {
     @PatchMapping("/{bookingId}/status")
     public ResponseEntity<?> updateBookingStatus(
             @PathVariable("bookingId") UUID bookingId,
-            @RequestBody BookingStatusUpdateRequestDto request) {
+            @Valid @RequestBody BookingStatusUpdateRequestDto request) {
         try {
             BookingStatusResponseDto response = bookingService.updateBookingStatus(
                     bookingId,

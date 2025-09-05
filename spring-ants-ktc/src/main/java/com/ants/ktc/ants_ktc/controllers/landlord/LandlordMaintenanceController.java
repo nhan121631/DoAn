@@ -59,7 +59,7 @@ public class LandlordMaintenanceController {
 
     @PatchMapping("/{id}")
     public ResponseEntity<MaintenanceResponseDto> updateMaintenance(
-            @PathVariable UUID id,
+            @PathVariable("id") UUID id,
             @Valid @RequestBody UpdateMaintenanceRequestDto updateDto) {
         UUID currentUserId = userService.getAuthenticatedUserId();
         MaintenanceResponseDto updatedMaintenance = maintenanceService.updateMaintenance(currentUserId, id, updateDto);
@@ -67,7 +67,7 @@ public class LandlordMaintenanceController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteMaintenance(@PathVariable UUID id) {
+    public ResponseEntity<Void> deleteMaintenance(@PathVariable("id") UUID id) {
         UUID currentUserId = userService.getAuthenticatedUserId();
         maintenanceService.deleteMaintenance(currentUserId, id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);

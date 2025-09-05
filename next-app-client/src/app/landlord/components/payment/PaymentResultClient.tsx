@@ -111,6 +111,10 @@ export default function PaymentResultClient() {
             vnp_OrderInfo: tx.description || "",
             vnp_TransactionNo: tx.transactionCode,
             vnp_BankCode: tx.bankTransactionName,
+            // vnp_CardType: tx.cardType || "",
+            // vnp_PayDate: tx.transactionDate || "",
+            // vnp_ResponseCode: tx.responseCode,
+            // vnp_TransactionStatus: tx.transactionStatus,
           };
         }
 

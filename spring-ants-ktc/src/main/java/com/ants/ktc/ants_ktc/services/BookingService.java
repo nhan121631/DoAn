@@ -52,7 +52,10 @@ public class BookingService {
         private UserJpaRepository userJpaRepository;
 
         @Autowired
-        private ContractService  contractService;
+        private MailService mailService;
+
+        @Autowired
+        private ContractService contractService;
 
         @Transactional
         public BookingRoomByUserResponseDto createBooking(UUID userId, BookingRoomRequestDto request) {
@@ -63,6 +66,10 @@ public class BookingService {
 
                 if (room.getAvailable() == 1) {
                         throw new IllegalArgumentException("Room is not available for booking");
+                }
+
+                if (room.getMaxPeople() != null && request.getTenantCount() > room.getMaxPeople()) {
+                        throw new IllegalArgumentException("Tenant count exceeds room's maximum capacity");
                 }
 
                 // Kiểm tra user đã đặt phòng này chưa
@@ -91,8 +98,8 @@ public class BookingService {
                 booking.setTenantCount(request.getTenantCount());
                 booking.setStatus(0);
 
-                room.setAvailable(1);
-                roomJpaRepository.save(room);
+                // room.setAvailable(1);
+                // roomJpaRepository.save(room);
                 Booking savedBooking = bookingJpaRepository.save(booking);
                 return convertToResponseDto(savedBooking);
         }
@@ -196,15 +203,31 @@ public class BookingService {
                                 booking.setStatus(newStatus);
 
                                 Room room = booking.getRoom();
-                                room.setAvailable(0);
+                                // Previously set available = 0 here; change to 1 when landlord accepts
+                                // room.setAvailable(0);
+                                room.setAvailable(1);
                                 roomJpaRepository.save(room);
+
+                                // Reject other pending bookings (status = 0) for this room
+                                try {
+                                        int updated = bookingJpaRepository
+                                                        .updateStatusByRoomIdAndOldStatusExcludeBookingId(
+                                                                        room.getId(), 0, 2, booking.getId());
+                                        System.out.println("Updated and rejected " + updated
+                                                        + " other pending bookings for room " + room.getId());
+                                } catch (Exception e) {
+                                        // Log and continue - we don't want to stop the accept flow if this fails
+                                        System.err.println("Failed to reject other pending bookings for room "
+                                                        + room.getId() + ": " + e.getMessage());
+                                }
+
                                 message = "Booking accepted successfully";
                         } else if (currentStatus == 0 && newStatus == 2) {
                                 booking.setStatus(newStatus);
 
-                                Room room = booking.getRoom();
-                                room.setAvailable(0);
-                                roomJpaRepository.save(room);
+                                // Room room = booking.getRoom();
+                                // room.setAvailable(0);
+                                // roomJpaRepository.save(room);
                                 message = "Booking rejected successfully";
                         }
                         // Landlord từ 3 -> 4 (confirm deposit)
@@ -216,15 +239,15 @@ public class BookingService {
                                 // roomJpaRepository.save(room);
 
                                 ContractRequestDto contractRequest = ContractRequestDto.builder()
-                                        .roomId(booking.getRoom().getId())
-                                        .tenantId(booking.getUser().getId())
-                                        .landlordId(booking.getRoom().getUser().getId())
-                                        .startDate(booking.getRentalDate())
-                                        .endDate(booking.getRentalExpires())
-                                        .depositAmount(booking.getRoom().getPrice_deposit())
-                                        .monthlyRent(booking.getRoom().getPrice_month())
-                                        .status(0) // active
-                                        .build();
+                                                .roomId(booking.getRoom().getId())
+                                                .tenantId(booking.getUser().getId())
+                                                .landlordId(booking.getRoom().getUser().getId())
+                                                .startDate(booking.getRentalDate())
+                                                .endDate(booking.getRentalExpires())
+                                                .depositAmount(booking.getRoom().getPrice_deposit())
+                                                .monthlyRent(booking.getRoom().getPrice_month())
+                                                .status(0) // active
+                                                .build();
 
                                 contractService.createContract(contractRequest);
 
@@ -253,6 +276,13 @@ public class BookingService {
                 }
 
                 bookingJpaRepository.save(booking);
+
+                // Gửi email thông báo cho bên còn lại (không gửi cho người thực hiện action)
+                try {
+                        notifyUsersAboutStatusChange(booking, currentStatus, newStatus, actorRole);
+                } catch (Exception e) {
+                        System.err.println("Failed to send notification emails: " + e.getMessage());
+                }
 
                 return BookingStatusResponseDto.builder()
                                 .bookingId(bookingId)
@@ -288,6 +318,79 @@ public class BookingService {
 
                 // Update only isRemoved field for performance
                 bookingJpaRepository.updateIsRemovedById(bookingId, 1);
+        }
+
+        // ======================== Email Notification Helper
+        // Methods========================//
+
+        private void notifyUsersAboutStatusChange(Booking booking, int oldStatus, int newStatus, String actorRole) {
+                if (booking == null)
+                        return;
+
+                String roomTitle = booking.getRoom() != null ? booking.getRoom().getTitle() : "(phòng)";
+                String bookingId = booking.getId() != null ? booking.getId().toString() : "";
+
+                String statusTextOld = statusText(oldStatus);
+                String statusTextNew = statusText(newStatus);
+
+                if ("landlords".equalsIgnoreCase(actorRole)) {
+                        // Landlord thực hiện action -> gửi email cho Tenant
+                        String tenantEmail = getUserEmail(booking.getUser());
+                        if (tenantEmail != null && !tenantEmail.isBlank()) {
+                                String tenantName = getUserName(booking.getUser());
+                                try {
+                                        mailService.sendBookingStatusNotification(tenantEmail, tenantName, roomTitle,
+                                                        bookingId, statusTextOld, statusTextNew);
+                                        System.out.println("✅ Notification email sent to tenant: " + tenantEmail);
+                                } catch (Exception e) {
+                                        System.err.println("❌ Failed to send email to tenant " + tenantEmail + ": "
+                                                        + e.getMessage());
+                                }
+                        }
+                } else if ("users".equalsIgnoreCase(actorRole)) {
+                        // User thực hiện action -> gửi email cho Landlord
+                        String landlordEmail = booking.getRoom() != null ? getUserEmail(booking.getRoom().getUser())
+                                        : null;
+                        if (landlordEmail != null && !landlordEmail.isBlank()) {
+                                String landlordName = booking.getRoom() != null
+                                                ? getUserName(booking.getRoom().getUser())
+                                                : "Chủ nhà";
+                                try {
+                                        mailService.sendBookingStatusNotification(landlordEmail, landlordName,
+                                                        roomTitle,
+                                                        bookingId, statusTextOld, statusTextNew);
+                                        System.out.println("✅ Notification email sent to landlord: " + landlordEmail);
+                                } catch (Exception e) {
+                                        System.err.println("❌ Failed to send email to landlord " + landlordEmail + ": "
+                                                        + e.getMessage());
+                                }
+                        }
+                }
+        }
+
+        private String getUserEmail(User user) {
+                if (user == null || user.getProfile() == null)
+                        return null;
+                String email = user.getProfile().getEmail();
+                return (email != null && !email.isBlank()) ? email : null;
+        }
+
+        private String getUserName(User user) {
+                if (user == null || user.getProfile() == null)
+                        return "Người dùng";
+                String fullName = user.getProfile().getFullName();
+                return (fullName != null && !fullName.isBlank()) ? fullName : "Người dùng";
+        }
+
+        private String statusText(int status) {
+                return switch (status) {
+                        case 0 -> "Chờ xử lý";
+                        case 1 -> "Đã chấp nhận";
+                        case 2 -> "Bị từ chối";
+                        case 3 -> "Người thuê đã đặt cọc";
+                        case 4 -> "Đang thuê/Đã xác nhận đặt cọc";
+                        default -> "Trạng thái khác";
+                };
         }
 
         // ======================== Scheduled Tasks

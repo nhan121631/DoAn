@@ -20,6 +20,12 @@ public class RoomResponseProjectionDto {
     String description;
     Double priceMonth;
     Double priceDeposit;
+    Double area;
+    Double elecPrice;
+    Double waterPrice;
+    Double roomLength;
+    Double roomWidth;
+    Integer maxPeople;
     int available;
     int approval;
     int hidden;

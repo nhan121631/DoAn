@@ -180,4 +180,131 @@ public class MailService {
     }
   }
 
+  @Async
+  public void sendBookingStatusNotification(String to, String userName, String roomTitle, String bookingId,
+      String oldStatus, String newStatus) {
+    String subject = "🔔 Cập nhật trạng thái đặt phòng: " + roomTitle;
+
+    String html = String.format(
+        """
+            <div style='font-family: Arial, sans-serif; background: #f6f6f6; padding: 24px;'>
+              <div style='max-width: 500px; margin: auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px #eee; padding: 24px;'>
+                <h2 style='color: #1976d2; text-align: center; margin-bottom: 24px;'>🔔 Cập nhật trạng thái đặt phòng</h2>
+                <p style='font-size: 16px; color: #333; margin-bottom: 16px;'>Xin chào <strong>%s</strong>,</p>
+                <div style='background: #f8f9fa; padding: 16px; border-radius: 8px; margin: 16px 0;'>
+                  <p style='margin: 8px 0; font-size: 16px;'><strong>🏠 Phòng:</strong> %s</p>
+                  <p style='margin: 8px 0; font-size: 16px;'><strong>🆔 Mã đặt phòng:</strong> %s</p>
+                  <p style='margin: 8px 0; font-size: 16px;'><strong>📋 Trạng thái:</strong>
+                    <span style='color: #666;'>%s</span> ➜
+                    <span style='color: #1976d2; font-weight: bold;'>%s</span>
+                  </p>
+                </div>
+                <div style='background: #e3f2fd; padding: 12px; border-radius: 6px; margin: 16px 0;'>
+                  <p style='margin: 4px 0; font-size: 14px; color: #1565c0;'>
+                    📱 Vui lòng đăng nhập vào tài khoản để xem chi tiết và thực hiện các bước tiếp theo.
+                  </p>
+                </div>
+                <hr style='margin: 24px 0;'>
+                <p style='font-size: 14px; color: #888; text-align: center;'>
+                  Email này được gửi tự động từ hệ thống quản lý phòng trọ.<br>
+                  Nếu có thắc mắc, vui lòng liên hệ với chúng tôi.
+                </p>
+              </div>
+            </div>
+            """,
+        userName, roomTitle, bookingId, oldStatus, newStatus);
+
+    try {
+      MimeMessage mimeMessage = emailSender.createMimeMessage();
+      MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+      helper.setTo(to);
+      helper.setSubject(subject);
+      helper.setText(html, true);
+      emailSender.send(mimeMessage);
+      System.out.println("[MailService] Booking status notification sent to: " + to);
+    } catch (Exception e) {
+      System.out.println("[MailService] Failed to send booking status notification: " + e.getMessage());
+      e.printStackTrace();
+      // fallback: send simple text
+      SimpleMailMessage message = new SimpleMailMessage();
+      message.setTo(to);
+      message.setSubject(subject);
+      message.setText("Trạng thái đặt phòng '" + roomTitle + "' đã thay đổi: " + oldStatus + " → " + newStatus);
+      emailSender.send(message);
+    }
+  }
+
+  @Async
+  public void sendRoomRejectionNotification(String to, String landlordName, String roomTitle, String rejectionReason) {
+    String subject = "❌ Phòng trọ không được duyệt: " + roomTitle;
+
+    String html = String.format(
+        """
+            <div style='font-family: Arial, sans-serif; background: #f6f6f6; padding: 24px;'>
+              <div style='max-width: 550px; margin: auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px #eee; padding: 24px;'>
+                <h2 style='color: #d32f2f; text-align: center; margin-bottom: 24px;'>❌ Thông báo từ chối duyệt phòng</h2>
+                <p style='font-size: 16px; color: #333; margin-bottom: 16px;'>Xin chào <strong>%s</strong>,</p>
+                <p style='font-size: 16px; color: #333; margin-bottom: 20px;'>
+                  Chúng tôi rất tiếc phải thông báo rằng phòng trọ của bạn không được phê duyệt để đăng tải.
+                </p>
+
+                <div style='background: #ffebee; border: 1px solid #ffcdd2; padding: 16px; border-radius: 8px; margin: 16px 0;'>
+                  <h3 style='color: #d32f2f; margin: 0 0 12px 0; font-size: 18px;'>🏠 Thông tin phòng:</h3>
+                  <p style='margin: 8px 0; font-size: 16px; color: #333;'><strong>Tên phòng:</strong> %s</p>
+                </div>
+
+                <div style='background: #fff3e0; border: 1px solid #ffcc02; padding: 16px; border-radius: 8px; margin: 16px 0;'>
+                  <h3 style='color: #f57c00; margin: 0 0 12px 0; font-size: 18px;'>⚠️ Lý do từ chối:</h3>
+                  <p style='margin: 8px 0; font-size: 15px; color: #333; line-height: 1.5; background: #fff; padding: 12px; border-radius: 6px; border-left: 4px solid #ff9800;'>%s</p>
+                </div>
+
+                <div style='background: #e8f5e8; border: 1px solid #c8e6c9; padding: 16px; border-radius: 8px; margin: 20px 0;'>
+                  <h3 style='color: #2e7d2e; margin: 0 0 12px 0; font-size: 18px;'>💡 Hướng dẫn tiếp theo:</h3>
+                  <ul style='margin: 8px 0; padding-left: 20px; color: #333; line-height: 1.6;'>
+                    <li>Vui lòng chỉnh sửa thông tin phòng theo lý do từ chối</li>
+                    <li>Cập nhật hình ảnh, mô tả cho phù hợp</li>
+                    <li>Gửi lại yêu cầu duyệt phòng</li>
+                    <li>Liên hệ hỗ trợ nếu cần thêm thông tin</li>
+                  </ul>
+                </div>
+
+                <div style='text-align: center; margin: 24px 0;'>
+                  <a href='http://localhost:3000/landlord/rooms'
+                     style='display: inline-block; padding: 12px 24px; background: #1976d2; color: #fff;
+                            text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 16px;'>
+                    📝 Chỉnh sửa phòng trọ
+                  </a>
+                </div>
+
+                <hr style='margin: 24px 0; border: none; border-top: 1px solid #eee;'>
+                <p style='font-size: 14px; color: #888; text-align: center; margin: 0;'>
+                  Email này được gửi tự động từ hệ thống quản lý phòng trọ.<br>
+                  Nếu có thắc mắc, vui lòng liên hệ bộ phận hỗ trợ.
+                </p>
+              </div>
+            </div>
+            """,
+        landlordName, roomTitle, rejectionReason);
+
+    try {
+      MimeMessage mimeMessage = emailSender.createMimeMessage();
+      MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+      helper.setTo(to);
+      helper.setSubject(subject);
+      helper.setText(html, true);
+      emailSender.send(mimeMessage);
+      System.out.println("[MailService] Room rejection notification sent to: " + to + " for room: " + roomTitle);
+    } catch (Exception e) {
+      System.out.println("[MailService] Failed to send room rejection notification: " + e.getMessage());
+      e.printStackTrace();
+      // fallback: send simple text
+      SimpleMailMessage message = new SimpleMailMessage();
+      message.setTo(to);
+      message.setSubject(subject);
+      message.setText("Phòng trọ '" + roomTitle + "' không được duyệt. Lý do: " + rejectionReason +
+          ". Vui lòng chỉnh sửa và gửi lại yêu cầu duyệt.");
+      emailSender.send(message);
+    }
+  }
+
 }

@@ -24,6 +24,11 @@ public class RoomResponseDto {
     private Double priceMonth;
     private Double priceDeposit;
     private Double area;
+    private Double roomLength;
+    private Double roomWidth;
+    private Double elecPrice;
+    private Double waterPrice;
+    private Integer maxPeople;
     private int available;
     private int approval;
     private int hidden;
@@ -35,5 +40,7 @@ public class RoomResponseDto {
     private List<ConvenientResponseDto> convenients;
     private String typepost;
     private UUID userId;
+    private long favoriteCount;
+    private long viewCount;
 
 }

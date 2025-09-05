@@ -15,7 +15,7 @@ export const getPaginatedAccountsQueryOptions = (page: number, pageSize: number)
     queryKey: ['getPaginatedAccounts', page, pageSize] as const,
     queryFn: () => getPaginatedAccounts(page, pageSize),
   });
-};
+};  
 
 //=====update account roles======//
 

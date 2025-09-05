@@ -13,10 +13,12 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 @Entity
 @Table(name = "addresses")
 @Data
+@ToString(exclude = { "userProfile", "room" })
 @EqualsAndHashCode(callSuper = true)
 public class Address extends BaseEntity {
 

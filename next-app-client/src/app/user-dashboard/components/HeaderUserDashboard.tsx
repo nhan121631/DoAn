@@ -113,7 +113,7 @@ export default function HeaderUserDashboard() {
           }}
         >
           <IoIosLogOut className="text-xl transition-transform duration-200 hover:rotate-12" />
-          <span className="font-medium">Logout</span>
+          <span className="!font-medium">Logout</span>
         </button>
       ),
     },
@@ -121,15 +121,15 @@ export default function HeaderUserDashboard() {
 
   return (
     <>
-      <header className="fixed top-0 left-0 w-full z-50 h-[85px] bg-white/95 shadow-lg border-b border-gray-200/50">
+      <header className=" fixed top-0 left-0 w-full z-50 h-[85px] !bg-white/95 shadow-lg border-b border-gray-200/50">
         {/* Animated background gradient */}
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 via-purple-500/5 to-pink-500/5 opacity-0 hover:opacity-100 transition-opacity duration-700"></div>
+        <div className="absolute inset-0 !bg-gradient-to-r from-blue-500/5 via-purple-500/5 to-pink-500/5 opacity-0 hover:opacity-100 transition-opacity duration-700"></div>
 
         <div className="relative max-w-7xl mx-auto h-full flex items-center justify-between px-4 md:px-6 lg:px-8">
           {/* Logo with enhanced animation */}
           <div className="flex items-center gap-3 group cursor-pointer">
-            <div className="relative overflow-hidden rounded-xl p-2.5 bg-gradient-to-br from-blue-500 via-purple-600 to-pink-600 shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-110 group-hover:rotate-3">
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-400 via-purple-500 to-pink-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl"></div>
+            <div className="relative overflow-hidden rounded-xl p-2.5 !bg-gradient-to-br from-blue-500 via-purple-600 to-pink-600 shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-110 group-hover:rotate-3">
+              <div className="absolute inset-0 !bg-gradient-to-br from-blue-400 via-purple-500 to-pink-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl"></div>
               <Image
                 src="/images/logo-ant.png"
                 alt="Ants"
@@ -140,7 +140,7 @@ export default function HeaderUserDashboard() {
               />
             </div>
             <div className="hidden sm:block">
-              <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent transition-all duration-300 group-hover:scale-105 group-hover:tracking-wide">
+              <h1 className="!text-xl !font-bold !bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 !bg-clip-text !text-transparent transition-all duration-300 group-hover:scale-105 group-hover:tracking-wide">
                 Ants
               </h1>
               <div className="h-0.5 w-0 bg-gradient-to-r from-blue-600 to-purple-600 group-hover:w-full transition-all duration-500"></div>
@@ -234,7 +234,7 @@ export default function HeaderUserDashboard() {
                       <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full border-2 border-white animate-pulse"></div>
                     </div>
                     <div className="hidden md:block">
-                      <span className="text-sm font-semibold text-gray-800 transition-all duration-300 group-hover:text-blue-600">
+                      <span className="!text-sm !font-medium opacity-90 transition-all duration-300 group-hover:text-blue-600">
                         Hi, {session.user?.userProfile?.fullName || "User"}
                       </span>
                     </div>

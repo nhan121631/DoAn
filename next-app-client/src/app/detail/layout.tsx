@@ -11,7 +11,7 @@ export default async function DetailLayout({ children }: DetailLayoutProps) {
     <>
       <HeaderUserDashboard />
 
-      <div className="px-4 mx-auto mb-4 max-w-7xl lg:px-0">
+      <div className="px-4 mx-auto mb-4 max-w-7xl lg:px-0 bg-white">
         <div className="flex flex-col lg:flex-row lg:gap-4">{children}</div>
       </div>
       <Footer />

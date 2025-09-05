@@ -4,7 +4,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { RoomInUser } from "@/types/types";
 import { message } from "antd";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FaHeart } from "react-icons/fa6";
 import { useFavoriteStore } from "@/stores/FavoriteStore";
 
@@ -23,13 +23,19 @@ export function ButtonForVipCard({
 }: ButtonFavoriteProps) {
   const [messageApi, contextHolder] = message.useMessage();
   const [loading, setLoading] = useState(false);
+  const [favoriteCount, setFavoriteCount] = useState(0);
+
 
   const { data: session } = useSession();
   const router = useRouter();
 
   const { favoriteRoomIds, addFavorite, removeFavorite } = useFavoriteStore();
   const isFavorite = favoriteRoomIds.has(room.id);
-
+useEffect(() => {
+  fetch(`/api/favorites/rooms/${room.id}/count`)
+    .then(res => res.json())
+    .then(setFavoriteCount);
+}, [room.id]);
   const handleFavorite = async () => {
     if (!session) {
       router.push("/auth/login");
@@ -50,6 +56,9 @@ export function ButtonForVipCard({
           addFavorite(room.id);
           messageApi.success("Added to favorites");
         }
+        const countRes = await fetch(`/api/favorites/rooms/${room.id}/count`);
+      const newCount = await countRes.json();
+      setFavoriteCount(newCount);
       } else {
         throw new Error("Failed to update favorite status");
       }
@@ -78,6 +87,12 @@ export function ButtonForVipCard({
           title={isFavorite ? "Remove from favorites" : "Add to favorites"}
         >
           <FaHeart size={16} />
+          <span
+    className="absolute text-xs font-bold text-blue-500 top-1 right-1"
+    style={{ pointerEvents: "none" }}
+  >
+    {favoriteCount}
+  </span>
         </button>
       </>
     );
@@ -94,14 +109,18 @@ export function ButtonForVipCard({
             ? "text-red-500 bg-red-50 border-red-200"
             : "text-gray-400 hover:text-red-500 hover:border-red-300"
         }
-        ${loading ? "opacity-60 cursor-not-allowed" : ""}`}
+        ${loading ? "opacity-60 cursor-not-allowed" : ""}
+        hover:bg-white/20 hover:scale-110`}
         onClick={handleFavorite}
         disabled={loading}
         type="button"
+         style={{ background: "transparent" }}
         title={isFavorite ? "Remove from favorites" : "Add to favorites"}
       >
         <FaHeart size={16} />
       </button>
+        <span className="ml-2 text-base font-bold text-blue-500">{favoriteCount}</span>
+
     </>
   );
 }

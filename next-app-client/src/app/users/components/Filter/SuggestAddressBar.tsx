@@ -9,8 +9,10 @@ import {
 import {
   updatePreferences,
   getUserPreferences,
+  getEmailNotifications,
+  setEmailNotifications,
+  getUserProfile,
 } from "@/services/ProfileService";
-// Import for location-based room APIs
 import {
   getRoomVipWithLocation,
   getRoomNormalWithLocation,
@@ -231,8 +233,32 @@ function SuggestAddressBar({
 }: SuggestAddressBarProps) {
   const { data: session } = useSession();
   const router = useRouter();
-  const { setLocation, setIsSearching, setGuestRooms } = useLocationContext();
-  console.log("width: ", width);
+  const { setLocation, setIsSearching, setGuestRooms, setUserRooms } =
+    useLocationContext();
+
+  // Hide bar when #why-choose-us is in viewport
+  const [hideBar, setHideBar] = useState(false);
+
+  useEffect(() => {
+    const section = document.getElementById("why-choose-us");
+    if (!section) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setHideBar(true);
+          } else {
+            setHideBar(false);
+          }
+        });
+      },
+      { threshold: 0.1 }
+    );
+
+    observer.observe(section);
+    return () => observer.disconnect();
+  }, []);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -258,13 +284,21 @@ function SuggestAddressBar({
   const [currentPreferences, setCurrentPreferences] = useState<string | null>(
     null
   );
+  const [userPreferences, setUserPreferences] = useState<any>(null);
   const [showTooltip, setShowTooltip] = useState(false);
+  const [showEmailTooltip, setShowEmailTooltip] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [message, setMessage] = useState<{
     type: "success" | "error" | "warning";
     text: string;
   } | null>(null);
+
+  // Email notifications state
+  const [emailNotifications, setEmailNotificationsState] =
+    useState<boolean>(false);
+  const [loadingEmailNotifications, setLoadingEmailNotifications] =
+    useState(false);
 
   // Scroll effect - Simple approach
   useEffect(() => {
@@ -291,13 +325,34 @@ function SuggestAddressBar({
     }
   }, [showTooltip]);
 
-  // Auto-hide message
+  // Auto-hide email tooltip
   useEffect(() => {
-    if (message) {
-      const timer = setTimeout(() => setMessage(null), 4000);
+    if (showEmailTooltip) {
+      const timer = setTimeout(() => setShowEmailTooltip(false), 5000);
       return () => clearTimeout(timer);
     }
-  }, [message]);
+  }, [showEmailTooltip]);
+
+  // Close tooltips on outside click
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element;
+      if (
+        !target.closest(".tooltip-container") &&
+        !target.closest('button[title="Information"]') &&
+        !target.closest('button[title="Email Notifications"]')
+      ) {
+        setShowTooltip(false);
+        setShowEmailTooltip(false);
+      }
+    };
+
+    if (showTooltip || showEmailTooltip) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () =>
+        document.removeEventListener("mousedown", handleClickOutside);
+    }
+  }, [showTooltip, showEmailTooltip]);
 
   // Load provinces
   useEffect(() => {
@@ -320,9 +375,46 @@ function SuggestAddressBar({
   useEffect(() => {
     if (session) {
       loadUserPreferences();
+      loadEmailNotifications();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session]);
+
+  // Load email notifications
+  const loadEmailNotifications = async () => {
+    if (!session?.user?.id) return;
+
+    try {
+      setLoadingEmailNotifications(true);
+
+      // First check if user has a profile
+      const profile = await getUserProfile(session);
+      if (!profile) {
+        console.log(
+          "User profile not found, skipping email notifications load"
+        );
+        setEmailNotificationsState(false);
+        return;
+      }
+
+      const result = await getEmailNotifications(session.user.id);
+      console.log(
+        "loadEmailNotifications - Result from getEmailNotifications:",
+        result
+      );
+      console.log(
+        "loadEmailNotifications - Setting emailNotifications to:",
+        result.emailNotifications
+      );
+      setEmailNotificationsState(result.emailNotifications);
+    } catch (error) {
+      console.error("Error loading email notifications:", error);
+      // Set default value on error
+      setEmailNotificationsState(false);
+    } finally {
+      setLoadingEmailNotifications(false);
+    }
+  };
 
   const showMessage = (type: "success" | "error" | "warning", text: string) => {
     setMessage({ type, text });
@@ -402,12 +494,75 @@ function SuggestAddressBar({
     }
   };
 
-  // NEW FUNCTION: Fetch rooms based on address location for non-logged users
+  // Unified function to fetch rooms by location for both guest and logged-in users
+  const fetchRoomsByLocation = async (
+    lat: number,
+    lng: number,
+    address: string,
+    context: "search" | "current"
+  ) => {
+    const userId = session?.user?.userProfile?.id;
+
+    // Clear previous data
+    setGuestRooms(null);
+    setUserRooms(null);
+
+    try {
+      console.log("🌍 Fetching rooms by location:");
+      console.log("- Address:", address);
+      console.log("- Coordinates:", { lat, lng });
+      console.log("- User ID:", userId);
+      console.log("- Context:", context);
+
+      // Update location context
+      setLocation({ lat, lng, address });
+
+      // Fetch rooms using location-based APIs
+      const [vipResponse, normalResponse] = await Promise.all([
+        getRoomVipWithLocation(0, 4, lat, lng),
+        getRoomNormalWithLocation(0, 6, lat, lng),
+      ]);
+
+      if (vipResponse && normalResponse) {
+        const newRoomsData = {
+          vipRooms: { ...vipResponse },
+          normalRooms: { ...normalResponse },
+        };
+
+        // Set rooms data based on user type
+        if (userId) {
+          setUserRooms(newRoomsData);
+        } else {
+          setGuestRooms(newRoomsData);
+        }
+
+        const totalRooms =
+          vipResponse.totalRecords + normalResponse.totalRecords;
+        const locationText =
+          context === "current"
+            ? userId
+              ? "bạn"
+              : "vị trí của bạn"
+            : `"${address}"`;
+
+        showMessage(
+          "success",
+          `🎯 Đã ${
+            userId && context === "current" ? "lưu vị trí và " : ""
+          }tìm thấy ${totalRooms} phòng gần ${locationText} - Đã sắp xếp theo khoảng cách!`
+        );
+      } else {
+        showMessage("error", "Không thể tải danh sách phòng!");
+      }
+    } catch (error) {
+      console.error("Error fetching rooms by location:", error);
+      showMessage("error", "Có lỗi xảy ra khi tìm kiếm phòng!");
+    }
+  };
+
+  // Fetch rooms based on address location - works for both guest and logged-in users
   const fetchRoomsByAddress = async (searchAddress: string) => {
     setIsSearching(true);
-
-    // Clear previous guest data to ensure fresh results
-    setGuestRooms(null);
 
     try {
       // Use Goong API to get coordinates from address
@@ -433,42 +588,8 @@ function SuggestAddressBar({
         const location = geoData.results[0].geometry.location;
         const { lat, lng } = location;
 
-        console.log("🌍 Fetching rooms by location:");
-        console.log("- Address:", searchAddress);
-        console.log("- Coordinates:", { lat, lng });
-
-        // Update location context FIRST
-        setLocation({ lat, lng, address: searchAddress });
-
-        // Add a small delay to ensure state is updated
-        await new Promise((resolve) => setTimeout(resolve, 100));
-
-        // Fetch rooms using location-based APIs
-        const [vipResponse, normalResponse] = await Promise.all([
-          getRoomVipWithLocation(0, 4, lat, lng),
-          getRoomNormalWithLocation(0, 6, lat, lng),
-        ]);
-
-        console.log("🏠 API Responses:");
-        console.log("- VIP rooms:", vipResponse);
-        console.log("- Normal rooms:", normalResponse);
-
-        if (vipResponse && normalResponse) {
-          // Force a new object to trigger re-render
-          const newGuestRooms = {
-            vipRooms: { ...vipResponse },
-            normalRooms: { ...normalResponse },
-          };
-          setGuestRooms(newGuestRooms);
-          showMessage(
-            "success",
-            `🎯 Đã tìm thấy ${
-              vipResponse.totalRecords + normalResponse.totalRecords
-            } phòng gần "${searchAddress}" - Đã sắp xếp theo khoảng cách!`
-          );
-        } else {
-          showMessage("error", "Không thể tải danh sách phòng!");
-        }
+        // Use unified function to fetch rooms
+        await fetchRoomsByLocation(lat, lng, searchAddress, "search");
       } else {
         showMessage("error", "Không tìm thấy địa chỉ này!");
       }
@@ -485,6 +606,8 @@ function SuggestAddressBar({
       showMessage("error", "Please fill in all address information!");
       return;
     }
+
+    setIsSaving(true);
 
     try {
       const selectedProvince = provinces.find(
@@ -504,23 +627,28 @@ function SuggestAddressBar({
 
       const userId = session?.user?.userProfile?.id;
 
-      // If user is logged in, save preferences
+      // If user is logged in, save preferences first
       if (userId) {
-        setIsSaving(true);
         await updatePreferences(
           userId,
           { searchAddress: searchAddress || undefined },
           session
         );
 
-        showMessage("success", "Address saved successfully!");
         await loadUserPreferences();
+        setCurrentPreferences(searchAddress);
 
         if (onSaveSuccess) onSaveSuccess();
         setShowTooltip(true);
-      } else {
-        // If user is NOT logged in, fetch rooms by address location
+      }
+
+      // Fetch rooms for both guest and logged-in users
+      if (searchAddress) {
         await fetchRoomsByAddress(searchAddress);
+      }
+
+      if (userId) {
+        showMessage("success", "Find room by your address successfully!");
       }
     } catch (error) {
       console.error("Error saving address:", error);
@@ -535,6 +663,7 @@ function SuggestAddressBar({
       if (session?.user?.userProfile?.id) {
         setLoadingPreferences(true);
         const preferences = await getUserPreferences();
+        setUserPreferences(preferences);
         if (preferences?.searchAddress) {
           setCurrentPreferences(preferences.searchAddress);
         } else {
@@ -544,6 +673,7 @@ function SuggestAddressBar({
     } catch (error) {
       console.log("Could not load preferences:", error);
       setCurrentPreferences(null);
+      setUserPreferences(null);
     } finally {
       setLoadingPreferences(false);
     }
@@ -608,76 +738,27 @@ function SuggestAddressBar({
         handleInputChange("specificAddress", formattedAddress);
 
         const userId = session?.user?.userProfile?.id;
+
+        // If user is logged in, save preferences
         if (userId && formattedAddress) {
-          // User is logged in - save preferences
           await updatePreferences(
             userId,
             { searchAddress: formattedAddress },
             session
           );
-
           setCurrentPreferences(formattedAddress);
-          showMessage("success", "Current location updated successfully!");
 
           if (onSaveSuccess) onSaveSuccess();
           setShowTooltip(true);
-        } else if (!userId) {
-          // User is NOT logged in - fetch rooms with coordinates and update context
-          try {
-            console.log("🌍 Fetching rooms by current location:");
-            console.log("- Address:", formattedAddress);
-            console.log("- Coordinates:", { latitude, longitude });
-
-            // Clear previous guest data first
-            setGuestRooms(null);
-
-            setLocation({
-              lat: latitude,
-              lng: longitude,
-              address: formattedAddress,
-            });
-
-            // Add small delay to ensure state is updated
-            await new Promise((resolve) => setTimeout(resolve, 100));
-
-            const [vipResponse, normalResponse] = await Promise.all([
-              getRoomVipWithLocation(0, 4, latitude, longitude),
-              getRoomNormalWithLocation(0, 6, latitude, longitude),
-            ]);
-
-            console.log("🏠 Current Location API Responses:");
-            console.log("- VIP rooms:", vipResponse);
-            console.log("- Normal rooms:", normalResponse);
-
-            if (vipResponse && normalResponse) {
-              // Force new object to trigger re-render
-              const newGuestRooms = {
-                vipRooms: { ...vipResponse },
-                normalRooms: { ...normalResponse },
-              };
-              setGuestRooms(newGuestRooms);
-              showMessage(
-                "success",
-                `🎯 Đã tìm thấy ${
-                  vipResponse.totalRecords + normalResponse.totalRecords
-                } phòng gần vị trí của bạn - Đã sắp xếp theo khoảng cách!`
-              );
-            } else {
-              showMessage(
-                "warning",
-                "Lấy vị trí thành công nhưng không thể tải danh sách phòng!"
-              );
-            }
-          } catch (error) {
-            console.error("Error fetching rooms by location:", error);
-            showMessage(
-              "warning",
-              "Lấy vị trí thành công nhưng không thể tải danh sách phòng!"
-            );
-          }
-        } else {
-          showMessage("success", "Current location retrieved successfully!");
         }
+
+        // Use unified function to fetch rooms by current location
+        await fetchRoomsByLocation(
+          latitude,
+          longitude,
+          formattedAddress,
+          "current"
+        );
       } else {
         showMessage(
           "warning",
@@ -710,11 +791,72 @@ function SuggestAddressBar({
     }
   };
 
+  // Handle email notifications toggle
+  const handleEmailNotificationsToggle = async (enabled: boolean) => {
+    if (!session?.user?.id) {
+      console.warn(
+        "handleEmailNotificationsToggle: no session user id, aborting toggle"
+      );
+      return;
+    }
+
+    try {
+      console.log(
+        "handleEmailNotificationsToggle - requested enabled:",
+        enabled
+      );
+      setLoadingEmailNotifications(true);
+
+      const response = await setEmailNotifications(enabled);
+      console.log(
+        "handleEmailNotificationsToggle - setEmailNotifications response:",
+        response
+      );
+
+      // Prefer backend-confirmed value if provided
+      const respValue =
+        response?.emailNotifications ?? response?.enabled ?? null;
+
+      if (typeof respValue === "boolean") {
+        setEmailNotificationsState(respValue);
+        console.log(
+          "handleEmailNotificationsToggle - applied from response:",
+          respValue
+        );
+      } else if (typeof respValue === "number") {
+        setEmailNotificationsState(respValue === 1);
+        console.log(
+          "handleEmailNotificationsToggle - applied from numeric response:",
+          respValue
+        );
+      } else {
+        // Fallback to requested value
+        setEmailNotificationsState(enabled);
+        console.log(
+          "handleEmailNotificationsToggle - no explicit response value, applied requested value:",
+          enabled
+        );
+      }
+
+      showMessage(
+        "success",
+        `Email notifications ${enabled ? "enabled" : "disabled"} successfully!`
+      );
+    } catch (error) {
+      console.error("Error updating email notifications:", error);
+      showMessage("error", "Failed to update email notifications");
+    } finally {
+      setLoadingEmailNotifications(false);
+    }
+  };
+
   return (
     <div
       className={`sticky ${
         width ? `w-[100%]` : `lg:w-[80%] md:w-[800px] w-full`
-      }  top-0 z-40 bg-gradient-to-r from-white/95 via-blue-50/80 to-indigo-50/80 backdrop-blur-xl border-b border-blue-200/30 transition-all duration-300`}
+      }  top-0 z-40 bg-gradient-to-r from-white/95 via-blue-50/80 to-indigo-50/80 backdrop-blur-xl border-b border-blue-200/30 transition-all duration-300 ${
+        hideBar ? "opacity-0 pointer-events-none" : "opacity-100"
+      }`}
     >
       {/* Message Toast */}
       {message && (
@@ -1030,7 +1172,7 @@ function SuggestAddressBar({
                   {isSaving ? (
                     <>
                       <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                      <span>Saving...</span>
+                      <span>Searching...</span>
                     </>
                   ) : (
                     <>
@@ -1075,12 +1217,36 @@ function SuggestAddressBar({
                 </svg>
               </button>
 
+              {/* Email Notifications Button */}
+              {session?.user && (
+                <button
+                  type="button"
+                  onClick={() => setShowEmailTooltip(!showEmailTooltip)}
+                  className="h-11 w-11 bg-gray-50/90 hover:bg-gray-100/90 text-gray-500 hover:text-gray-700 rounded-2xl transition-all duration-300 flex items-center justify-center shadow-md hover:shadow-lg backdrop-blur-sm active:scale-95 border border-gray-200/50"
+                  title="Email Notifications"
+                >
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                    />
+                  </svg>
+                </button>
+              )}
+
               {/* Enhanced Tooltip */}
               {showTooltip && (
-                <div className="absolute top-full right-0 mt-4 z-50 w-96 p-6 bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-gray-200/50 animate-fadeIn">
+                <div className="absolute top-full mt-2 left-1/2 transform -translate-x-1/2 bg-white border border-gray-200 rounded-lg shadow-lg p-4 z-50 w-80 tooltip-container">
                   <button
                     onClick={() => setShowTooltip(false)}
-                    className="absolute top-4 right-4 w-8 h-8 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-2xl flex items-center justify-center transition-all duration-200 border border-gray-200/30"
+                    className="absolute top-2 right-2 w-6 h-6 text-gray-400 hover:text-gray-600 rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors"
                   >
                     <svg
                       className="w-4 h-4"
@@ -1096,88 +1262,106 @@ function SuggestAddressBar({
                       />
                     </svg>
                   </button>
-
-                  <div className="mb-4">
-                    <h3 className="font-bold text-gray-800 text-xl mb-1">
-                      {currentPreferences
-                        ? "Current Search Area"
-                        : "Choose Search Area"}
-                    </h3>
-                    <div className="w-12 h-1 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full"></div>
+                  <div className="text-sm text-gray-700">
+                    <h4 className="font-semibold mb-2">Current Search Area</h4>
+                    <p className="mb-2">
+                      <strong>Province:</strong>{" "}
+                      {userPreferences?.province || "Not set"}
+                    </p>
+                    <p className="mb-2">
+                      <strong>District:</strong>{" "}
+                      {userPreferences?.district || "Not set"}
+                    </p>
+                    <p className="mb-2">
+                      <strong>Ward:</strong>{" "}
+                      {userPreferences?.ward || "Not set"}
+                    </p>
+                    <p className="mb-2">
+                      <strong>Price Range:</strong>{" "}
+                      {userPreferences?.priceRange || "Not set"}
+                    </p>
+                    <p className="mb-2">
+                      <strong>Room Type:</strong>{" "}
+                      {userPreferences?.roomType || "Not set"}
+                    </p>
+                    <p className="mb-2">
+                      <strong>Area:</strong>{" "}
+                      {userPreferences?.area || "Not set"}
+                    </p>
                   </div>
+                </div>
+              )}
 
-                  <div className="text-sm text-gray-600 leading-relaxed">
-                    {currentPreferences ? (
-                      <div className="space-y-3">
-                        <div className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl border border-blue-200/50">
-                          <div className="flex items-start gap-3">
-                            <svg
-                              className="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                              />
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                              />
-                            </svg>
-                            <div className="flex-1">
-                              <p className="font-medium text-blue-800 text-base">
-                                {currentPreferences}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                        <p className="text-gray-700">
-                          This is the area where you&#39;re currently searching
-                          for rental rooms.
-                        </p>
-                      </div>
-                    ) : (
-                      <div className="space-y-3">
-                        <p className="text-gray-700">
-                          You haven&#39;t selected a search area yet.
-                        </p>
-                        <p className="text-gray-700">
-                          Please choose province/city, district, and ward to get
-                          the most suitable suggestions!
-                        </p>
-                        <div className="flex items-center gap-2 text-blue-600 text-xs font-medium mt-3 p-2 bg-blue-50 rounded-xl">
-                          <svg
-                            className="w-4 h-4"
-                            fill="currentColor"
-                            viewBox="0 0 20 20"
+              {/* Email Notifications Tooltip */}
+              {showEmailTooltip && session?.user && (
+                <div className="absolute top-full mt-2 left-1/2 transform -translate-x-1/2 bg-white border border-gray-200 rounded-lg shadow-lg p-4 z-50 w-80 tooltip-container">
+                  <button
+                    onClick={() => setShowEmailTooltip(false)}
+                    className="absolute top-2 right-2 w-6 h-6 text-gray-400 hover:text-gray-600 rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors"
+                  >
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M6 18L18 6M6 6l12 12"
+                      />
+                    </svg>
+                  </button>
+                  <div className="text-sm text-gray-700">
+                    <h4 className="font-semibold mb-2">Email Notifications</h4>
+                    <p className="mb-3">
+                      Receive room suggestions via email when new rooms match
+                      your preferences.
+                    </p>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-gray-700">
+                        {emailNotifications ? "Enabled" : "Disabled"}
+                      </span>
+                      <div className="flex items-center gap-3">
+                        {loadingEmailNotifications && (
+                          <div className="w-4 h-4 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin"></div>
+                        )}
+                        <label className="relative inline-flex items-center cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={emailNotifications}
+                            onChange={(e) =>
+                              handleEmailNotificationsToggle(e.target.checked)
+                            }
+                            disabled={loadingEmailNotifications}
+                            className="sr-only peer"
+                          />
+                          <div
+                            className={`w-12 h-6 rounded-full transition-all duration-300 ${
+                              emailNotifications
+                                ? "bg-gradient-to-r from-green-400 to-green-500"
+                                : "bg-gray-300"
+                            } peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-green-300 peer-disabled:opacity-50`}
                           >
-                            <path
-                              fillRule="evenodd"
-                              d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-                              clipRule="evenodd"
-                            />
-                          </svg>
-                          <span>
-                            Tip: Use the location button to automatically detect
-                            your current area
-                          </span>
-                        </div>
+                            <div
+                              className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-md transition-transform duration-300 ${
+                                emailNotifications
+                                  ? "translate-x-6"
+                                  : "translate-x-0"
+                              }`}
+                            ></div>
+                          </div>
+                        </label>
                       </div>
-                    )}
+                    </div>
                   </div>
-
-                  {/* Arrow */}
-                  <div className="absolute -top-2 right-8 w-4 h-4 bg-white border-l border-t border-gray-200/50 transform rotate-45"></div>
                 </div>
               )}
             </div>
           </div>
+
+          {/* Action Buttons */}
         </div>
       </div>
 
@@ -1208,7 +1392,7 @@ function SuggestAddressBar({
           }
           to {
             opacity: 1;
-            transform: translateY(0) scale(1);
+            transform: translateY(0px) scale(1);
           }
         }
       `}</style>
