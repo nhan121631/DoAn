@@ -42,6 +42,17 @@ export const ContractService = {
 		if (!res.ok) throw new Error("Failed to create contract");
 		return res.json();
 	},
+
+	async updateContract(contractId: string, data: Partial<ContractData>): Promise<ContractData> {
+		const res = await fetch(`${BASE_URL}/${contractId}`, {
+			method: "PUT",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify(data),
+		});
+		if (!res.ok) throw new Error("Failed to update contract");
+		return res.json();
+	},
+
 	async exportBills(contractId: string, fromMonth: string, toMonth: string): Promise<Blob> {
 		const res = await fetch(`/api/contracts/${contractId}/bills/export?fromMonth=${fromMonth}&toMonth=${toMonth}`);
 		if (!res.ok) throw new Error("Failed to export bills");

@@ -156,23 +156,32 @@ useEffect(() => {
           </div>
 
           {/* Favorite Button */}
-          <button
-            onClick={handleFavoriteClick}
-            className="absolute flex items-center justify-center w-8 h-8 transition-all duration-300 transform translate-y-2 rounded-full shadow-lg opacity-0 top-2 right-2 sm:top-3 sm:right-3 sm:w-9 sm:h-9 bg-white/95 hover:scale-110 hover:bg-white group-hover:opacity-100 group-hover:translate-y-0 hover:shadow-xl"
-          >
-            {isFavorited ? (
-              <AiFillHeart
-                size={14}
-                className="text-red-500 sm:w-4 sm:h-4 animate-pulse"
-              />
-            ) : (
-              <AiOutlineHeart
-                size={14}
-                className="text-gray-600 transition-colors duration-200 sm:w-4 sm:h-4 hover:text-red-500"
-              />
-            )}
-          </button>
-          <span className="text-sm font-bold text-blue-500">{favoriteCount}</span>
+          <>
+          
+          <div className="absolute flex items-center gap-1.5 px-3 py-2 transition-all duration-300 transform translate-y-2 rounded-full shadow-lg opacity-0 top-2 right-2 sm:top-3 sm:right-3 bg-gray-800/80 backdrop-blur-sm group-hover:opacity-100 group-hover:translate-y-0 hover:shadow-xl hover:bg-gray-800/90">
+  {contextHolder}
+  
+  <button
+    onClick={handleFavoriteClick}
+    className="flex items-center gap-1.5 transition-transform duration-200 hover:scale-105"
+  >
+    {isFavorited ? (
+      <AiFillHeart
+        size={16}
+        className="text-red-500 sm:w-5 sm:h-5 animate-pulse"
+      />
+    ) : (
+      <AiOutlineHeart
+        size={16}
+        className="text-white transition-colors duration-200 sm:w-5 sm:h-5 hover:text-red-500"
+      />
+    )}
+    <span className="text-sm font-bold text-white sm:text-base">
+      {favoriteCount}
+    </span>
+  </button>
+</div>
+          </>
 
           {/* Corner decoration */}
           <div className="absolute top-0 left-0 w-0 h-0 border-l-[15px] sm:border-l-[20px] border-l-blue-500 border-b-[15px] sm:border-b-[20px] border-b-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>

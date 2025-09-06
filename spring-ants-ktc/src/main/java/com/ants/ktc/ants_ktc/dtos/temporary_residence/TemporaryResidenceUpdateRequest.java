@@ -27,10 +27,9 @@ public class TemporaryResidenceUpdateRequest {
     private String relationship;
 
     @NotNull(message = "Start date must not be null")
-    @PastOrPresent(message = "Start date cannot be in the future")
     private Date startDate;
 
-    @FutureOrPresent(message = "End date cannot be in the past")
+    @NotNull(message = "End date must not be null")
     private Date endDate;
 
     @Size(max = 255, message = "Note must not exceed 255 characters")

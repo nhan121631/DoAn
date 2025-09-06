@@ -33,19 +33,18 @@ export default function ManageContractsPage() {
 
   return (
     <div className="flex flex-col flex-1 min-h-screen w-full bg-white dark:bg-[#001529] text-gray-900 dark:text-white p-8 transition-colors duration-300">
-
       {loading ? (
-        <div className="flex justify-center items-center h-96">
-          <Spin tip="Đang tải hợp đồng..." size="large">
-            <div style={{ height: 0, width: 0 }} /> {/* dummy content */}
-          </Spin>
+        <div className="flex flex-col justify-center items-center h-96 space-y-3">
+          <Spin size="large" />
+          <span className="text-center whitespace-nowrap text-gray-900 dark:text-white">Loading contracts...</span>
         </div>
       ) : error ? (
-        <div className="text-center text-red-500">{error}</div>
+        <div className="text-center text-red-500 dark:text-red-400">{error}</div>
       ) : (
         <LandlordContracts contracts={contracts} />
       )}
     </div>
   );
+
 }
 

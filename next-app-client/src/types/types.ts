@@ -114,6 +114,16 @@ export type PaginatedResponse<T> = {
   totalPages: number;
   totalRecords: number;
 };
+export interface PageResponse<T> {
+  content: T[];
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+  hasNext: boolean;
+  hasPrevious: boolean;
+  totalRecords: number;
+}
 
 export type CreateMaintenanceFormValues = {
   roomId: string;
@@ -294,6 +304,9 @@ export type UserSearchPreferences = {
   // desiredMinPrice?: number;
   // desiredMaxPrice?: number;
 };
+
+
+
 
 export type SearchParamsType = { [key: string]: string | string[] | undefined };
 

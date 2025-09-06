@@ -14,7 +14,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ContractUpdateRequestDto {
-    @NotNull(message = "Contract ID must not be null")
+
     private UUID id;
 
     private UUID roomId;
@@ -23,7 +23,7 @@ public class ContractUpdateRequestDto {
 
     private UUID landlordId;
 
-    @FutureOrPresent(message = "Start date must be today or in the future")
+
     private Date startDate;
 
     @Future(message = "End date must be in the future")

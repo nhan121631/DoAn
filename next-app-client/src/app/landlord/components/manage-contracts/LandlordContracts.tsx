@@ -9,6 +9,8 @@ import {
   Popconfirm,
   message,
   Tooltip,
+  Select,
+  Card,
 } from "antd";
 import Link from "next/link";
 import { ContractData, InvoiceFormValues } from "@/types/types";
@@ -17,6 +19,8 @@ import {
   EditOutlined,
   DeleteOutlined,
   FilePdfOutlined,
+  SearchOutlined,
+  FilterOutlined,
 } from "@ant-design/icons";
 import InvoiceExportModal from "./InvoiceExportModal";
 
@@ -33,13 +37,15 @@ const statusMap: Record<number, { text: string; color: string }> = {
 
 const LandlordContracts: React.FC<LandlordContractsProps> = ({ contracts }) => {
   const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<number | null>(null);
   const [isInvoiceModalOpen, setIsInvoiceModalOpen] = useState(false);
   const [contractToExport, setContractToExport] = useState<ContractData | null>(
     null
   );
 
   const handleEdit = (record: ContractData) => {
-    message.info(`Edit contract ${record.id}`);
+    // Navigate to contract detail page with edit mode
+    window.location.href = `/landlord/manage-contracts/${record.id}?tab=overview&edit=true`;
   };
 
   const handleDelete = (record: ContractData) => {
@@ -169,31 +175,66 @@ const LandlordContracts: React.FC<LandlordContractsProps> = ({ contracts }) => {
   ];
 
   const filteredContracts = contracts.filter(
-    (c) =>
-      c.roomTitle?.toLowerCase().includes(search.toLowerCase()) ||
-      c.contractName?.toLowerCase().includes(search.toLowerCase()) ||
-      c.tenantName?.toLowerCase().includes(search.toLowerCase()) ||
-      c.tenantPhone?.toLowerCase().includes(search.toLowerCase())
+    (contract: ContractData) => {
+      const matchesSearch = 
+        contract.roomTitle?.toLowerCase().includes(search.toLowerCase()) ||
+        contract.contractName?.toLowerCase().includes(search.toLowerCase()) ||
+        contract.tenantName?.toLowerCase().includes(search.toLowerCase()) ||
+        contract.tenantPhone?.toLowerCase().includes(search.toLowerCase());
+      
+      const matchesStatus = statusFilter === null || statusFilter === undefined || contract.status === statusFilter;
+      
+      return matchesSearch && matchesStatus;
+    }
   );
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">Contract Management</h2>
-        <Input.Search
-          placeholder="Search contracts..."
-          style={{ width: 280 }}
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
+      <Card 
+        title={<span className="text-gray-900 dark:text-white">Contract Management</span>}
+        className="shadow-md bg-white dark:bg-[#22304a] border-gray-200 dark:border-gray-600 transition-colors duration-300"
+        extra={
+          <Space>
+            <Input
+              placeholder="Search contracts..."
+              prefix={<SearchOutlined />}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              style={{ width: 200 }}
+              allowClear
+            />
+            <Select
+              placeholder="Filter by status"
+              value={statusFilter}
+              onChange={setStatusFilter}
+              style={{ width: 150 }}
+              allowClear
+              suffixIcon={<FilterOutlined />}
+            >
+              {Object.entries(statusMap).map(([key, value]) => (
+                <Select.Option key={key} value={parseInt(key)}>
+                  <Tag color={value.color}>{value.text}</Tag>
+                </Select.Option>
+              ))}
+            </Select>
+          </Space>
+        }
+      >
+        <Table
+          columns={columns}
+          dataSource={filteredContracts}
+          rowKey="id"
+          pagination={{ 
+            pageSize: 10,
+            showSizeChanger: true,
+            showQuickJumper: true,
+            showTotal: (total, range) =>
+              `${range[0]}-${range[1]} of ${total} contracts`,
+            pageSizeOptions: ['5', '10', '20', '50'],
+          }}
+          size="middle"
         />
-      </div>
-
-      <Table
-        columns={columns}
-        dataSource={filteredContracts}
-        rowKey="id"
-        pagination={{ pageSize: 8 }}
-      />
+      </Card>
 
       {/* Modal Export Invoice */}
       <InvoiceExportModal
