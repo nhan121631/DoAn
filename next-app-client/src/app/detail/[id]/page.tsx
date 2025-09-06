@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-
 import BookingForm from "@/app/landlord/components/booking-room/BookingForm";
 import FavoriteCount from "@/app/landlord/components/room-detail/FavoriteCount";
 import FeedbackLayout from "@/app/landlord/components/room-detail/Feedback";
