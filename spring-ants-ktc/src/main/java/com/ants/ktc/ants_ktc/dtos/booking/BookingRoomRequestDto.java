@@ -4,7 +4,7 @@ import java.util.Date;
 import java.util.UUID;
 
 import jakarta.validation.constraints.Future;
-import jakarta.validation.constraints.FutureOrPresent;
+// import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -21,7 +21,7 @@ public class BookingRoomRequestDto {
     private UUID roomId;
 
     @NotNull(message = "Rental date is required")
-    @FutureOrPresent(message = "Rental date must be today or in the future")
+    // @FutureOrPresent(message = "Rental date must be today or in the future")
     private Date rentalDate;
 
     @NotNull(message = "Rental expires date is required")
