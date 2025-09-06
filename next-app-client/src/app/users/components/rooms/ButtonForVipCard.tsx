@@ -73,27 +73,24 @@ useEffect(() => {
       <>
         {contextHolder}
         <button
-          aria-label="Favorite"
-          className={`transition-all duration-200 p-1 rounded-full border border-gray-200 bg-white/80 shadow-sm hover:shadow-md focus:ring-2 focus:ring-blue-200
-          ${
-            isFavorite
-              ? "text-red-500 bg-red-50 border-red-200"
-              : "text-gray-400 hover:text-red-500 hover:border-red-300"
-          }
-          ${loading ? "opacity-60 cursor-not-allowed" : ""}`}
-          onClick={handleFavorite}
-          disabled={loading}
-          type="button"
-          title={isFavorite ? "Remove from favorites" : "Add to favorites"}
-        >
-          <FaHeart size={16} />
-          <span
-    className="absolute text-xs font-bold text-blue-500 top-1 right-1"
-    style={{ pointerEvents: "none" }}
-  >
-    {favoriteCount}
-  </span>
-        </button>
+        aria-label="Favorite"
+        className={`flex items-center gap-2 px-4 py-2 transition-all duration-200 rounded-full border shadow-sm hover:shadow-md focus:ring-2 focus:ring-red-200
+        ${
+          isFavorite
+            ? "text-red-500 bg-white border-red-300 hover:border-red-400 hover:bg-red-50"
+            : "text-gray-500 bg-white border-red-300 hover:text-red-500 hover:border-red-400 hover:bg-red-50"
+        }
+        ${loading ? "opacity-60 cursor-not-allowed" : ""}`}
+        onClick={handleFavorite}
+        disabled={loading}
+        type="button"
+        title={isFavorite ? "Remove from favorites" : "Add to favorites"}
+      >
+        <FaHeart size={16} />
+        <span className="text-sm font-bold text-blue-500">
+          {favoriteCount}
+        </span>
+      </button>
       </>
     );
   }
@@ -101,25 +98,25 @@ useEffect(() => {
   return (
     <>
       {contextHolder}
-      <button
-        aria-label="Favorite"
-        className={`transition-all duration-200 p-2 rounded-full border border-gray-200 bg-white/80 shadow-sm hover:shadow-md focus:ring-2 focus:ring-blue-200
-        ${
-          isFavorite
-            ? "text-red-500 bg-red-50 border-red-200"
-            : "text-gray-400 hover:text-red-500 hover:border-red-300"
-        }
-        ${loading ? "opacity-60 cursor-not-allowed" : ""}
-        hover:bg-white/20 hover:scale-110`}
-        onClick={handleFavorite}
-        disabled={loading}
-        type="button"
-         style={{ background: "transparent" }}
-        title={isFavorite ? "Remove from favorites" : "Add to favorites"}
-      >
-        <FaHeart size={16} />
-      </button>
-        <span className="ml-2 text-base font-bold text-blue-500">{favoriteCount}</span>
+        <button
+      aria-label="Favorite"
+      className={`flex items-center gap-1.5 px-3 py-1.5 transition-all duration-200 rounded-full border shadow-sm hover:shadow-md focus:ring-2 focus:ring-red-200
+      ${
+        isFavorite
+          ? "text-red-500 bg-white border-red-300 hover:border-red-400 hover:bg-red-50"
+          : "text-gray-500 bg-white border-red-300 hover:text-red-500 hover:border-red-400 hover:bg-red-50"
+      }
+      ${loading ? "opacity-60 cursor-not-allowed" : ""}`}
+      onClick={handleFavorite}
+      disabled={loading}
+      type="button"
+      title={isFavorite ? "Remove from favorites" : "Add to favorites"}
+    >
+      <FaHeart size={16} />
+      <span className="text-sm font-bold text-blue-500">
+        {favoriteCount}
+      </span>
+    </button>
 
     </>
   );
