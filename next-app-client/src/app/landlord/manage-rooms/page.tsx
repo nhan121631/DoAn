@@ -201,7 +201,7 @@ function TableManageRoom() {
           return <Tag color="red">Removed</Tag>;
         }
         if (isReject) {
-          return <Tag color="orange">Rejected Post</Tag>
+          return <Tag color="orange">Rejected Post</Tag>;
         }
         if (isStillValid) {
           return <Tag color="green">Still valid</Tag>;
@@ -321,7 +321,9 @@ function TableManageRoom() {
                   // postStartDate lấy ngày giờ hiện tại đầy đủ
                   const postStartDate = new Date().toISOString();
                   // postEndDate lấy ngày từ input và set thời gian cuối ngày
-                  const endDate = new Date(extendDates[record.id] + "T23:59:59");
+                  const endDate = new Date(
+                    extendDates[record.id] + "T23:59:59"
+                  );
                   const postEndDate = endDate.toISOString();
                   await updateRoomPostExtend(
                     record.id,
@@ -450,10 +452,10 @@ function TableManageRoom() {
       title: "Actions",
       key: "actions",
       render: (_, record) => {
-        const now = new Date(); 
+        const now = new Date();
         // const start = new Date(record.postStartDate);
         const end = new Date(record.postEndDate);
-        const isStillValid = now <= end; 
+        const isStillValid = now <= end;
 
         if (record.isRemoved === 1) {
           return (
