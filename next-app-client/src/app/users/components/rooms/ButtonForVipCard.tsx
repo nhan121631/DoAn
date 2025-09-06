@@ -6,7 +6,7 @@ import { RoomInUser } from "@/types/types";
 import { message } from "antd";
 import { useEffect, useState } from "react";
 import { FaHeart } from "react-icons/fa6";
-import { useFavoriteStore } from "@/stores/FavoriteStore";
+import { useFavoriteStore } from "@/stores/favoriteStore";
 
 interface ButtonFavoriteProps {
   onClick?: () => void;

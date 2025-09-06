@@ -6,10 +6,11 @@ import { useEffect, useState } from "react";
 import { ImProfile } from "react-icons/im";
 import { LuBookCheck } from "react-icons/lu";
 import {
+  MdDescription,
   MdFavoriteBorder,
   MdHistory,
   MdOutlineLockReset,
-  MdDescription 
+  MdOutlineMessage,
 } from "react-icons/md";
 
 const { Sider } = Layout;
@@ -30,11 +31,11 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
 
   const pathToKey: Record<string, string> = {
     "/user-dashboard/profile": "1",
-    "/user-dashboard/my-contracts": "2",
-    "/user-dashboard/rental-history": "3",
-    "/user-dashboard/request-status": "4",
-    "/user-dashboard/favorited-rooms": "5",
-    "/user-dashboard/change-password": "6",
+    "/user-dashboard/rental-history": "2",
+    "/user-dashboard/request-status": "3",
+    "/user-dashboard/favorited-rooms": "4",
+    "/user-dashboard/change-password": "5",
+    "/user-dashboard/message": "6",
   };
 
   const selectedKey = pathToKey[pathname || ""] || "1";
@@ -44,7 +45,7 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
       <div
         style={{
           width: collapsed ? 80 : 200,
-          height: "100vh",
+          height: "100%",
           backgroundColor: "#f5f5f5",
           borderRight: "1px solid #d9d9d9",
         }}
@@ -64,7 +65,7 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
       collapsed={collapsed}
       theme={isDark ? "dark" : "light"}
       style={{
-        height: "full",
+        height: "100%",
         borderRight: isDark
           ? "1px solid #4A5565" // dark: slate-700
           : "1px solid #F8FAFC", // light: ant design default
@@ -182,6 +183,26 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
             label: (
               <Link href="/user-dashboard/change-password">
                 Change Password
+              </Link>
+            ),
+          },
+          {
+            key: "6",
+            icon: (
+              <span
+                style={{
+                  fontSize: 18,
+                  marginRight: 4,
+                  display: "inline-flex",
+                  alignItems: "center",
+                }}
+              >
+                <MdOutlineMessage />
+              </span>
+            ),
+            label: (
+              <Link href="/user-dashboard/message">
+                Message
               </Link>
             ),
           },

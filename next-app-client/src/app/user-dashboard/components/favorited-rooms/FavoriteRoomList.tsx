@@ -6,7 +6,7 @@ import { fetchAndUpdateFavorites } from "@/services/FavoriteService";
 import FavoriteDashboardRoomCard from "./FavoriteDashboardRoomCard";
 import FavoriteDashboardRoomVipCard from "./FavoriteDashboardRoomVipCard";
 import { BiChevronLeft, BiChevronRight } from "react-icons/bi";
-import { useFavoriteStore } from "@/stores/FavoriteStore";
+import { useFavoriteStore } from "@/stores/favoriteStore";
 
 export default function FavoriteRoomList() {
   const { favoriteRoomIds } = useFavoriteStore();

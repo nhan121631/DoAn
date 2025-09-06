@@ -8,12 +8,18 @@ import { db } from "@/lib/firebase";
 import { URL_IMAGE } from "@/services/Constant";
 import {
   collection,
-  addDoc,
-  serverTimestamp,
   query,
   orderBy,
   onSnapshot,
 } from "firebase/firestore";
+import { 
+  sendTextMessage, 
+  sendImageMessage, 
+  deleteMessage,
+  Message 
+} from "@/services/ChatService";
+import ImageModal from "./ImageModal";
+import ContextMenu from "./ContextMenu";
 
 interface ChatClientProps {
   senderId: string;
@@ -32,24 +38,24 @@ export default function ChatClient({
 }: ChatClientProps) {
   const [msg, setMsg] = useState<string>("");
   const { data: session } = useSession();
-  console.log("User avatar URL:", urlAvatar);
   const [sending, setSending] = useState<boolean>(false);
-  // const [messages, setMessages] = useState<
-  //   { id: string; text: string; senderId: string; recipientId: string }[]
-  // >([]);
-  const [allMessages, setAllMessages] = useState<
-    {
-      id: string;
-      text: string;
-      senderId: string;
-      recipientId: string;
-      createdAt: Date | null;
-    }[]
-  >([]);
+  const [uploadingImage, setUploadingImage] = useState<boolean>(false);
+  const [allMessages, setAllMessages] = useState<Message[]>([]);
+  const [selectedImage, setSelectedImage] = useState<{
+    url: string;
+    fileName?: string;
+  } | null>(null);
+  const [contextMenu, setContextMenu] = useState<{
+    x: number;
+    y: number;
+    messageId: string;
+  } | null>(null);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Lắng nghe tin nhắn
   useEffect(() => {
     const q = query(collection(db, "messages"), orderBy("createdAt", "asc"));
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -57,11 +63,14 @@ export default function ChatClient({
         .map((doc) => ({
           id: doc.id,
           text: doc.data().text,
+          imageUrl: doc.data().imageUrl,
+          imageFileName: doc.data().imageFileName,
           senderId: doc.data().senderId,
           recipientId: doc.data().recipientId,
           createdAt: doc.data().createdAt
             ? new Date(doc.data().createdAt.seconds * 1000)
             : null,
+          messageType: doc.data().messageType || 'text',
         }))
         .filter(
           (msg) =>
@@ -72,34 +81,123 @@ export default function ChatClient({
     });
     return () => unsubscribe();
   }, [recipientId, senderId]);
+
+  // Cuộn xuống cuối tin nhắn
   useEffect(() => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollTop = messagesEndRef.current.scrollHeight;
+      inputRef.current?.focus();
     }
   }, [allMessages]);
 
-  const sendMessage = async () => {
-    if (!msg.trim() || !recipientId || !senderId) return;
-    if (session) {
-      console.log("Sending message:", session.user.userProfile.avatar);
+  // Close context menu on click outside
+  useEffect(() => {
+    const handleClickOutside = () => {
+      if (contextMenu) {
+        setContextMenu(null);
+      }
+    };
+
+    if (contextMenu) {
+      document.addEventListener('click', handleClickOutside);
+      return () => document.removeEventListener('click', handleClickOutside);
     }
+  }, [contextMenu]);
+
+  const sendMessage = async () => {
+    if (!msg.trim() || !recipientId || !senderId || sending) return;
+
     const text = msg.trim();
     setMsg("");
     setSending(true);
+
     try {
-      await addDoc(collection(db, "messages"), {
-        text,
-        senderId: senderId,
-        recipientId: recipientId,
-        createdAt: serverTimestamp(),
-      });
+      await sendTextMessage(text, senderId, recipientId);
     } catch (err) {
       console.error("Send message error:", err);
+      // Nếu gửi lỗi, giữ lại nội dung để người dùng có thể gửi lại
       setMsg(text);
     } finally {
-      inputRef.current?.focus();
       setSending(false);
-      // KHÔNG cập nhật chatHistory khi gửi tin nhắn
+      // Sử dụng setTimeout với thời gian chờ 0ms để đảm bảo focus
+      // được gọi sau khi component đã render lại
+      setTimeout(() => {
+        if (inputRef.current) {
+          inputRef.current.focus();
+        }
+      }, 0);
+    }
+  };
+
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !recipientId || !senderId || uploadingImage) return;
+
+    // Kiểm tra định dạng file
+    if (!file.type.startsWith('image/')) {
+      alert('Vui lòng chọn file ảnh hợp lệ');
+      return;
+    }
+
+    // Kiểm tra kích thước file (tối đa 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Kích thước file không được vượt quá 5MB');
+      return;
+    }
+
+    setUploadingImage(true);
+
+    try {
+      await sendImageMessage(file, senderId, recipientId);
+    } catch (err) {
+      console.error("Upload image error:", err);
+      alert('Gửi ảnh thất bại. Vui lòng thử lại.');
+    } finally {
+      setUploadingImage(false);
+      // Reset input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
+  const handleContextMenu = (event: React.MouseEvent, messageId: string, messageSenderId: string) => {
+    // Chỉ cho phép xóa tin nhắn của chính mình
+    if (messageSenderId !== senderId) return;
+    
+    event.preventDefault();
+    event.stopPropagation();
+    
+    console.log("Context menu triggered", { messageId, messageSenderId, senderId });
+    
+    setContextMenu({
+      x: event.clientX,
+      y: event.clientY,
+      messageId,
+    });
+  };
+
+  const handleDeleteMessage = async () => {
+    if (!contextMenu) return;
+
+    const confirmDelete = window.confirm("Bạn có chắc chắn muốn xóa tin nhắn này?");
+    if (!confirmDelete) {
+      setContextMenu(null);
+      return;
+    }
+
+    try {
+      console.log("Deleting message:", contextMenu.messageId);
+      await deleteMessage(contextMenu.messageId, senderId);
+      setContextMenu(null);
+      console.log("Message deleted successfully");
+      
+      // Optional: Show success feedback
+      // You can replace this with a toast notification
+      // alert("Tin nhắn đã được xóa thành công");
+    } catch (error) {
+      console.error("Error deleting message:", error);
+      alert("Không thể xóa tin nhắn. Vui lòng thử lại.");
     }
   };
 
@@ -117,7 +215,7 @@ export default function ChatClient({
   return (
     <div
       className={`relative w-full flex flex-col bg-white dark:bg-gray-900 rounded-2xl shadow-2xl overflow-hidden border border-gray-100/50 dark:border-gray-800 backdrop-blur-sm ${
-        fullHeight ? "h-full" : "h-[590px]"
+        fullHeight ? "h-full min-h-0" : "h-[590px]"
       }`}
     >
       {/* Header */}
@@ -161,7 +259,7 @@ export default function ChatClient({
 
       {/* Messages */}
       <div
-        className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 dark:bg-gray-800"
+        className="flex-1 min-h-0 overflow-y-auto p-2 sm:p-4 space-y-4 bg-gray-50 dark:bg-gray-800"
         ref={messagesEndRef}
       >
         {allMessages.map((m) => (
@@ -172,14 +270,32 @@ export default function ChatClient({
             }`}
           >
             <div
-              className={`px-4 py-3 rounded-2xl max-w-[75%] ${
+              className={`px-3 sm:px-4 py-2 sm:py-3 rounded-2xl max-w-[85%] sm:max-w-[75%] ${
                 m.senderId === senderId
-                  ? "bg-blue-600 text-white rounded-br-md"
+                  ? "bg-blue-600 text-white rounded-br-md cursor-context-menu select-none"
                   : "bg-white text-gray-800 border border-gray-200 rounded-bl-md"
-              }`}
+              } ${m.senderId === senderId ? 'hover:bg-blue-700 transition-colors' : ''}`}
+              onContextMenu={(e) => handleContextMenu(e, m.id, m.senderId)}
+              style={{ userSelect: m.senderId === senderId ? 'none' : 'auto' }}
             >
               {/* Nội dung tin nhắn */}
-              <div className="text-sm break-words">{m.text}</div>
+              {m.messageType === 'image' && m.imageUrl ? (
+                <div className="relative">
+                  <Image
+                    src={m.imageUrl}
+                    alt={m.imageFileName || "Image"}
+                    width={250}
+                    height={250}
+                    className="rounded-lg object-cover w-full max-w-[250px] sm:max-w-[200px] md:max-w-[250px] h-auto cursor-pointer hover:opacity-90 transition-opacity"
+                    onClick={() => setSelectedImage({
+                      url: m.imageUrl!,
+                      fileName: m.imageFileName
+                    })}
+                  />
+                </div>
+              ) : (
+                <div className="text-sm break-words">{m.text}</div>
+              )}
 
               {/* Thời gian + trạng thái */}
               <div className="text-xs mt-2 flex items-center justify-end">
@@ -193,12 +309,58 @@ export default function ChatClient({
             </div>
           </div>
         ))}
+        
+        {/* Loading indicator for uploading image */}
+        {uploadingImage && (
+          <div className="flex justify-end">
+            <div className="bg-blue-600 text-white px-3 sm:px-4 py-2 sm:py-3 rounded-2xl rounded-br-md max-w-[85%] sm:max-w-[75%]">
+              <div className="flex items-center space-x-2">
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                <span className="text-sm">Đang gửi ảnh...</span>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Input */}
-      <div className=" bottom-0 left-0 w-full px-4 py-3 border-t border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/80 backdrop-blur flex items-center gap-3 shadow-lg">
+      <div className="flex-shrink-0 bottom-0 left-0 w-full px-2 sm:px-4 py-2 sm:py-3 border-t border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/80 backdrop-blur flex items-center gap-2 sm:gap-3 shadow-lg">
+        {/* Hidden file input */}
+        <input
+          type="file"
+          ref={fileInputRef}
+          onChange={handleImageUpload}
+          accept="image/*"
+          className="hidden"
+        />
+        
+        {/* Image upload button */}
+        <button
+          onClick={() => fileInputRef.current?.click()}
+          disabled={uploadingImage || sending}
+          className="flex items-center justify-center p-2 sm:p-3 rounded-full bg-gradient-to-r from-green-500 to-teal-500 text-white shadow-lg hover:scale-105 hover:shadow-xl transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+          style={{ minWidth: 40, minHeight: 40 }}
+          title="Gửi ảnh"
+        >
+          <svg
+            className="w-5 h-5 sm:w-6 sm:h-6"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2}
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+            />
+          </svg>
+        </button>
+
+        {/* Text input */}
         <input
           value={msg}
+          disabled={sending || uploadingImage}
           ref={inputRef}
           onChange={(e) => setMsg(e.target.value)}
           placeholder="Type a message..."
@@ -208,17 +370,18 @@ export default function ChatClient({
               sendMessage();
             }
           }}
-          disabled={sending}
-          className="flex-1 rounded-full border border-gray-300 dark:border-gray-600 px-5 py-3 text-base bg-white/70 dark:bg-gray-800/70 shadow focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all duration-200 outline-none"
+          className="flex-1 rounded-full border border-gray-300 dark:border-gray-600 px-3 sm:px-5 py-2 sm:py-3 text-sm sm:text-base bg-white/70 dark:bg-gray-800/70 shadow focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all duration-200 outline-none"
         />
+        
+        {/* Send text message button */}
         <button
           onClick={sendMessage}
-          disabled={sending || !msg.trim()}
-          className="flex items-center justify-center p-3 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg hover:scale-105 hover:shadow-xl transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
-          style={{ minWidth: 48, minHeight: 48 }}
+          disabled={sending || !msg.trim() || uploadingImage}
+          className="flex items-center justify-center p-2 sm:p-3 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg hover:scale-105 hover:shadow-xl transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+          style={{ minWidth: 40, minHeight: 40 }}
         >
           <svg
-            className="w-6 h-6"
+            className="w-5 h-5 sm:w-6 sm:h-6"
             fill="none"
             stroke="currentColor"
             strokeWidth={2.2}
@@ -232,6 +395,27 @@ export default function ChatClient({
           </svg>
         </button>
       </div>
+
+      {/* Image Modal */}
+      {selectedImage && (
+        <ImageModal
+          imageUrl={selectedImage.url}
+          imageFileName={selectedImage.fileName}
+          isOpen={!!selectedImage}
+          onClose={() => setSelectedImage(null)}
+        />
+      )}
+
+      {/* Context Menu */}
+      {contextMenu && (
+        <ContextMenu
+          x={contextMenu.x}
+          y={contextMenu.y}
+          isVisible={!!contextMenu}
+          onDelete={handleDeleteMessage}
+          onClose={() => setContextMenu(null)}
+        />
+      )}
     </div>
   );
 }
