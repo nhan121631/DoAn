@@ -1,32 +1,3 @@
-// import { LandLordInfos } from "@/types/types";  // ← Thay đổi import
-// import { API_URL } from "./Constant";
-
-// export interface PageResponse<T> {
-//   content: T[];
-//   page: number;
-//   size: number;
-//   totalElements: number;
-//   totalPages: number;
-//   hasNext: boolean;
-//   hasPrevious: boolean;
-// }
-
-// export const landlordService = {
-//   async getAllLandlords(page: number = 0, size: number = 6): Promise<PageResponse<LandLordInfos>> {
-//     try {
-//       const response = await fetch(`${API_URL}/landlords?page=${page}&size=${size}`);
-//       if (!response.ok) {
-//         throw new Error('Failed to fetch landlords');
-//       }
-//       return await response.json();
-//     } catch (error) {
-//       console.error('Error fetching landlords:', error);
-//       throw error;
-//     }
-//   }
-// };
-
-
 import { LandLordInfo, LandlordDetail, RoomListing } from "@/app/landlord/types";
 import { PageResponse } from "@/types/types";
 

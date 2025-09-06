@@ -1,3 +1,4 @@
+
 "use client";
 import Image from 'next/image';
 import { RoomListing } from '@/app/landlord/types';
@@ -7,11 +8,15 @@ import { useSession } from "next-auth/react";
 import { useFavoriteStore } from "@/stores/FavoriteStore"; 
 import { message } from "antd"; 
 
+
+
 interface CardRoomProps {
   rooms: RoomListing[];
+  
 }
 
 export default function CardRoom({ rooms }: CardRoomProps) {
+
   const router = useRouter();
   const { data: session } = useSession(); 
   const [loadingFavorite, setLoadingFavorite] = useState<Record<string, boolean>>({});
@@ -20,11 +25,9 @@ export default function CardRoom({ rooms }: CardRoomProps) {
 
   const { favoriteRoomIds, addFavorite, removeFavorite } = useFavoriteStore();
 
-  // ✅ Fix: Đổi từ useState thành useEffect
   useEffect(() => {
     const initialCounts: Record<string, number> = {};
     rooms.forEach(room => {
-      // Backend now provides favoriteCount directly!
       initialCounts[room.id] = room.favoriteCount || 0;
     });
     setFavoriteCountMap(initialCounts);
@@ -79,9 +82,7 @@ export default function CardRoom({ rooms }: CardRoomProps) {
 
   return (
     <>
-    {/* translate all vietnamese to english */}
       {contextHolder}
-      {/* Rest của component giữ nguyên */}
       <div>
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold text-gray-900">
@@ -125,63 +126,9 @@ export default function CardRoom({ rooms }: CardRoomProps) {
                         </svg>
                       </div>
                     )}
-                    
-                    <div className="absolute flex items-center gap-2 px-3 py-2 rounded-full shadow-lg top-3 right-3 bg-black/30 backdrop-blur-sm">
-                      <button
-                        onClick={(e) => handleFavorite(room.id, e)}
-                        disabled={isLoadingFav}
-                        className={`flex items-center justify-center w-8 h-8 rounded-full transition-all duration-200 ${
-                          isFavorite 
-                            ? "text-red-500" 
-                            : "text-gray-300 hover:text-red-400"
-                        } ${
-                          isLoadingFav 
-                            ? "opacity-60 cursor-not-allowed" 
-                            : "hover:bg-white/20 hover:scale-110"
-                        }`}
-                      >
-                        <svg 
-                          className="w-5 h-5" 
-                          fill="currentColor" 
-                          viewBox="0 0 20 20"
-                        >
-                          <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
-                        </svg>
-                      </button>
-                      <span className="text-xs font-bold text-white">
-                        {favoriteCount}
-                      </span>
-                    </div>
+                
                   </div>
-                  {/* <div className="flex flex-col h-auto p-5">
-                    <h3 className="h-12 mb-2 font-bold text-gray-900 transition-colors line-clamp-2 group-hover:text-blue-600">
-                      {room.title}
-                    </h3>
-                    
-                    <div className="mb-2 text-lg font-bold text-red-600 h-7">
-                      {room.price.toLocaleString('vi-VN')}đ/month
-                      <span className="ml-2 text-sm font-normal text-gray-500">• {room.area}m²</span>
-                    </div>
-
-                    <div className="flex items-center h-5 mb-3 text-sm text-gray-600">
-                      <svg className="flex-shrink-0 w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
-                      </svg>
-                      <span className="line-clamp-1">{room.address}</span>
-                    </div>
-
-                    <div className="pt-3 mt-auto border-t border-gray-100">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleRoomClick(room.id);
-                        }}
-                        className="w-full h-10 px-4 py-2 text-sm font-semibold text-white transition-all duration-300 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl hover:from-blue-700 hover:to-indigo-700 hover:scale-105"
-                      >
-                        View Details
-                      </button>
-                    </div>
-                  </div> */}
+                  
 <div className="flex flex-col h-auto p-5">
   <h3 className="h-12 mb-2 font-bold text-gray-900 transition-colors line-clamp-2 group-hover:text-blue-600">
     {room.title}
@@ -199,7 +146,6 @@ export default function CardRoom({ rooms }: CardRoomProps) {
     <span className="line-clamp-1">{room.address}</span>
   </div>
 
-  {/* View Details và Favorite nằm cùng dòng, View Details chiếm hết chiều ngang còn lại */}
   <div className="flex items-center pt-3 mt-auto border-t border-gray-100">
     <button
       onClick={(e) => {
@@ -210,13 +156,31 @@ export default function CardRoom({ rooms }: CardRoomProps) {
     >
       View Details
     </button>
-    {/* Nút Favorite nằm bên phải, không còn ở trên nữa */}
     <div className="flex items-center px-3 py-1 ml-3 bg-white border border-red-200 rounded-full shadow-sm">
-      <svg className="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+    <button
+      onClick={(e) => handleFavorite(room.id, e)}
+      disabled={isLoadingFav}
+      className={`flex items-center justify-center w-8 h-8 rounded-full transition-all duration-200 ${
+        isFavorite 
+          ? "text-red-500" 
+          : "text-gray-300 hover:text-red-400"
+      } ${
+        isLoadingFav 
+          ? "opacity-60 cursor-not-allowed" 
+          : "hover:bg-white/20 hover:scale-110"
+      }`}
+      title={isFavorite ? "Remove from favorites" : "Add to favorites"}
+    >
+      <svg 
+        className="w-5 h-5" 
+        fill="currentColor" 
+        viewBox="0 0 20 20"
+      >
         <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
       </svg>
-      <span className="ml-1 text-base font-bold text-blue-500">{favoriteCount}</span>
-    </div>
+    </button>
+    <span className="ml-1 text-base font-bold text-blue-500">{favoriteCount}</span>
+  </div>
   </div>
 </div>
 
@@ -226,6 +190,12 @@ export default function CardRoom({ rooms }: CardRoomProps) {
                 
               );
             })}
+
+
+
+
+
+
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center py-12 text-center">
@@ -236,9 +206,4 @@ export default function CardRoom({ rooms }: CardRoomProps) {
     </>
   );
 }
-
-
-
-
-
 

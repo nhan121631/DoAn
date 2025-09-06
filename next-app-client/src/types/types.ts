@@ -122,6 +122,7 @@ export interface PageResponse<T> {
   totalPages: number;
   hasNext: boolean;
   hasPrevious: boolean;
+  totalRecords: number;
 }
 
 export type CreateMaintenanceFormValues = {
@@ -305,14 +306,6 @@ export type UserSearchPreferences = {
 };
 
 
-// export interface LandLordInfos {
-//   id: string;
-//   username: string;
-//   email: string;
-//   phoneNumber: string;
-//   avatar: string;
-//   // Thêm các fields tùy chọn cho frontend
-//   name?: string; // Sử dụng username làm name
-// }
+
 
 export type SearchParamsType = { [key: string]: string | string[] | undefined };
