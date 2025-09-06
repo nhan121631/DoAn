@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import com.ants.ktc.ants_ktc.dtos.contract.ContractRequestDto;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -51,6 +53,9 @@ public class BookingService {
 
         @Autowired
         private MailService mailService;
+
+        @Autowired
+        private ContractService contractService;
 
         @Transactional
         public BookingRoomByUserResponseDto createBooking(UUID userId, BookingRoomRequestDto request) {
@@ -232,6 +237,20 @@ public class BookingService {
                                 // Room room = booking.getRoom();
                                 // room.setAvailable(1);
                                 // roomJpaRepository.save(room);
+
+                                ContractRequestDto contractRequest = ContractRequestDto.builder()
+                                                .roomId(booking.getRoom().getId())
+                                                .tenantId(booking.getUser().getId())
+                                                .landlordId(booking.getRoom().getUser().getId())
+                                                .startDate(booking.getRentalDate())
+                                                .endDate(booking.getRentalExpires())
+                                                .depositAmount(booking.getRoom().getPrice_deposit())
+                                                .monthlyRent(booking.getRoom().getPrice_month())
+                                                .status(0) // active
+                                                .build();
+
+                                contractService.createContract(contractRequest);
+
                                 message = "Deposit confirmed successfully. Room is now rented";
                         } else {
                                 throw new IllegalArgumentException(
@@ -301,7 +320,8 @@ public class BookingService {
                 bookingJpaRepository.updateIsRemovedById(bookingId, 1);
         }
 
-        // ======================== Email Notification Helper Methods========================//
+        // ======================== Email Notification Helper
+        // Methods========================//
 
         private void notifyUsersAboutStatusChange(Booking booking, int oldStatus, int newStatus, String actorRole) {
                 if (booking == null)
@@ -329,12 +349,15 @@ public class BookingService {
                         }
                 } else if ("users".equalsIgnoreCase(actorRole)) {
                         // User thực hiện action -> gửi email cho Landlord
-                        String landlordEmail = booking.getRoom() != null ? getUserEmail(booking.getRoom().getUser()) : null;
+                        String landlordEmail = booking.getRoom() != null ? getUserEmail(booking.getRoom().getUser())
+                                        : null;
                         if (landlordEmail != null && !landlordEmail.isBlank()) {
-                                String landlordName = booking.getRoom() != null ? getUserName(booking.getRoom().getUser())
+                                String landlordName = booking.getRoom() != null
+                                                ? getUserName(booking.getRoom().getUser())
                                                 : "Chủ nhà";
                                 try {
-                                        mailService.sendBookingStatusNotification(landlordEmail, landlordName, roomTitle,
+                                        mailService.sendBookingStatusNotification(landlordEmail, landlordName,
+                                                        roomTitle,
                                                         bookingId, statusTextOld, statusTextNew);
                                         System.out.println("✅ Notification email sent to landlord: " + landlordEmail);
                                 } catch (Exception e) {

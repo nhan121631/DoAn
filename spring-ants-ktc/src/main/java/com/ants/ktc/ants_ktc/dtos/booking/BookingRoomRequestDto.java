@@ -27,7 +27,7 @@ public class BookingRoomRequestDto {
     @NotNull(message = "Rental expires date is required")
     @Future(message = "Rental expires date must be in the future")
     private Date rentalExpires;
-    
+
     @Min(value = 1, message = "Tenant count must be at least 1")
     private int tenantCount;
 }

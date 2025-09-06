@@ -11,6 +11,7 @@ const config: Config = {
       },
     },
   },
+  
   // Không cần darkMode: "class" trong v4
 };
 

@@ -21,7 +21,7 @@ const InvoiceExportFormContent: React.FC<{
   useEffect(() => {
     if (contractToExport) {
       form.setFieldsValue({
-        invoiceName: `Invoice for ${contractToExport.contractName}`,
+        invoiceName: `Invoice for ${contractToExport.monthlyRent} - ${contractToExport.tenantName}`,
       });
     } else {
       form.resetFields();
@@ -49,17 +49,20 @@ const InvoiceExportFormContent: React.FC<{
 
       {contractToExport && (
         <>
-          <Form.Item label="Room Name">
-            <Input value={contractToExport.roomName} disabled />
+          <Form.Item label="Contract Name">
+            <Input value={contractToExport.contractName} disabled />
+          </Form.Item>
+          <Form.Item label="Room">
+            <Input value={contractToExport.roomTitle} disabled />
           </Form.Item>
           <Form.Item label="Room Price">
-            <Input value={contractToExport.price.toLocaleString("en-US") + " ₫"} disabled />
+            <Input value={contractToExport.monthlyRent.toLocaleString("en-US") + " VND/month"} disabled />
           </Form.Item>
           <Form.Item label="Lease Start Date">
             <Input value={contractToExport.startDate} disabled />
           </Form.Item>
           <Form.Item label="Duration">
-            <Input value={`${contractToExport.durationMonths} months`} disabled />
+            <Input value={`${contractToExport.startDate} - ${contractToExport.endDate}`} disabled />
           </Form.Item>
           <Form.Item label="Tenant Name">
             <Input value={contractToExport.tenantName} disabled />
