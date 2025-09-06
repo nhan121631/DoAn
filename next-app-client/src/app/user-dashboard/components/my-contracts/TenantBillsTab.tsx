@@ -1,6 +1,24 @@
 import React, { useState, useEffect } from "react";
-import { Table, Tag, Button, message, Tooltip, Space, Card, Statistic, Input, Select } from "antd";
-import { EyeOutlined, DownloadOutlined, CreditCardOutlined, DollarOutlined, SearchOutlined, FilterOutlined } from "@ant-design/icons";
+import {
+  Table,
+  Tag,
+  Button,
+  message,
+  Tooltip,
+  Space,
+  Card,
+  Statistic,
+  Input,
+  Select,
+} from "antd";
+import {
+  EyeOutlined,
+  DownloadOutlined,
+  CreditCardOutlined,
+  DollarOutlined,
+  SearchOutlined,
+  FilterOutlined,
+} from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
 import { ContractData, BillData } from "@/types/types";
 import { BillService } from "@/services/BillService";
@@ -34,22 +52,22 @@ export default function TenantBillsTab({ contract }: TenantBillsTabProps) {
     try {
       setLoading(true);
       message.loading("Preparing download...", 0);
-      
+
       // Call BillService to download the bill
       const blob = await BillService.downloadBill(contract.id, billId);
-      
+
       // Create download link
       const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       link.href = url;
       link.download = `bill-${contract.tenantName}-${month}.pdf`;
       document.body.appendChild(link);
       link.click();
-      
+
       // Cleanup
       window.URL.revokeObjectURL(url);
       document.body.removeChild(link);
-      
+
       message.destroy();
       message.success("Bill downloaded successfully!");
     } catch (error) {
@@ -76,19 +94,24 @@ export default function TenantBillsTab({ contract }: TenantBillsTabProps) {
 
   // Calculate bill statistics
   const totalBills = bills.length;
-  const paidBills = bills.filter(bill => bill.paid).length;
-  const pendingBills = bills.filter(bill => !bill.paid).length;
+  const paidBills = bills.filter((bill) => bill.paid).length;
+  const pendingBills = bills.filter((bill) => !bill.paid).length;
   const totalAmount = bills.reduce((sum, bill) => sum + bill.totalAmount, 0);
-  const unpaidAmount = bills.filter(bill => !bill.paid).reduce((sum, bill) => sum + bill.totalAmount, 0);
+  const unpaidAmount = bills
+    .filter((bill) => !bill.paid)
+    .reduce((sum, bill) => sum + bill.totalAmount, 0);
 
   // Filter bills based on search and status - similar to MyContract
   const filteredBills = bills.filter((bill: BillData) => {
-    const matchesSearch = 
+    const matchesSearch =
       bill.month.toLowerCase().includes(searchText.toLowerCase()) ||
       bill.totalAmount.toString().includes(searchText);
-    
-    const matchesStatus = statusFilter === null || statusFilter === undefined || bill.paid === statusFilter;
-    
+
+    const matchesStatus =
+      statusFilter === null ||
+      statusFilter === undefined ||
+      bill.paid === statusFilter;
+
     return matchesSearch && matchesStatus;
   });
 
@@ -97,8 +120,13 @@ export default function TenantBillsTab({ contract }: TenantBillsTabProps) {
       title: "Month",
       dataIndex: "month",
       key: "month",
-      render: (month: string) => new Date(month).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
-      sorter: (a, b) => new Date(a.month).getTime() - new Date(b.month).getTime(),
+      render: (month: string) =>
+        new Date(month).toLocaleDateString("en-US", {
+          month: "long",
+          year: "numeric",
+        }),
+      sorter: (a, b) =>
+        new Date(a.month).getTime() - new Date(b.month).getTime(),
     },
     {
       title: "Electricity",
@@ -133,9 +161,7 @@ export default function TenantBillsTab({ contract }: TenantBillsTabProps) {
       dataIndex: "paid",
       key: "paid",
       render: (paid: boolean) => (
-        <Tag color={paid ? "green" : "orange"}>
-          {paid ? "Paid" : "Pending"}
-        </Tag>
+        <Tag color={paid ? "green" : "orange"}>{paid ? "Paid" : "Pending"}</Tag>
       ),
       filters: [
         { text: "Paid", value: true },
@@ -194,29 +220,29 @@ export default function TenantBillsTab({ contract }: TenantBillsTabProps) {
           <Statistic
             title="Paid Bills"
             value={paidBills}
-            valueStyle={{ color: '#3f8600' }}
+            valueStyle={{ color: "#3f8600" }}
           />
         </Card>
         <Card size="small">
           <Statistic
             title="Pending Bills"
             value={pendingBills}
-            valueStyle={{ color: '#cf1322' }}
+            valueStyle={{ color: "#cf1322" }}
           />
         </Card>
         <Card size="small">
           <Statistic
             title="Unpaid Amount"
             value={unpaidAmount}
-            valueStyle={{ color: '#cf1322' }}
+            valueStyle={{ color: "#cf1322" }}
             suffix="đ"
           />
         </Card>
       </div>
 
       {/* Bills Table */}
-      <Card 
-        title="Bills History" 
+      <Card
+        title="Bills History"
         className="shadow-sm"
         extra={
           <Space>
@@ -257,7 +283,7 @@ export default function TenantBillsTab({ contract }: TenantBillsTabProps) {
             showQuickJumper: true,
             showTotal: (total, range) =>
               `${range[0]}-${range[1]} of ${total} bills`,
-            pageSizeOptions: ['5', '10', '20', '50'],
+            pageSizeOptions: ["5", "10", "20", "50"],
           }}
           scroll={{ x: 800 }}
           size="middle"
@@ -275,15 +301,18 @@ export default function TenantBillsTab({ contract }: TenantBillsTabProps) {
       {/* Payment Instructions */}
       <Card title="Payment Information" className="shadow-sm">
         <div className="space-y-2">
-          <p><strong>Payment Methods:</strong></p>
+          <p>
+            <strong>Payment Methods:</strong>
+          </p>
           <ul className="list-disc list-inside space-y-1 text-sm">
             <li>Online payment via VNPay, MoMo, ZaloPay</li>
-            <li>Bank transfer to landlord's account</li>
+            <li>Bank transfer to landlord&apos;s account</li>
             <li>Cash payment (contact landlord)</li>
           </ul>
           <p className="text-sm text-gray-600 mt-4">
-            <strong>Note:</strong> Please pay your bills before the due date to avoid late fees.
-            Contact your landlord if you have any payment issues.
+            <strong>Note:</strong> Please pay your bills before the due date to
+            avoid late fees. Contact your landlord if you have any payment
+            issues.
           </p>
         </div>
       </Card>

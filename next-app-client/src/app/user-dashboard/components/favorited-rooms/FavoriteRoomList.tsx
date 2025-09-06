@@ -6,7 +6,7 @@ import { fetchAndUpdateFavorites } from "@/services/FavoriteService";
 import FavoriteDashboardRoomCard from "./FavoriteDashboardRoomCard";
 import FavoriteDashboardRoomVipCard from "./FavoriteDashboardRoomVipCard";
 import { BiChevronLeft, BiChevronRight } from "react-icons/bi";
-import { useFavoriteStore } from "@/stores/favoriteStore";
+import { useFavoriteStore } from "@/stores/FavoriteStore";
 
 export default function FavoriteRoomList() {
   const { favoriteRoomIds } = useFavoriteStore();
@@ -17,7 +17,6 @@ export default function FavoriteRoomList() {
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const pageSize = 6;
-
 
   const fetchRooms = useCallback(async (page: number) => {
     setLoading(true);
@@ -100,7 +99,7 @@ export default function FavoriteRoomList() {
           );
         })}
       </div>
-      
+
       {/* <div className="flex items-center justify-center gap-4 py-6">
         <button
           onClick={() => handlePageChange(currentPage - 1)}

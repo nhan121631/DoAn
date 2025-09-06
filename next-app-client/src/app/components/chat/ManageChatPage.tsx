@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+
 "use client";
 
 import { useState, useRef, useEffect, useMemo, useCallback } from "react";
@@ -100,9 +102,9 @@ export default function ManageChatPage() {
       {/* Sidebar */}
       <div
         className={`${
-          showSidebar ? 'w-80' : 'w-0'
+          showSidebar ? "w-80" : "w-0"
         } md:w-80 transition-all duration-500 ease-in-out overflow-hidden bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-r border-slate-200/50 shadow-xl flex flex-col ${
-          showSidebar ? 'block' : 'hidden md:flex'
+          showSidebar ? "block" : "hidden md:flex"
         }`}
       >
         <div className="p-6">
@@ -277,9 +279,11 @@ export default function ManageChatPage() {
       </div>
 
       {/* Chat Area */}
-      <div className={`flex-1 flex flex-col bg-white/50 dark:bg-gray-900/60 backdrop-blur-sm ${
-        !showSidebar || selectedUserId ? 'block' : 'hidden md:flex'
-      }`}>
+      <div
+        className={`flex-1 flex flex-col bg-white/50 dark:bg-gray-900/60 backdrop-blur-sm ${
+          !showSidebar || selectedUserId ? "block" : "hidden md:flex"
+        }`}
+      >
         {/* Mobile Back Button */}
         {selectedUserId && (
           <div className="md:hidden flex items-center p-3 bg-white border-b border-gray-200 flex-shrink-0">
@@ -287,14 +291,24 @@ export default function ManageChatPage() {
               onClick={handleBackToSidebar}
               className="flex items-center gap-2 text-blue-600 hover:text-blue-700 transition-colors"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 19l-7-7 7-7"
+                />
               </svg>
               <span className="font-medium">Back to Conversations</span>
             </button>
           </div>
         )}
-        
+
         <div className="flex-1 min-h-0 flex items-center justify-center w-full">
           {selectedUserId ? (
             <div className="w-full h-full animate-fade-in">

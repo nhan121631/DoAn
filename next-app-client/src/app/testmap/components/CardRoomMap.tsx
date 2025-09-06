@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+
 import { URL_IMAGE } from "@/services/Constant";
 import Image from "next/image";
 import React, { useState, useEffect } from "react";
@@ -7,10 +9,9 @@ import { TbRulerMeasure } from "react-icons/tb";
 import { FaMoneyBillWave } from "react-icons/fa";
 import { BsCamera } from "react-icons/bs";
 import { HiOutlineLocationMarker } from "react-icons/hi";
-import { useFavoriteStore } from "@/stores/favoriteStore";
+import { useFavoriteStore } from "@/stores/FavoriteStore";
 import { addFavorite, removeFavorite } from "@/services/FavoriteService";
 import { message } from "antd";
-
 
 interface RoomCardProps {
   id?: string;
@@ -38,11 +39,10 @@ const RoomCard: React.FC<RoomCardProps> = ({
   const [imageError, setImageError] = useState(false);
   const [messageApi, contextHolder] = message.useMessage();
   const { favoriteRoomIds } = useFavoriteStore();
-const isFavorited = favoriteRoomIds.has(id);
+  const isFavorited = favoriteRoomIds.has(id);
   const [favoriteCount, setFavoriteCount] = useState(0);
 
-
-useEffect(() => {
+  useEffect(() => {
     // Fetch số lượt tim khi mount
     async function fetchCount() {
       if (id) {
@@ -157,30 +157,29 @@ useEffect(() => {
 
           {/* Favorite Button */}
           <>
-          
-          <div className="absolute flex items-center gap-1.5 px-3 py-2 transition-all duration-300 transform translate-y-2 rounded-full shadow-lg opacity-0 top-2 right-2 sm:top-3 sm:right-3 bg-gray-800/80 backdrop-blur-sm group-hover:opacity-100 group-hover:translate-y-0 hover:shadow-xl hover:bg-gray-800/90">
-  {contextHolder}
-  
-  <button
-    onClick={handleFavoriteClick}
-    className="flex items-center gap-1.5 transition-transform duration-200 hover:scale-105"
-  >
-    {isFavorited ? (
-      <AiFillHeart
-        size={16}
-        className="text-red-500 sm:w-5 sm:h-5 animate-pulse"
-      />
-    ) : (
-      <AiOutlineHeart
-        size={16}
-        className="text-white transition-colors duration-200 sm:w-5 sm:h-5 hover:text-red-500"
-      />
-    )}
-    <span className="text-sm font-bold text-white sm:text-base">
-      {favoriteCount}
-    </span>
-  </button>
-</div>
+            <div className="absolute flex items-center gap-1.5 px-3 py-2 transition-all duration-300 transform translate-y-2 rounded-full shadow-lg opacity-0 top-2 right-2 sm:top-3 sm:right-3 bg-gray-800/80 backdrop-blur-sm group-hover:opacity-100 group-hover:translate-y-0 hover:shadow-xl hover:bg-gray-800/90">
+              {contextHolder}
+
+              <button
+                onClick={handleFavoriteClick}
+                className="flex items-center gap-1.5 transition-transform duration-200 hover:scale-105"
+              >
+                {isFavorited ? (
+                  <AiFillHeart
+                    size={16}
+                    className="text-red-500 sm:w-5 sm:h-5 animate-pulse"
+                  />
+                ) : (
+                  <AiOutlineHeart
+                    size={16}
+                    className="text-white transition-colors duration-200 sm:w-5 sm:h-5 hover:text-red-500"
+                  />
+                )}
+                <span className="text-sm font-bold text-white sm:text-base">
+                  {favoriteCount}
+                </span>
+              </button>
+            </div>
           </>
 
           {/* Corner decoration */}

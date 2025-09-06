@@ -8,7 +8,7 @@ import { useEffect, useState } from "react";
 import { FaHeart, FaRegCheckCircle } from "react-icons/fa";
 import { IoIosAddCircleOutline } from "react-icons/io";
 import { useCompareStore } from "@/stores/CompareStore";
-import { useFavoriteStore } from "@/stores/favoriteStore";
+import { useFavoriteStore } from "@/stores/FavoriteStore";
 
 export interface RoomCardProps {
   room: RoomInUser;
@@ -33,7 +33,6 @@ export default function RoomCartActions({
   const [messageApi, contextHolder] = message.useMessage();
   const [favoriteCount, setFavoriteCount] = useState(0);
 
-
   const { data: session } = useSession();
 
   const { favoriteRoomIds, addFavorite, removeFavorite } = useFavoriteStore();
@@ -55,10 +54,10 @@ export default function RoomCartActions({
     setIsCompared(items.some((item) => item.room.id === room.id));
   }, [items, room.id]);
   useEffect(() => {
-  fetch(`/api/favorites/rooms/${room.id}/count`)
-    .then(res => res.json())
-    .then(setFavoriteCount);
-}, [room.id]);
+    fetch(`/api/favorites/rooms/${room.id}/count`)
+      .then((res) => res.json())
+      .then(setFavoriteCount);
+  }, [room.id]);
 
   const handleFavorite = async () => {
     if (!session) {
@@ -81,8 +80,8 @@ export default function RoomCartActions({
           messageApi.success("Added to favorites");
         }
         const countRes = await fetch(`/api/favorites/rooms/${room.id}/count`);
-      const newCount = await countRes.json();
-      setFavoriteCount(newCount);
+        const newCount = await countRes.json();
+        setFavoriteCount(newCount);
       } else {
         throw new Error("Failed to update favorite status");
       }
@@ -98,23 +97,24 @@ export default function RoomCartActions({
       <>
         {contextHolder}
         <div className="flex items-center gap-4 px-4 py-2 rounded-full shadow-lg bg-black/30">
-  <div className="flex items-center gap-1">
-    <button
-      aria-label="Favorite"
-      className={`flex items-center justify-center w-8 h-8 rounded-full transition
+          <div className="flex items-center gap-1">
+            <button
+              aria-label="Favorite"
+              className={`flex items-center justify-center w-8 h-8 rounded-full transition
         ${isFavorite ? "text-red-500" : "text-gray-400 hover:text-red-500"}
         ${loadingFavorite ? "opacity-60 cursor-not-allowed" : ""}
         hover:bg-white/20 hover:scale-110`}
-      onClick={handleFavorite}
-      disabled={loadingFavorite}
-      type="button"
-    >
-      <FaHeart size={20} />
-    </button>
-    <span className="ml-1 text-xs font-bold text-white">{favoriteCount}</span>
-  </div>
-</div>
-        
+              onClick={handleFavorite}
+              disabled={loadingFavorite}
+              type="button"
+            >
+              <FaHeart size={20} />
+            </button>
+            <span className="ml-1 text-xs font-bold text-white">
+              {favoriteCount}
+            </span>
+          </div>
+        </div>
       </>
     );
   }
@@ -144,7 +144,9 @@ export default function RoomCartActions({
         >
           <FaHeart className="text-base" />
         </button>
-          <span className="ml-1 text-sm font-bold text-blue-500">{favoriteCount}</span>
+        <span className="ml-1 text-sm font-bold text-blue-500">
+          {favoriteCount}
+        </span>
 
         {/* Compare Button */}
         <button

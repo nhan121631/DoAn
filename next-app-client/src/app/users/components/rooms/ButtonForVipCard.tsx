@@ -6,7 +6,7 @@ import { RoomInUser } from "@/types/types";
 import { message } from "antd";
 import { useEffect, useState } from "react";
 import { FaHeart } from "react-icons/fa6";
-import { useFavoriteStore } from "@/stores/favoriteStore";
+import { useFavoriteStore } from "@/stores/FavoriteStore";
 
 interface ButtonFavoriteProps {
   onClick?: () => void;
@@ -25,17 +25,16 @@ export function ButtonForVipCard({
   const [loading, setLoading] = useState(false);
   const [favoriteCount, setFavoriteCount] = useState(0);
 
-
   const { data: session } = useSession();
   const router = useRouter();
 
   const { favoriteRoomIds, addFavorite, removeFavorite } = useFavoriteStore();
   const isFavorite = favoriteRoomIds.has(room.id);
-useEffect(() => {
-  fetch(`/api/favorites/rooms/${room.id}/count`)
-    .then(res => res.json())
-    .then(setFavoriteCount);
-}, [room.id]);
+  useEffect(() => {
+    fetch(`/api/favorites/rooms/${room.id}/count`)
+      .then((res) => res.json())
+      .then(setFavoriteCount);
+  }, [room.id]);
   const handleFavorite = async () => {
     if (!session) {
       router.push("/auth/login");
@@ -57,8 +56,8 @@ useEffect(() => {
           messageApi.success("Added to favorites");
         }
         const countRes = await fetch(`/api/favorites/rooms/${room.id}/count`);
-      const newCount = await countRes.json();
-      setFavoriteCount(newCount);
+        const newCount = await countRes.json();
+        setFavoriteCount(newCount);
       } else {
         throw new Error("Failed to update favorite status");
       }
@@ -73,24 +72,24 @@ useEffect(() => {
       <>
         {contextHolder}
         <button
-        aria-label="Favorite"
-        className={`flex items-center gap-2 px-4 py-2 transition-all duration-200 rounded-full border shadow-sm hover:shadow-md focus:ring-2 focus:ring-red-200
+          aria-label="Favorite"
+          className={`flex items-center gap-2 px-4 py-2 transition-all duration-200 rounded-full border shadow-sm hover:shadow-md focus:ring-2 focus:ring-red-200
         ${
           isFavorite
             ? "text-red-500 bg-white border-red-300 hover:border-red-400 hover:bg-red-50"
             : "text-gray-500 bg-white border-red-300 hover:text-red-500 hover:border-red-400 hover:bg-red-50"
         }
         ${loading ? "opacity-60 cursor-not-allowed" : ""}`}
-        onClick={handleFavorite}
-        disabled={loading}
-        type="button"
-        title={isFavorite ? "Remove from favorites" : "Add to favorites"}
-      >
-        <FaHeart size={16} />
-        <span className="text-sm font-bold text-blue-500">
-          {favoriteCount}
-        </span>
-      </button>
+          onClick={handleFavorite}
+          disabled={loading}
+          type="button"
+          title={isFavorite ? "Remove from favorites" : "Add to favorites"}
+        >
+          <FaHeart size={16} />
+          <span className="text-sm font-bold text-blue-500">
+            {favoriteCount}
+          </span>
+        </button>
       </>
     );
   }
@@ -98,26 +97,23 @@ useEffect(() => {
   return (
     <>
       {contextHolder}
-        <button
-      aria-label="Favorite"
-      className={`flex items-center gap-1.5 px-3 py-1.5 transition-all duration-200 rounded-full border shadow-sm hover:shadow-md focus:ring-2 focus:ring-red-200
+      <button
+        aria-label="Favorite"
+        className={`flex items-center gap-1.5 px-3 py-1.5 transition-all duration-200 rounded-full border shadow-sm hover:shadow-md focus:ring-2 focus:ring-red-200
       ${
         isFavorite
           ? "text-red-500 bg-white border-red-300 hover:border-red-400 hover:bg-red-50"
           : "text-gray-500 bg-white border-red-300 hover:text-red-500 hover:border-red-400 hover:bg-red-50"
       }
       ${loading ? "opacity-60 cursor-not-allowed" : ""}`}
-      onClick={handleFavorite}
-      disabled={loading}
-      type="button"
-      title={isFavorite ? "Remove from favorites" : "Add to favorites"}
-    >
-      <FaHeart size={16} />
-      <span className="text-sm font-bold text-blue-500">
-        {favoriteCount}
-      </span>
-    </button>
-
+        onClick={handleFavorite}
+        disabled={loading}
+        type="button"
+        title={isFavorite ? "Remove from favorites" : "Add to favorites"}
+      >
+        <FaHeart size={16} />
+        <span className="text-sm font-bold text-blue-500">{favoriteCount}</span>
+      </button>
     </>
   );
 }
