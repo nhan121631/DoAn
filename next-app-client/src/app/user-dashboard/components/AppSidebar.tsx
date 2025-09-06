@@ -31,11 +31,12 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
 
   const pathToKey: Record<string, string> = {
     "/user-dashboard/profile": "1",
-    "/user-dashboard/rental-history": "2",
-    "/user-dashboard/request-status": "3",
-    "/user-dashboard/favorited-rooms": "4",
-    "/user-dashboard/change-password": "5",
-    "/user-dashboard/message": "6",
+    "/user-dashboard/my-contracts": "2",
+    "/user-dashboard/rental-history": "3",
+    "/user-dashboard/request-status": "4",
+    "/user-dashboard/favorited-rooms": "5",
+    "/user-dashboard/change-password": "6",
+    "/user-dashboard/message": "7",
   };
 
   const selectedKey = pathToKey[pathname || ""] || "1";
@@ -92,7 +93,7 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
             ),
             label: <Link href="/user-dashboard/profile">Profile</Link>,
           },
-        {
+          {
             key: "2",
             icon: (
               <span
@@ -109,7 +110,7 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
             label: (
               <Link href="/user-dashboard/my-contracts">My Contracts</Link>
             ),
-        },
+          },
           {
             key: "3",
             icon: (
@@ -187,7 +188,7 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
             ),
           },
           {
-            key: "6",
+            key: "7",
             icon: (
               <span
                 style={{
@@ -200,11 +201,7 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
                 <MdOutlineMessage />
               </span>
             ),
-            label: (
-              <Link href="/user-dashboard/message">
-                Message
-              </Link>
-            ),
+            label: <Link href="/user-dashboard/message">Message</Link>,
           },
         ]}
       />

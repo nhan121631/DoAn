@@ -33,7 +33,7 @@ export default function UserLayoutClient({
   return (
     <div className="h-screen flex flex-col">
       <div className="h-[85px]">
-        <HeaderUserDashboard />
+        <HeaderUserDashboard fixed={false} />
       </div>
       <Layout className="flex-1">
         <AppSidebar collapsed={collapsed} />
