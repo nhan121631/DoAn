@@ -32,7 +32,7 @@ export default function UserLayoutClient({
   }, [mounted]);
   return (
     <Layout className="min-h-screen">
-      <HeaderUserDashboard />
+      <HeaderUserDashboard fixed={false}/>
       <Layout className="!min-h-screen">
         <AppSidebar collapsed={collapsed} />
         <Content className="p-6 bg-gray-100">{children}</Content>

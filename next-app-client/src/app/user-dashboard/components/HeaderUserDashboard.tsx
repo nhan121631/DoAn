@@ -18,7 +18,11 @@ import { IoIosLogOut } from "react-icons/io";
 import { IoClose, IoLogInOutline } from "react-icons/io5";
 import { RxHamburgerMenu } from "react-icons/rx";
 
-export default function HeaderUserDashboard() {
+export default function HeaderUserDashboard({
+  fixed = true,
+}: {
+  fixed?: boolean;
+}) {
   const { data: session } = useSession();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   // const [isScrolled, setIsScrolled] = useState(false);
@@ -121,7 +125,13 @@ export default function HeaderUserDashboard() {
 
   return (
     <>
-      <header className=" fixed top-0 left-0 w-full z-50 h-[85px] !bg-white/95 shadow-lg border-b border-gray-200/50">
+      <header
+        className={` ${
+          fixed ? "fixed" : "absolute"
+        } top-0 left-0 w-full z-50 h-[85px] !bg-white/95 ${
+          fixed ? "shadow-lg" : "shadow-xs"
+        } border-b border-gray-200/50`}
+      >
         {/* Animated background gradient */}
         <div className="absolute inset-0 !bg-gradient-to-r from-blue-500/5 via-purple-500/5 to-pink-500/5 opacity-0 hover:opacity-100 transition-opacity duration-700"></div>
 
