@@ -15,3 +15,31 @@ export async function GET(request: Request, { params }: { params: { contractId: 
   const data = await response.json();
   return new Response(JSON.stringify(data), { status: response.status });
 }
+
+// PUT /api/contracts/[contractId]
+export async function PUT(request: Request, { params }: { params: { contractId: string } }) {
+  const { contractId } = params;
+  if (!contractId) return new Response("contractId is missing", { status: 400 });
+  
+  const session = await getServerSession(authOptions);
+  if (!session) return new Response("Unauthorized", { status: 401 });
+  
+  try {
+    const body = await request.json();
+    const url = `${API_URL}/contracts/${contractId}`;
+    
+    const response = await fetch(url, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${session.user.accessToken}`,
+      },
+      body: JSON.stringify(body),
+    });
+    
+    const data = await response.json();
+    return new Response(JSON.stringify(data), { status: response.status });
+  } catch (error) {
+    return new Response("Internal Server Error", { status: 500 });
+  }
+}

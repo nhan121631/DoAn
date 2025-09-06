@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.ants.ktc.ants_ktc.dtos.contract.ContractRequestDto;
 import com.ants.ktc.ants_ktc.dtos.contract.ContractResponseDto;
+import com.ants.ktc.ants_ktc.dtos.contract.ContractUpdateRequestDto;
 import com.ants.ktc.ants_ktc.services.BillExportService;
 import com.ants.ktc.ants_ktc.services.ContractService;
 
@@ -58,7 +60,14 @@ public class ContractController {
     public ResponseEntity<ContractResponseDto> getContractById(@PathVariable("contractId") UUID contractId) {
         return ResponseEntity.ok(contractService.getContractById(contractId));
     }
+    @PutMapping("/{id}")
+    public ResponseEntity<ContractResponseDto> updateContract(
+            @PathVariable("id") UUID id,
+            @RequestBody @Valid ContractUpdateRequestDto dto) {
+        dto.setId(id);
 
+        return ResponseEntity.ok(contractService.updateContract(dto));
+    }
     @GetMapping("/status/{status}")
     public ResponseEntity<List<ContractResponseDto>> getContractsByStatus(@PathVariable("status") int status) {
         return ResponseEntity.ok(contractService.getContractsByStatus(status));

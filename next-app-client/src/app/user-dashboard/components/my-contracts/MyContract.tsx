@@ -28,7 +28,7 @@ const MyContract: React.FC = () => {
   useEffect(() => {
     const fetchContracts = async () => {
       if (status === "loading") return;
-      
+
       if (!session?.user?.id) {
         setError("Please log in to view your contracts");
         setLoading(false);
@@ -54,21 +54,22 @@ const MyContract: React.FC = () => {
 
   if (status === "loading" || loading) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <Spin size="large" tip="Loading contracts..." />
+      <div className="flex flex-col justify-center items-center h-96 space-y-3">
+         <Spin size="large" />
+        <span className="text-center whitespace-nowrap">Loading contracts...</span>
       </div>
     );
   }
 
   // Filter contracts based on search and status
   const filteredContracts = contracts.filter((contract: ContractData) => {
-    const matchesSearch = 
+    const matchesSearch =
       contract.roomTitle.toLowerCase().includes(searchText.toLowerCase()) ||
       contract.landlordName.toLowerCase().includes(searchText.toLowerCase()) ||
       contract.contractName.toLowerCase().includes(searchText.toLowerCase());
-    
+
     const matchesStatus = statusFilter === null || contract.status === statusFilter;
-    
+
     return matchesSearch && matchesStatus;
   });
 
@@ -153,8 +154,8 @@ const MyContract: React.FC = () => {
           showIcon
         />
       ) : null}
-      <Card 
-        title="My Contracts" 
+      <Card
+        title="My Contracts"
         className="shadow-md"
         extra={
           <Space>
@@ -188,7 +189,7 @@ const MyContract: React.FC = () => {
           columns={columns}
           dataSource={filteredContracts}
           loading={loading}
-          pagination={{ 
+          pagination={{
             pageSize: 10,
             showSizeChanger: true,
             showQuickJumper: true,

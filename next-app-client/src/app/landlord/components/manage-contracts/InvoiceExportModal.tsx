@@ -106,13 +106,11 @@ const InvoiceExportModal: React.FC<InvoiceExportModalProps> = ({
       destroyOnHidden={true}
       width={500}
     >
-      {open && (
-        <InvoiceExportFormContent
-          onSubmit={onSubmit}
-          contractToExport={contractToExport}
-          onCancel={onCancel}
-        />
-      )}
+      <InvoiceExportFormContent
+        onSubmit={onSubmit}
+        contractToExport={contractToExport}
+        onCancel={onCancel}
+      />
     </Modal>
   );
 };
