@@ -1,44 +1,40 @@
 "use client";
-import React, { useMemo, useState } from "react";
+import { Button, Card, DatePicker, Form, Input, Select } from "antd";
 import { motion } from "framer-motion";
+import { Download, PieChart as PieChartIcon } from "lucide-react";
+import React, { useEffect, useMemo, useState } from "react";
+import dayjs, { Dayjs } from "dayjs";
 import {
-  LineChart,
+  Area,
+  AreaChart,
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  Legend,
   Line,
+  LineChart,
+  Pie,
+  PieChart,
+  PolarAngleAxis,
+  PolarGrid,
+  PolarRadiusAxis,
+  Radar,
+  RadarChart,
+  ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  AreaChart,
-  Area,
-  PieChart,
-  Pie,
-  Cell,
-  RadarChart,
-  Radar,
-  PolarGrid,
-  PolarAngleAxis,
-  PolarRadiusAxis,
 } from "recharts";
+import CardStatistics from "../components/statistics/Card";
 import {
-  Calendar,
-  Download,
-  PieChart as PieChartIcon,
-  TrendingUp,
-} from "lucide-react";
-import { Button, Card, Input, Select } from "antd";
-
-/**
- * Next.js (App Router) usage:
- * 1) Install deps:
- *    npm i recharts framer-motion lucide-react
- *    # If you use shadcn/ui, ensure Button, Card, Input, Select are generated.
- * 2) Create a route: app/charts/page.tsx
- * 3) Paste this component as default export.
- */
+  getLandlordFavoritedRoomCount,
+  getLandlordMaintainceStatistics,
+  getLandlordPostedRoomCount,
+  getLandlordRentedRoomCount,
+  getLandlordViewedRoomCount,
+} from "@/services/LandLordStatisticsService";
+import { MaintainStatisticDto } from "@/types/types";
 
 // ----------- Types -----------
 export type KPI = {
@@ -102,7 +98,7 @@ function ChartCard({
       }
       extra={right}
       className="rounded-2xl shadow-sm border border-slate-200"
-      bodyStyle={{ height: 320, padding: 16 }}
+      styles={{ body: { height: 320, padding: 16 } }}
     >
       {children}
     </Card>
@@ -113,9 +109,118 @@ function ChartCard({
 export default function ChartsTemplate() {
   const [range, setRange] = useState<"7d" | "14d" | "30d">("30d");
   const [search, setSearch] = useState("");
-
+  const [startDate, setStartDate] = useState<Dayjs | null>(null);
+  const [endDate, setEndDate] = useState<Dayjs | null>(null);
+  const [dateError, setDateError] = useState("");
+  const [totalPostedRooms, setTotalPostedRooms] = useState(0);
+  const [totalRentedRooms, setTotalRentedRooms] = useState(0);
+  const [totalViewedRooms, setTotalViewedRooms] = useState(0);
+  const [totalFavoritedRooms, setTotalFavoritedRooms] = useState(0);
+  const [dataMaintainedRooms, setDataMaintainedRooms] = useState<
+    MaintainStatisticDto[]
+  >([]);
   const days = range === "7d" ? 7 : range === "14d" ? 14 : 30;
   const data = useMemo(() => makeData(days), [days]);
+
+  // Validation cho ngày bắt đầu và kết thúc + fetch data
+  useEffect(() => {
+    const fetchDataWithValidation = async () => {
+      console.log("useEffect triggered with:", { startDate, endDate });
+
+      if (startDate && endDate) {
+        if (endDate.isBefore(startDate)) {
+          setDateError("Ngày kết thúc phải lớn hơn ngày bắt đầu.");
+          // Vẫn gọi API mặc định khi có lỗi validation
+          try {
+            const res = await getLandlordMaintainceStatistics();
+            setDataMaintainedRooms(res);
+          } catch (error) {
+            console.error("Error fetching default data:", error);
+          }
+        } else {
+          const diffDays = endDate.diff(startDate, "day");
+          if (diffDays > 31) {
+            setDateError("Khoảng thời gian không được quá 31 ngày.");
+            // Vẫn gọi API mặc định khi có lỗi validation
+            try {
+              const res = await getLandlordMaintainceStatistics();
+              setDataMaintainedRooms(res);
+            } catch (error) {
+              console.error("Error fetching default data:", error);
+            }
+          } else {
+            try {
+              console.log(
+                "Fetching data with dates:",
+                startDate.format("YYYY-MM-DD"),
+                endDate.format("YYYY-MM-DD")
+              );
+              const res = await getLandlordMaintainceStatistics(
+                startDate.format("YYYY-MM-DD"),
+                endDate.format("YYYY-MM-DD")
+              );
+              console.log("API response:", res);
+              setDataMaintainedRooms(res);
+              setDateError("");
+            } catch (error) {
+              console.error("Error fetching maintenance statistics:", error);
+              setDateError("Lỗi khi tải dữ liệu thống kê.");
+            }
+          }
+        }
+      } else {
+        // Nếu không có startDate/endDate, gọi API mặc định
+        try {
+          console.log("Fetching default maintenance data");
+          const res = await getLandlordMaintainceStatistics();
+          console.log("Default API response:", res);
+          setDataMaintainedRooms(res);
+          setDateError("");
+        } catch (error) {
+          console.error(
+            "Error fetching default maintenance statistics:",
+            error
+          );
+        }
+      }
+    };
+
+    fetchDataWithValidation();
+  }, [startDate, endDate]);
+
+  // useeffect to fetch total posted rooms
+  useEffect(() => {
+    const fetchPostedRooms = async () => {
+      const res = await getLandlordPostedRoomCount();
+      setTotalPostedRooms(res);
+    };
+    fetchPostedRooms();
+  }, [setTotalPostedRooms]);
+  useEffect(() => {
+    const fetchRentedRooms = async () => {
+      const res = await getLandlordRentedRoomCount();
+      setTotalRentedRooms(res);
+    };
+    fetchRentedRooms();
+  }, [setTotalRentedRooms]);
+
+  useEffect(() => {
+    const fetchViewedRooms = async () => {
+      const res = await getLandlordViewedRoomCount();
+      setTotalViewedRooms(res);
+    };
+    fetchViewedRooms();
+  }, [setTotalViewedRooms]);
+
+  useEffect(() => {
+    const fetchFavoritedRooms = async () => {
+      const res = await getLandlordFavoritedRoomCount();
+      setTotalFavoritedRooms(res);
+    };
+    fetchFavoritedRooms();
+  }, [setTotalFavoritedRooms]);
+
+  // Đã di chuyển logic fetch maintenance vào useEffect validation ở trên
 
   const totalUsers = useMemo(
     () => data.reduce((a, b) => a + b.users, 0),
@@ -148,7 +253,7 @@ export default function ChartsTemplate() {
   const filtered = search ? data.filter((d) => d.date.includes(search)) : data;
 
   return (
-    <div className="min-h-screen w-full bg-slate-50 p-6">
+    <div className="min-h-screen w-full bg-slate-50 p-6 dark:bg-[#001529] transition-colors duration-300">
       <motion.div
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
@@ -156,14 +261,12 @@ export default function ChartsTemplate() {
         className="mx-auto max-w-7xl"
       >
         {/* Header */}
-        <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-3 dark:text-white dark:bg-[#001529]">
           <div>
             <h1 className="text-2xl font-bold tracking-tight">
-              Analytics Dashboard
+              Statistics Dashboard
             </h1>
-            <p className="text-slate-500">
-              Template Next.js + TypeScript + Recharts
-            </p>
+            <p className="text-slate-500">Overview of key metrics and trends</p>
           </div>
           <div className="flex items-center gap-2">
             <Select
@@ -171,107 +274,71 @@ export default function ChartsTemplate() {
               style={{ width: 140 }}
               onChange={(v) => setRange(v as typeof range)}
               options={[
-                { value: "7d", label: "7 ngày" },
-                { value: "14d", label: "14 ngày" },
-                { value: "30d", label: "30 ngày" },
+                { value: "7d", label: "7 day" },
+                { value: "14d", label: "14 day" },
+                { value: "30d", label: "30 day" },
               ]}
             />
-            <div className="relative">
-              <Input
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Lọc theo ngày (YYYY-MM-DD)"
-                style={{ paddingLeft: 32, width: 240 }}
+            {/* Form startDate và endDate antd */}
+            <div className="flex items-center gap-2">
+              <DatePicker
+                placeholder="Ngày bắt đầu"
+                value={startDate}
+                onChange={(date) => setStartDate(date)}
+                style={{ width: 140 }}
               />
-              <Calendar className="absolute left-2 top-2.5 h-4 w-4 text-slate-400" />
+              <DatePicker
+                placeholder="Ngày kết thúc"
+                value={endDate}
+                onChange={(date) => setEndDate(date)}
+                style={{ width: 140 }}
+              />
             </div>
+
             <Button type="default" className="gap-2">
               <Download className="h-4 w-4" />
               Export CSV
             </Button>
           </div>
         </div>
+        {dateError && (
+          <div className="mb-2 text-red-500 text-sm">{dateError}</div>
+        )}
 
         {/* KPI Cards */}
         <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <Card className="rounded-2xl border border-slate-200">
-            <div style={{ padding: "16px 24px 8px" }}>
-              <div className="text-sm text-slate-500 mb-2">Tổng Users</div>
-              <div className="flex items-end justify-between">
-                <span className="text-3xl font-semibold">
-                  {totalUsers.toLocaleString()}
-                </span>
-                <TrendingUp className="h-6 w-6 text-emerald-500" />
-              </div>
-              <p className="mt-1 text-xs text-slate-500">
-                So với kỳ trước +4.2%
-              </p>
-            </div>
-          </Card>
-          <Card className="rounded-2xl border border-slate-200">
-            <div style={{ padding: "16px 24px 8px" }}>
-              <div className="text-sm text-slate-500 mb-2">Tổng Revenue</div>
-              <div className="flex items-end justify-between">
-                <span className="text-3xl font-semibold">
-                  ${totalRevenue.toFixed(0)}
-                </span>
-                <TrendingUp className="h-6 w-6 text-emerald-500" />
-              </div>
-              <p className="mt-1 text-xs text-slate-500">
-                So với kỳ trước +3.1%
-              </p>
-            </div>
-          </Card>
-          <Card className="rounded-2xl border border-slate-200">
-            <div style={{ padding: "16px 24px 8px" }}>
-              <div className="text-sm text-slate-500 mb-2">Số Orders</div>
-              <div className="flex items-end justify-between">
-                <span className="text-3xl font-semibold">
-                  {filtered.reduce((a, b) => a + b.orders, 0).toLocaleString()}
-                </span>
-                <TrendingUp className="h-6 w-6 text-emerald-500" />
-              </div>
-              <p className="mt-1 text-xs text-slate-500">Tăng trưởng ổn định</p>
-            </div>
-          </Card>
-          <Card className="rounded-2xl border border-slate-200">
-            <div style={{ padding: "16px 24px 8px" }}>
-              <div className="text-sm text-slate-500 mb-2">
-                Tỉ lệ Chuyển đổi
-              </div>
-              <div className="flex items-end justify-between">
-                <span className="text-3xl font-semibold">
-                  {(avgConv * 100).toFixed(1)}%
-                </span>
-                <TrendingUp className="h-6 w-6 text-emerald-500" />
-              </div>
-              <p className="mt-1 text-xs text-slate-500">Theo dõi theo ngày</p>
-            </div>
-          </Card>
+          <CardStatistics title="Total Rooms Posted" value={totalPostedRooms} />
+          <CardStatistics
+            title="Total Rented Rooms"
+            value={`${totalRentedRooms}`}
+          />
+          <CardStatistics
+            title="Total Viewed Rooms"
+            value={`${totalViewedRooms}`}
+          />
+          <CardStatistics
+            title="Total Favorited Rooms"
+            value={`${totalFavoritedRooms}`}
+          />
         </div>
 
         {/* Charts Grid */}
         <div className="grid gap-6 lg:grid-cols-2">
           <ChartCard
-            title="Users & Orders theo ngày"
+            title="Maintenance & Room Posting Fee (per Day)"
             icon={<PieChartIcon className="h-5 w-5 text-sky-500" />}
-            right={
-              <span className="text-xs text-slate-500">Nguồn: mock data</span>
-            }
+            // right={
+            //   <span className="text-xs text-slate-500">Nguồn: mock data</span>
+            // }
           >
             <ResponsiveContainer width="100%" height="100%">
               <LineChart
-                data={filtered}
+                data={dataMaintainedRooms}
                 margin={{ top: 10, right: 20, left: 0, bottom: 0 }}
               >
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="date" tick={{ fontSize: 12 }} minTickGap={16} />
                 <YAxis yAxisId="left" tick={{ fontSize: 12 }} />
-                <YAxis
-                  yAxisId="right"
-                  orientation="right"
-                  tick={{ fontSize: 12 }}
-                />
                 <Tooltip
                   formatter={(v: any) =>
                     typeof v === "number" ? v.toLocaleString() : v
@@ -281,20 +348,11 @@ export default function ChartsTemplate() {
                 <Line
                   yAxisId="left"
                   type="monotone"
-                  dataKey="users"
+                  dataKey="cost"
                   stroke="#0ea5e9"
                   strokeWidth={2}
                   dot={false}
-                  name="Users"
-                />
-                <Line
-                  yAxisId="right"
-                  type="monotone"
-                  dataKey="orders"
-                  stroke="#22c55e"
-                  strokeWidth={2}
-                  dot={false}
-                  name="Orders"
+                  name="Maintenance Fee"
                 />
               </LineChart>
             </ResponsiveContainer>
