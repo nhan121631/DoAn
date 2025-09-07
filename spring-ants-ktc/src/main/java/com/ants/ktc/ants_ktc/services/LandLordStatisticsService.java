@@ -10,7 +10,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.ants.ktc.ants_ktc.dtos.manage_maintain.MaintainStatisticDto;
+import com.ants.ktc.ants_ktc.dtos.transaction.TransactionStatisticsDto;
 import com.ants.ktc.ants_ktc.repositories.RoomJpaRepository;
+import com.ants.ktc.ants_ktc.repositories.projection.landlord.FeePostRoomProjection;
 import com.ants.ktc.ants_ktc.repositories.projection.landlord.MaintainStatisticProjection;
 
 @Service
@@ -66,5 +68,24 @@ public class LandLordStatisticsService {
                 .cost(projection.getCost())
                 .date(projection.getDate())
                 .build()).toList();
+    }
+
+    public List<TransactionStatisticsDto> getTransactionStatisticsByLandlordIdAndDateRange(UUID landlordId,
+            Date startDate, Date endDate) {
+        if (diffBetweenTwoDate(startDate.toString(), endDate.toString()) > 31) {
+            throw new IllegalArgumentException("Date range should not exceed 31 days.");
+        }
+        if (startDate.after(endDate)) {
+            throw new IllegalArgumentException("Start date must be before end date.");
+        }
+
+        List<FeePostRoomProjection> projections = roomJpaRepository.countFeePostOfRoomsByUserId(landlordId,
+                startDate, endDate);
+
+        return projections.stream().map(projection -> TransactionStatisticsDto.builder()
+                .cost(projection.getCost())
+                .date(projection.getDate())
+                .build()).toList();
+
     }
 }

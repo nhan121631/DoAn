@@ -358,3 +358,10 @@ export type MaintainStatisticDto = {
   cost: number; // Chi phí bảo trì trong ngày
   date: string; // Ngày ở định dạng 'YYYY-MM-DD'
 }
+
+// statistic fee post room
+export type TransactionStatisticsDto = {
+  cost: number; // Chi phí trong ngày
+  date: string; // Ngày ở định dạng 'YYYY-MM-DD'
+}
+ 

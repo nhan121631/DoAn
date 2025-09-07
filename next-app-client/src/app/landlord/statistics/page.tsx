@@ -1,9 +1,20 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+
 "use client";
-import { Button, Card, DatePicker, Form, Input, Select } from "antd";
+import {
+  getLandlordFavoritedRoomCount,
+  getLandlordFeePostRoomStatistics,
+  getLandlordMaintainceStatistics,
+  getLandlordPostedRoomCount,
+  getLandlordRentedRoomCount,
+  getLandlordViewedRoomCount,
+} from "@/services/LandLordStatisticsService";
+import { MaintainStatisticDto, TransactionStatisticsDto } from "@/types/types";
+import { Button, Card, DatePicker, Select } from "antd";
+import { Dayjs } from "dayjs";
 import { motion } from "framer-motion";
 import { Download, PieChart as PieChartIcon } from "lucide-react";
 import React, { useEffect, useMemo, useState } from "react";
-import dayjs, { Dayjs } from "dayjs";
 import {
   Area,
   AreaChart,
@@ -27,14 +38,6 @@ import {
   YAxis,
 } from "recharts";
 import CardStatistics from "../components/statistics/Card";
-import {
-  getLandlordFavoritedRoomCount,
-  getLandlordMaintainceStatistics,
-  getLandlordPostedRoomCount,
-  getLandlordRentedRoomCount,
-  getLandlordViewedRoomCount,
-} from "@/services/LandLordStatisticsService";
-import { MaintainStatisticDto } from "@/types/types";
 
 // ----------- Types -----------
 export type KPI = {
@@ -119,32 +122,76 @@ export default function ChartsTemplate() {
   const [dataMaintainedRooms, setDataMaintainedRooms] = useState<
     MaintainStatisticDto[]
   >([]);
+  const [dataPostedRooms, setDataPostedRooms] = useState<
+    TransactionStatisticsDto[]
+  >([]);
+
+  // Combine maintenance and posting data for chart
+  const combinedChartData = useMemo(() => {
+    const combinedData: {
+      [key: string]: {
+        date: string;
+        maintenanceCost: number;
+        postingCost: number;
+      };
+    } = {};
+
+    // Add maintenance data
+    dataMaintainedRooms.forEach((item) => {
+      combinedData[item.date] = {
+        date: item.date,
+        maintenanceCost: item.cost || 0,
+        postingCost: 0,
+      };
+    });
+
+    // Add posting data
+    dataPostedRooms.forEach((item) => {
+      if (combinedData[item.date]) {
+        combinedData[item.date].postingCost = item.cost || 0;
+      } else {
+        combinedData[item.date] = {
+          date: item.date,
+          maintenanceCost: 0,
+          postingCost: item.cost || 0,
+        };
+      }
+    });
+
+    return Object.values(combinedData).sort(
+      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+    );
+  }, [dataMaintainedRooms, dataPostedRooms]);
+
   const days = range === "7d" ? 7 : range === "14d" ? 14 : 30;
   const data = useMemo(() => makeData(days), [days]);
-
-  // Validation cho ngày bắt đầu và kết thúc + fetch data
+  // statistics maintenance rooms
   useEffect(() => {
     const fetchDataWithValidation = async () => {
       console.log("useEffect triggered with:", { startDate, endDate });
 
       if (startDate && endDate) {
         if (endDate.isBefore(startDate)) {
-          setDateError("Ngày kết thúc phải lớn hơn ngày bắt đầu.");
+          setDateError("The end date must be greater than the start date.");
           // Vẫn gọi API mặc định khi có lỗi validation
           try {
             const res = await getLandlordMaintainceStatistics();
             setDataMaintainedRooms(res);
+            const resPost = await getLandlordFeePostRoomStatistics();
+            setDataPostedRooms(resPost);
           } catch (error) {
             console.error("Error fetching default data:", error);
           }
         } else {
           const diffDays = endDate.diff(startDate, "day");
           if (diffDays > 31) {
-            setDateError("Khoảng thời gian không được quá 31 ngày.");
+            setDateError("The period must not exceed 31 days.");
             // Vẫn gọi API mặc định khi có lỗi validation
             try {
               const res = await getLandlordMaintainceStatistics();
               setDataMaintainedRooms(res);
+              const resPost = await getLandlordFeePostRoomStatistics();
+              setDataPostedRooms(resPost);
             } catch (error) {
               console.error("Error fetching default data:", error);
             }
@@ -162,9 +209,16 @@ export default function ChartsTemplate() {
               console.log("API response:", res);
               setDataMaintainedRooms(res);
               setDateError("");
+
+              const resPost = await getLandlordFeePostRoomStatistics(
+                startDate.format("YYYY-MM-DD"),
+                endDate.format("YYYY-MM-DD")
+              );
+              console.log("API response:", resPost);
+              setDataPostedRooms(resPost);
             } catch (error) {
               console.error("Error fetching maintenance statistics:", error);
-              setDateError("Lỗi khi tải dữ liệu thống kê.");
+              setDateError("Error loading statistics data.");
             }
           }
         }
@@ -176,6 +230,9 @@ export default function ChartsTemplate() {
           console.log("Default API response:", res);
           setDataMaintainedRooms(res);
           setDateError("");
+          const resPost = await getLandlordFeePostRoomStatistics();
+          console.log("Default API response:", resPost);
+          setDataPostedRooms(resPost);
         } catch (error) {
           console.error(
             "Error fetching default maintenance statistics:",
@@ -221,20 +278,6 @@ export default function ChartsTemplate() {
   }, [setTotalFavoritedRooms]);
 
   // Đã di chuyển logic fetch maintenance vào useEffect validation ở trên
-
-  const totalUsers = useMemo(
-    () => data.reduce((a, b) => a + b.users, 0),
-    [data]
-  );
-  const totalRevenue = useMemo(
-    () => data.reduce((a, b) => a + b.revenue, 0),
-    [data]
-  );
-  const avgConv = useMemo(
-    () => data.reduce((a, b) => a + b.conversion, 0) / data.length,
-    [data]
-  );
-
   const pieData = [
     { name: "A", value: 400 },
     { name: "B", value: 300 },
@@ -333,12 +376,17 @@ export default function ChartsTemplate() {
           >
             <ResponsiveContainer width="100%" height="100%">
               <LineChart
-                data={dataMaintainedRooms}
+                data={combinedChartData}
                 margin={{ top: 10, right: 20, left: 0, bottom: 0 }}
               >
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="date" tick={{ fontSize: 12 }} minTickGap={16} />
                 <YAxis yAxisId="left" tick={{ fontSize: 12 }} />
+                <YAxis
+                  yAxisId="right"
+                  orientation="right"
+                  tick={{ fontSize: 12 }}
+                />
                 <Tooltip
                   formatter={(v: any) =>
                     typeof v === "number" ? v.toLocaleString() : v
@@ -348,11 +396,20 @@ export default function ChartsTemplate() {
                 <Line
                   yAxisId="left"
                   type="monotone"
-                  dataKey="cost"
+                  dataKey="maintenanceCost"
                   stroke="#0ea5e9"
                   strokeWidth={2}
                   dot={false}
                   name="Maintenance Fee"
+                />
+                <Line
+                  yAxisId="right"
+                  type="monotone"
+                  dataKey="postingCost"
+                  stroke="#07c53d"
+                  strokeWidth={2}
+                  dot={false}
+                  name="Post Room Fee"
                 />
               </LineChart>
             </ResponsiveContainer>

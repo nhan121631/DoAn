@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ants.ktc.ants_ktc.dtos.manage_maintain.MaintainStatisticDto;
+import com.ants.ktc.ants_ktc.dtos.transaction.TransactionStatisticsDto;
+import com.ants.ktc.ants_ktc.entities.Transaction;
 import com.ants.ktc.ants_ktc.services.LandLordStatisticsService;
 
 @RestController
@@ -54,6 +56,21 @@ public class LandlordStatisticsController {
         }
 
         return landLordStatisticsService.getMaintenanceStatisticsByLandlordIdAndDateRange(landlordId,
+                Date.valueOf(startDate), Date.valueOf(endDate));
+    }
+
+    @GetMapping("/fee-post-room-statistics/{landlordId}")
+    public List<TransactionStatisticsDto> getFeePostRoomStatisticsByLandlordAndDateRange(
+            @PathVariable("landlordId") UUID landlordId,
+            @RequestParam(required = false, name = "startDate") String startDate,
+            @RequestParam(required = false, name = "endDate") String endDate) {
+
+        if (startDate == null || endDate == null) {
+            startDate = LocalDate.now().withDayOfMonth(1).toString(); // First day of current month
+            endDate = LocalDate.now().toString(); // Current date
+        }
+
+        return landLordStatisticsService.getTransactionStatisticsByLandlordIdAndDateRange(landlordId,
                 Date.valueOf(startDate), Date.valueOf(endDate));
     }
 }
