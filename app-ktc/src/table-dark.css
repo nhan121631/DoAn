@@ -1,21 +1,21 @@
 /* Table border và cell */
 .dark .ant-table,
 .dark .ant-table-container,
-.dark .ant-table-thead>tr>th,
-.dark .ant-table-tbody>tr>td {
+.dark .ant-table-thead > tr > th,
+.dark .ant-table-tbody > tr > td {
   border-color: #334155 !important;
   background-color: #171f2f !important;
   color: #fff !important;
 }
 
 /* Header */
-.dark .ant-table-thead>tr>th {
+.dark .ant-table-thead > tr > th {
   background-color: #1e293b !important;
   color: #fff !important;
 }
 
 /* Hover row */
-.dark .ant-table-tbody>tr:hover>td {
+.dark .ant-table-tbody > tr:hover > td {
   background-color: #22304a !important;
   color: #fff !important;
 }
@@ -69,7 +69,7 @@
 }
 
 /* Icon (ví dụ svg trong button) */
-.dark .ant-btn>span>svg {
+.dark .ant-btn > span > svg {
   color: #fff !important;
 }
 
@@ -137,4 +137,82 @@ html.dark .ant-modal-content {
 .dark .ant-modal-content textarea::placeholder {
   color: #94a3b8 !important;
   opacity: 1 !important;
+}
+
+/* Select dark mode */
+.dark .ant-select-selector,
+.dark .ant-select-selection-search-input,
+.dark .ant-select-selection-placeholder {
+  background: #22304a !important;
+  color: #fff !important;
+  border-color: #334155 !important;
+}
+
+.dark .ant-select-selection-item {
+  color: #fff !important;
+  background: #22304a !important;
+}
+
+.dark .ant-select-arrow {
+  color: #fff !important;
+}
+
+.dark .ant-select-dropdown {
+  background: #171f2f !important;
+  border-color: #334155 !important;
+}
+
+.dark .ant-select-item {
+  color: #fff !important;
+}
+
+.dark .ant-select-item-option-selected {
+  background: #22304a !important;
+  color: #fff !important;
+}
+
+.dark .ant-select-item-option-active {
+  background: #334155 !important;
+  color: #fff !important;
+}
+
+.dark .ant-select-clear {
+  color: #94a3b8 !important;
+}
+
+.dark .ant-select-clear:hover {
+  color: #fff !important;
+}
+
+/* Form dark mode */
+.dark .ant-form-item-label > label {
+  color: #fff !important;
+}
+
+.dark .ant-form-item-label > label::after {
+  color: #fff !important;
+}
+
+.dark .ant-form-item-required::before {
+  color: #ff4d4f !important;
+}
+
+/* Card dark mode */
+.dark .ant-card {
+  background: #171f2f !important;
+  border-color: #334155 !important;
+}
+
+.dark .ant-card-head {
+  background: #1e293b !important;
+  border-bottom-color: #334155 !important;
+}
+
+.dark .ant-card-head-title {
+  color: #fff !important;
+}
+
+.dark .ant-card-body {
+  background: #171f2f !important;
+  color: #fff !important;
 }

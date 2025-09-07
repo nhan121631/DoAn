@@ -472,6 +472,65 @@ public interface RoomJpaRepository extends JpaRepository<Room, UUID> {
         @Query("SELECT up.email as email, up.fullName as fullName, r.title as title FROM Room r JOIN r.user u JOIN u.profile up WHERE r.id = :roomId")
         List<MailUserProjection> findMailUsersByRoomId(@Param("roomId") UUID roomId);
 
+        // Statistics queries
+        Long countByIsRemovedAndHidden(int isRemoved, int hidden);
+
+        Long countByIsRemovedOrHidden(int isRemoved, int hidden);
+
+        Long countByHidden(int hidden);
+
+        Long countByIsRemoved(int isRemoved);
+
+        Long countByPostTypeId(UUID postTypeId);
+
+        @Query("SELECT COUNT(r) FROM Room r WHERE r.createdDate >= :startDate")
+        Long countByCreatedDateAfter(@Param("startDate") java.util.Date startDate);
+
+        @Query("""
+                        SELECT p.name as provinceName,
+                               COUNT(r.id) as roomCount,
+                               AVG(r.price_month) as averagePrice
+                        FROM Room r
+                        JOIN r.address a
+                        JOIN a.ward w
+                        JOIN w.district d
+                        JOIN d.province p
+                        WHERE r.isRemoved = 0 AND r.hidden = 0
+                        GROUP BY p.id, p.name
+                        ORDER BY COUNT(r.id) DESC
+                        """)
+        List<Object[]> getRoomStatisticsByProvince();
+
+        // Debug query to check room data
+        @Query("""
+                        SELECT COUNT(r) as totalRooms,
+                               SUM(CASE WHEN r.address IS NOT NULL THEN 1 ELSE 0 END) as roomsWithAddress,
+                               SUM(CASE WHEN r.isRemoved = 0 THEN 1 ELSE 0 END) as activeRooms,
+                               SUM(CASE WHEN r.hidden = 0 THEN 1 ELSE 0 END) as visibleRooms
+                        FROM Room r
+                        """)
+        List<Object[]> getRoomDebugInfo();
+
+        // Alternative query with left joins to handle missing address data
+        @Query("""
+                        SELECT COALESCE(p.name, 'No Province') as provinceName,
+                               COUNT(r.id) as roomCount,
+                               AVG(r.price_month) as averagePrice
+                        FROM Room r
+                        LEFT JOIN r.address a
+                        LEFT JOIN a.ward w
+                        LEFT JOIN w.district d
+                        LEFT JOIN d.province p
+                        WHERE r.isRemoved = 0 AND r.hidden = 0
+                        GROUP BY p.id, p.name
+                        ORDER BY COUNT(r.id) DESC
+                        """)
+        List<Object[]> getRoomStatisticsByProvinceWithLeftJoin();
+
+        // @Query("SELECT up.email as email, up.fullName as fullName, r.title as title
+        // FROM Room r JOIN r.user u JOIN u.profile up WHERE r.id = :roomId")
+        // List<MailUserProjection> findMailUsersByRoomId(@Param("roomId") UUID roomId);
+
         // Count rooms by userId where isRemoved = 0 and approval = 1
         @Query("select count (r) from Room r where r.user.id = :userId and r.isRemoved = 0 and r.approval = 1")
         int countRoomsByUserId(@Param("userId") UUID userId);

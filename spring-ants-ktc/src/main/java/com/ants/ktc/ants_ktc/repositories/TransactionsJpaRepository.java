@@ -1,5 +1,6 @@
 package com.ants.ktc.ants_ktc.repositories;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -38,4 +39,44 @@ public interface TransactionsJpaRepository extends JpaRepository<Transaction, UU
             @Param("startDate") Date startDate, @Param("endDate") Date endDate, Pageable pageable);
 
     boolean existsByTransactionCode(String transactionCode);
+
+    // Statistics queries
+    @Query("SELECT SUM(t.amount) FROM Transaction t WHERE t.transactionType = 1") // Assuming 1 is for revenue
+                                                                                  // transactions
+    BigDecimal sumTotalRevenue();
+
+    @Query("SELECT SUM(t.amount) FROM Transaction t WHERE t.transactionType = 1 AND t.transactionDate BETWEEN :startDate AND :endDate")
+    BigDecimal sumRevenueByPeriod(@Param("startDate") java.util.Date startDate,
+            @Param("endDate") java.util.Date endDate);
+
+    // Query for monthly revenue statistics - returns month-year and total revenue
+    // for each month
+    @Query("SELECT FUNCTION('DATE_FORMAT', t.transactionDate, '%Y-%m') as month, SUM(t.amount) as revenue " +
+            "FROM Transaction t " +
+            "WHERE t.transactionType = 1 AND t.transactionDate >= :startDate " +
+            "GROUP BY FUNCTION('DATE_FORMAT', t.transactionDate, '%Y-%m') " +
+            "ORDER BY month DESC")
+    List<Object[]> getMonthlyRevenueStatistics(@Param("startDate") java.util.Date startDate);
+
+    // Query for monthly transaction statistics by type
+    @Query("SELECT FUNCTION('DATE_FORMAT', t.transactionDate, '%Y-%m') as month, " +
+            "t.transactionType as type, " +
+            "SUM(t.amount) as totalAmount " +
+            "FROM Transaction t " +
+            "WHERE t.transactionDate >= :startDate " +
+            "GROUP BY FUNCTION('DATE_FORMAT', t.transactionDate, '%Y-%m'), t.transactionType " +
+            "ORDER BY month DESC, t.transactionType ASC")
+    List<Object[]> getMonthlyTransactionStatisticsByType(@Param("startDate") java.util.Date startDate);
+
+    // Query for monthly transaction statistics by type for specific landlord
+    @Query("SELECT FUNCTION('DATE_FORMAT', t.transactionDate, '%Y-%m') as month, " +
+            "t.transactionType as type, " +
+            "SUM(t.amount) as totalAmount " +
+            "FROM Transaction t " +
+            "WHERE t.wallet.user.id = :landlordId AND t.transactionDate >= :startDate " +
+            "GROUP BY FUNCTION('DATE_FORMAT', t.transactionDate, '%Y-%m'), t.transactionType " +
+            "ORDER BY month DESC, t.transactionType ASC")
+    List<Object[]> getMonthlyTransactionStatisticsByTypeForLandlord(@Param("landlordId") UUID landlordId,
+            @Param("startDate") java.util.Date startDate);
+
 }

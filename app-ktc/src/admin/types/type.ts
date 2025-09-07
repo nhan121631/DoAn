@@ -131,3 +131,82 @@ export interface RoomDetail {
   typepost: string;
   userId: string;
 }
+
+// Statistics Types
+export interface ProvinceStatistic {
+  provinceName: string;
+  roomCount: number;
+  averagePrice: number;
+}
+
+export interface MonthlyRevenue {
+  month: string;
+  revenue: number;
+}
+
+export interface MonthlyTransactionStats {
+  month: string;
+  transactionType: number;
+  description: string;
+  totalAmount: number;
+}
+
+export interface MonthlyUserRegistration {
+  month: string;
+  userCount: number;
+}
+
+export interface TopLandlord {
+  id: string;
+  landlordName: string;
+  email: string;
+  roomCount: number;
+  totalRevenue: number;
+}
+
+export interface RecentActivity {
+  activityType: string;
+  description: string;
+  timestamp: string;
+  userEmail: string;
+}
+
+export interface StatisticAdminResponseDto {
+  // Overall statistics
+  totalUsers: number;
+  totalLandlords: number;
+  totalTenants: number;
+  totalRooms: number;
+  totalActiveRooms: number;
+  totalInactiveRooms: number;
+  totalBookings: number;
+  totalContracts: number;
+  totalRevenue: number;
+
+  // Monthly growth statistics
+  newUsersThisMonth: number;
+  newRoomsThisMonth: number;
+  newBookingsThisMonth: number;
+  revenueThisMonth: number;
+
+  // Room statistics by status
+  roomsByStatus: Record<string, number>;
+
+  // Room statistics by post type
+  roomsByPostType: Record<string, number>;
+
+  // Room statistics by province
+  roomsByProvince: ProvinceStatistic[];
+
+  // Revenue statistics by month (last 12 months)
+  monthlyRevenues: MonthlyRevenue[];
+
+  // User registration statistics by month (last 12 months)
+  monthlyUserRegistrations: MonthlyUserRegistration[];
+
+  // Top landlords by room count
+  topLandlords: TopLandlord[];
+
+  // Recent activities
+  recentActivities: RecentActivity[];
+}
