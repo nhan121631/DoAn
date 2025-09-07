@@ -45,6 +45,7 @@ const LandlordContracts: React.FC<LandlordContractsProps> = ({ contracts }) => {
   const [contractToExport, setContractToExport] = useState<ContractData | null>(
     null
   );
+  const [messageApi, contextHolder] = message.useMessage();
 
   const handleEdit = (record: ContractData) => {
     // Navigate to contract detail page with edit mode
@@ -52,7 +53,7 @@ const LandlordContracts: React.FC<LandlordContractsProps> = ({ contracts }) => {
   };
 
   const handleDelete = (record: ContractData) => {
-    message.success(`Deleted contract ${record.id}`);
+    messageApi.success(`Deleted contract ${record.id}`);
   };
 
   const handleOpenExportModal = (record: ContractData) => {
@@ -64,9 +65,11 @@ const LandlordContracts: React.FC<LandlordContractsProps> = ({ contracts }) => {
     if (!contractToExport) return;
     try {
       console.log("Export invoice for contract:", contractToExport.id, values);
-      message.success(`Invoice exported for contract ${contractToExport.id}`);
+      messageApi.success(
+        `Invoice exported for contract ${contractToExport.id}`
+      );
     } catch (err) {
-      message.error("Export invoice failed!");
+      messageApi.error("Export invoice failed!");
     } finally {
       setIsInvoiceModalOpen(false);
       setContractToExport(null);
@@ -192,6 +195,7 @@ const LandlordContracts: React.FC<LandlordContractsProps> = ({ contracts }) => {
 
   return (
     <div className="space-y-6">
+      {contextHolder}
       <Card
         title={
           <span className="text-gray-900 dark:text-white">
