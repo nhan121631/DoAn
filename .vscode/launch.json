@@ -9,6 +9,16 @@
             "projectName": "ants_ktc-spring-ants-ktc",
             "args": "",
             "envFile": "${workspaceFolder}/.env"
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-AntsKtcApplication<spring-ants-ktc>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.ants.ktc.ants_ktc.AntsKtcApplication",
+            "projectName": "spring-ants-ktc",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
         }
     ]
 }
