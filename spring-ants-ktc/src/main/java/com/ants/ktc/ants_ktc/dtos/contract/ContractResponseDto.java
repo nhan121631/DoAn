@@ -25,4 +25,5 @@ public class ContractResponseDto {
     private Double monthlyRent;
     private int status;
     private List<BillResponseDto> bills; // Danh sách hóa đơn liên quan
+    private PaymentInfoDto landlordPaymentInfo;
 }

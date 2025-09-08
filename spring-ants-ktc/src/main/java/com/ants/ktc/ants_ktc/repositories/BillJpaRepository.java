@@ -15,7 +15,7 @@ public interface BillJpaRepository extends JpaRepository<Bill, UUID> {
     @Query("SELECT b FROM Bill b WHERE b.contract.id = :contractId")
     List<Bill> findByContractId(@Param("contractId") UUID contractId);
 
-    @Query("SELECT b FROM Bill b WHERE b.contract.id = :contractId AND b.paid = false")
+    @Query("SELECT b FROM Bill b WHERE b.contract.id = :contractId AND b.status = 'PENDING'")
     List<Bill> findUnpaidBillsByContractId(@Param("contractId") UUID contractId);
 
     @Query("SELECT b FROM Bill b WHERE b.contract.id = :contractId AND b.month = :month")

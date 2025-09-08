@@ -1,58 +1,74 @@
 import React, { useState, useEffect } from "react";
-import {
-  Table,
-  Tag,
-  Button,
-  message,
-  Tooltip,
-  Space,
-  Card,
-  Statistic,
-  Input,
-  Select,
-} from "antd";
-import {
-  EyeOutlined,
-  DownloadOutlined,
-  CreditCardOutlined,
-  DollarOutlined,
-  SearchOutlined,
-  FilterOutlined,
-} from "@ant-design/icons";
+import { Table, Tag, Button, Tooltip, Space, Card, Statistic, Input, Select, App } from "antd";
+import { EyeOutlined, DownloadOutlined, CreditCardOutlined, DollarOutlined, SearchOutlined, FilterOutlined } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
 import { ContractData, BillData } from "@/types/types";
 import { BillService } from "@/services/BillService";
 import BillDetail from "./BillDetail";
+import BillPaymentModal from "./BillPaymentModal";
 
 interface TenantBillsTabProps {
   contract: ContractData;
   onContractUpdate?: (contract: ContractData) => void;
 }
 
-const billStatusMap: Record<number, { text: string; color: string }> = {
-  0: { text: "Pending", color: "orange" },
-  1: { text: "Paid", color: "green" },
-  2: { text: "Overdue", color: "red" },
+const billStatusMap: Record<string, { text: string; color: string }> = {
+  PENDING: { text: "Pending", color: "orange" },
+  CONFIRMING: { text: "Confirming Payment", color: "blue" },
+  PAID: { text: "Paid", color: "green" },
+  OVERDUE: { text: "Overdue", color: "red" },
 };
 
 export default function TenantBillsTab({ contract }: TenantBillsTabProps) {
+  const { message } = App.useApp();
   const [bills, setBills] = useState<BillData[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedBill, setSelectedBill] = useState<BillData | null>(null);
+  const [paymentBill, setPaymentBill] = useState<BillData | null>(null);
+  const [paymentModalOpen, setPaymentModalOpen] = useState(false);
+  const [paymentLoading, setPaymentLoading] = useState(false);
   const [searchText, setSearchText] = useState("");
-  const [statusFilter, setStatusFilter] = useState<boolean | null>(null);
+  const [statusFilter, setStatusFilter] = useState<string | null>(null);
 
   useEffect(() => {
-    // In a real app, you'd fetch bills from the API
-    // For now, using mock data or contract.bills if available
-    setBills(contract.bills || []);
+    // Process bills to ensure all data is complete
+    const processedBills = (contract.bills || []).map(bill => {
+      // Calculate usage from fees if not provided
+      let electricityUsage = bill.electricityUsage;
+      let waterUsage = bill.waterUsage;
+      
+      if (!electricityUsage && bill.electricityPrice && bill.electricityPrice > 0 && bill.electricityFee) {
+        electricityUsage = bill.electricityFee / bill.electricityPrice;
+      }
+      
+      if (!waterUsage && bill.waterPrice && bill.waterPrice > 0 && bill.waterFee) {
+        waterUsage = bill.waterFee / bill.waterPrice;
+      }
+      
+      // Calculate damageFee if not provided
+      let damageFee = bill.damageFee;
+      if (damageFee === null || damageFee === undefined) {
+        const baseTotal = (bill.electricityFee || 0) + (bill.waterFee || 0) + (bill.serviceFee || 0);
+        const calculatedDamageFee = (bill.totalAmount || 0) - baseTotal;
+        damageFee = calculatedDamageFee > 0 ? calculatedDamageFee : 0;
+      }
+      
+      return {
+        ...bill,
+        damageFee,
+        electricityUsage,
+        waterUsage
+      };
+    });
+    
+    setBills(processedBills);
   }, [contract]);
 
   const handleDownload = async (billId: string, month: string) => {
     try {
       setLoading(true);
-      message.loading("Preparing download...", 0);
-
+      const hideLoading = message.loading("Preparing download...", 0);
+      
       // Call BillService to download the bill
       const blob = await BillService.downloadBill(contract.id, billId);
 
@@ -67,12 +83,11 @@ export default function TenantBillsTab({ contract }: TenantBillsTabProps) {
       // Cleanup
       window.URL.revokeObjectURL(url);
       document.body.removeChild(link);
-
-      message.destroy();
+      
+      hideLoading();
       message.success("Bill downloaded successfully!");
     } catch (error) {
       console.error("Download failed:", error);
-      message.destroy();
       message.error("Failed to download bill. Please try again.");
     } finally {
       setLoading(false);
@@ -80,38 +95,73 @@ export default function TenantBillsTab({ contract }: TenantBillsTabProps) {
   };
 
   const handlePayment = async (bill: BillData) => {
+    setPaymentBill(bill);
+    setPaymentModalOpen(true);
+  };
+
+  const handlePaymentConfirm = async () => {
+    // Refresh bills data after payment
+    setPaymentModalOpen(false);
+    setPaymentBill(null);
+    setPaymentLoading(true);
+    
     try {
-      // Mock payment - in real app, redirect to payment gateway
-      message.info(`Redirecting to payment gateway for bill ${bill.month}...`);
-      // Simulate payment process
-      setTimeout(() => {
-        message.success("Payment initiated successfully!");
-      }, 1000);
+      // Reload contract to get updated bills data
+      const updatedContract = await fetch(`/api/contracts/${contract.id}`)
+        .then(res => res.json());
+      
+      if (updatedContract && updatedContract.bills) {
+        setBills([...updatedContract.bills]);
+        message.success("Payment processed successfully! Bill status updated.");
+      } else {
+        // Fallback: just reload from current contract
+        setBills([...contract.bills || []]);
+        message.success("Payment processed successfully!");
+      }
     } catch (error) {
-      message.error("Payment failed. Please try again.");
+      console.error("Failed to reload bills:", error);
+      // Fallback: just reload from current contract
+      setBills([...contract.bills || []]);
+      message.success("Payment processed successfully!");
+    } finally {
+      setPaymentLoading(false);
     }
+  };
+
+  const handlePaymentCancel = () => {
+    setPaymentModalOpen(false);
+    setPaymentBill(null);
   };
 
   // Calculate bill statistics
   const totalBills = bills.length;
-  const paidBills = bills.filter((bill) => bill.paid).length;
-  const pendingBills = bills.filter((bill) => !bill.paid).length;
+  const paidBills = bills.filter(bill => bill.status === 'PAID').length;
+  const pendingBills = bills.filter(bill => bill.status === 'PENDING').length;
+  const confirmingBills = bills.filter(bill => bill.status === 'CONFIRMING').length;
+  const overdueBills = bills.filter(bill => bill.status === 'OVERDUE').length;
   const totalAmount = bills.reduce((sum, bill) => sum + bill.totalAmount, 0);
-  const unpaidAmount = bills
-    .filter((bill) => !bill.paid)
-    .reduce((sum, bill) => sum + bill.totalAmount, 0);
+  const unpaidAmount = bills.filter(bill => bill.status !== 'PAID').reduce((sum, bill) => sum + bill.totalAmount, 0);
 
-  // Filter bills based on search and status - similar to MyContract
+  // Filter bills based on search and status
   const filteredBills = bills.filter((bill: BillData) => {
     const matchesSearch =
       bill.month.toLowerCase().includes(searchText.toLowerCase()) ||
       bill.totalAmount.toString().includes(searchText);
-
-    const matchesStatus =
-      statusFilter === null ||
-      statusFilter === undefined ||
-      bill.paid === statusFilter;
-
+    
+    // Handle both old boolean paid field and new status field
+    let matchesStatus = true;
+    if (statusFilter !== null && statusFilter !== undefined) {
+      if (statusFilter === 'PAID') {
+        matchesStatus = bill.status === 'PAID' || (bill.paid === true);
+      } else if (statusFilter === 'PENDING') {
+        matchesStatus = bill.status === 'PENDING' || (!bill.status && bill.paid !== true);
+      } else if (statusFilter === 'CONFIRMING') {
+        matchesStatus = bill.status === 'CONFIRMING';
+      } else if (statusFilter === 'OVERDUE') {
+        matchesStatus = bill.status === 'OVERDUE';
+      }
+    }
+    
     return matchesSearch && matchesStatus;
   });
 
@@ -132,21 +182,48 @@ export default function TenantBillsTab({ contract }: TenantBillsTabProps) {
       title: "Electricity",
       dataIndex: "electricityFee",
       key: "electricityFee",
-      render: (amount: number) => `${amount.toLocaleString()} đ`,
+      render: (amount: number, record: BillData) => (
+        <div>
+          <div className="font-medium">{amount.toLocaleString()} đ</div>
+          {record.electricityUsage && record.electricityPrice && (
+            <div className="text-xs text-gray-500">
+              {record.electricityUsage.toFixed(2)} kWh × {record.electricityPrice.toLocaleString()} đ/kWh
+            </div>
+          )}
+        </div>
+      ),
       sorter: (a, b) => a.electricityFee - b.electricityFee,
     },
     {
       title: "Water",
       dataIndex: "waterFee",
       key: "waterFee",
-      render: (amount: number) => `${amount.toLocaleString()} đ`,
+      render: (amount: number, record: BillData) => (
+        <div>
+          <div className="font-medium">{amount.toLocaleString()} đ</div>
+          {record.waterUsage && record.waterPrice && (
+            <div className="text-xs text-gray-500">
+              {record.waterUsage.toFixed(2)} m³ × {record.waterPrice.toLocaleString()} đ/m³
+            </div>
+          )}
+        </div>
+      ),
       sorter: (a, b) => a.waterFee - b.waterFee,
     },
     {
       title: "Service",
       dataIndex: "serviceFee",
       key: "serviceFee",
-      render: (amount: number) => `${amount.toLocaleString()} đ`,
+      render: (amount: number, record: BillData) => (
+        <div>
+          <div className="font-medium">{amount.toLocaleString()} đ</div>
+          {record.damageFee != null && record.damageFee > 0 && (
+            <div className="text-xs text-red-500">
+              + Damage Fee: {record.damageFee.toLocaleString()} đ
+            </div>
+          )}
+        </div>
+      ),
       sorter: (a, b) => a.serviceFee - b.serviceFee,
     },
     {
@@ -158,57 +235,108 @@ export default function TenantBillsTab({ contract }: TenantBillsTabProps) {
     },
     {
       title: "Status",
-      dataIndex: "paid",
-      key: "paid",
-      render: (paid: boolean) => (
-        <Tag color={paid ? "green" : "orange"}>{paid ? "Paid" : "Pending"}</Tag>
-      ),
+      dataIndex: "status",
+      key: "status",
+      render: (status: string, record: BillData) => {
+        // Use the status from the record directly
+        const actualStatus = status; // Don't fallback to paid boolean anymore
+        const statusInfo = billStatusMap[actualStatus];
+        
+        if (!statusInfo) {
+          return (
+            <Tag color="gray">
+              Unknown ({actualStatus})
+            </Tag>
+          );
+        }
+        
+        return (
+          <Tag color={statusInfo.color}>
+            {statusInfo.text}
+          </Tag>
+        );
+      },
       filters: [
-        { text: "Paid", value: true },
-        { text: "Pending", value: false },
+        { text: "Pending", value: "PENDING" },
+        { text: "Confirming Payment", value: "CONFIRMING" },
+        { text: "Paid", value: "PAID" },
+        { text: "Overdue", value: "OVERDUE" },
       ],
-      onFilter: (value, record) => record.paid === value,
+      onFilter: (value, record) => {
+        return record.status === value;
+      },
     },
     {
       title: "Actions",
       key: "actions",
-      render: (_, record) => (
-        <Space>
-          <Tooltip title="View Details">
-            <Button
-              type="link"
-              icon={<EyeOutlined />}
-              onClick={() => setSelectedBill(record)}
-            />
-          </Tooltip>
-          <Tooltip title="Download PDF">
-            <Button
-              type="link"
-              icon={<DownloadOutlined />}
-              onClick={() => handleDownload(record.id, record.month)}
-            />
-          </Tooltip>
-          {!record.paid && (
-            <Tooltip title="Pay Now">
+      render: (_, record) => {
+        const status = record.status;
+        const canPay = status === 'PENDING' || status === 'OVERDUE';
+        const isConfirming = status === 'CONFIRMING';
+        const isPaid = status === 'PAID';
+        
+        return (
+          <Space>
+            <Tooltip title="View Details">
               <Button
-                type="primary"
-                size="small"
-                icon={<CreditCardOutlined />}
-                onClick={() => handlePayment(record)}
-              >
-                Pay
-              </Button>
+                type="link"
+                icon={<EyeOutlined />}
+                onClick={() => setSelectedBill(record)}
+              />
             </Tooltip>
-          )}
-        </Space>
-      ),
+            <Tooltip title="Download PDF">
+              <Button
+                type="link"
+                icon={<DownloadOutlined />}
+                onClick={() => handleDownload(record.id, record.month)}
+              />
+            </Tooltip>
+            {canPay && (
+              <Tooltip title="Pay Now">
+                <Button
+                  type="primary"
+                  size="small"
+                  icon={<CreditCardOutlined />}
+                  onClick={() => handlePayment(record)}
+                >
+                  Pay Now
+                </Button>
+              </Tooltip>
+            )}
+            {isConfirming && (
+              <Tooltip title="Payment is being confirmed by landlord">
+                <Button
+                  type="default"
+                  size="small"
+                  disabled
+                  icon={<CreditCardOutlined />}
+                >
+                  Confirming...
+                </Button>
+              </Tooltip>
+            )}
+            {isPaid && (
+              <Tooltip title="Bill has been paid">
+                <Button
+                  type="default"
+                  size="small"
+                  disabled
+                  style={{ color: 'green' }}
+                >
+                  Paid ✓
+                </Button>
+              </Tooltip>
+            )}
+          </Space>
+        );
+      },
     },
   ];
 
   return (
     <div className="p-6 space-y-6">
       {/* Bills Statistics */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <Card size="small">
           <Statistic
             title="Total Bills"
@@ -227,7 +355,14 @@ export default function TenantBillsTab({ contract }: TenantBillsTabProps) {
           <Statistic
             title="Pending Bills"
             value={pendingBills}
-            valueStyle={{ color: "#cf1322" }}
+            valueStyle={{ color: '#cf1322' }}
+          />
+        </Card>
+        <Card size="small">
+          <Statistic
+            title="Confirming"
+            value={confirmingBills}
+            valueStyle={{ color: '#1890ff' }}
           />
         </Card>
         <Card size="small">
@@ -258,15 +393,21 @@ export default function TenantBillsTab({ contract }: TenantBillsTabProps) {
               placeholder="Filter by status"
               value={statusFilter}
               onChange={setStatusFilter}
-              style={{ width: 150 }}
+              style={{ width: 180 }}
               allowClear
               suffixIcon={<FilterOutlined />}
             >
-              <Select.Option value={true}>
+              <Select.Option value="PENDING">
+                <Tag color="orange">Pending</Tag>
+              </Select.Option>
+              <Select.Option value="CONFIRMING">
+                <Tag color="blue">Confirming</Tag>
+              </Select.Option>
+              <Select.Option value="PAID">
                 <Tag color="green">Paid</Tag>
               </Select.Option>
-              <Select.Option value={false}>
-                <Tag color="orange">Pending</Tag>
+              <Select.Option value="OVERDUE">
+                <Tag color="red">Overdue</Tag>
               </Select.Option>
             </Select>
           </Space>
@@ -296,6 +437,16 @@ export default function TenantBillsTab({ contract }: TenantBillsTabProps) {
         selectedBill={selectedBill}
         contract={contract}
         onClose={() => setSelectedBill(null)}
+      />
+
+      {/* Bill Payment Modal */}
+      <BillPaymentModal
+        open={paymentModalOpen}
+        onCancel={handlePaymentCancel}
+        onConfirm={handlePaymentConfirm}
+        confirmLoading={paymentLoading}
+        bill={paymentBill}
+        contract={contract}
       />
 
       {/* Payment Instructions */}

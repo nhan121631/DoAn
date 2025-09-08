@@ -12,6 +12,8 @@ import com.ants.ktc.ants_ktc.dtos.bill.BillResponseDto;
 import com.ants.ktc.ants_ktc.dtos.bill.BillUpdateDto;
 import com.ants.ktc.ants_ktc.entities.Bill;
 import com.ants.ktc.ants_ktc.entities.Contract;
+import com.ants.ktc.ants_ktc.entities.Room;
+import com.ants.ktc.ants_ktc.enums.BillStatus;
 import com.ants.ktc.ants_ktc.repositories.BillJpaRepository;
 import com.ants.ktc.ants_ktc.repositories.ContractJpaRepository;
 
@@ -37,7 +39,7 @@ public class BillService {
         bill.setWaterFee(request.getWaterFee());
         bill.setServiceFee(request.getServiceFee());
         bill.setTotalAmount(request.getTotalAmount());
-        bill.setPaid(request.isPaid());
+        bill.setStatus(BillStatus.PENDING);
 
         Bill saved = billJpaRepository.save(bill);
         return toResponseDto(saved);
@@ -51,7 +53,7 @@ public class BillService {
         if (dto.getWaterFee() != null) bill.setWaterFee(dto.getWaterFee());
         if (dto.getServiceFee() != null) bill.setServiceFee(dto.getServiceFee());
         if (dto.getTotalAmount() != null) bill.setTotalAmount(dto.getTotalAmount());
-        if (dto.getPaid() != null) bill.setPaid(dto.getPaid());
+        if (dto.getStatus() != null) bill.setStatus(dto.getStatus());
 
         Bill saved = billJpaRepository.save(bill);
         return toResponseDto(saved);
@@ -66,10 +68,10 @@ public class BillService {
         return bills.stream().map(this::toResponseDto).collect(Collectors.toList());
     }
 
-    public BillResponseDto updateBillPaid(UUID billId, boolean paid) {
+    public BillResponseDto updateBillStatus(UUID billId, BillStatus status) {
         Bill bill = billJpaRepository.findById(billId)
                 .orElseThrow(() -> new IllegalArgumentException("Bill not found"));
-        bill.setPaid(paid);
+        bill.setStatus(status);
         Bill updated = billJpaRepository.save(bill);
         return toResponseDto(updated);
     }
@@ -81,15 +83,41 @@ public class BillService {
 
 
     private BillResponseDto toResponseDto(Bill bill) {
-        BillResponseDto dto = new BillResponseDto();
-        dto.setId(bill.getId());
-        dto.setMonth(bill.getMonth());
-        dto.setElectricityFee(bill.getElectricityFee());
-        dto.setWaterFee(bill.getWaterFee());
-        dto.setServiceFee(bill.getServiceFee());
-        dto.setTotalAmount(bill.getTotalAmount());
-        dto.setPaid(bill.isPaid());
-        return dto;
+        Room room = bill.getContract().getRoom();
+        Double elecPrice = room.getElecPrice();
+        Double waterPrice = room.getWaterPrice();
+
+        // Tính usage dựa trên fee / price (nếu giá != 0)
+        Double electricityUsage = (elecPrice != null && elecPrice > 0)
+                ? bill.getElectricityFee() / elecPrice
+                : null;
+        Double waterUsage = (waterPrice != null && waterPrice > 0)
+                ? bill.getWaterFee() / waterPrice
+                : null;
+
+        // Tính damageFee (không lưu DB, chỉ trả về response)
+        Double damageFee = null;
+        if (bill.getTotalAmount() != null) {
+            double totalBase = (bill.getElectricityFee() != null ? bill.getElectricityFee() : 0)
+                    + (bill.getWaterFee() != null ? bill.getWaterFee() : 0)
+                    + (bill.getServiceFee() != null ? bill.getServiceFee() : 0);
+            damageFee = bill.getTotalAmount() - totalBase;
+        }
+
+        return BillResponseDto.builder()
+                .id(bill.getId())
+                .month(bill.getMonth())
+                .electricityPrice(elecPrice)
+                .electricityUsage(electricityUsage)
+                .electricityFee(bill.getElectricityFee())
+                .waterPrice(waterPrice)
+                .waterUsage(waterUsage)
+                .waterFee(bill.getWaterFee())
+                .serviceFee(bill.getServiceFee())
+                .damageFee(damageFee)
+                .totalAmount(bill.getTotalAmount())
+                .status(bill.getStatus())
+                .build();
     }
 
 }

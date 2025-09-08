@@ -14,6 +14,7 @@ import com.ants.ktc.ants_ktc.dtos.bill.BillResponseDto;
 import com.ants.ktc.ants_ktc.dtos.contract.ContractRequestDto;
 import com.ants.ktc.ants_ktc.dtos.contract.ContractResponseDto;
 import com.ants.ktc.ants_ktc.dtos.contract.ContractUpdateRequestDto;
+import com.ants.ktc.ants_ktc.dtos.contract.PaymentInfoDto;
 import com.ants.ktc.ants_ktc.entities.Contract;
 import com.ants.ktc.ants_ktc.entities.Room;
 import com.ants.ktc.ants_ktc.entities.User;
@@ -146,17 +147,48 @@ public class ContractService {
         dto.setMonthlyRent(contract.getMonthlyRent());
         dto.setStatus(contract.getStatus());
 
-        if(contract.getBills() != null) {
+        if (contract.getBills() != null) {
+            Room room = contract.getRoom();
+
             dto.setBills(contract.getBills().stream()
-                    .map(b -> new BillResponseDto(
-                            b.getId(),
-                            b.getMonth(),
-                            b.getElectricityFee(),
-                            b.getWaterFee(),
-                            b.getServiceFee(),
-                            b.getTotalAmount(),
-                            b.isPaid()
-                    )).collect(Collectors.toList()));
+                    .map(b -> {
+                        Double elecPrice = room.getElecPrice();
+                        Double waterPrice = room.getWaterPrice();
+
+                        Double electricityUsage = (elecPrice != null && elecPrice > 0)
+                                ? b.getElectricityFee() / elecPrice : null;
+                        Double waterUsage = (waterPrice != null && waterPrice > 0)
+                                ? b.getWaterFee() / waterPrice : null;
+                        double damageFee = b.getTotalAmount()
+                                - (b.getElectricityFee() + b.getWaterFee() + b.getServiceFee());
+
+                        return BillResponseDto.builder()
+                                .id(b.getId())
+                                .month(b.getMonth())
+                                .electricityPrice(elecPrice)
+                                .electricityUsage(electricityUsage)
+                                .electricityFee(b.getElectricityFee())
+                                .waterPrice(waterPrice)
+                                .waterUsage(waterUsage)
+                                .waterFee(b.getWaterFee())
+                                .damageFee(damageFee)
+                                .serviceFee(b.getServiceFee())
+                                .totalAmount(b.getTotalAmount())
+                                .status(b.getStatus())
+                                .build();
+                    })
+                    .collect(Collectors.toList()));
+        }
+
+        if (contract.getLandlord() != null && contract.getLandlord().getProfile() != null) {
+            var profile = contract.getLandlord().getProfile();
+            dto.setLandlordPaymentInfo(new PaymentInfoDto(
+                    profile.getBankName(),
+                    profile.getBankNumber(),
+                    profile.getBinCode(),
+                    profile.getAccoutHolderName(),
+                    profile.getPhoneNumber()
+            ));
         }
 
         return dto;

@@ -1,5 +1,6 @@
 package com.ants.ktc.ants_ktc.dtos.bill;
 
+import com.ants.ktc.ants_ktc.enums.BillStatus;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.AllArgsConstructor;
@@ -30,6 +31,6 @@ public class BillUpdateDto {
 
     @PositiveOrZero(message = "Total amount must be >= 0")
     private Double totalAmount;
-
-    private Boolean paid; // true/false
+    
+    private BillStatus status;
 }

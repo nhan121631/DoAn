@@ -3,18 +3,12 @@ package com.ants.ktc.ants_ktc.controllers;
 import java.util.List;
 import java.util.UUID;
 
+import com.ants.ktc.ants_ktc.enums.BillStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.ants.ktc.ants_ktc.dtos.bill.BillRequestDto;
 import com.ants.ktc.ants_ktc.dtos.bill.BillResponseDto;
@@ -44,12 +38,13 @@ public class BillController {
     public ResponseEntity<List<BillResponseDto>> getBillsByTenant(@PathVariable("tenantId") UUID tenantId) {
         return ResponseEntity.ok(billService.getBillsByTenant(tenantId));
     }
-//    @PutMapping("/{billId}/paid")
-//    public ResponseEntity<BillResponseDto> updateBillPaid(
-//            @PathVariable UUID billId,
-//            @RequestParam boolean paid) {
-//        return ResponseEntity.ok(billService.updateBillPaid(billId, paid));
-//    }
+    @PutMapping("/{billId}/status")
+    public ResponseEntity<BillResponseDto> updateBillStatus(
+            @PathVariable UUID billId,
+            @RequestParam BillStatus status // truyền ?status=CONFIRMING hoặc ?status=PAID
+    ) {
+        return ResponseEntity.ok(billService.updateBillStatus(billId, status));
+    }
     @PutMapping("/{id}")
     public ResponseEntity<BillResponseDto> updateBill(
             @PathVariable("id") UUID id,
