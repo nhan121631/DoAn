@@ -3,6 +3,7 @@ import { Inter, Roboto_Mono } from "next/font/google";
 import "./globals.css";
 import { NextAuthProvider } from "./components/providers/authProviders";
 import FavoriteInitializer from "./user-dashboard/components/favorited-rooms/FavoriteInitializer";
+import { AntdRegistry } from "@ant-design/nextjs-registry";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -29,8 +30,10 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${inter.variable} ${robotoMono.variable} antialiased`}>
         <NextAuthProvider>
-          <FavoriteInitializer />
-          {children}
+          <AntdRegistry>
+            <FavoriteInitializer />
+            {children}
+          </AntdRegistry>
         </NextAuthProvider>
       </body>
     </html>

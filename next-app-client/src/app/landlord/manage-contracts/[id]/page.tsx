@@ -1,9 +1,15 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 "use client";
 
 import React, { useEffect, useState } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import { Spin, message, Tabs } from "antd";
-import { FileTextOutlined, DollarOutlined, TeamOutlined } from "@ant-design/icons";
+import {
+  FileTextOutlined,
+  DollarOutlined,
+  TeamOutlined,
+} from "@ant-design/icons";
 import { ContractData } from "@/types/types";
 import { ContractService } from "@/services/ContractService";
 import ContractOverview from "../../components/manage-contracts/ContractOverview";
@@ -91,10 +97,7 @@ export default function LandlordContractDetail() {
         </span>
       ),
       children: (
-        <BillsTab
-          contract={contract}
-          onContractUpdate={handleContractUpdate}
-        />
+        <BillsTab contract={contract} onContractUpdate={handleContractUpdate} />
       ),
     },
     {
@@ -117,7 +120,9 @@ export default function LandlordContractDetail() {
   return (
     <div className="flex flex-col flex-1 h-full w-full bg-white dark:bg-[#001529] text-gray-900 dark:text-white p-8 overflow-auto transition-colors duration-300">
       <div className="bg-white dark:bg-[#22304a] rounded-2xl shadow-md w-full mx-auto p-6 transition-colors duration-300">
-        <h2 className="text-xl font-bold mb-6 text-gray-900 dark:text-white">Contract Management</h2>
+        <h2 className="text-xl font-bold mb-6 text-gray-900 dark:text-white">
+          Contract Management
+        </h2>
 
         <Tabs
           activeKey={activeTab}

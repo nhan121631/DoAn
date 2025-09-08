@@ -40,6 +40,7 @@ export async function PUT(request: Request, { params }: { params: { contractId: 
     const data = await response.json();
     return new Response(JSON.stringify(data), { status: response.status });
   } catch (error) {
+    console.error("Error updating contract:", error);
     return new Response("Internal Server Error", { status: 500 });
   }
 }

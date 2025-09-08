@@ -31,12 +31,14 @@ export default function UserLayoutClient({
     return () => mediaQuery.removeEventListener("change", handleScreenChange);
   }, [mounted]);
   return (
-    <Layout className="min-h-screen">
-      <HeaderUserDashboard />
-      <Layout className="!min-h-screen">
+    <div className="h-screen flex flex-col">
+      <div className="h-[85px]">
+        <HeaderUserDashboard fixed={false} />
+      </div>
+      <Layout className="flex-1">
         <AppSidebar collapsed={collapsed} />
-        <Content className="p-6 bg-gray-100">{children}</Content>
+        <Content className="bg-gray-100">{children}</Content>
       </Layout>
-    </Layout>
+    </div>
   );
 }
