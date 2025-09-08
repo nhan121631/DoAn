@@ -39,7 +39,13 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
     "/user-dashboard/message": "7",
   };
 
-  const selectedKey = pathToKey[pathname || ""] || "1";
+  // const selectedKey = pathToKey[pathname || ""] || "1";
+   const getSelectedKey = () => {
+    const p = pathname || "";
+    if (/^\/user-dashboard\/my-contracts(\/|$)/.test(p)) return "2";
+    return pathToKey[p] || "1";
+  };
+  const selectedKey = getSelectedKey();
 
   if (!mounted) {
     return (
