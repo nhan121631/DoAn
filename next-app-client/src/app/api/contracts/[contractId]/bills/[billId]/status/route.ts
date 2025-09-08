@@ -5,7 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function PUT(
   req: NextRequest, 
-  { params }: { params: { contractId: string; billId: string } }
+  { params }: { params: Promise<{ contractId: string; billId: string }> }
 ) {
   const session = await getServerSession(authOptions);
   if (!session) {
@@ -20,8 +20,9 @@ export async function PUT(
       return NextResponse.json({ error: "Status is required" }, { status: 400 });
     }
 
+    const { contractId, billId } = await params;
     // Gọi API backend để update bill status
-    const res = await fetch(`${API_URL}/bills/${params.billId}/status?status=${status}`, {
+    const res = await fetch(`${API_URL}/bills/${billId}/status?status=${status}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",

@@ -2,6 +2,8 @@ import { create } from "zustand"
 
 interface FavoriteState {
   favoriteRoomIds: Set<string>
+    favoriteCountMap: Record<string, number> // 🎯 Thêm này
+
   isLoading: boolean
   isInitialized: boolean
   
@@ -11,10 +13,18 @@ interface FavoriteState {
   removeFavorite: (roomId: string) => void
   setLoading: (isLoading: boolean) => void
   setInitialized: (isInitialized: boolean) => void
+
+
+  setFavoriteCount: (roomId: string, count: number) => void
+  incrementFavoriteCount: (roomId: string) => void
+  decrementFavoriteCount: (roomId: string) => void
+  getFavoriteCount: (roomId: string) => number
+  
 }
 
-export const useFavoriteStore = create<FavoriteState>((set) => ({
+export const useFavoriteStore = create<FavoriteState>((set, get) => ({
   favoriteRoomIds: new Set<string>(),
+  favoriteCountMap: {}, 
   isLoading: false,
   isInitialized: false,
 
@@ -40,4 +50,34 @@ export const useFavoriteStore = create<FavoriteState>((set) => ({
     
   setLoading: (isLoading) => set({ isLoading }),
   setInitialized: (isInitialized) => set({ isInitialized }),
+
+  //
+  setFavoriteCount: (roomId: string, count: number) =>
+    set((state) => ({
+      favoriteCountMap: {
+        ...state.favoriteCountMap,
+        [roomId]: count,
+      },
+    })),
+
+  incrementFavoriteCount: (roomId: string) =>
+    set((state) => ({
+      favoriteCountMap: {
+        ...state.favoriteCountMap,
+        [roomId]: (state.favoriteCountMap[roomId] || 0) + 1,
+      },
+    })),
+
+  decrementFavoriteCount: (roomId: string) =>
+    set((state) => ({
+      favoriteCountMap: {
+        ...state.favoriteCountMap,
+        [roomId]: Math.max(0, (state.favoriteCountMap[roomId] || 0) - 1),
+      },
+    })),
+
+  getFavoriteCount: (roomId: string) => {
+    const state = get();
+    return state.favoriteCountMap[roomId] || 0;
+  },
 }))

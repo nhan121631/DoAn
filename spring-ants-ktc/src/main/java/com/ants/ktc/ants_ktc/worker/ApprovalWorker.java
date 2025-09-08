@@ -71,7 +71,8 @@ public class ApprovalWorker {
         initializeCsvFile();
     }
 
-    @Scheduled(fixedDelay = 2000) // Kiểm tra queue mỗi 2 giây
+    // @Scheduled(fixedDelay = 600000) // Disabled - chỉ chạy theo schedule 12h trưa
+    // và tối
     public void processApprovalQueue() {
         try {
             // Lấy 1 job từ queue (non-blocking)
@@ -312,10 +313,10 @@ public class ApprovalWorker {
     }
 
     /**
-     * Schedule để tự động duyệt bài mỗi 10 giờ
+     * Schedule để tự động duyệt bài mỗi 12h trưa và 12h tối
      * Sẽ tự động process tất cả pending rooms trong queue
      */
-    @Scheduled(fixedRate = 7200000) // 2 giờ = 7,200,000 ms
+    @Scheduled(cron = "0 0 12,0 * * *") // 12:00 trưa và 00:00 tối mỗi ngày
     public void scheduleAutomaticApproval() {
         try {
             System.out.println("[ApprovalWorker] Starting scheduled automatic approval process...");
@@ -426,8 +427,8 @@ public class ApprovalWorker {
     /**
      * Schedule để gửi CSV report hàng ngày vào 23:00
      */
-    // @Scheduled(cron = "0 0 23 * * *") // 23:00 mỗi ngày
-    @Scheduled(cron = "0 58 15 * * *") // 15:57 PM mỗi ngày (for testing)
+    @Scheduled(cron = "0 0 23 * * *") // 23:00 mỗi ngày
+    // @Scheduled(cron = "0 58 15 * * *") // 15:57 PM mỗi ngày (for testing)
     public void scheduleDailyReportToSlack() {
         try {
             System.out.println("[ApprovalWorker] 📊 Starting daily CSV report to Slack...");

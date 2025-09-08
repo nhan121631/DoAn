@@ -95,7 +95,6 @@ public interface BookingJpaRepository extends JpaRepository<Booking, UUID> {
                         "WHERE b.status = 4 AND b.isRemoved = 0")
         List<Booking> findActiveBookingsForAvailabilityCheck();
 
-        // New: Update status for other bookings of the same room (used when one booking is accepted)
         @Modifying(clearAutomatically = true)
         @Query("UPDATE Booking b SET b.status = :newStatus WHERE b.room.id = :roomId AND b.status = :oldStatus AND b.id <> :bookingId")
         int updateStatusByRoomIdAndOldStatusExcludeBookingId(@Param("roomId") UUID roomId,
@@ -129,4 +128,9 @@ public interface BookingJpaRepository extends JpaRepository<Booking, UUID> {
         // WHERE b.room.user.id = :landlordId")
         // Page<Booking> findByRoomUserIdWithDetails(@Param("landlordId") UUID
         // landlordId, Pageable pageable);
+
+        // Statistics queries
+        @Query("SELECT COUNT(b) FROM Booking b WHERE b.createdDate >= :startDate")
+        Long countByCreatedDateAfter(@Param("startDate") java.util.Date startDate);
+
 }

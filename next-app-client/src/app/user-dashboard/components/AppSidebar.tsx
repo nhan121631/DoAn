@@ -6,10 +6,11 @@ import { useEffect, useState } from "react";
 import { ImProfile } from "react-icons/im";
 import { LuBookCheck } from "react-icons/lu";
 import {
+  MdDescription,
   MdFavoriteBorder,
   MdHistory,
   MdOutlineLockReset,
-  MdDescription 
+  MdOutlineMessage,
 } from "react-icons/md";
 
 const { Sider } = Layout;
@@ -35,6 +36,7 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
     "/user-dashboard/request-status": "4",
     "/user-dashboard/favorited-rooms": "5",
     "/user-dashboard/change-password": "6",
+    "/user-dashboard/message": "7",
   };
 
   const selectedKey = pathToKey[pathname || ""] || "1";
@@ -44,7 +46,7 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
       <div
         style={{
           width: collapsed ? 80 : 200,
-          height: "100vh",
+          height: "100%",
           backgroundColor: "#f5f5f5",
           borderRight: "1px solid #d9d9d9",
         }}
@@ -64,7 +66,7 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
       collapsed={collapsed}
       theme={isDark ? "dark" : "light"}
       style={{
-        height: "full",
+        height: "100%",
         borderRight: isDark
           ? "1px solid #4A5565" // dark: slate-700
           : "1px solid #F8FAFC", // light: ant design default
@@ -91,7 +93,7 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
             ),
             label: <Link href="/user-dashboard/profile">Profile</Link>,
           },
-        {
+          {
             key: "2",
             icon: (
               <span
@@ -108,7 +110,7 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
             label: (
               <Link href="/user-dashboard/my-contracts">My Contracts</Link>
             ),
-        },
+          },
           {
             key: "3",
             icon: (
@@ -184,6 +186,22 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
                 Change Password
               </Link>
             ),
+          },
+          {
+            key: "7",
+            icon: (
+              <span
+                style={{
+                  fontSize: 18,
+                  marginRight: 4,
+                  display: "inline-flex",
+                  alignItems: "center",
+                }}
+              >
+                <MdOutlineMessage />
+              </span>
+            ),
+            label: <Link href="/user-dashboard/message">Message</Link>,
           },
         ]}
       />

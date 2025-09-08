@@ -62,7 +62,9 @@ public class SecurityConfig {
                                                 .requestMatchers("/api/requirements/**").authenticated()
                                                 .requestMatchers("/api/requirements/landlord/**")
                                                 .hasAnyRole("Landlords", "Administrators")
-
+                                                // statistics landlord
+                                                .requestMatchers("/api/landlord/statistics/**")
+                                                .hasAnyRole("Landlords", "Administrators")
                                                 // feedback
                                                 .requestMatchers(HttpMethod.GET, "/api/rooms/*/feedbacks").permitAll()
                                                 .requestMatchers(HttpMethod.POST, "/api/rooms/*/feedbacks")
@@ -72,7 +74,7 @@ public class SecurityConfig {
                                                 // .requestMatchers(HttpMethod.GET,
                                                 // "/api/rooms/*/feedback-access").authenticated() // check quyền
 
-                                                //contract
+                                                // contract
                                                 .requestMatchers("/api/contracts/**").permitAll()
                                                 .requestMatchers(HttpMethod.GET, "/api/rooms/landlords/*/feedbacks")
                                                 .hasRole("Landlords") // landlord xem feedback

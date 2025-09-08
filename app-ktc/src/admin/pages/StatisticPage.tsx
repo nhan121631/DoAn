@@ -3,7 +3,6 @@ import { AiOutlineCheckCircle } from "react-icons/ai";
 import { MdAccountCircle } from "react-icons/md";
 import { RiFileListLine } from "react-icons/ri";
 import { TbClockCheck } from "react-icons/tb";
-import TableManageRoom from "../components/TableManageRoom";
 import { useQuery } from "@tanstack/react-query";
 import { useCountActiveUsers } from "../service/ReactQueryAccount";
 import {
@@ -11,6 +10,12 @@ import {
   useCountPendingRoomsQueryOptions,
   useCountTotalRoomsQueryOptions,
 } from "../service/ReactQueryRoom";
+import {
+  MonthlyTransactionChart,
+  MonthlyUserRegistrationChart,
+  RoomsByProvinceChart,
+  TopLandlordsChart,
+} from "../components/statistics";
 
 const { Content } = Layout;
 
@@ -30,84 +35,120 @@ function StatisticPage() {
 
   return (
     <Content className="mx-4 my-6 min-h-[280px]">
-      <div className="flex flex-col md:flex-row gap-6">
+      {/* Header */}
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+          Statistics Dashboard
+        </h1>
+      </div>
+      {/* Quick Stats Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <div
-          className="p-6 flex-1 dark:!bg-[#171f2f] dark:!text-white"
+          className="p-6 dark:!bg-[#171f2f] dark:!text-white transition-all duration-300 hover:shadow-lg"
           style={{
             background: colorBgContainer,
             borderRadius: borderRadiusLG,
           }}
         >
-          <div className="flex justify-between">
-            <div className="flex flex-col font-semibold justify-between gap-y-10">
-              <span className="text-xl">Account</span>
-              <span className="text-3xl">
+          <div className="flex justify-between items-center">
+            <div className="flex flex-col justify-between gap-y-4">
+              <span className="text-lg font-medium text-gray-600 dark:text-gray-300">
+                Active Users
+              </span>
+              <span className="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white">
                 {activeUsersCount?.data || activeUsersCount || 0}
               </span>
             </div>
-            <div className="flex text-6xl text-sky-600 dark:text-sky-400">
+            <div className="flex text-5xl lg:text-6xl text-sky-600 dark:text-sky-400">
               <MdAccountCircle />
             </div>
           </div>
         </div>
+
         <div
-          className="p-6 flex-1 dark:!bg-[#171f2f] dark:!text-white"
+          className="p-6 dark:!bg-[#171f2f] dark:!text-white transition-all duration-300 hover:shadow-lg"
           style={{
             background: colorBgContainer,
             borderRadius: borderRadiusLG,
           }}
         >
-          <div className="flex justify-between">
-            <div className="flex flex-col font-semibold justify-between gap-y-10">
-              <span className="text-xl">Approved Post</span>
-              <span className="text-3xl">{acceptedRoomsCount || 0}</span>
+          <div className="flex justify-between items-center">
+            <div className="flex flex-col justify-between gap-y-4">
+              <span className="text-lg font-medium text-gray-600 dark:text-gray-300">
+                Approved Posts
+              </span>
+              <span className="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white">
+                {acceptedRoomsCount || 0}
+              </span>
             </div>
-            <div className="flex text-6xl text-green-500 dark:text-green-400">
+            <div className="flex text-5xl lg:text-6xl text-green-600 dark:text-green-400">
               <AiOutlineCheckCircle />
             </div>
           </div>
         </div>
+
         <div
-          className="p-6 flex-1 dark:!bg-[#171f2f] dark:!text-white"
+          className="p-6 dark:!bg-[#171f2f] dark:!text-white transition-all duration-300 hover:shadow-lg"
           style={{
             background: colorBgContainer,
             borderRadius: borderRadiusLG,
           }}
         >
-          <div className="flex justify-between">
-            <div className="flex flex-col font-semibold justify-between gap-y-10">
-              <span className="text-xl">Pending Approval</span>
-              <span className="text-3xl">{pendingRoomsCount || 0}</span>
+          <div className="flex justify-between items-center">
+            <div className="flex flex-col justify-between gap-y-4">
+              <span className="text-lg font-medium text-gray-600 dark:text-gray-300">
+                Pending Posts
+              </span>
+              <span className="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white">
+                {pendingRoomsCount || 0}
+              </span>
             </div>
-            <div className="flex text-6xl text-amber-500 dark:text-amber-400">
+            <div className="flex text-5xl lg:text-6xl text-yellow-600 dark:text-yellow-400">
               <TbClockCheck />
             </div>
           </div>
         </div>
+
         <div
-          className="p-6 flex-1 dark:!bg-[#171f2f] dark:!text-white"
+          className="p-6 dark:!bg-[#171f2f] dark:!text-white transition-all duration-300 hover:shadow-lg"
           style={{
             background: colorBgContainer,
             borderRadius: borderRadiusLG,
           }}
         >
-          <div className="flex justify-between">
-            <div className="flex flex-col font-semibold justify-between gap-y-10">
-              <span className="text-xl">Total Posts</span>
-              <span className="text-3xl">{totalRoomsCount || 0}</span>
+          <div className="flex justify-between items-center">
+            <div className="flex flex-col justify-between gap-y-4">
+              <span className="text-lg font-medium text-gray-600 dark:text-gray-300">
+                Total Posts
+              </span>
+              <span className="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white">
+                {totalRoomsCount || 0}
+              </span>
             </div>
-            <div className="flex text-6xl text-sky-600 dark:text-sky-400">
+            <div className="flex text-5xl lg:text-6xl text-purple-600 dark:text-purple-400">
               <RiFileListLine />
             </div>
           </div>
         </div>
       </div>
 
-      <div className="mt-8 bg-white dark:bg-[#171f2f] rounded-lg shadow p-6">
-        <h2 className="text-xl font-semibold mb-4 dark:text-white">
-          Room Management
-        </h2>
-        <TableManageRoom />
+      {/* Charts Section */}
+      <div className="space-y-6">
+        {/* Top Row Charts - Full width for main charts */}
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+          <MonthlyTransactionChart />
+          <MonthlyUserRegistrationChart />
+        </div>
+
+        {/* Bottom Row Charts - Optimized layout */}
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+          <div className="xl:col-span-1">
+            <RoomsByProvinceChart />
+          </div>
+          <div className="xl:col-span-2">
+            <TopLandlordsChart />
+          </div>
+        </div>
       </div>
     </Content>
   );

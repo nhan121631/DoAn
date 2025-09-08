@@ -3,8 +3,8 @@ import { authOptions } from "@/lib/auth";
 import { API_URL } from "@/services/Constant";
 
 // GET /api/contract/[contractId]
-export async function GET(request: Request, { params }: { params: { contractId: string } }) {
-  const { contractId } = params;
+export async function GET(request: Request, { params }: { params: Promise<{ contractId: string }> }) {
+  const { contractId } = await params;
   if (!contractId) return new Response("contractId is missing", { status: 400 });
   const session = await getServerSession(authOptions);
   if (!session) return new Response("Unauthorized", { status: 401 });
@@ -17,8 +17,8 @@ export async function GET(request: Request, { params }: { params: { contractId: 
 }
 
 // PUT /api/contracts/[contractId]
-export async function PUT(request: Request, { params }: { params: { contractId: string } }) {
-  const { contractId } = params;
+export async function PUT(request: Request, { params }: { params: Promise<{ contractId: string }> }) {
+  const { contractId } = await params;
   if (!contractId) return new Response("contractId is missing", { status: 400 });
   
   const session = await getServerSession(authOptions);
@@ -40,6 +40,7 @@ export async function PUT(request: Request, { params }: { params: { contractId: 
     const data = await response.json();
     return new Response(JSON.stringify(data), { status: response.status });
   } catch (error) {
+    console.error("Error updating contract:", error);
     return new Response("Internal Server Error", { status: 500 });
   }
 }

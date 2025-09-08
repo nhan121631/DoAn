@@ -450,7 +450,7 @@ export default function TenantBillsTab({ contract }: TenantBillsTabProps) {
           <p><strong>Payment Methods:</strong></p>
           <ul className="list-disc list-inside space-y-1 text-sm">
             <li>Online payment via VNPay, MoMo, ZaloPay</li>
-            <li>Bank transfer to landlord's account</li>
+            <li>Bank transfer to landlord&apos;s account</li>
             <li>Cash payment (contact landlord)</li>
           </ul>
           <p className="text-sm text-gray-600 mt-4">

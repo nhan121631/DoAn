@@ -3,12 +3,13 @@ import { authOptions } from "@/lib/auth";
 import { API_URL} from "@/services/Constant";      
 import { NextRequest, NextResponse } from "next/server";
 
-export async function GET (req: NextRequest, {params} : {params: {contractId: string, billId: string}}) {
+export async function GET (req: NextRequest, {params} : {params: Promise<{contractId: string, billId: string}>}) {
   const session = await getServerSession(authOptions);
   if (!session) {
     return new Response("Unauthorized", { status: 401 });
   }
-  const res = await fetch(`${API_URL}/bills/${params.billId}/download`, {
+  const { contractId, billId } = await params;
+  const res = await fetch(`${API_URL}/bills/${billId}/download`, {
     headers: {
       Authorization: `Bearer ${session.user.accessToken}`,
     },
@@ -23,7 +24,7 @@ export async function GET (req: NextRequest, {params} : {params: {contractId: st
      status: 200,
      headers: {
        "Content-Type": "application/pdf",
-       "Content-Disposition": `attachment; filename="bill-${params.billId}.pdf"`,
+       "Content-Disposition": `attachment; filename="bill-${billId}.pdf"`,
      },
    });
 }

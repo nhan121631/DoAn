@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+
 "use client";
 import React, { useState } from "react";
 import {
@@ -42,6 +45,7 @@ const LandlordContracts: React.FC<LandlordContractsProps> = ({ contracts }) => {
   const [contractToExport, setContractToExport] = useState<ContractData | null>(
     null
   );
+  const [messageApi, contextHolder] = message.useMessage();
 
   const handleEdit = (record: ContractData) => {
     // Navigate to contract detail page with edit mode
@@ -49,7 +53,7 @@ const LandlordContracts: React.FC<LandlordContractsProps> = ({ contracts }) => {
   };
 
   const handleDelete = (record: ContractData) => {
-    message.success(`Deleted contract ${record.id}`);
+    messageApi.success(`Deleted contract ${record.id}`);
   };
 
   const handleOpenExportModal = (record: ContractData) => {
@@ -61,9 +65,11 @@ const LandlordContracts: React.FC<LandlordContractsProps> = ({ contracts }) => {
     if (!contractToExport) return;
     try {
       console.log("Export invoice for contract:", contractToExport.id, values);
-      message.success(`Invoice exported for contract ${contractToExport.id}`);
+      messageApi.success(
+        `Invoice exported for contract ${contractToExport.id}`
+      );
     } catch (err) {
-      message.error("Export invoice failed!");
+      messageApi.error("Export invoice failed!");
     } finally {
       setIsInvoiceModalOpen(false);
       setContractToExport(null);
@@ -129,9 +135,7 @@ const LandlordContracts: React.FC<LandlordContractsProps> = ({ contracts }) => {
       dataIndex: "status",
       key: "status",
       render: (status: number) => (
-        <Tag color={statusMap[status]?.color}>
-          {statusMap[status]?.text}
-        </Tag>
+        <Tag color={statusMap[status]?.color}>{statusMap[status]?.text}</Tag>
       ),
       sorter: (a: ContractData, b: ContractData) => a.status - b.status,
     },
@@ -174,24 +178,30 @@ const LandlordContracts: React.FC<LandlordContractsProps> = ({ contracts }) => {
     },
   ];
 
-  const filteredContracts = contracts.filter(
-    (contract: ContractData) => {
-      const matchesSearch = 
-        contract.roomTitle?.toLowerCase().includes(search.toLowerCase()) ||
-        contract.contractName?.toLowerCase().includes(search.toLowerCase()) ||
-        contract.tenantName?.toLowerCase().includes(search.toLowerCase()) ||
-        contract.tenantPhone?.toLowerCase().includes(search.toLowerCase());
-      
-      const matchesStatus = statusFilter === null || statusFilter === undefined || contract.status === statusFilter;
-      
-      return matchesSearch && matchesStatus;
-    }
-  );
+  const filteredContracts = contracts.filter((contract: ContractData) => {
+    const matchesSearch =
+      contract.roomTitle?.toLowerCase().includes(search.toLowerCase()) ||
+      contract.contractName?.toLowerCase().includes(search.toLowerCase()) ||
+      contract.tenantName?.toLowerCase().includes(search.toLowerCase()) ||
+      contract.tenantPhone?.toLowerCase().includes(search.toLowerCase());
+
+    const matchesStatus =
+      statusFilter === null ||
+      statusFilter === undefined ||
+      contract.status === statusFilter;
+
+    return matchesSearch && matchesStatus;
+  });
 
   return (
     <div className="space-y-6">
-      <Card 
-        title={<span className="text-gray-900 dark:text-white">Contract Management</span>}
+      {contextHolder}
+      <Card
+        title={
+          <span className="text-gray-900 dark:text-white">
+            Contract Management
+          </span>
+        }
         className="shadow-md bg-white dark:bg-[#22304a] border-gray-200 dark:border-gray-600 transition-colors duration-300"
         extra={
           <Space>
@@ -224,13 +234,13 @@ const LandlordContracts: React.FC<LandlordContractsProps> = ({ contracts }) => {
           columns={columns}
           dataSource={filteredContracts}
           rowKey="id"
-          pagination={{ 
+          pagination={{
             pageSize: 10,
             showSizeChanger: true,
             showQuickJumper: true,
             showTotal: (total, range) =>
               `${range[0]}-${range[1]} of ${total} contracts`,
-            pageSizeOptions: ['5', '10', '20', '50'],
+            pageSizeOptions: ["5", "10", "20", "50"],
           }}
           size="middle"
         />

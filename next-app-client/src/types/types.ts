@@ -114,6 +114,16 @@ export type PaginatedResponse<T> = {
   totalPages: number;
   totalRecords: number;
 };
+export interface PageResponse<T> {
+  content: T[];
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+  hasNext: boolean;
+  hasPrevious: boolean;
+  totalRecords: number;
+}
 
 export type CreateMaintenanceFormValues = {
   roomId: string;
@@ -303,6 +313,9 @@ export type UserSearchPreferences = {
   // desiredMaxPrice?: number;
 };
 
+
+
+
 export type SearchParamsType = { [key: string]: string | string[] | undefined };
 
 // types/index.ts
@@ -355,3 +368,16 @@ export interface ContractData {
   residents?: ResidentData[];
   landlordPaymentInfo?: PaymentInfoDto;
 }
+
+// statistic maintaince 
+export type MaintainStatisticDto = {
+  cost: number; // Chi phí bảo trì trong ngày
+  date: string; // Ngày ở định dạng 'YYYY-MM-DD'
+}
+
+// statistic fee post room
+export type TransactionStatisticsDto = {
+  cost: number; // Chi phí trong ngày
+  date: string; // Ngày ở định dạng 'YYYY-MM-DD'
+}
+ 

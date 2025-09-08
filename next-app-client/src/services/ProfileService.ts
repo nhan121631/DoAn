@@ -3,13 +3,14 @@ import { API_URL } from "./Constant";
 import { UserSearchPreferences } from "../types/types";
 
 export async function getFullName(id: string) {
-  const response = await fetch(`${API_URL}/profile/getname/${id}`, {
+  const response = await fetch(`/api/profile/getname/${id}`, {
     method: "GET",
   });
 
   if (!response.ok) {
     throw new Error("Failed to fetch full name");
   }
+
 
   const data = await response.json();
   return data;

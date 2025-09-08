@@ -1,12 +1,10 @@
-
 import { useFavoriteStore } from "@/stores/FavoriteStore";
 import { RoomInUser } from "@/types/types";
 import { getSession } from "next-auth/react";
+// import { useFavoriteStore } from "@/stores/FavoriteStore";
 
-// Kiểm tra môi trường server hoặc build
 const isServer = typeof window === 'undefined';
 
-// Lấy phòng yêu thích theo trang - dùng cho hiển thị trong dashboard
 export async function getFavoriteRoomIds(page = 0, pageSize = 6): Promise<string[]> {
   if (isServer) {
     return [];
@@ -53,7 +51,6 @@ export async function getFavoriteRoomIds(page = 0, pageSize = 6): Promise<string
   }
 }
 
-// Lấy toàn bộ ID phòng yêu thích bằng cách lặp qua các trang
 export async function getAllFavoriteIds(): Promise<string[]> {
   if (isServer) {
     return [];

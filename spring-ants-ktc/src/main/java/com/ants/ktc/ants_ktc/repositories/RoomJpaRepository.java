@@ -5,14 +5,14 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 
 import com.ants.ktc.ants_ktc.entities.Room;
 import com.ants.ktc.ants_ktc.repositories.projection.MailUserProjection;
@@ -24,6 +24,8 @@ import com.ants.ktc.ants_ktc.repositories.projection.RoomHiddenProjection;
 import com.ants.ktc.ants_ktc.repositories.projection.RoomMapProjection;
 import com.ants.ktc.ants_ktc.repositories.projection.RoomNewProjection;
 import com.ants.ktc.ants_ktc.repositories.projection.RoomSuggestionProjection;
+import com.ants.ktc.ants_ktc.repositories.projection.landlord.FeePostRoomProjection;
+import com.ants.ktc.ants_ktc.repositories.projection.landlord.MaintainStatisticProjection;
 
 @Repository
 public interface RoomJpaRepository extends JpaRepository<Room, UUID> {
@@ -469,4 +471,107 @@ public interface RoomJpaRepository extends JpaRepository<Room, UUID> {
 
         @Query("SELECT up.email as email, up.fullName as fullName, r.title as title FROM Room r JOIN r.user u JOIN u.profile up WHERE r.id = :roomId")
         List<MailUserProjection> findMailUsersByRoomId(@Param("roomId") UUID roomId);
+
+        // Statistics queries
+        Long countByIsRemovedAndHidden(int isRemoved, int hidden);
+
+        Long countByIsRemovedOrHidden(int isRemoved, int hidden);
+
+        Long countByHidden(int hidden);
+
+        Long countByIsRemoved(int isRemoved);
+
+        Long countByPostTypeId(UUID postTypeId);
+
+        @Query("SELECT COUNT(r) FROM Room r WHERE r.createdDate >= :startDate")
+        Long countByCreatedDateAfter(@Param("startDate") java.util.Date startDate);
+
+        @Query("""
+                        SELECT p.name as provinceName,
+                               COUNT(r.id) as roomCount,
+                               AVG(r.price_month) as averagePrice
+                        FROM Room r
+                        JOIN r.address a
+                        JOIN a.ward w
+                        JOIN w.district d
+                        JOIN d.province p
+                        WHERE r.isRemoved = 0 AND r.hidden = 0
+                        GROUP BY p.id, p.name
+                        ORDER BY COUNT(r.id) DESC
+                        """)
+        List<Object[]> getRoomStatisticsByProvince();
+
+        // Debug query to check room data
+        @Query("""
+                        SELECT COUNT(r) as totalRooms,
+                               SUM(CASE WHEN r.address IS NOT NULL THEN 1 ELSE 0 END) as roomsWithAddress,
+                               SUM(CASE WHEN r.isRemoved = 0 THEN 1 ELSE 0 END) as activeRooms,
+                               SUM(CASE WHEN r.hidden = 0 THEN 1 ELSE 0 END) as visibleRooms
+                        FROM Room r
+                        """)
+        List<Object[]> getRoomDebugInfo();
+
+        // Alternative query with left joins to handle missing address data
+        @Query("""
+                        SELECT COALESCE(p.name, 'No Province') as provinceName,
+                               COUNT(r.id) as roomCount,
+                               AVG(r.price_month) as averagePrice
+                        FROM Room r
+                        LEFT JOIN r.address a
+                        LEFT JOIN a.ward w
+                        LEFT JOIN w.district d
+                        LEFT JOIN d.province p
+                        WHERE r.isRemoved = 0 AND r.hidden = 0
+                        GROUP BY p.id, p.name
+                        ORDER BY COUNT(r.id) DESC
+                        """)
+        List<Object[]> getRoomStatisticsByProvinceWithLeftJoin();
+
+        // @Query("SELECT up.email as email, up.fullName as fullName, r.title as title
+        // FROM Room r JOIN r.user u JOIN u.profile up WHERE r.id = :roomId")
+        // List<MailUserProjection> findMailUsersByRoomId(@Param("roomId") UUID roomId);
+
+        // Count rooms by userId where isRemoved = 0 and approval = 1
+        @Query("select count (r) from Room r where r.user.id = :userId and r.isRemoved = 0 and r.approval = 1")
+        int countRoomsByUserId(@Param("userId") UUID userId);
+
+        // Count room rented
+        @Query("select count (r) from Room r where r.user.id = :userId and r.isRemoved = 0 and r.approval = 1 and r.available = 1")
+        int countRentedRoomsByUserId(@Param("userId") UUID userId);
+
+        // Count view of room
+        @Query("select sum(r.viewCount) from Room r where r.user.id = :userId and r.isRemoved = 0 and r.approval = 1")
+        int sumViewOfRoomsByUserId(@Param("userId") UUID userId);
+
+        // Count favorite of room
+        @Query("SELECT COUNT(f) FROM Room r LEFT JOIN Favorite f ON r.id = f.room.id WHERE r.user.id = :userId AND r.isRemoved = 0 AND r.approval = 1")
+        int sumFavoriteOfRoomsByUserId(@Param("userId") UUID userId);
+
+        // Statistics cost maintenance of room by userId
+        @Query(value = "SELECT SUM(m.cost) as cost, DATE(m.createddate) as date " +
+                        "FROM maintenances m " +
+                        "JOIN rooms r ON m.room_id = r.id " +
+                        "WHERE r.user_id = :userId " +
+                        "AND r.is_removed = 0 " +
+                        "AND r.approval = 1 " +
+                        "AND m.is_removed = 0 " +
+                        "AND DATE(m.createddate) BETWEEN :startDate AND :endDate " +
+                        "GROUP BY DATE(m.createddate)", nativeQuery = true)
+        List<MaintainStatisticProjection> sumCostMaintenanceOfRoomsByUserId(
+                        @Param("userId") UUID userId,
+                        @Param("startDate") Date startDate,
+                        @Param("endDate") Date endDate);
+
+        // Statistics count fee post room by userId
+        @Query(value = "SELECT sum(t.amount) as cost, DATE(t.createddate) as date FROM transactions t " +
+                        "JOIN wallets w ON t.wallet_id = w.id " +
+                        "JOIN users u ON u.wallet_id = w.id " +
+                        "WHERE u.id = :userId " +
+                        "AND t.transaction_type = 0 " +
+                        "AND DATE(t.createddate) BETWEEN :startDate AND :endDate " +
+                        "GROUP BY DATE(t.createddate)", nativeQuery = true)
+        List<FeePostRoomProjection> countFeePostOfRoomsByUserId(
+                        @Param("userId") UUID userId,
+                        @Param("startDate") Date startDate,
+                        @Param("endDate") Date endDate);
 }

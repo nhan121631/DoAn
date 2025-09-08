@@ -1,5 +1,4 @@
 import BookingForm from "@/app/landlord/components/booking-room/BookingForm";
-import Convenient from "@/app/landlord/components/room-detail/convenient";
 import FavoriteCount from "@/app/landlord/components/room-detail/FavoriteCount";
 import FeedbackLayout from "@/app/landlord/components/room-detail/Feedback";
 import IncreaseView from "@/app/landlord/components/room-detail/IncreaseView";
@@ -117,8 +116,8 @@ export default async function Page({
 
               {/* Room Details Grid - Enhanced */}
               <div className="p-6">
-                <div className="flex mb-4 items-left gap-4">
-                  <h2 className="flex items-center gap-2 text-2xl font-bold text-gray-800 dark:text-white m-0">
+                <div className="flex gap-4 mb-4 items-left">
+                  <h2 className="flex items-center gap-2 m-0 text-2xl font-bold text-gray-800 dark:text-white">
                     <Home className="w-6 h-6 text-blue-600" />
                     Room Specifications
                   </h2>
@@ -374,9 +373,9 @@ export default async function Page({
                 </div>
 
                 {/* Conveniences Section */}
-                <div className="mb-8">
+                {/* <div className="mb-8">
                   <Convenient features={room.convenients} />
-                </div>
+                </div> */}
 
                 {/* Divider */}
                 <div className="relative mb-8">

@@ -24,7 +24,7 @@ function AppHeader({ collapsed, toggleCollapsed }: AppHeaderProps) {
       key: "logout",
       label: (
         <button
-          className="flex items-center justify-center gap-2 w-full text-left px-4 py-2 text-red-500 hover:bg-gray-100 dark:hover:bg-gray-700 dark:!bg-gray-100"
+          className="flex items-center justify-center gap-2 w-full text-left px-4 py-2 text-red-500 hover:bg-gray-100 dark:hover:!bg-gray-900 dark:!bg-gray-900"
           onClick={async () => await signOut({ callbackUrl: "/auth/login" })}
         >
           <IoIosLogOut className="text-2xl" /> Logout

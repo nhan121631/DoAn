@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import type { Key } from "react";
 import {
   Table,
   Tag,
@@ -15,6 +16,7 @@ import {
   Statistic,
   App,
 } from "antd";
+import type { ColumnType } from 'antd/es/table';
 import {
   EyeOutlined,
   EditOutlined,
@@ -55,7 +57,11 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
   const [exportForm] = Form.useForm();
   const [searchText, setSearchText] = useState("");
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
-  const [roomData, setRoomData] = useState<any>(null);
+  const [roomData, setRoomData] = useState<{
+    elecPrice?: number;
+    waterPrice?: number;
+    priceMonth?: number;
+  } | null>(null);
 
   const [editForm, setEditForm] = useState({
     month: "",
@@ -98,15 +104,15 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
     if (roomData?.priceMonth) {
       setAddForm(prev => ({
         ...prev,
-        serviceFee: roomData.priceMonth,
-        totalAmount: prev.electricityFee + prev.waterFee + roomData.priceMonth + prev.damageFee
+        serviceFee: roomData.priceMonth || 0,
+        totalAmount: prev.electricityFee + prev.waterFee + (roomData.priceMonth || 0) + prev.damageFee
       }));
     }
   }, [roomData]);
 
   // Calculate fees when usage changes
   const calculateFees = (electricityUsage: number, waterUsage: number, damageFee: number = 0) => {
-    if (!roomData) return { electricityFee: 0, waterFee: 0, serviceFee: roomData?.priceMonth || 0, totalAmount: damageFee };
+    if (!roomData) return { electricityFee: 0, waterFee: 0, serviceFee: 0, totalAmount: damageFee };
     
     const electricityFee = electricityUsage * (roomData.elecPrice || 0);
     const waterFee = waterUsage * (roomData.waterPrice || 0);
@@ -158,7 +164,7 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
       setEditBill(null);
       const data = await ContractService.getById(contract.id);
       onContractUpdate(data);
-    } catch (err) {
+    } catch (_) {
       message.error("Update bill failed!");
     } finally {
       setLoading(false);
@@ -198,7 +204,7 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
       });
       const data = await ContractService.getById(contract.id);
       onContractUpdate(data);
-    } catch (err) {
+    } catch (_) {
       message.error("Add bill failed!");
     } finally {
       setLoading(false);
@@ -213,7 +219,7 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
       message.success("Bill deleted!");
       const data = await ContractService.getById(contract.id);
       onContractUpdate(data);
-    } catch (err) {
+    } catch (_) {
       message.error("Delete bill failed!");
     } finally {
       setLoading(false);
@@ -238,7 +244,7 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
     }
   };
 
-  const handleExport = async (values: { fromMonth: any; toMonth: any }) => {
+  const handleExport = async (values: { fromMonth: dayjs.Dayjs; toMonth: dayjs.Dayjs }) => {
     if (!contract) return;
     
     try {
@@ -367,7 +373,7 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
         { text: "Paid", value: "PAID" },
         { text: "Overdue", value: "OVERDUE" },
       ],
-      onFilter: (value: any, record: BillData) => {
+      onFilter: (value: boolean | Key, record: BillData): boolean => {
         const actualStatus = record.status || (record.paid === true ? "PAID" : "PENDING");
         return actualStatus === value;
       },
@@ -380,7 +386,7 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
     {
       title: "Action",
       key: "action",
-      render: (_: any, record: BillData) => {
+      render: (_: unknown, record: BillData) => {
         const actualStatus = record.status || (record.paid === true ? "PAID" : "PENDING");
         const isConfirming = actualStatus === "CONFIRMING";
         const isPaid = actualStatus === "PAID";
@@ -496,7 +502,6 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
     return status === "PENDING";
   }).length;
   const confirmingBills = filteredBills.filter(bill => bill.status === "CONFIRMING").length;
-  const totalAmount = filteredBills.reduce((sum, bill) => sum + bill.totalAmount, 0);
   const unpaidAmount = filteredBills.filter(bill => {
     const status = bill.status || (bill.paid === true ? "PAID" : "PENDING");
     return status !== "PAID";

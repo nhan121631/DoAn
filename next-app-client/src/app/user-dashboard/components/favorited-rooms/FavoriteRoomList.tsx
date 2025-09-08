@@ -18,7 +18,6 @@ export default function FavoriteRoomList() {
   const [totalPages, setTotalPages] = useState(0);
   const pageSize = 6;
 
-
   const fetchRooms = useCallback(async (page: number) => {
     setLoading(true);
     setError(null);
@@ -100,7 +99,7 @@ export default function FavoriteRoomList() {
           );
         })}
       </div>
-      
+
       {/* <div className="flex items-center justify-center gap-4 py-6">
         <button
           onClick={() => handlePageChange(currentPage - 1)}
