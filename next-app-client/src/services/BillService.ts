@@ -26,7 +26,7 @@ export const BillService = {
         }
         return response.json();
     },
-    async updateBill(contractId: string, billId: string, billData: Partial<BillData>): Promise<any> {
+    async updateBill(contractId: string, billId: string, billData: Partial<BillData>): Promise<BillData> {
       const res = await fetch(`/api/contracts/${contractId}/bills/${billId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },

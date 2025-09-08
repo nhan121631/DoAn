@@ -1,6 +1,7 @@
+import { useFavoriteStore } from "@/stores/FavoriteStore";
 import { RoomInUser } from "@/types/types";
 import { getSession } from "next-auth/react";
-import { useFavoriteStore } from "@/stores/FavoriteStore";
+// import { useFavoriteStore } from "@/stores/FavoriteStore";
 
 const isServer = typeof window === 'undefined';
 

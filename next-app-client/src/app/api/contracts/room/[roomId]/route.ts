@@ -3,8 +3,8 @@ import { authOptions } from "@/lib/auth";
 import { API_URL } from "@/services/Constant";
 
 // GET /api/contract/room/[roomId]
-export async function GET(request: Request, { params }: { params: { roomId: string } }) {
-  const { roomId } = params;
+export async function GET(request: Request, { params }: { params: Promise<{ roomId: string }> }) {
+  const { roomId } = await params;
   if (!roomId) return new Response("roomId is missing", { status: 400 });
   const session = await getServerSession(authOptions);
   if (!session) return new Response("Unauthorized", { status: 401 });

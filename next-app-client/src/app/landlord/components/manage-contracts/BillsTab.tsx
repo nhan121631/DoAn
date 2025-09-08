@@ -1,7 +1,5 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 import React, { useState } from "react";
+import type { Key } from "react";
 import {
   Table,
   Tag,
@@ -18,6 +16,7 @@ import {
   Statistic,
   App,
 } from "antd";
+import type { ColumnType } from 'antd/es/table';
 import {
   EyeOutlined,
   EditOutlined,
@@ -58,7 +57,11 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
   const [exportForm] = Form.useForm();
   const [searchText, setSearchText] = useState("");
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
-  const [roomData, setRoomData] = useState<any>(null);
+  const [roomData, setRoomData] = useState<{
+    elecPrice?: number;
+    waterPrice?: number;
+    priceMonth?: number;
+  } | null>(null);
 
   const [editForm, setEditForm] = useState({
     month: "",
@@ -101,15 +104,15 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
     if (roomData?.priceMonth) {
       setAddForm(prev => ({
         ...prev,
-        serviceFee: roomData.priceMonth,
-        totalAmount: prev.electricityFee + prev.waterFee + roomData.priceMonth + prev.damageFee
+        serviceFee: roomData.priceMonth || 0,
+        totalAmount: prev.electricityFee + prev.waterFee + (roomData.priceMonth || 0) + prev.damageFee
       }));
     }
   }, [roomData]);
 
   // Calculate fees when usage changes
   const calculateFees = (electricityUsage: number, waterUsage: number, damageFee: number = 0) => {
-    if (!roomData) return { electricityFee: 0, waterFee: 0, serviceFee: roomData?.priceMonth || 0, totalAmount: damageFee };
+    if (!roomData) return { electricityFee: 0, waterFee: 0, serviceFee: 0, totalAmount: damageFee };
     
     const electricityFee = electricityUsage * (roomData.elecPrice || 0);
     const waterFee = waterUsage * (roomData.waterPrice || 0);
@@ -161,7 +164,7 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
       setEditBill(null);
       const data = await ContractService.getById(contract.id);
       onContractUpdate(data);
-    } catch (err) {
+    } catch (_) {
       message.error("Update bill failed!");
     } finally {
       setLoading(false);
@@ -201,7 +204,7 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
       });
       const data = await ContractService.getById(contract.id);
       onContractUpdate(data);
-    } catch (err) {
+    } catch (_) {
       message.error("Add bill failed!");
     } finally {
       setLoading(false);
@@ -216,7 +219,7 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
       message.success("Bill deleted!");
       const data = await ContractService.getById(contract.id);
       onContractUpdate(data);
-    } catch (err) {
+    } catch (_) {
       message.error("Delete bill failed!");
     } finally {
       setLoading(false);
@@ -241,25 +244,21 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
     }
   };
 
-  const handleExport = async (values: { fromMonth: any; toMonth: any }) => {
+  const handleExport = async (values: { fromMonth: dayjs.Dayjs; toMonth: dayjs.Dayjs }) => {
     if (!contract) return;
-
+    
     try {
       setExportLoading(true);
-      const fromMonth = values.fromMonth.format("YYYY-MM");
-      const toMonth = values.toMonth.format("YYYY-MM");
-
+      const fromMonth = values.fromMonth.format('YYYY-MM');
+      const toMonth = values.toMonth.format('YYYY-MM');
+      
       if (dayjs(fromMonth).isAfter(dayjs(toMonth))) {
         message.error("From month cannot be later than to month!");
         return;
       }
-
-      const blob = await ContractService.exportBills(
-        contract.id,
-        fromMonth,
-        toMonth
-      );
-      const toMonthReverse = values.toMonth.format("MM-YYYY");
+      
+      const blob = await ContractService.exportBills(contract.id, fromMonth, toMonth);
+      const toMonthReverse = values.toMonth.format('MM-YYYY');
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
@@ -268,7 +267,7 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
       a.click();
       a.remove();
       window.URL.revokeObjectURL(url);
-
+      
       message.success("Bills exported successfully!");
       setExportModalOpen(false);
       exportForm.resetFields();
@@ -285,9 +284,7 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
       title: "Month",
       dataIndex: "month",
       key: "month",
-      render: (month: string) => (
-        <span style={{ color: "red", fontWeight: 500 }}>{month}</span>
-      ),
+      render: (month: string) => <span style={{ color: 'red', fontWeight: 500 }}>{month}</span>,
       sorter: (a: BillData, b: BillData) => a.month.localeCompare(b.month),
     },
     {
@@ -343,8 +340,7 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
       dataIndex: "totalAmount",
       key: "totalAmount",
       render: (v: number) => v?.toLocaleString() + "đ",
-      sorter: (a: BillData, b: BillData) =>
-        (a.totalAmount || 0) - (b.totalAmount || 0),
+      sorter: (a: BillData, b: BillData) => (a.totalAmount || 0) - (b.totalAmount || 0),
     },
     {
       title: "Status",
@@ -377,7 +373,7 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
         { text: "Paid", value: "PAID" },
         { text: "Overdue", value: "OVERDUE" },
       ],
-      onFilter: (value: any, record: BillData) => {
+      onFilter: (value: boolean | Key, record: BillData): boolean => {
         const actualStatus = record.status || (record.paid === true ? "PAID" : "PENDING");
         return actualStatus === value;
       },
@@ -390,7 +386,7 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
     {
       title: "Action",
       key: "action",
-      render: (_: any, record: BillData) => {
+      render: (_: unknown, record: BillData) => {
         const actualStatus = record.status || (record.paid === true ? "PAID" : "PENDING");
         const isConfirming = actualStatus === "CONFIRMING";
         const isPaid = actualStatus === "PAID";
@@ -506,7 +502,6 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
     return status === "PENDING";
   }).length;
   const confirmingBills = filteredBills.filter(bill => bill.status === "CONFIRMING").length;
-  const totalAmount = filteredBills.reduce((sum, bill) => sum + bill.totalAmount, 0);
   const unpaidAmount = filteredBills.filter(bill => {
     const status = bill.status || (bill.paid === true ? "PAID" : "PENDING");
     return status !== "PAID";
@@ -518,44 +513,24 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <Card size="small" className="bg-white dark:bg-[#17223b] border-gray-200 dark:border-gray-600 transition-colors duration-300">
           <Statistic
-            title={
-              <span className="text-gray-600 dark:text-gray-300">
-                Total Bills
-              </span>
-            }
+            title={<span className="text-gray-600 dark:text-gray-300">Total Bills</span>}
             value={totalBills}
-            prefix={
-              <DollarOutlined className="text-blue-600 dark:text-blue-400" />
-            }
-            valueStyle={{ color: "#1890ff" }}
+            prefix={<DollarOutlined className="text-blue-600 dark:text-blue-400" />}
+            valueStyle={{ color: '#1890ff' }}
           />
         </Card>
-        <Card
-          size="small"
-          className="bg-white dark:bg-[#17223b] border-gray-200 dark:border-gray-600 transition-colors duration-300"
-        >
+        <Card size="small" className="bg-white dark:bg-[#17223b] border-gray-200 dark:border-gray-600 transition-colors duration-300">
           <Statistic
-            title={
-              <span className="text-gray-600 dark:text-gray-300">
-                Paid Bills
-              </span>
-            }
+            title={<span className="text-gray-600 dark:text-gray-300">Paid Bills</span>}
             value={paidBills}
-            valueStyle={{ color: "#3f8600" }}
+            valueStyle={{ color: '#3f8600' }}
           />
         </Card>
-        <Card
-          size="small"
-          className="bg-white dark:bg-[#17223b] border-gray-200 dark:border-gray-600 transition-colors duration-300"
-        >
+        <Card size="small" className="bg-white dark:bg-[#17223b] border-gray-200 dark:border-gray-600 transition-colors duration-300">
           <Statistic
-            title={
-              <span className="text-gray-600 dark:text-gray-300">
-                Pending Bills
-              </span>
-            }
+            title={<span className="text-gray-600 dark:text-gray-300">Pending Bills</span>}
             value={pendingBills}
-            valueStyle={{ color: "#cf1322" }}
+            valueStyle={{ color: '#cf1322' }}
           />
         </Card>
         <Card size="small" className="bg-white dark:bg-[#17223b] border-gray-200 dark:border-gray-600 transition-colors duration-300">
@@ -567,24 +542,16 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
         </Card>
         <Card size="small" className="bg-white dark:bg-[#17223b] border-gray-200 dark:border-gray-600 transition-colors duration-300">
           <Statistic
-            title={
-              <span className="text-gray-600 dark:text-gray-300">
-                Unpaid Amount
-              </span>
-            }
+            title={<span className="text-gray-600 dark:text-gray-300">Unpaid Amount</span>}
             value={unpaidAmount}
-            valueStyle={{ color: "#cf1322" }}
+            valueStyle={{ color: '#cf1322' }}
             suffix="đ"
           />
         </Card>
       </div>
 
-      <Card
-        title={
-          <span className="text-gray-900 dark:text-white">
-            Bills Management
-          </span>
-        }
+      <Card 
+        title={<span className="text-gray-900 dark:text-white">Bills Management</span>}
         className="shadow-sm bg-white dark:bg-[#17223b] border-gray-200 dark:border-gray-600 transition-colors duration-300"
         extra={
           <Space>
@@ -620,8 +587,8 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
             <Button type="primary" onClick={() => setAddBillOpen(true)}>
               Add Bill
             </Button>
-            <Button
-              type="default"
+            <Button 
+              type="default" 
               icon={<ExportOutlined />}
               onClick={() => setExportModalOpen(true)}
             >
@@ -634,13 +601,13 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
           columns={billColumns}
           dataSource={filteredBills}
           rowKey="id"
-          pagination={{
+          pagination={{ 
             pageSize: 10,
             showSizeChanger: true,
             showQuickJumper: true,
             showTotal: (total, range) =>
               `${range[0]}-${range[1]} of ${total} bills`,
-            pageSizeOptions: ["5", "10", "20", "50"],
+            pageSizeOptions: ['5', '10', '20', '50'],
           }}
           scroll={{ y: 400 }}
           loading={loading}
@@ -667,81 +634,79 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
         footer={null}
         destroyOnHidden
       >
-        <Form form={exportForm} onFinish={handleExport} layout="vertical">
+        <Form
+          form={exportForm}
+          onFinish={handleExport}
+          layout="vertical"
+        >
           <Form.Item
             label="From Month"
             name="fromMonth"
             rules={[
-              { required: true, message: "Please select from month!" },
+              { required: true, message: 'Please select from month!' },
               ({ getFieldValue }) => ({
                 validator(_, value) {
-                  if (!value || !getFieldValue("toMonth")) {
+                  if (!value || !getFieldValue('toMonth')) {
                     return Promise.resolve();
                   }
-                  if (value.isAfter(getFieldValue("toMonth"))) {
-                    return Promise.reject(
-                      new Error("From month must be before to month!")
-                    );
+                  if (value.isAfter(getFieldValue('toMonth'))) {
+                    return Promise.reject(new Error('From month must be before to month!'));
                   }
                   return Promise.resolve();
                 },
               }),
             ]}
           >
-            <DatePicker
-              picker="month"
+            <DatePicker 
+              picker="month" 
               placeholder="Select from month"
-              style={{ width: "100%" }}
+              style={{ width: '100%' }}
               format="YYYY-MM"
               onChange={() => {
-                exportForm.validateFields(["toMonth"]);
+                exportForm.validateFields(['toMonth']);
               }}
             />
           </Form.Item>
-
+          
           <Form.Item
             label="To Month"
             name="toMonth"
             rules={[
-              { required: true, message: "Please select to month!" },
+              { required: true, message: 'Please select to month!' },
               ({ getFieldValue }) => ({
                 validator(_, value) {
-                  if (!value || !getFieldValue("fromMonth")) {
+                  if (!value || !getFieldValue('fromMonth')) {
                     return Promise.resolve();
                   }
-                  if (value.isBefore(getFieldValue("fromMonth"))) {
-                    return Promise.reject(
-                      new Error("To month must be after from month!")
-                    );
+                  if (value.isBefore(getFieldValue('fromMonth'))) {
+                    return Promise.reject(new Error('To month must be after from month!'));
                   }
                   return Promise.resolve();
                 },
               }),
             ]}
           >
-            <DatePicker
-              picker="month"
+            <DatePicker 
+              picker="month" 
               placeholder="Select to month"
-              style={{ width: "100%" }}
+              style={{ width: '100%' }}
               format="YYYY-MM"
               onChange={() => {
-                exportForm.validateFields(["fromMonth"]);
+                exportForm.validateFields(['fromMonth']);
               }}
             />
           </Form.Item>
 
           <Form.Item className="mb-0 text-right">
             <Space>
-              <Button
-                onClick={() => {
-                  setExportModalOpen(false);
-                  exportForm.resetFields();
-                }}
-              >
+              <Button onClick={() => {
+                setExportModalOpen(false);
+                exportForm.resetFields();
+              }}>
                 Cancel
               </Button>
-              <Button
-                type="primary"
+              <Button 
+                type="primary" 
                 htmlType="submit"
                 loading={exportLoading}
                 icon={<DownloadOutlined />}
@@ -762,13 +727,7 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
         confirmLoading={loading}
       >
         {editBill && (
-          <form
-            className="space-y-3"
-            onSubmit={(e) => {
-              e.preventDefault();
-              handleEditBillSubmit();
-            }}
-          >
+          <form className="space-y-3" onSubmit={e => { e.preventDefault(); handleEditBillSubmit(); }}>
             <div>
               <label className="block font-medium dark:text-gray-300 transition-colors duration-300">Month</label>
               <DatePicker
@@ -885,13 +844,7 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
         onOk={handleAddBillSubmit}
         confirmLoading={loading}
       >
-        <form
-          className="space-y-3"
-          onSubmit={(e) => {
-            e.preventDefault();
-            handleAddBillSubmit();
-          }}
-        >
+        <form className="space-y-3" onSubmit={e => { e.preventDefault(); handleAddBillSubmit(); }}>
           <div>
             <label className="block font-medium dark:text-gray-300 transition-colors duration-300">Month</label>
             <DatePicker
