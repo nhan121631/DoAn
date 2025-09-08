@@ -250,6 +250,14 @@ const FavoriteDashboardRoomVipCard: React.FC<RoomCardProps> = ({
         </div>
       </div>
 
+      {/* {room.postType === "Post VIP" && (
+  <div className="absolute z-20 top-2 left-2 sm:top-3 sm:left-3">
+    <span className="flex items-center gap-1 px-2 py-1 text-xs font-bold text-white rounded-full shadow-lg bg-gradient-to-r from-yellow-400 via-orange-400 to-red-400 sm:px-3 sm:py-1 animate-pulse">
+      ⭐ VIP
+    </span>
+  </div>
+)} */}
+
       {/* CONTENT SECTION */}
       <div className="flex flex-col flex-grow p-4">
         <div className="flex flex-wrap items-center gap-2 mb-1">

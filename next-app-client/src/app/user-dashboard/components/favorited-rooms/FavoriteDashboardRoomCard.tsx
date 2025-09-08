@@ -65,13 +65,15 @@ const FavoriteDashboardRoomCard: React.FC<RoomCardProps> = ({
           />
         </div>
       </div>
+      
+      
 
       {/* CONTENT SECTION */}
       <div className="flex flex-col flex-grow p-4">
         <div className="flex flex-wrap items-center gap-2 mb-1">
-          <span className="text-xl font-bold text-yellow-400 drop-shadow">
+          {/* <span className="text-xl font-bold text-yellow-400 drop-shadow">
             ★★★★★
-          </span>
+          </span> */}
           <span
             className="text-xl font-extrabold text-blue-700 uppercase break-words transition-colors duration-200 group-hover:text-emerald-600 line-clamp-2 text-ellipsis"
             style={{
