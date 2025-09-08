@@ -99,6 +99,14 @@ export default function BillDetailModal({
                       {selectedBill.serviceFee?.toLocaleString('vi-VN')} đ
                     </td>
                   </tr>
+                  {selectedBill.damageFee != null && selectedBill.damageFee > 0 && (
+                    <tr className="border-t dark:border-gray-600 bg-red-50 dark:bg-red-900/20 transition-colors duration-300">
+                      <td className="py-3 px-4 text-red-700 dark:text-red-300 font-medium transition-colors duration-300">Damage Fee</td>
+                      <td className="py-3 px-4 text-right text-red-800 dark:text-red-200 font-medium transition-colors duration-300">
+                        {selectedBill.damageFee?.toLocaleString('vi-VN')} đ
+                      </td>
+                    </tr>
+                  )}
                   <tr className="border-t dark:border-gray-600 border-gray-300 bg-blue-50 dark:bg-[#17223b] transition-colors duration-300">
                     <td className="py-4 px-4 font-bold text-lg text-gray-800 dark:text-white transition-colors duration-300">TOTAL</td>
                     <td className="py-4 px-4 text-right font-bold text-lg text-blue-600 dark:text-blue-400 transition-colors duration-300">

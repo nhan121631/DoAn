@@ -1,4 +1,4 @@
-import { BillData } from "@/types/types";
+import { BillData, LandlordPaymentInfo } from "@/types/types";
 const BASE_URL = "/api/contracts";
 
 export const BillService = {
@@ -31,6 +31,16 @@ export const BillService = {
         body: JSON.stringify(billData),
       });
       if (!res.ok) throw new Error("Failed to update bill");
+      return res.json();
+    },
+
+    async updateBillStatus(contractId: string, billId: string, status: string): Promise<BillData> {
+      const res = await fetch(`/api/contracts/${contractId}/bills/${billId}/status`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status }),
+      });
+      if (!res.ok) throw new Error("Failed to update bill status");
       return res.json();
     },
     async deleteBill(contractId: string, billId: string): Promise<void> {
