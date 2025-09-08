@@ -1,7 +1,18 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Table, Tag, Button, Empty, Input, Select, Space, Card, Alert, Spin } from "antd";
+import {
+  Table,
+  Tag,
+  Button,
+  Empty,
+  Input,
+  Select,
+  Space,
+  Card,
+  Alert,
+  Spin,
+} from "antd";
 import { SearchOutlined, FilterOutlined } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
 import { useRouter } from "next/navigation";
@@ -55,8 +66,10 @@ const MyContract: React.FC = () => {
   if (status === "loading" || loading) {
     return (
       <div className="flex flex-col justify-center items-center h-96 space-y-3">
-         <Spin size="large" />
-        <span className="text-center whitespace-nowrap">Loading contracts...</span>
+        <Spin size="large" />
+        <span className="text-center whitespace-nowrap">
+          Loading contracts...
+        </span>
       </div>
     );
   }
@@ -68,7 +81,8 @@ const MyContract: React.FC = () => {
       contract.landlordName.toLowerCase().includes(searchText.toLowerCase()) ||
       contract.contractName.toLowerCase().includes(searchText.toLowerCase());
 
-    const matchesStatus = statusFilter === null || contract.status === statusFilter;
+    const matchesStatus =
+      statusFilter === null || contract.status === statusFilter;
 
     return matchesSearch && matchesStatus;
   });
@@ -93,7 +107,8 @@ const MyContract: React.FC = () => {
       dataIndex: "startDate",
       key: "startDate",
       render: (date: string) => new Date(date).toLocaleDateString(),
-      sorter: (a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime(),
+      sorter: (a, b) =>
+        new Date(a.startDate).getTime() - new Date(b.startDate).getTime(),
       width: "12%",
     },
     {
@@ -101,7 +116,8 @@ const MyContract: React.FC = () => {
       dataIndex: "endDate",
       key: "endDate",
       render: (date: string) => new Date(date).toLocaleDateString(),
-      sorter: (a, b) => new Date(a.endDate).getTime() - new Date(b.endDate).getTime(),
+      sorter: (a, b) =>
+        new Date(a.endDate).getTime() - new Date(b.endDate).getTime(),
       width: "12%",
     },
     {
@@ -135,7 +151,9 @@ const MyContract: React.FC = () => {
         <Button
           type="link"
           className="text-blue-600"
-          onClick={() => router.push(`/user-dashboard/my-contracts/${record.id}`)}
+          onClick={() =>
+            router.push(`/user-dashboard/my-contracts/${record.id}`)
+          }
         >
           View Detail
         </Button>
@@ -147,15 +165,10 @@ const MyContract: React.FC = () => {
   return (
     <div className="space-y-6">
       {error ? (
-        <Alert
-          message="Error"
-          description={error}
-          type="error"
-          showIcon
-        />
+        <Alert message="Error" description={error} type="error" showIcon />
       ) : null}
       <Card
-        title="My Contracts"
+        title={<span className="text-2xl font-bold">My Contracts</span>}
         className="shadow-md"
         extra={
           <Space>
@@ -195,12 +208,16 @@ const MyContract: React.FC = () => {
             showQuickJumper: true,
             showTotal: (total, range) =>
               `${range[0]}-${range[1]} of ${total} contracts`,
-            pageSizeOptions: ['5', '10', '20', '50'],
+            pageSizeOptions: ["5", "10", "20", "50"],
           }}
           locale={{
             emptyText: (
               <Empty
-                description={searchText || statusFilter !== null ? "No contracts match your search criteria" : "No contracts found"}
+                description={
+                  searchText || statusFilter !== null
+                    ? "No contracts match your search criteria"
+                    : "No contracts found"
+                }
                 image={Empty.PRESENTED_IMAGE_SIMPLE}
               />
             ),

@@ -16,7 +16,7 @@ export default async function ProfileInfo() {
   return (
     <div className="flex flex-col flex-1 min-h-screen w-full bg-white dark:bg-[#001529] text-gray-900 dark:text-white p-8 transition-colors duration-300">
       <div className="flex items-center justify-between mb-8">
-        <h1 className="text-3xl font-bold">Profile Information</h1>
+        <h1 className="text-2xl font-bold">Profile Information</h1>
         <ButtonEditProfile userProfile={userProfile} />
       </div>
       <div className="flex flex-col gap-8 md:flex-row">

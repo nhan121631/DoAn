@@ -33,9 +33,9 @@ export default function UserLayoutClient({
   return (
     <ConfigProvider>
       <App>
-        <Layout className="min-h-screen">
-          <HeaderUserDashboard />
-          <Layout className="!min-h-screen">
+        <Layout className="min-h-screen flex flex-col">
+          <HeaderUserDashboard fixed={false} />
+          <Layout className="flex-1 overflow-hidden h-[100vh]">
             <AppSidebar collapsed={collapsed} />
             <Content className="p-6 bg-gray-100">{children}</Content>
           </Layout>
