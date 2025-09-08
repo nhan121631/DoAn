@@ -82,13 +82,27 @@ export default function BillDetail({
                 </thead>
                 <tbody>
                   <tr className="border-t">
-                    <td className="py-3 px-4 text-gray-700">Electricity</td>
+                    <td className="py-3 px-4 text-gray-700">
+                      <div>Electricity</div>
+                      {selectedBill.electricityUsage && selectedBill.electricityPrice && (
+                        <div className="text-xs text-gray-500 mt-1">
+                          {selectedBill.electricityUsage.toFixed(2)} kWh × {selectedBill.electricityPrice.toLocaleString('vi-VN')} đ/kWh
+                        </div>
+                      )}
+                    </td>
                     <td className="py-3 px-4 text-right text-gray-800">
                       {selectedBill.electricityFee?.toLocaleString('vi-VN')} đ
                     </td>
                   </tr>
                   <tr className="border-t bg-gray-50">
-                    <td className="py-3 px-4 text-gray-700">Water</td>
+                    <td className="py-3 px-4 text-gray-700">
+                      <div>Water</div>
+                      {selectedBill.waterUsage && selectedBill.waterPrice && (
+                        <div className="text-xs text-gray-500 mt-1">
+                          {selectedBill.waterUsage.toFixed(2)} m³ × {selectedBill.waterPrice.toLocaleString('vi-VN')} đ/m³
+                        </div>
+                      )}
+                    </td>
                     <td className="py-3 px-4 text-right text-gray-800">
                       {selectedBill.waterFee?.toLocaleString('vi-VN')} đ
                     </td>
@@ -99,6 +113,14 @@ export default function BillDetail({
                       {selectedBill.serviceFee?.toLocaleString('vi-VN')} đ
                     </td>
                   </tr>
+                  {selectedBill.damageFee != null && selectedBill.damageFee > 0 && (
+                    <tr className="border-t bg-red-50">
+                      <td className="py-3 px-4 text-red-700">Damage Fee</td>
+                      <td className="py-3 px-4 text-right text-red-800">
+                        {selectedBill.damageFee.toLocaleString('vi-VN')} đ
+                      </td>
+                    </tr>
+                  )}
                   <tr className="border-t border-gray-300 bg-blue-50">
                     <td className="py-4 px-4 font-bold text-lg text-gray-800">TOTAL</td>
                     <td className="py-4 px-4 text-right font-bold text-lg text-blue-600">

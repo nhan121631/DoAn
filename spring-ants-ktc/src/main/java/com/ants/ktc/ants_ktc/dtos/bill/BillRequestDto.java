@@ -39,5 +39,5 @@ public class BillRequestDto {
     @PositiveOrZero(message = "Total amount must be greater than or equal to 0")
     private Double totalAmount;
 
-    private boolean paid;
+
 }

@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { Layout } from "antd";
+import { Layout, ConfigProvider, App } from "antd";
 import AppSidebar from "./AppSidebar";
 import HeaderUserDashboard from "./HeaderUserDashboard";
 
@@ -31,14 +31,16 @@ export default function UserLayoutClient({
     return () => mediaQuery.removeEventListener("change", handleScreenChange);
   }, [mounted]);
   return (
-    <div className="h-screen flex flex-col">
-      <div className="h-[85px]">
-        <HeaderUserDashboard fixed={false} />
-      </div>
-      <Layout className="flex-1">
-        <AppSidebar collapsed={collapsed} />
-        <Content className="bg-gray-100">{children}</Content>
-      </Layout>
-    </div>
+    <ConfigProvider>
+      <App>
+        <Layout className="min-h-screen">
+          <HeaderUserDashboard />
+          <Layout className="!min-h-screen">
+            <AppSidebar collapsed={collapsed} />
+            <Content className="p-6 bg-gray-100">{children}</Content>
+          </Layout>
+        </Layout>
+      </App>
+    </ConfigProvider>
   );
 }

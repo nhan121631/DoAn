@@ -3,12 +3,13 @@ import { authOptions } from "@/lib/auth";
 import { API_URL } from "@/services/Constant";
 import { NextRequest, NextResponse } from "next/server";
 
-export async function POST(req: NextRequest, { params }: { params: { contractId: string } }) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ contractId: string }> }) {
   const body = await req.json();
   const session = await getServerSession(authOptions);
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+  const { contractId } = await params;
   // Gọi API backend tạo bill
   const res = await fetch(`${API_URL}/bills`, {
     method: "POST",
@@ -17,7 +18,7 @@ export async function POST(req: NextRequest, { params }: { params: { contractId:
       "Authorization": `Bearer ${session.user.accessToken}`,
     },
     body: JSON.stringify({
-      contractId: params.contractId,
+      contractId: contractId,
       ...body,
     }),
   });
@@ -27,13 +28,14 @@ export async function POST(req: NextRequest, { params }: { params: { contractId:
   }
   return NextResponse.json(data);
 }
-export async function GET(req: NextRequest, { params }: { params: { contractId: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ contractId: string }> }) {
   const session = await getServerSession(authOptions);
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+  const { contractId } = await params;
   // Gọi API backend lấy danh sách hóa đơn
-  const res = await fetch(`${API_URL}/contracts/${params.contractId}/bills`, {
+  const res = await fetch(`${API_URL}/contracts/${contractId}/bills`, {
     method: "GET",
     headers: {
       "Authorization": `Bearer ${session.user.accessToken}`,

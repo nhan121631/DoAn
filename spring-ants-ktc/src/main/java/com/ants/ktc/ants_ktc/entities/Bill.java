@@ -1,5 +1,6 @@
 package com.ants.ktc.ants_ktc.entities;
 
+import com.ants.ktc.ants_ktc.enums.BillStatus;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -28,6 +29,7 @@ public class Bill extends BaseEntity {
     @Column(name = "total_amount")
     private Double totalAmount;
 
-    @Column(name = "paid", nullable = false)
-    private boolean paid = false;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
+    private BillStatus status = BillStatus.PENDING;
 }

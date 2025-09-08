@@ -1,7 +1,7 @@
 "use client";
 import { ThemeContext } from "@/app/context/ThemeContext";
 import { useEffect, useState } from "react";
-import { ConfigProvider, theme } from "antd";
+import { ConfigProvider, theme, App } from "antd";
 
 export default function ThemeProvider({
   children,
@@ -40,7 +40,9 @@ export default function ThemeProvider({
           },
         }}
       >
-        {children}
+        <App>
+          {children}
+        </App>
       </ConfigProvider>
     </ThemeContext.Provider>
   );

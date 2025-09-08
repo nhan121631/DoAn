@@ -293,6 +293,14 @@ export type LandlordPaymentInfo = {
   phoneNumber: string;
   email: string;
 };
+
+export type PaymentInfoDto = {
+  bankName: string;
+  bankNumber: string;
+  binCode: string;
+  accountHolderName: string;
+  phoneNumber: string;
+};
 export type Roomname = {
   name: string;
   address: string;
@@ -317,8 +325,15 @@ export interface BillData {
   electricityFee: number;
   waterFee: number;
   serviceFee: number;
+  damageFee?: number;
   totalAmount: number;
-  paid: boolean;
+  paid?: boolean; // For backward compatibility
+  status: 'PENDING' | 'CONFIRMING' | 'PAID' | 'OVERDUE';
+  // Usage and price information
+  electricityUsage?: number;
+  waterUsage?: number;
+  electricityPrice?: number;
+  waterPrice?: number;
 }
 
 export interface ResidentData {
@@ -351,6 +366,7 @@ export interface ContractData {
   status: number; // 0: active, 1: terminated, 2: expired, 3: pending
   bills: BillData[];
   residents?: ResidentData[];
+  landlordPaymentInfo?: PaymentInfoDto;
 }
 
 // statistic maintaince 

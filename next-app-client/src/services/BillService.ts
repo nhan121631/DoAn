@@ -26,13 +26,23 @@ export const BillService = {
         }
         return response.json();
     },
-    async updateBill(contractId: string, billId: string, billData: Partial<BillData>): Promise<any> {
+    async updateBill(contractId: string, billId: string, billData: Partial<BillData>): Promise<BillData> {
       const res = await fetch(`/api/contracts/${contractId}/bills/${billId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(billData),
       });
       if (!res.ok) throw new Error("Failed to update bill");
+      return res.json();
+    },
+
+    async updateBillStatus(contractId: string, billId: string, status: string): Promise<BillData> {
+      const res = await fetch(`/api/contracts/${contractId}/bills/${billId}/status`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status }),
+      });
+      if (!res.ok) throw new Error("Failed to update bill status");
       return res.json();
     },
     async deleteBill(contractId: string, billId: string): Promise<void> {

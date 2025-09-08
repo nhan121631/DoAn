@@ -1,13 +1,10 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 import React, { useState } from "react";
+import type { Key } from "react";
 import {
   Table,
   Tag,
   Button,
   Modal,
-  message,
   Tooltip,
   Popconfirm,
   DatePicker,
@@ -17,7 +14,9 @@ import {
   Select,
   Card,
   Statistic,
+  App,
 } from "antd";
+import type { ColumnType } from 'antd/es/table';
 import {
   EyeOutlined,
   EditOutlined,
@@ -32,6 +31,7 @@ import dayjs from "dayjs";
 import { ContractData, BillData } from "@/types/types";
 import { ContractService } from "@/services/ContractService";
 import { BillService } from "@/services/BillService";
+import { getRoomById } from "@/services/RoomService";
 import BillDetailModal from "./BillDetailModal";
 
 interface BillsTabProps {
@@ -39,15 +39,15 @@ interface BillsTabProps {
   onContractUpdate: (contract: ContractData) => void;
 }
 
-const billStatusMap = {
-  1: { text: "PAID", color: "green" },
-  0: { text: "UNPAID", color: "red" },
+const billStatusMap: Record<string, { text: string; color: string }> = {
+  PENDING: { text: "Pending", color: "orange" },
+  CONFIRMING: { text: "Confirming Payment", color: "blue" },
+  PAID: { text: "Paid", color: "green" },
+  OVERDUE: { text: "Overdue", color: "red" },
 };
 
-export default function BillsTab({
-  contract,
-  onContractUpdate,
-}: BillsTabProps) {
+export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) {
+  const { message } = App.useApp();
   const [selectedBill, setSelectedBill] = useState<BillData | null>(null);
   const [editBill, setEditBill] = useState<BillData | null>(null);
   const [addBillOpen, setAddBillOpen] = useState(false);
@@ -56,48 +56,115 @@ export default function BillsTab({
   const [loading, setLoading] = useState(false);
   const [exportForm] = Form.useForm();
   const [searchText, setSearchText] = useState("");
-  const [statusFilter, setStatusFilter] = useState<boolean | null>(null);
+  const [statusFilter, setStatusFilter] = useState<string | null>(null);
+  const [roomData, setRoomData] = useState<{
+    elecPrice?: number;
+    waterPrice?: number;
+    priceMonth?: number;
+  } | null>(null);
 
   const [editForm, setEditForm] = useState({
     month: "",
+    electricityUsage: 0,
+    waterUsage: 0,
+    damageFee: 0,
     electricityFee: 0,
     waterFee: 0,
     serviceFee: 0,
     totalAmount: 0,
-    paid: false,
   });
   const [addForm, setAddForm] = useState({
     month: "",
+    electricityUsage: 0,
+    waterUsage: 0,
+    damageFee: 0,
     electricityFee: 0,
     waterFee: 0,
     serviceFee: 0,
     totalAmount: 0,
-    paid: false,
   });
+
+  // Fetch room data to get electricity and water prices
+  React.useEffect(() => {
+    const fetchRoomData = async () => {
+      if (contract.roomId) {
+        try {
+          const room = await getRoomById(contract.roomId);
+          setRoomData(room);
+        } catch (error) {
+          console.error("Failed to fetch room data:", error);
+        }
+      }
+    };
+    fetchRoomData();
+  }, [contract.roomId]);
+
+  // Update addForm serviceFee when roomData changes
+  React.useEffect(() => {
+    if (roomData?.priceMonth) {
+      setAddForm(prev => ({
+        ...prev,
+        serviceFee: roomData.priceMonth || 0,
+        totalAmount: prev.electricityFee + prev.waterFee + (roomData.priceMonth || 0) + prev.damageFee
+      }));
+    }
+  }, [roomData]);
+
+  // Calculate fees when usage changes
+  const calculateFees = (electricityUsage: number, waterUsage: number, damageFee: number = 0) => {
+    if (!roomData) return { electricityFee: 0, waterFee: 0, serviceFee: 0, totalAmount: damageFee };
+    
+    const electricityFee = electricityUsage * (roomData.elecPrice || 0);
+    const waterFee = waterUsage * (roomData.waterPrice || 0);
+    const serviceFee = roomData.priceMonth || 0; // Service fee from room priceMonth
+    const totalAmount = electricityFee + waterFee + serviceFee + damageFee;
+    
+    return { electricityFee, waterFee, serviceFee, totalAmount };
+  };
 
   React.useEffect(() => {
     if (editBill) {
+      // Calculate reverse usage from fees if possible
+      const electricityUsage = roomData?.elecPrice ? (editBill.electricityFee / roomData.elecPrice) : 0;
+      const waterUsage = roomData?.waterPrice ? (editBill.waterFee / roomData.waterPrice) : 0;
+      
       setEditForm({
         month: editBill.month,
+        electricityUsage: electricityUsage,
+        waterUsage: waterUsage,
+        damageFee: editBill.damageFee || 0,
         electricityFee: editBill.electricityFee,
         waterFee: editBill.waterFee,
-        serviceFee: editBill.serviceFee,
+        serviceFee: roomData?.priceMonth || editBill.serviceFee,
         totalAmount: editBill.totalAmount,
-        paid: editBill.paid,
       });
     }
-  }, [editBill]);
+  }, [editBill, roomData]);
 
   const handleEditBillSubmit = async () => {
     if (!editBill || !contract) return;
     try {
       setLoading(true);
-      await BillService.updateBill(contract.id, editBill.id, editForm);
+      // Send usage, prices, and calculated fees to backend
+      const billData = {
+        month: editForm.month,
+        electricityFee: editForm.electricityFee,
+        waterFee: editForm.waterFee,
+        serviceFee: editForm.serviceFee,
+        damageFee: editForm.damageFee,
+        totalAmount: editForm.totalAmount,
+        // Include usage and price data
+        electricityUsage: editForm.electricityUsage,
+        waterUsage: editForm.waterUsage,
+        electricityPrice: roomData?.elecPrice,
+        waterPrice: roomData?.waterPrice,
+      };
+      await BillService.updateBill(contract.id, editBill.id, billData);
       message.success("Bill updated!");
       setEditBill(null);
       const data = await ContractService.getById(contract.id);
       onContractUpdate(data);
-    } catch (err) {
+    } catch (_) {
       message.error("Update bill failed!");
     } finally {
       setLoading(false);
@@ -108,20 +175,36 @@ export default function BillsTab({
     if (!contract) return;
     try {
       setLoading(true);
-      await BillService.createBill(contract.id, addForm);
+      // Send usage, prices, and calculated fees to backend
+      const billData = {
+        month: addForm.month,
+        electricityFee: addForm.electricityFee,
+        waterFee: addForm.waterFee,
+        serviceFee: addForm.serviceFee,
+        damageFee: addForm.damageFee,
+        totalAmount: addForm.totalAmount,
+        // Include usage and price data
+        electricityUsage: addForm.electricityUsage,
+        waterUsage: addForm.waterUsage,
+        electricityPrice: roomData?.elecPrice,
+        waterPrice: roomData?.waterPrice,
+      };
+      await BillService.createBill(contract.id, billData);
       message.success("Bill added!");
       setAddBillOpen(false);
-      setAddForm({
-        month: "",
-        electricityFee: 0,
-        waterFee: 0,
-        serviceFee: 0,
-        totalAmount: 0,
-        paid: false,
+      setAddForm({ 
+        month: "", 
+        electricityUsage: 0, 
+        waterUsage: 0, 
+        damageFee: 0, 
+        electricityFee: 0, 
+        waterFee: 0, 
+        serviceFee: roomData?.priceMonth || 0, 
+        totalAmount: roomData?.priceMonth || 0 
       });
       const data = await ContractService.getById(contract.id);
       onContractUpdate(data);
-    } catch (err) {
+    } catch (_) {
       message.error("Add bill failed!");
     } finally {
       setLoading(false);
@@ -136,32 +219,46 @@ export default function BillsTab({
       message.success("Bill deleted!");
       const data = await ContractService.getById(contract.id);
       onContractUpdate(data);
-    } catch (err) {
+    } catch (_) {
       message.error("Delete bill failed!");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleExport = async (values: { fromMonth: any; toMonth: any }) => {
+  const handleConfirmPayment = async (bill: BillData) => {
     if (!contract) return;
+    try {
+      setLoading(true);
+      // Update bill status to PAID
+      await BillService.updateBillStatus(contract.id, bill.id, "PAID");
+      message.success("Payment confirmed successfully!");
+      // Reload contract data to get updated bills
+      const data = await ContractService.getById(contract.id);
+      onContractUpdate(data);
+    } catch (err) {
+      console.error("Confirm payment failed:", err);
+      message.error("Failed to confirm payment!");
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  const handleExport = async (values: { fromMonth: dayjs.Dayjs; toMonth: dayjs.Dayjs }) => {
+    if (!contract) return;
+    
     try {
       setExportLoading(true);
-      const fromMonth = values.fromMonth.format("YYYY-MM");
-      const toMonth = values.toMonth.format("YYYY-MM");
-
+      const fromMonth = values.fromMonth.format('YYYY-MM');
+      const toMonth = values.toMonth.format('YYYY-MM');
+      
       if (dayjs(fromMonth).isAfter(dayjs(toMonth))) {
         message.error("From month cannot be later than to month!");
         return;
       }
-
-      const blob = await ContractService.exportBills(
-        contract.id,
-        fromMonth,
-        toMonth
-      );
-      const toMonthReverse = values.toMonth.format("MM-YYYY");
+      
+      const blob = await ContractService.exportBills(contract.id, fromMonth, toMonth);
+      const toMonthReverse = values.toMonth.format('MM-YYYY');
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
@@ -170,7 +267,7 @@ export default function BillsTab({
       a.click();
       a.remove();
       window.URL.revokeObjectURL(url);
-
+      
       message.success("Bills exported successfully!");
       setExportModalOpen(false);
       exportForm.resetFields();
@@ -187,186 +284,274 @@ export default function BillsTab({
       title: "Month",
       dataIndex: "month",
       key: "month",
-      render: (month: string) => (
-        <span style={{ color: "red", fontWeight: 500 }}>{month}</span>
-      ),
+      render: (month: string) => <span style={{ color: 'red', fontWeight: 500 }}>{month}</span>,
       sorter: (a: BillData, b: BillData) => a.month.localeCompare(b.month),
     },
     {
       title: "Electricity",
       dataIndex: "electricityFee",
       key: "electricityFee",
-      render: (v: number) => v?.toLocaleString() + "đ",
-      sorter: (a: BillData, b: BillData) =>
-        (a.electricityFee || 0) - (b.electricityFee || 0),
+      render: (v: number, record: BillData) => (
+        <div>
+          <div className="font-medium">{v?.toLocaleString()}đ</div>
+          {record.electricityUsage && record.electricityPrice && (
+            <div className="text-xs text-gray-500">
+              {record.electricityUsage.toFixed(2)} kWh × {record.electricityPrice.toLocaleString()}đ/kWh
+            </div>
+          )}
+        </div>
+      ),
+      sorter: (a: BillData, b: BillData) => (a.electricityFee || 0) - (b.electricityFee || 0),
     },
     {
       title: "Water",
       dataIndex: "waterFee",
       key: "waterFee",
-      render: (v: number) => v?.toLocaleString() + "đ",
-      sorter: (a: BillData, b: BillData) =>
-        (a.waterFee || 0) - (b.waterFee || 0),
+      render: (v: number, record: BillData) => (
+        <div>
+          <div className="font-medium">{v?.toLocaleString()}đ</div>
+          {record.waterUsage && record.waterPrice && (
+            <div className="text-xs text-gray-500">
+              {record.waterUsage.toFixed(2)} m³ × {record.waterPrice.toLocaleString()}đ/m³
+            </div>
+          )}
+        </div>
+      ),
+      sorter: (a: BillData, b: BillData) => (a.waterFee || 0) - (b.waterFee || 0),
     },
     {
       title: "Service",
       dataIndex: "serviceFee",
       key: "serviceFee",
-      render: (v: number) => v?.toLocaleString() + "đ",
-      sorter: (a: BillData, b: BillData) =>
-        (a.serviceFee || 0) - (b.serviceFee || 0),
+      render: (v: number, record: BillData) => (
+        <div>
+          <div className="font-medium">{v?.toLocaleString()}đ</div>
+          {record.damageFee != null && record.damageFee > 0 && (
+            <div className="text-xs text-red-500">
+              + Damage Fee: {record.damageFee.toLocaleString()}đ
+            </div>
+          )}
+        </div>
+      ),
+      sorter: (a: BillData, b: BillData) => (a.serviceFee || 0) - (b.serviceFee || 0),
     },
     {
       title: "Total",
       dataIndex: "totalAmount",
       key: "totalAmount",
       render: (v: number) => v?.toLocaleString() + "đ",
-      sorter: (a: BillData, b: BillData) =>
-        (a.totalAmount || 0) - (b.totalAmount || 0),
+      sorter: (a: BillData, b: BillData) => (a.totalAmount || 0) - (b.totalAmount || 0),
     },
     {
       title: "Status",
-      dataIndex: "paid",
-      key: "paid",
-      render: (paid: boolean) => (
-        <Tag color={billStatusMap[paid ? "1" : "0"].color}>
-          {billStatusMap[paid ? "1" : "0"].text}
-        </Tag>
-      ),
-      sorter: (a: BillData, b: BillData) => Number(a.paid) - Number(b.paid),
+      dataIndex: "status",
+      key: "status",
+      render: (status: string, record: BillData) => {
+        // Handle both new status field and old paid boolean
+        let actualStatus;
+        if (status) {
+          actualStatus = status;
+        } else if (record.paid === true) {
+          actualStatus = "PAID";
+        } else if (record.paid === false) {
+          actualStatus = "PENDING";
+        } else {
+          actualStatus = "PENDING"; // Default
+        }
+        
+        const statusInfo = billStatusMap[actualStatus] || billStatusMap["PENDING"];
+        
+        return (
+          <Tag color={statusInfo.color}>
+            {statusInfo.text}
+          </Tag>
+        );
+      },
+      filters: [
+        { text: "Pending", value: "PENDING" },
+        { text: "Confirming Payment", value: "CONFIRMING" },
+        { text: "Paid", value: "PAID" },
+        { text: "Overdue", value: "OVERDUE" },
+      ],
+      onFilter: (value: boolean | Key, record: BillData): boolean => {
+        const actualStatus = record.status || (record.paid === true ? "PAID" : "PENDING");
+        return actualStatus === value;
+      },
+      sorter: (a: BillData, b: BillData) => {
+        const statusA = a.status || (a.paid === true ? "PAID" : "PENDING");
+        const statusB = b.status || (b.paid === true ? "PAID" : "PENDING");
+        return statusA.localeCompare(statusB);
+      },
     },
     {
       title: "Action",
       key: "action",
-      render: (_: any, record: BillData) => (
-        <div className="flex gap-2">
-          <Tooltip title="Details">
-            <Button
-              type="default"
-              icon={<EyeOutlined />}
-              onClick={() => setSelectedBill(record)}
-            />
-          </Tooltip>
-          <Tooltip title="Edit">
-            <Button
-              icon={<EditOutlined />}
-              onClick={() => setEditBill(record)}
-            />
-          </Tooltip>
-          <Tooltip title="Delete">
-            <Popconfirm
-              title="Are you sure you want to delete this bill?"
-              onConfirm={() => handleDeleteBill(record.id)}
-              okText="Delete"
-              cancelText="Cancel"
-            >
-              <Button danger icon={<DeleteOutlined />} />
-            </Popconfirm>
-          </Tooltip>
-        </div>
-      ),
+      render: (_: unknown, record: BillData) => {
+        const actualStatus = record.status || (record.paid === true ? "PAID" : "PENDING");
+        const isConfirming = actualStatus === "CONFIRMING";
+        const isPaid = actualStatus === "PAID";
+        
+        return (
+          <div className="flex gap-2">
+            <Tooltip title="Details">
+              <Button
+                type="default"
+                icon={<EyeOutlined />}
+                onClick={() => setSelectedBill(record)}
+              />
+            </Tooltip>
+            <Tooltip title="Edit">
+              <Button
+                icon={<EditOutlined />}
+                onClick={() => setEditBill(record)}
+                disabled={isPaid} // Can't edit paid bills
+              />
+            </Tooltip>
+            {isConfirming && (
+              <Tooltip title="Confirm payment received">
+                <Popconfirm
+                  title="Confirm Payment"
+                  description="Have you received the payment for this bill?"
+                  onConfirm={() => handleConfirmPayment(record)}
+                  okText="Yes, Confirm"
+                  cancelText="Not Yet"
+                >
+                  <Button type="primary" size="small">
+                    Confirm
+                  </Button>
+                </Popconfirm>
+              </Tooltip>
+            )}
+            <Tooltip title="Delete">
+              <Popconfirm
+                title="Are you sure you want to delete this bill?"
+                onConfirm={() => handleDeleteBill(record.id)}
+                okText="Delete"
+                cancelText="Cancel"
+              >
+                <Button danger icon={<DeleteOutlined />} disabled={isPaid} />
+              </Popconfirm>
+            </Tooltip>
+          </div>
+        );
+      },
     },
   ];
 
   // Filter bills based on search and status - similar to tenant
   const bills = contract.bills || [];
-  const filteredBills = bills.filter((bill: BillData) => {
-    const matchesSearch =
+  
+  // Process bills to ensure damageFee is calculated if not provided
+  const processedBills = bills.map(bill => {
+    // Get room price data for calculations
+    const elecPrice = roomData?.elecPrice || bill.electricityPrice;
+    const waterPrice = roomData?.waterPrice || bill.waterPrice;
+    
+    // Calculate usage from fees if not provided
+    let electricityUsage = bill.electricityUsage;
+    let waterUsage = bill.waterUsage;
+    
+    if (!electricityUsage && elecPrice && elecPrice > 0 && bill.electricityFee) {
+      electricityUsage = bill.electricityFee / elecPrice;
+    }
+    
+    if (!waterUsage && waterPrice && waterPrice > 0 && bill.waterFee) {
+      waterUsage = bill.waterFee / waterPrice;
+    }
+    
+    // Calculate damageFee if not provided
+    let damageFee = bill.damageFee;
+    if (damageFee === null || damageFee === undefined) {
+      const baseTotal = (bill.electricityFee || 0) + (bill.waterFee || 0) + (bill.serviceFee || 0);
+      const calculatedDamageFee = (bill.totalAmount || 0) - baseTotal;
+      damageFee = calculatedDamageFee > 0 ? calculatedDamageFee : 0;
+    }
+    
+    return {
+      ...bill,
+      damageFee,
+      electricityUsage,
+      waterUsage,
+      electricityPrice: elecPrice,
+      waterPrice: waterPrice
+    };
+  });
+  
+  const filteredBills = processedBills.filter((bill: BillData) => {
+    const matchesSearch = 
       bill.month.toLowerCase().includes(searchText.toLowerCase()) ||
       bill.totalAmount.toString().includes(searchText);
-
-    const matchesStatus =
-      statusFilter === null ||
-      statusFilter === undefined ||
-      bill.paid === statusFilter;
-
+    
+    let matchesStatus = true;
+    if (statusFilter !== null && statusFilter !== undefined) {
+      const actualStatus = bill.status || (bill.paid === true ? "PAID" : "PENDING");
+      matchesStatus = actualStatus === statusFilter;
+    }
+    
     return matchesSearch && matchesStatus;
   });
 
   // Calculate bill statistics
   const totalBills = filteredBills.length;
-  const paidBills = filteredBills.filter((bill) => bill.paid).length;
-  const pendingBills = filteredBills.filter((bill) => !bill.paid).length;
-  const totalAmount = filteredBills.reduce(
-    (sum, bill) => sum + bill.totalAmount,
-    0
-  );
-  const unpaidAmount = filteredBills
-    .filter((bill) => !bill.paid)
-    .reduce((sum, bill) => sum + bill.totalAmount, 0);
+  const paidBills = filteredBills.filter(bill => {
+    const status = bill.status || (bill.paid === true ? "PAID" : "PENDING");
+    return status === "PAID";
+  }).length;
+  const pendingBills = filteredBills.filter(bill => {
+    const status = bill.status || (bill.paid === true ? "PAID" : "PENDING");
+    return status === "PENDING";
+  }).length;
+  const confirmingBills = filteredBills.filter(bill => bill.status === "CONFIRMING").length;
+  const unpaidAmount = filteredBills.filter(bill => {
+    const status = bill.status || (bill.paid === true ? "PAID" : "PENDING");
+    return status !== "PAID";
+  }).reduce((sum, bill) => sum + bill.totalAmount, 0);
 
   return (
     <div className="p-6 space-y-6 bg-white dark:bg-transparent transition-colors duration-300">
       {/* Bills Statistics */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card
-          size="small"
-          className="bg-white dark:bg-[#17223b] border-gray-200 dark:border-gray-600 transition-colors duration-300"
-        >
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <Card size="small" className="bg-white dark:bg-[#17223b] border-gray-200 dark:border-gray-600 transition-colors duration-300">
           <Statistic
-            title={
-              <span className="text-gray-600 dark:text-gray-300">
-                Total Bills
-              </span>
-            }
+            title={<span className="text-gray-600 dark:text-gray-300">Total Bills</span>}
             value={totalBills}
-            prefix={
-              <DollarOutlined className="text-blue-600 dark:text-blue-400" />
-            }
-            valueStyle={{ color: "#1890ff" }}
+            prefix={<DollarOutlined className="text-blue-600 dark:text-blue-400" />}
+            valueStyle={{ color: '#1890ff' }}
           />
         </Card>
-        <Card
-          size="small"
-          className="bg-white dark:bg-[#17223b] border-gray-200 dark:border-gray-600 transition-colors duration-300"
-        >
+        <Card size="small" className="bg-white dark:bg-[#17223b] border-gray-200 dark:border-gray-600 transition-colors duration-300">
           <Statistic
-            title={
-              <span className="text-gray-600 dark:text-gray-300">
-                Paid Bills
-              </span>
-            }
+            title={<span className="text-gray-600 dark:text-gray-300">Paid Bills</span>}
             value={paidBills}
-            valueStyle={{ color: "#3f8600" }}
+            valueStyle={{ color: '#3f8600' }}
           />
         </Card>
-        <Card
-          size="small"
-          className="bg-white dark:bg-[#17223b] border-gray-200 dark:border-gray-600 transition-colors duration-300"
-        >
+        <Card size="small" className="bg-white dark:bg-[#17223b] border-gray-200 dark:border-gray-600 transition-colors duration-300">
           <Statistic
-            title={
-              <span className="text-gray-600 dark:text-gray-300">
-                Pending Bills
-              </span>
-            }
+            title={<span className="text-gray-600 dark:text-gray-300">Pending Bills</span>}
             value={pendingBills}
-            valueStyle={{ color: "#cf1322" }}
+            valueStyle={{ color: '#cf1322' }}
           />
         </Card>
-        <Card
-          size="small"
-          className="bg-white dark:bg-[#17223b] border-gray-200 dark:border-gray-600 transition-colors duration-300"
-        >
+        <Card size="small" className="bg-white dark:bg-[#17223b] border-gray-200 dark:border-gray-600 transition-colors duration-300">
           <Statistic
-            title={
-              <span className="text-gray-600 dark:text-gray-300">
-                Unpaid Amount
-              </span>
-            }
+            title={<span className="text-gray-600 dark:text-gray-300">Confirming</span>}
+            value={confirmingBills}
+            valueStyle={{ color: '#1890ff' }}
+          />
+        </Card>
+        <Card size="small" className="bg-white dark:bg-[#17223b] border-gray-200 dark:border-gray-600 transition-colors duration-300">
+          <Statistic
+            title={<span className="text-gray-600 dark:text-gray-300">Unpaid Amount</span>}
             value={unpaidAmount}
-            valueStyle={{ color: "#cf1322" }}
+            valueStyle={{ color: '#cf1322' }}
             suffix="đ"
           />
         </Card>
       </div>
 
-      <Card
-        title={
-          <span className="text-gray-900 dark:text-white">
-            Bills Management
-          </span>
-        }
+      <Card 
+        title={<span className="text-gray-900 dark:text-white">Bills Management</span>}
         className="shadow-sm bg-white dark:bg-[#17223b] border-gray-200 dark:border-gray-600 transition-colors duration-300"
         extra={
           <Space>
@@ -382,22 +567,28 @@ export default function BillsTab({
               placeholder="Filter by status"
               value={statusFilter}
               onChange={setStatusFilter}
-              style={{ width: 150 }}
+              style={{ width: 180 }}
               allowClear
               suffixIcon={<FilterOutlined />}
             >
-              <Select.Option value={true}>
+              <Select.Option value="PAID">
                 <Tag color="green">Paid</Tag>
               </Select.Option>
-              <Select.Option value={false}>
-                <Tag color="red">Unpaid</Tag>
+              <Select.Option value="PENDING">
+                <Tag color="orange">Pending</Tag>
+              </Select.Option>
+              <Select.Option value="CONFIRMING">
+                <Tag color="blue">Confirming</Tag>
+              </Select.Option>
+              <Select.Option value="OVERDUE">
+                <Tag color="red">Overdue</Tag>
               </Select.Option>
             </Select>
             <Button type="primary" onClick={() => setAddBillOpen(true)}>
               Add Bill
             </Button>
-            <Button
-              type="default"
+            <Button 
+              type="default" 
               icon={<ExportOutlined />}
               onClick={() => setExportModalOpen(true)}
             >
@@ -410,13 +601,13 @@ export default function BillsTab({
           columns={billColumns}
           dataSource={filteredBills}
           rowKey="id"
-          pagination={{
+          pagination={{ 
             pageSize: 10,
             showSizeChanger: true,
             showQuickJumper: true,
             showTotal: (total, range) =>
               `${range[0]}-${range[1]} of ${total} bills`,
-            pageSizeOptions: ["5", "10", "20", "50"],
+            pageSizeOptions: ['5', '10', '20', '50'],
           }}
           scroll={{ y: 400 }}
           loading={loading}
@@ -443,81 +634,79 @@ export default function BillsTab({
         footer={null}
         destroyOnHidden
       >
-        <Form form={exportForm} onFinish={handleExport} layout="vertical">
+        <Form
+          form={exportForm}
+          onFinish={handleExport}
+          layout="vertical"
+        >
           <Form.Item
             label="From Month"
             name="fromMonth"
             rules={[
-              { required: true, message: "Please select from month!" },
+              { required: true, message: 'Please select from month!' },
               ({ getFieldValue }) => ({
                 validator(_, value) {
-                  if (!value || !getFieldValue("toMonth")) {
+                  if (!value || !getFieldValue('toMonth')) {
                     return Promise.resolve();
                   }
-                  if (value.isAfter(getFieldValue("toMonth"))) {
-                    return Promise.reject(
-                      new Error("From month must be before to month!")
-                    );
+                  if (value.isAfter(getFieldValue('toMonth'))) {
+                    return Promise.reject(new Error('From month must be before to month!'));
                   }
                   return Promise.resolve();
                 },
               }),
             ]}
           >
-            <DatePicker
-              picker="month"
+            <DatePicker 
+              picker="month" 
               placeholder="Select from month"
-              style={{ width: "100%" }}
+              style={{ width: '100%' }}
               format="YYYY-MM"
               onChange={() => {
-                exportForm.validateFields(["toMonth"]);
+                exportForm.validateFields(['toMonth']);
               }}
             />
           </Form.Item>
-
+          
           <Form.Item
             label="To Month"
             name="toMonth"
             rules={[
-              { required: true, message: "Please select to month!" },
+              { required: true, message: 'Please select to month!' },
               ({ getFieldValue }) => ({
                 validator(_, value) {
-                  if (!value || !getFieldValue("fromMonth")) {
+                  if (!value || !getFieldValue('fromMonth')) {
                     return Promise.resolve();
                   }
-                  if (value.isBefore(getFieldValue("fromMonth"))) {
-                    return Promise.reject(
-                      new Error("To month must be after from month!")
-                    );
+                  if (value.isBefore(getFieldValue('fromMonth'))) {
+                    return Promise.reject(new Error('To month must be after from month!'));
                   }
                   return Promise.resolve();
                 },
               }),
             ]}
           >
-            <DatePicker
-              picker="month"
+            <DatePicker 
+              picker="month" 
               placeholder="Select to month"
-              style={{ width: "100%" }}
+              style={{ width: '100%' }}
               format="YYYY-MM"
               onChange={() => {
-                exportForm.validateFields(["fromMonth"]);
+                exportForm.validateFields(['fromMonth']);
               }}
             />
           </Form.Item>
 
           <Form.Item className="mb-0 text-right">
             <Space>
-              <Button
-                onClick={() => {
-                  setExportModalOpen(false);
-                  exportForm.resetFields();
-                }}
-              >
+              <Button onClick={() => {
+                setExportModalOpen(false);
+                exportForm.resetFields();
+              }}>
                 Cancel
               </Button>
-              <Button
-                type="primary"
+              <Button 
+                type="primary" 
                 htmlType="submit"
                 loading={exportLoading}
                 icon={<DownloadOutlined />}
@@ -538,105 +727,110 @@ export default function BillsTab({
         confirmLoading={loading}
       >
         {editBill && (
-          <form
-            className="space-y-3"
-            onSubmit={(e) => {
-              e.preventDefault();
-              handleEditBillSubmit();
-            }}
-          >
+          <form className="space-y-3" onSubmit={e => { e.preventDefault(); handleEditBillSubmit(); }}>
             <div>
-              <label className="block font-medium dark:text-gray-300 transition-colors duration-300">
-                Month
-              </label>
-              <input
-                type="text"
-                className="border rounded px-2 py-1 w-full dark:bg-[#17223b] dark:border-gray-600 dark:text-white transition-colors duration-300"
-                value={editForm.month}
-                onChange={(e) =>
-                  setEditForm((f) => ({ ...f, month: e.target.value }))
-                }
+              <label className="block font-medium dark:text-gray-300 transition-colors duration-300">Month</label>
+              <DatePicker
+                picker="month"
+                placeholder="Select month"
+                style={{ width: '100%' }}
+                format="YYYY-MM"
+                value={editForm.month ? dayjs(editForm.month) : null}
+                onChange={(date) => setEditForm(f => ({ ...f, month: date ? date.format('YYYY-MM') : '' }))}
+                className="dark:bg-[#17223b] dark:border-gray-600 dark:text-white transition-colors duration-300"
               />
             </div>
             <div>
               <label className="block font-medium dark:text-gray-300 transition-colors duration-300">
-                Electricity
+                Electricity Usage (kWh) - Price: {roomData?.elecPrice?.toLocaleString() || 0}đ/kWh
               </label>
               <input
                 type="number"
+                min="0"
+                step="0.01"
                 className="border rounded px-2 py-1 w-full dark:bg-[#17223b] dark:border-gray-600 dark:text-white transition-colors duration-300"
-                value={editForm.electricityFee}
-                onChange={(e) =>
-                  setEditForm((f) => ({
-                    ...f,
-                    electricityFee: Number(e.target.value),
-                    totalAmount:
-                      Number(e.target.value) + f.waterFee + f.serviceFee,
-                  }))
-                }
+                value={editForm.electricityUsage}
+                onChange={e => {
+                  const usage = Number(e.target.value);
+                  if (usage < 0) return; // Validation: không cho phép số âm
+                  const calculated = calculateFees(usage, editForm.waterUsage, editForm.damageFee);
+                  setEditForm(f => ({ ...f, electricityUsage: usage, ...calculated }));
+                }}
               />
             </div>
             <div>
               <label className="block font-medium dark:text-gray-300 transition-colors duration-300">
-                Water
+                Water Usage (m³) - Price: {roomData?.waterPrice?.toLocaleString() || 0}đ/m³
               </label>
               <input
                 type="number"
+                min="0"
+                step="0.01"
                 className="border rounded px-2 py-1 w-full dark:bg-[#17223b] dark:border-gray-600 dark:text-white transition-colors duration-300"
-                value={editForm.waterFee}
-                onChange={(e) =>
-                  setEditForm((f) => ({
-                    ...f,
-                    waterFee: Number(e.target.value),
-                    totalAmount:
-                      f.electricityFee + Number(e.target.value) + f.serviceFee,
-                  }))
-                }
+                value={editForm.waterUsage}
+                onChange={e => {
+                  const usage = Number(e.target.value);
+                  if (usage < 0) return; // Validation: không cho phép số âm
+                  const calculated = calculateFees(editForm.electricityUsage, usage, editForm.damageFee);
+                  setEditForm(f => ({ ...f, waterUsage: usage, ...calculated }));
+                }}
               />
             </div>
             <div>
               <label className="block font-medium dark:text-gray-300 transition-colors duration-300">
-                Service
-              </label>
-              <input
-                type="number"
-                className="border rounded px-2 py-1 w-full dark:bg-[#17223b] dark:border-gray-600 dark:text-white transition-colors duration-300"
-                value={editForm.serviceFee}
-                onChange={(e) =>
-                  setEditForm((f) => ({
-                    ...f,
-                    serviceFee: Number(e.target.value),
-                    totalAmount:
-                      f.electricityFee + f.waterFee + Number(e.target.value),
-                  }))
-                }
-              />
-            </div>
-            <div>
-              <label className="block font-medium dark:text-gray-300 transition-colors duration-300">
-                Total
+                Service Fee: {roomData?.priceMonth?.toLocaleString() || 0}đ/month
               </label>
               <input
                 type="number"
                 className="border rounded px-2 py-1 w-full bg-gray-100 dark:bg-[#22304a] dark:border-gray-600 dark:text-white transition-colors duration-300"
-                value={editForm.totalAmount}
+                value={editForm.serviceFee}
                 readOnly
+                disabled
               />
             </div>
             <div>
-              <label className="block font-medium dark:text-gray-300 transition-colors duration-300">
-                Paid
-              </label>
-              <select
+              <label className="block font-medium dark:text-gray-300 transition-colors duration-300">Damage Fee (đ)</label>
+              <input
+                type="number"
+                min="0"
                 className="border rounded px-2 py-1 w-full dark:bg-[#17223b] dark:border-gray-600 dark:text-white transition-colors duration-300"
-                value={editForm.paid ? "1" : "0"}
-                onChange={(e) =>
-                  setEditForm((f) => ({ ...f, paid: e.target.value === "1" }))
-                }
-              >
-                <option value="1">PAID</option>
-                <option value="0">UNPAID</option>
-              </select>
+                value={editForm.damageFee}
+                onChange={e => {
+                  const damageFee = Number(e.target.value);
+                  if (damageFee < 0) return; // Validation: không cho phép số âm
+                  const calculated = calculateFees(editForm.electricityUsage, editForm.waterUsage, damageFee);
+                  setEditForm(f => ({ ...f, damageFee, ...calculated }));
+                }}
+              />
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              <div>
+                <label className="block font-medium dark:text-gray-300 transition-colors duration-300">Electricity Fee</label>
+                <input
+                  type="number"
+                  className="border rounded px-2 py-1 w-full bg-gray-100 dark:bg-[#22304a] dark:border-gray-600 dark:text-white transition-colors duration-300"
+                  value={editForm.electricityFee}
+                  readOnly
+                />
+              </div>
+              <div>
+                <label className="block font-medium dark:text-gray-300 transition-colors duration-300">Water Fee</label>
+                <input
+                  type="number"
+                  className="border rounded px-2 py-1 w-full bg-gray-100 dark:bg-[#22304a] dark:border-gray-600 dark:text-white transition-colors duration-300"
+                  value={editForm.waterFee}
+                  readOnly
+                />
+              </div>
+              <div>
+                <label className="block font-medium dark:text-gray-300 transition-colors duration-300">Total Amount</label>
+                <input
+                  type="number"
+                  className="border rounded px-2 py-1 w-full bg-gray-100 dark:bg-[#22304a] dark:border-gray-600 dark:text-white transition-colors duration-300"
+                  value={editForm.totalAmount}
+                  readOnly
+                />
+              </div>
             </div>
           </form>
         )}
@@ -650,105 +844,110 @@ export default function BillsTab({
         onOk={handleAddBillSubmit}
         confirmLoading={loading}
       >
-        <form
-          className="space-y-3"
-          onSubmit={(e) => {
-            e.preventDefault();
-            handleAddBillSubmit();
-          }}
-        >
+        <form className="space-y-3" onSubmit={e => { e.preventDefault(); handleAddBillSubmit(); }}>
           <div>
-            <label className="block font-medium dark:text-gray-300 transition-colors duration-300">
-              Month
-            </label>
-            <input
-              type="text"
-              className="border rounded px-2 py-1 w-full dark:bg-[#17223b] dark:border-gray-600 dark:text-white transition-colors duration-300"
-              value={addForm.month}
-              onChange={(e) =>
-                setAddForm((f) => ({ ...f, month: e.target.value }))
-              }
+            <label className="block font-medium dark:text-gray-300 transition-colors duration-300">Month</label>
+            <DatePicker
+              picker="month"
+              placeholder="Select month"
+              style={{ width: '100%' }}
+              format="YYYY-MM"
+              value={addForm.month ? dayjs(addForm.month) : null}
+              onChange={(date) => setAddForm(f => ({ ...f, month: date ? date.format('YYYY-MM') : '' }))}
+              className="dark:bg-[#17223b] dark:border-gray-600 dark:text-white transition-colors duration-300"
             />
           </div>
           <div>
             <label className="block font-medium dark:text-gray-300 transition-colors duration-300">
-              Electricity
+              Electricity Usage (kWh) - Price: {roomData?.elecPrice?.toLocaleString() || 0}đ/kWh
             </label>
             <input
               type="number"
+              min="0"
+              step="0.01"
               className="border rounded px-2 py-1 w-full dark:bg-[#17223b] dark:border-gray-600 dark:text-white transition-colors duration-300"
-              value={addForm.electricityFee}
-              onChange={(e) =>
-                setAddForm((f) => ({
-                  ...f,
-                  electricityFee: Number(e.target.value),
-                  totalAmount:
-                    Number(e.target.value) + f.waterFee + f.serviceFee,
-                }))
-              }
+              value={addForm.electricityUsage}
+              onChange={e => {
+                const usage = Number(e.target.value);
+                if (usage < 0) return; // Validation: không cho phép số âm
+                const calculated = calculateFees(usage, addForm.waterUsage, addForm.damageFee);
+                setAddForm(f => ({ ...f, electricityUsage: usage, ...calculated }));
+              }}
             />
           </div>
           <div>
             <label className="block font-medium dark:text-gray-300 transition-colors duration-300">
-              Water
+              Water Usage (m³) - Price: {roomData?.waterPrice?.toLocaleString() || 0}đ/m³
             </label>
             <input
               type="number"
+              min="0"
+              step="0.01"
               className="border rounded px-2 py-1 w-full dark:bg-[#17223b] dark:border-gray-600 dark:text-white transition-colors duration-300"
-              value={addForm.waterFee}
-              onChange={(e) =>
-                setAddForm((f) => ({
-                  ...f,
-                  waterFee: Number(e.target.value),
-                  totalAmount:
-                    f.electricityFee + Number(e.target.value) + f.serviceFee,
-                }))
-              }
+              value={addForm.waterUsage}
+              onChange={e => {
+                const usage = Number(e.target.value);
+                if (usage < 0) return; // Validation: không cho phép số âm
+                const calculated = calculateFees(addForm.electricityUsage, usage, addForm.damageFee);
+                setAddForm(f => ({ ...f, waterUsage: usage, ...calculated }));
+              }}
             />
           </div>
           <div>
             <label className="block font-medium dark:text-gray-300 transition-colors duration-300">
-              Service
-            </label>
-            <input
-              type="number"
-              className="border rounded px-2 py-1 w-full dark:bg-[#17223b] dark:border-gray-600 dark:text-white transition-colors duration-300"
-              value={addForm.serviceFee}
-              onChange={(e) =>
-                setAddForm((f) => ({
-                  ...f,
-                  serviceFee: Number(e.target.value),
-                  totalAmount:
-                    f.electricityFee + f.waterFee + Number(e.target.value),
-                }))
-              }
-            />
-          </div>
-          <div>
-            <label className="block font-medium dark:text-gray-300 transition-colors duration-300">
-              Total
+              Service Fee: {roomData?.priceMonth?.toLocaleString() || 0}đ/month
             </label>
             <input
               type="number"
               className="border rounded px-2 py-1 w-full bg-gray-100 dark:bg-[#22304a] dark:border-gray-600 dark:text-white transition-colors duration-300"
-              value={addForm.totalAmount}
+              value={addForm.serviceFee}
               readOnly
+              disabled
             />
           </div>
           <div>
-            <label className="block font-medium dark:text-gray-300 transition-colors duration-300">
-              Paid
-            </label>
-            <select
+            <label className="block font-medium dark:text-gray-300 transition-colors duration-300">Damage Fee (đ)</label>
+            <input
+              type="number"
+              min="0"
               className="border rounded px-2 py-1 w-full dark:bg-[#17223b] dark:border-gray-600 dark:text-white transition-colors duration-300"
-              value={addForm.paid ? "1" : "0"}
-              onChange={(e) =>
-                setAddForm((f) => ({ ...f, paid: e.target.value === "1" }))
-              }
-            >
-              <option value="1">PAID</option>
-              <option value="0">UNPAID</option>
-            </select>
+              value={addForm.damageFee}
+              onChange={e => {
+                const damageFee = Number(e.target.value);
+                if (damageFee < 0) return; // Validation: không cho phép số âm
+                const calculated = calculateFees(addForm.electricityUsage, addForm.waterUsage, damageFee);
+                setAddForm(f => ({ ...f, damageFee, ...calculated }));
+              }}
+            />
+          </div>
+          <div className="grid grid-cols-3 gap-2">
+            <div>
+              <label className="block font-medium dark:text-gray-300 transition-colors duration-300">Electricity Fee</label>
+              <input
+                type="number"
+                className="border rounded px-2 py-1 w-full bg-gray-100 dark:bg-[#22304a] dark:border-gray-600 dark:text-white transition-colors duration-300"
+                value={addForm.electricityFee}
+                readOnly
+              />
+            </div>
+            <div>
+              <label className="block font-medium dark:text-gray-300 transition-colors duration-300">Water Fee</label>
+              <input
+                type="number"
+                className="border rounded px-2 py-1 w-full bg-gray-100 dark:bg-[#22304a] dark:border-gray-600 dark:text-white transition-colors duration-300"
+                value={addForm.waterFee}
+                readOnly
+              />
+            </div>
+            <div>
+              <label className="block font-medium dark:text-gray-300 transition-colors duration-300">Total Amount</label>
+              <input
+                type="number"
+                className="border rounded px-2 py-1 w-full bg-gray-100 dark:bg-[#22304a] dark:border-gray-600 dark:text-white transition-colors duration-300"
+                value={addForm.totalAmount}
+                readOnly
+              />
+            </div>
           </div>
         </form>
       </Modal>
