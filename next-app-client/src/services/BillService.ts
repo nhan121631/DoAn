@@ -1,4 +1,6 @@
-import { BillData, LandlordPaymentInfo } from "@/types/types";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
+import { BillData } from "@/types/types";
 const BASE_URL = "/api/contracts";
 
 export const BillService = {
