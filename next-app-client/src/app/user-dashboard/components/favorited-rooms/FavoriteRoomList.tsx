@@ -58,8 +58,18 @@ export default function FavoriteRoomList() {
   };
 
   const handleFavoriteChange = useCallback((id: string) => {
-    setRooms((prevRooms) => prevRooms.filter((room) => room.id !== id));
-  }, []);
+    setRooms((prevRooms) => {
+      const newRooms = prevRooms.filter((room) => room.id !== id);
+      
+      // Nếu trang hiện tại không còn phòng nào và không phải trang đầu tiên
+      if (newRooms.length === 0 && currentPage > 0) {
+        // Chuyển về trang trước
+        setCurrentPage(currentPage - 1);
+      }
+      
+      return newRooms;
+    });
+  }, [currentPage]);
 
   if (loading && rooms.length === 0) {
     return <p className="text-center text-gray-500">Loading...</p>;
@@ -77,9 +87,35 @@ export default function FavoriteRoomList() {
 
   return (
     <div className="flex flex-col w-full">
+      {/* <div className="flex flex-col w-full gap-6">
+        {rooms.map((room) => {
+          const isFavorite = favoriteRoomIds.has(room.id);
+          return (
+            <div key={room.id}>
+              {room.isVip ? (
+                <FavoriteDashboardRoomVipCard
+                  room={room}
+                  isFavorite={isFavorite}
+                  onFavoriteChange={handleFavoriteChange}
+                />
+              ) : (
+                <FavoriteDashboardRoomCard
+                  room={room}
+                  isFavorite={isFavorite}
+                  onFavoriteChange={handleFavoriteChange}
+                />
+              )}
+            </div>
+          );
+        })}
+      </div> */}
       <div className="flex flex-col w-full gap-6">
         {rooms.map((room) => {
           const isFavorite = favoriteRoomIds.has(room.id);
+          
+          // DEBUG: Thêm log này để check
+          console.log('Room ID:', room.id, 'isVip:', room.isVip, 'Type:', typeof room.isVip);
+          
           return (
             <div key={room.id}>
               {room.isVip ? (
