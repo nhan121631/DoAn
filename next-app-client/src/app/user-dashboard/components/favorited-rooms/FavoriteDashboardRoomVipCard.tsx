@@ -261,9 +261,9 @@ const FavoriteDashboardRoomVipCard: React.FC<RoomCardProps> = ({
       {/* CONTENT SECTION */}
       <div className="flex flex-col flex-grow p-4">
         <div className="flex flex-wrap items-center gap-2 mb-1">
-          <span className="text-xl font-bold text-yellow-400 drop-shadow">
+          {/* <span className="text-xl font-bold text-yellow-400 drop-shadow">
             ★★★★★
-          </span>
+          </span> */}
           <span
             className="text-xl font-extrabold text-yellow-700 uppercase break-words transition-colors duration-200 group-hover:text-yellow-600 line-clamp-2 text-ellipsis"
             style={{
