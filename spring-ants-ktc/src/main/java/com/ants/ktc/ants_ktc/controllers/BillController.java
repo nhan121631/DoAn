@@ -44,7 +44,7 @@ public class BillController {
     @PutMapping("/{billId}/status")
     public ResponseEntity<BillResponseDto> updateBillStatus(
             @PathVariable("billId") UUID billId,
-            @RequestParam BillStatus status // truyền ?status=CONFIRMING hoặc ?status=PAID
+            @RequestParam("status") BillStatus status // truyền ?status=CONFIRMING hoặc ?status=PAID
     ) {
         return ResponseEntity.ok(billService.updateBillStatus(billId, status));
     }

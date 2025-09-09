@@ -29,7 +29,7 @@ public class TemporaryResidenceController {
 
     @PutMapping("/{id}")
     public ResponseEntity<TemporaryResidenceResponse> update(
-            @PathVariable UUID id,
+            @PathVariable("id") UUID id,
             @Valid @RequestPart("data") TemporaryResidenceUpdateRequest request,
             @RequestPart(value = "frontImage", required = false) MultipartFile frontImage,
             @RequestPart(value = "backImage", required = false) MultipartFile backImage) {
