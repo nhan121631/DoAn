@@ -138,6 +138,7 @@ export default function RentalsPage() {
     {
       title: "Tenant Phone",
       dataIndex: "phone_tenant",
+      align: "right" as const,
       sorter: (a: RentalData, b: RentalData) =>
         a.phone_tenant.localeCompare(b.phone_tenant),
     },
@@ -167,11 +168,13 @@ export default function RentalsPage() {
     {
       title: "Num of Tenants",
       dataIndex: "tenants",
+      align: "right" as const,
       sorter: (a: RentalData, b: RentalData) => a.tenants - b.tenants,
     },
     {
       title: "Total",
       dataIndex: "total",
+      align: "right" as const,
       sorter: (a: RentalData, b: RentalData) => {
         const getNum = (v: string) => parseInt(v.replace(/[^\d]/g, ""), 10);
         return getNum(a.total) - getNum(b.total);

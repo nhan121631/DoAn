@@ -9,6 +9,7 @@ import { IoMdAddCircleOutline } from "react-icons/io";
 import { userFetchBookings } from "@/services/BookingService";
 import { RequirementRequestRoomDto } from "@/types/types";
 import { createRequest } from "@/services/Requirements";
+import { AlignCenter } from "lucide-react";
 
 function useRentalStatusModal() {
   const [visible, setVisible] = useState(false);
@@ -199,12 +200,14 @@ function RentalHistory() {
     },
     {
       title: "Tenants",
+      align: "right" as const,
       dataIndex: "tenants",
       sorter: (a: RentalData, b: RentalData) => a.tenants - b.tenants,
     },
     {
       title: "Price",
       dataIndex: "price",
+      align: "right" as const,
       sorter: (a: RentalData, b: RentalData) => {
         const getNum = (v: string) => parseInt(v.replace(/[^\d]/g, ""), 10);
         return getNum(a.price) - getNum(b.price);
