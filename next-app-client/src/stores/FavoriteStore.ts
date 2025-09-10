@@ -2,7 +2,7 @@ import { create } from "zustand"
 
 interface FavoriteState {
   favoriteRoomIds: Set<string>
-    favoriteCountMap: Record<string, number> // 🎯 Thêm này
+    favoriteCountMap: Record<string, number> 
 
   isLoading: boolean
   isInitialized: boolean
