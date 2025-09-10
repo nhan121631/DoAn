@@ -87,7 +87,7 @@ export default function ChatClient({
       // 1. shouldAutoScroll = true (tin nhắn mới được thêm)
       // 2. Hoặc khi số lượng tin nhắn tăng (có tin nhắn mới)
       const isNewMessage = allMessages.length > prevMessagesLength.current;
-      
+
       if (shouldAutoScroll && isNewMessage) {
         messagesEndRef.current.scrollTop = messagesEndRef.current.scrollHeight;
       } else if (!shouldAutoScroll && scrollPositionRef.current > 0) {
@@ -96,7 +96,7 @@ export default function ChatClient({
         setShouldAutoScroll(true); // Reset lại auto scroll
         scrollPositionRef.current = 0;
       }
-      
+
       prevMessagesLength.current = allMessages.length;
     }
   }, [allMessages, shouldAutoScroll]);
