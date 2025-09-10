@@ -22,26 +22,29 @@ export default async function ProfileInfo() {
       <div className="flex flex-col gap-8 md:flex-row">
         {/* Left: Avatar + Balance */}
         <div className="flex flex-col items-center bg-gradient-to-br from-purple-200 via-blue-100 to-cyan-100 dark:from-[#232946] dark:via-[#1a1a2e] dark:to-[#0f3460] rounded-2xl shadow-lg p-8 min-w-[300px] max-w-[350px] w-full mx-auto md:mx-0">
-          <Image
-            src={
-              typeof userProfile?.avatar === "string" &&
-              userProfile.avatar?.trim() !== ""
-                ? userProfile.avatar.startsWith("http")
-                  ? userProfile.avatar
-                  : `${URL_IMAGE}${userProfile.avatar}`
-                : "/images/default/avatar.jpg"
-            }
-            alt="Avatar"
-            width={128}
-            height={128}
-            unoptimized
-            className="rounded-full border-4 border-blue-500 mb-4"
-          />
-          <span className="mt-2 text-lg font-semibold">
-            {" "}
-            {userProfile?.fullName || "No Name"}
-          </span>
-        </div>
+  {/* Avatar */}
+  <div className="relative w-32 h-32 mb-4 rounded-full overflow-hidden border-4 border-blue-500">
+    <Image
+      src={
+        typeof userProfile?.avatar === "string" &&
+        userProfile.avatar?.trim() !== ""
+          ? userProfile.avatar.startsWith("http")
+            ? userProfile.avatar
+            : `${URL_IMAGE}${userProfile.avatar}`
+          : "/images/default/avatar.jpg"
+      }
+      alt="Avatar"
+      fill
+      unoptimized
+      className="object-cover"
+    />
+  </div>
+
+  {/* Tên user */}
+  <span className="mt-2 text-lg font-semibold">
+    {userProfile?.fullName || "No Name"}
+  </span>
+</div>
         {/* Right: Personal Information */}
         <div className="flex flex-col flex-1 gap-6">
           <div className="flex bg-gray-100 dark:bg-[#17223b] rounded-lg p-6 items-center gap-4">

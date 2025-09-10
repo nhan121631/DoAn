@@ -45,10 +45,13 @@ export default function ChatClient({
     y: number;
     messageId: string;
   } | null>(null);
+  const [shouldAutoScroll, setShouldAutoScroll] = useState<boolean>(true);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const scrollPositionRef = useRef<number>(0);
+  const prevMessagesLength = useRef<number>(0);
 
   // Lắng nghe tin nhắn
   useEffect(() => {
@@ -80,8 +83,38 @@ export default function ChatClient({
   // Cuộn xuống cuối tin nhắn
   useEffect(() => {
     if (messagesEndRef.current) {
-      messagesEndRef.current.scrollTop = messagesEndRef.current.scrollHeight;
-      inputRef.current?.focus();
+      // Chỉ auto scroll khi:
+      // 1. shouldAutoScroll = true (tin nhắn mới được thêm)
+      // 2. Hoặc khi số lượng tin nhắn tăng (có tin nhắn mới)
+      const isNewMessage = allMessages.length > prevMessagesLength.current;
+      
+      if (shouldAutoScroll && isNewMessage) {
+        messagesEndRef.current.scrollTop = messagesEndRef.current.scrollHeight;
+      } else if (!shouldAutoScroll && scrollPositionRef.current > 0) {
+        // Khôi phục vị trí scroll khi xóa tin nhắn
+        messagesEndRef.current.scrollTop = scrollPositionRef.current;
+        setShouldAutoScroll(true); // Reset lại auto scroll
+        scrollPositionRef.current = 0;
+      }
+      
+      prevMessagesLength.current = allMessages.length;
+    }
+  }, [allMessages, shouldAutoScroll]);
+
+  // Focus vào input khi component mount hoặc khi có tin nhắn mới
+  useEffect(() => {
+    const focusInput = () => {
+      if (inputRef.current) {
+        inputRef.current.focus();
+      }
+    };
+
+    // Focus ngay lập tức khi component mount
+    focusInput();
+
+    // Focus sau khi có tin nhắn mới
+    if (allMessages.length > 0) {
+      setTimeout(focusInput, 100);
     }
   }, [allMessages]);
 
@@ -108,19 +141,18 @@ export default function ChatClient({
 
     try {
       await sendTextMessage(text, senderId, recipientId);
+      // Focus lại input sau khi gửi thành công
+      setTimeout(() => {
+        if (inputRef.current) {
+          inputRef.current.focus();
+        }
+      }, 100);
     } catch (err) {
       console.error("Send message error:", err);
       // Nếu gửi lỗi, giữ lại nội dung để người dùng có thể gửi lại
       setMsg(text);
     } finally {
       setSending(false);
-      // Sử dụng setTimeout với thời gian chờ 0ms để đảm bảo focus
-      // được gọi sau khi component đã render lại
-      setTimeout(() => {
-        if (inputRef.current) {
-          inputRef.current.focus();
-        }
-      }, 0);
     }
   };
 
@@ -146,6 +178,12 @@ export default function ChatClient({
 
     try {
       await sendImageMessage(file, senderId, recipientId);
+      // Focus lại input sau khi gửi ảnh thành công
+      setTimeout(() => {
+        if (inputRef.current) {
+          inputRef.current.focus();
+        }
+      }, 100);
     } catch (err) {
       console.error("Upload image error:", err);
       alert("Gửi ảnh thất bại. Vui lòng thử lại.");
@@ -185,13 +223,13 @@ export default function ChatClient({
   const handleDeleteMessage = async () => {
     if (!contextMenu) return;
 
-    const confirmDelete = window.confirm(
-      "Bạn có chắc chắn muốn xóa tin nhắn này?"
-    );
-    if (!confirmDelete) {
-      setContextMenu(null);
-      return;
+    // Lưu vị trí scroll hiện tại trước khi xóa
+    if (messagesEndRef.current) {
+      scrollPositionRef.current = messagesEndRef.current.scrollTop;
     }
+
+    // Tắt auto scroll để không bị cuộn xuống cuối
+    setShouldAutoScroll(false);
 
     try {
       console.log("Deleting message:", contextMenu.messageId);
@@ -205,6 +243,7 @@ export default function ChatClient({
     } catch (error) {
       console.error("Error deleting message:", error);
       alert("Không thể xóa tin nhắn. Vui lòng thử lại.");
+      setShouldAutoScroll(true); // Reset lại auto scroll nếu lỗi
     }
   };
 
@@ -373,8 +412,8 @@ export default function ChatClient({
         {/* Text input */}
         <input
           value={msg}
-          disabled={sending || uploadingImage}
           ref={inputRef}
+          disabled={sending || uploadingImage}
           onChange={(e) => setMsg(e.target.value)}
           placeholder="Type a message..."
           onKeyDown={(e) => {
