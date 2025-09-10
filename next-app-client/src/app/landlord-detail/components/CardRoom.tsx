@@ -89,9 +89,9 @@ export default function CardRoom({ rooms }: CardRoomProps) {
             All Posts ({rooms.length})
           </h2>
           <div className="flex space-x-2">
-            <button className="px-4 py-2 text-sm text-gray-600 bg-gray-100 rounded-lg">
+            {/* <button className="px-4 py-2 text-sm text-gray-600 bg-gray-100 rounded-lg">
               For Sale (0)
-            </button>
+            </button> */}
             <button className="px-4 py-2 text-sm text-white bg-gray-900 rounded-lg">
               For Rent ({rooms.length})
             </button>

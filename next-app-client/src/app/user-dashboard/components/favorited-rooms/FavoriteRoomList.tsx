@@ -8,6 +8,9 @@ import FavoriteDashboardRoomVipCard from "./FavoriteDashboardRoomVipCard";
 import { BiChevronLeft, BiChevronRight } from "react-icons/bi";
 import { useFavoriteStore } from "@/stores/FavoriteStore";
 
+import { Spin } from "antd"; 
+import { Empty } from "antd";
+
 export default function FavoriteRoomList() {
   const { favoriteRoomIds } = useFavoriteStore();
   const [rooms, setRooms] = useState<RoomInUser[]>([]);
@@ -57,64 +60,92 @@ export default function FavoriteRoomList() {
     }
   };
 
-  const handleFavoriteChange = useCallback((id: string) => {
-    setRooms((prevRooms) => {
-      const newRooms = prevRooms.filter((room) => room.id !== id);
+  const handleFavoriteChange = useCallback(async (id: string) => {
+    setRooms((prevRooms) => prevRooms.filter((room) => room.id !== id));
+    
+    try {
+      const res = await fetch(
+        `/api/user-dashboard/favorited-rooms?page=${currentPage}&size=${pageSize}`
+      );
       
-      // Nếu trang hiện tại không còn phòng nào và không phải trang đầu tiên
-      if (newRooms.length === 0 && currentPage > 0) {
-        // Chuyển về trang trước
-        setCurrentPage(currentPage - 1);
+      if (res.ok) {
+        const data = await res.json();
+        const newRooms: RoomInUser[] = data.content || [];
+        const newTotalPages = data.totalPages || 0;
+        
+        if (newRooms.length === 0 && currentPage > 0 && newTotalPages > 0) {
+          setCurrentPage(currentPage - 1);
+          const prevPageRes = await fetch(
+            `/api/user-dashboard/favorited-rooms?page=${currentPage - 1}&size=${pageSize}`
+          );
+          if (prevPageRes.ok) {
+            const prevPageData = await prevPageRes.json();
+            setRooms(prevPageData.content || []);
+            setTotalPages(prevPageData.totalPages || 0);
+          }
+        } else {
+          setRooms(newRooms);
+          setTotalPages(newTotalPages);
+        }
+        
+        // Update favorite store
+        fetchAndUpdateFavorites();
       }
-      
-      return newRooms;
-    });
-  }, [currentPage]);
+    } catch (error) {
+      console.error('Error refreshing favorite rooms:', error);
+      fetchRooms(currentPage);
+    }
+  }, [currentPage, pageSize]);
 
   if (loading && rooms.length === 0) {
-    return <p className="text-center text-gray-500">Loading...</p>;
+    return (
+      <div className="flex flex-col items-center justify-center py-20">
+        <Spin size="large" />
+        <p className="mt-4 text-lg text-gray-500">Loading your favorite rooms...</p>
+      </div>
+    );
   }
 
   if (error) {
-    return <p className="text-center text-red-500">Error: {error}</p>;
+    return (
+      <div className="flex flex-col items-center justify-center py-20">
+        <div className="text-center text-red-500">
+          <div className="mb-4 text-4xl">⚠️</div>
+          <p className="text-lg font-semibold">Error loading rooms</p>
+          <p className="text-sm text-gray-600">{error}</p>
+        </div>
+      </div>
+    );
   }
 
   if (rooms.length === 0) {
     return (
-      <p className="text-center text-gray-500">You have no favorite rooms.</p>
+      <div className="flex flex-col items-center justify-center py-20">
+        <Empty
+          image={Empty.PRESENTED_IMAGE_SIMPLE}
+          description={
+            <div className="text-center">
+              <p className="mb-2 text-lg font-semibold text-gray-600">
+                You have no favorite rooms.
+              </p>
+              <p className="text-sm text-gray-400">
+                Start exploring and add rooms to your favorites!
+              </p>
+            </div>
+          }
+        />
+      </div>
     );
   }
 
   return (
     <div className="flex flex-col w-full">
-      {/* <div className="flex flex-col w-full gap-6">
-        {rooms.map((room) => {
-          const isFavorite = favoriteRoomIds.has(room.id);
-          return (
-            <div key={room.id}>
-              {room.isVip ? (
-                <FavoriteDashboardRoomVipCard
-                  room={room}
-                  isFavorite={isFavorite}
-                  onFavoriteChange={handleFavoriteChange}
-                />
-              ) : (
-                <FavoriteDashboardRoomCard
-                  room={room}
-                  isFavorite={isFavorite}
-                  onFavoriteChange={handleFavoriteChange}
-                />
-              )}
-            </div>
-          );
-        })}
-      </div> */}
+      
       <div className="flex flex-col w-full gap-6">
         {rooms.map((room) => {
           const isFavorite = favoriteRoomIds.has(room.id);
           
-          // DEBUG: Thêm log này để check
-          console.log('Room ID:', room.id, 'isVip:', room.isVip, 'Type:', typeof room.isVip);
+          // console.log('Room ID:', room.id, 'isVip:', room.isVip, 'Type:', typeof room.isVip);
           
           return (
             <div key={room.id}>
@@ -136,25 +167,7 @@ export default function FavoriteRoomList() {
         })}
       </div>
 
-      {/* <div className="flex items-center justify-center gap-4 py-6">
-        <button
-          onClick={() => handlePageChange(currentPage - 1)}
-          disabled={currentPage === 0}
-          className="px-4 py-2 text-white bg-blue-500 rounded-md disabled:bg-gray-400"
-        >
-          Trang trước
-        </button>
-        <span className="text-lg font-semibold">
-          Trang {currentPage + 1} / {totalPages || 1}
-        </span>
-        <button
-          onClick={() => handlePageChange(currentPage + 1)}
-          disabled={currentPage >= totalPages - 1 || totalPages === 0}
-          className="px-4 py-2 text-white bg-blue-500 rounded-md disabled:bg-gray-400"
-        >
-          Trang tiếp
-        </button>
-      </div> */}
+      
       <div className="flex items-center justify-center gap-4 py-6">
         <button
           onClick={() => handlePageChange(currentPage - 1)}
@@ -197,3 +210,4 @@ export default function FavoriteRoomList() {
     </div>
   );
 }
+
