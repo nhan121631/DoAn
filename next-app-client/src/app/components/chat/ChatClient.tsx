@@ -95,7 +95,6 @@ export default function ChatClient({
       
       if (shouldAutoScroll && isNewMessage) {
         messagesEndRef.current.scrollTop = messagesEndRef.current.scrollHeight;
-        inputRef.current?.focus();
       } else if (!shouldAutoScroll && scrollPositionRef.current > 0) {
         // Khôi phục vị trí scroll khi xóa tin nhắn
         messagesEndRef.current.scrollTop = scrollPositionRef.current;
@@ -106,6 +105,23 @@ export default function ChatClient({
       prevMessagesLength.current = allMessages.length;
     }
   }, [allMessages, shouldAutoScroll]);
+
+  // Focus vào input khi component mount hoặc khi có tin nhắn mới
+  useEffect(() => {
+    const focusInput = () => {
+      if (inputRef.current) {
+        inputRef.current.focus();
+      }
+    };
+
+    // Focus ngay lập tức khi component mount
+    focusInput();
+
+    // Focus sau khi có tin nhắn mới
+    if (allMessages.length > 0) {
+      setTimeout(focusInput, 100);
+    }
+  }, [allMessages]);
 
   // Close context menu on click outside
   useEffect(() => {
@@ -130,19 +146,18 @@ export default function ChatClient({
 
     try {
       await sendTextMessage(text, senderId, recipientId);
+      // Focus lại input sau khi gửi thành công
+      setTimeout(() => {
+        if (inputRef.current) {
+          inputRef.current.focus();
+        }
+      }, 100);
     } catch (err) {
       console.error("Send message error:", err);
       // Nếu gửi lỗi, giữ lại nội dung để người dùng có thể gửi lại
       setMsg(text);
     } finally {
       setSending(false);
-      // Sử dụng setTimeout với thời gian chờ 0ms để đảm bảo focus
-      // được gọi sau khi component đã render lại
-      setTimeout(() => {
-        if (inputRef.current) {
-          inputRef.current.focus();
-        }
-      }, 0);
     }
   };
 
@@ -166,6 +181,12 @@ export default function ChatClient({
 
     try {
       await sendImageMessage(file, senderId, recipientId);
+      // Focus lại input sau khi gửi ảnh thành công
+      setTimeout(() => {
+        if (inputRef.current) {
+          inputRef.current.focus();
+        }
+      }, 100);
     } catch (err) {
       console.error("Upload image error:", err);
       alert('Gửi ảnh thất bại. Vui lòng thử lại.');
@@ -380,8 +401,8 @@ export default function ChatClient({
         {/* Text input */}
         <input
           value={msg}
-          disabled={sending || uploadingImage}
           ref={inputRef}
+          disabled={sending || uploadingImage}
           onChange={(e) => setMsg(e.target.value)}
           placeholder="Type a message..."
           onKeyDown={(e) => {
