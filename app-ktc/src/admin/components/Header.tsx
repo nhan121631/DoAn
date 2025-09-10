@@ -58,7 +58,7 @@ function AppHeader({ collapsed, toggleCollapsed }: AppHeaderProps) {
         </button>
         <Dropdown menu={{ items }} trigger={["click"]} placement="bottomRight">
           <div className="flex items-center gap-2 cursor-pointer">
-            <Avatar src="https://i.pravatar.cc/40" />
+            <Avatar src="https://i.pravatar.cc/40" alt="User Avatar" />
             <span className="font-semibold dark:text-white">
               Hi, {userName}
             </span>
