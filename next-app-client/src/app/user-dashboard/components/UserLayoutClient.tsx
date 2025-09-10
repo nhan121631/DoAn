@@ -36,9 +36,7 @@ export default function UserLayoutClient({
         <div className="flex-shrink-0">
           <AppSidebar collapsed={collapsed} />
         </div>
-        <div className="flex-1 overflow-auto bg-gray-100">
-          {children}
-        </div>
+        <div className="flex-1 overflow-auto bg-gray-100">{children}</div>
       </div>
     </div>
   );

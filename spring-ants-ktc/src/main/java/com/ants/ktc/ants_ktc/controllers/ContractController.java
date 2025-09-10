@@ -26,7 +26,6 @@ public class ContractController {
     @Autowired
     private BillExportService billExportService;
 
-
     @PostMapping
     public ResponseEntity<ContractResponseDto> createContract(@RequestBody @Valid ContractRequestDto dto) {
         return ResponseEntity.ok(contractService.createContract(dto));
@@ -39,18 +38,21 @@ public class ContractController {
 
     @GetMapping("/landlord/{landlordId}")
     public ResponseEntity<Page<ContractResponseDto>> getContractsByLandlord(
-            @PathVariable UUID landlordId,
+            @PathVariable("landlordId") UUID landlordId,
             Pageable pageable) {
         return ResponseEntity.ok(contractService.getContractsByLandlord(landlordId, pageable));
     }
+
     @GetMapping("/room/{roomId}")
     public ResponseEntity<List<ContractResponseDto>> getContractsByRoom(@PathVariable("roomId") UUID roomId) {
         return ResponseEntity.ok(contractService.getContractsByRoom(roomId));
     }
+
     @GetMapping("/{contractId}")
     public ResponseEntity<ContractResponseDto> getContractById(@PathVariable("contractId") UUID contractId) {
         return ResponseEntity.ok(contractService.getContractById(contractId));
     }
+
     @PutMapping("/{id}")
     public ResponseEntity<ContractResponseDto> updateContract(
             @PathVariable("id") UUID id,
@@ -59,16 +61,17 @@ public class ContractController {
 
         return ResponseEntity.ok(contractService.updateContract(dto));
     }
+
     @GetMapping("/status/{status}")
-    public ResponseEntity<List<ContractResponseDto>> getContractsByStatus(@PathVariable int status) {
+    public ResponseEntity<List<ContractResponseDto>> getContractsByStatus(@PathVariable("status") int status) {
         return ResponseEntity.ok(contractService.getContractsByStatus(status));
     }
+
     @GetMapping("/{contractId}/bills/export")
     public ResponseEntity<byte[]> exportBills(
             @PathVariable("contractId") UUID contractId,
-            @RequestParam String fromMonth, // yyyy-MM
-            @RequestParam String toMonth
-    ) throws Exception {
+            @RequestParam("fromMonth") String fromMonth, // yyyy-MM
+            @RequestParam("toMonth") String toMonth) throws Exception {
         byte[] data = billExportService.exportBillsToExcel(contractId, fromMonth, toMonth);
 
         return ResponseEntity.ok()

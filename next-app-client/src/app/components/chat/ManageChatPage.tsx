@@ -286,7 +286,7 @@ export default function ManageChatPage() {
       >
         {/* Mobile Back Button */}
         {selectedUserId && (
-          <div className="md:hidden flex items-center p-3 bg-white border-b border-gray-200 flex-shrink-0">
+          <div className="md:hidden flex items-center p-3 bg-white border-b border-gray-200 flex-shrink-0 dark:bg-gray-800 dark:border-gray-700">
             <button
               onClick={handleBackToSidebar}
               className="flex items-center gap-2 text-blue-600 hover:text-blue-700 transition-colors"

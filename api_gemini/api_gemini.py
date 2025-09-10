@@ -185,7 +185,7 @@ DANH SÁCH FILE ĐÃ TẢI:
 
     payload = {"contents": [{"parts": payload_parts}]}
     headers = {"Content-Type": "application/json"}
-
+    
     try:
         print(f"[DEBUG] Đang gửi request tới Gemini AI với {len(downloaded_files)} files...")
         resp = requests.post(URL, headers=headers, data=json.dumps(payload), timeout=20)

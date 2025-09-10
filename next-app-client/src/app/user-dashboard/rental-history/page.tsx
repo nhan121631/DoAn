@@ -292,7 +292,9 @@ function RentalHistory() {
               }
             }}
             title="Add Request"
-            disabled={(record.status !== 4) || (new Date() > new Date(record.expires))}
+            disabled={
+              record.status !== 4 || new Date() > new Date(record.expires)
+            }
           >
             <IoMdAddCircleOutline size={18} /> Sent new request
           </Button>
@@ -327,7 +329,7 @@ function RentalHistory() {
   return (
     <div style={{ padding: 24 }}>
       {contextHolder}
-      <h2 className="text-xl font-bold mb-4 dark:!text-white">
+      <h2 className="text-2xl font-bold mb-4 dark:!text-white">
         Rental History
       </h2>
       <Table

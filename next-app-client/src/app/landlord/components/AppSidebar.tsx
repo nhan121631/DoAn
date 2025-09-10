@@ -46,7 +46,8 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
   // const selectedKey = pathToKey[pathname] || "1";
   const getSelectedKey = () => {
     const p = pathname || "";
-    if (/^\/landlord\/manage-rooms(\/|$)/.test(p)) return "3"
+    if (/^\/landlord\/manage-rooms(\/|$)/.test(p)) return "3";
+    if (/^\/landlord\/manage-contracts(\/|$)/.test(p)) return "5";
     if (/^\/landlord\/add-funds(\/|$)/.test(p)) return "9";
     return pathToKey[p] || "1";
   };

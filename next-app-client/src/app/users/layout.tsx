@@ -31,9 +31,8 @@ export default function UsersLayout({ children }: UsersLayoutProps) {
             <AdsBanner position="right" />
           </div>
         </div>
-        <div id="why-choose-us">
+        <div id="why-choose-us" className="w-full max-w-full">
           <WhyChooseUsSection />
-
           <LandlordListCard />
           <ContactPage />
           <Footer />

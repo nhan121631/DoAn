@@ -27,45 +27,49 @@ public class BillController {
     private BillPdfService billPdfService;
 
     @PostMapping
-    public ResponseEntity<BillResponseDto> createBill(@RequestBody @Valid BillRequestDto dto){
+    public ResponseEntity<BillResponseDto> createBill(@RequestBody @Valid BillRequestDto dto) {
         return ResponseEntity.ok(billService.createBill(dto));
     }
+
     @GetMapping("/contract/{contractId}")
     public ResponseEntity<List<BillResponseDto>> getBillsByContract(@PathVariable("contractId") UUID contractId) {
         return ResponseEntity.ok(billService.getBillsByContract(contractId));
     }
+
     @GetMapping("/tenant/{tenantId}")
     public ResponseEntity<List<BillResponseDto>> getBillsByTenant(@PathVariable("tenantId") UUID tenantId) {
         return ResponseEntity.ok(billService.getBillsByTenant(tenantId));
     }
+
     @PutMapping("/{billId}/status")
     public ResponseEntity<BillResponseDto> updateBillStatus(
-            @PathVariable UUID billId,
-            @RequestParam BillStatus status // truyền ?status=CONFIRMING hoặc ?status=PAID
+            @PathVariable("billId") UUID billId,
+            @RequestParam("status") BillStatus status // truyền ?status=CONFIRMING hoặc ?status=PAID
     ) {
         return ResponseEntity.ok(billService.updateBillStatus(billId, status));
     }
+
     @PutMapping("/{id}")
     public ResponseEntity<BillResponseDto> updateBill(
             @PathVariable("id") UUID id,
-            @Valid @RequestBody BillUpdateDto dto
-    ) {
+            @Valid @RequestBody BillUpdateDto dto) {
         dto.setId(id);
         return ResponseEntity.ok(billService.updateBill(dto));
     }
+
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteBill(@PathVariable("id") UUID id){
+    public ResponseEntity<Void> deleteBill(@PathVariable("id") UUID id) {
         billService.deleteBill(id);
         return ResponseEntity.noContent().build();
     }
 
-@GetMapping("/{billId}/download")
-public ResponseEntity<byte[]> downloadBillPdf(@PathVariable("billId") UUID billId) throws Exception {
-    byte[] pdf = billPdfService.exportBillPdf(billId);
+    @GetMapping("/{billId}/download")
+    public ResponseEntity<byte[]> downloadBillPdf(@PathVariable("billId") UUID billId) throws Exception {
+        byte[] pdf = billPdfService.exportBillPdf(billId);
 
-    return ResponseEntity.ok()
-            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=bill-" + billId + ".pdf")
-            .contentType(MediaType.APPLICATION_PDF)
-            .body(pdf);
-}
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=bill-" + billId + ".pdf")
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(pdf);
+    }
 }
