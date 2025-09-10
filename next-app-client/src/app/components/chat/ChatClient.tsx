@@ -50,10 +50,13 @@ export default function ChatClient({
     y: number;
     messageId: string;
   } | null>(null);
+  const [shouldAutoScroll, setShouldAutoScroll] = useState<boolean>(true);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const scrollPositionRef = useRef<number>(0);
+  const prevMessagesLength = useRef<number>(0);
 
   // Lắng nghe tin nhắn
   useEffect(() => {
@@ -85,10 +88,24 @@ export default function ChatClient({
   // Cuộn xuống cuối tin nhắn
   useEffect(() => {
     if (messagesEndRef.current) {
-      messagesEndRef.current.scrollTop = messagesEndRef.current.scrollHeight;
-      inputRef.current?.focus();
+      // Chỉ auto scroll khi:
+      // 1. shouldAutoScroll = true (tin nhắn mới được thêm)
+      // 2. Hoặc khi số lượng tin nhắn tăng (có tin nhắn mới)
+      const isNewMessage = allMessages.length > prevMessagesLength.current;
+      
+      if (shouldAutoScroll && isNewMessage) {
+        messagesEndRef.current.scrollTop = messagesEndRef.current.scrollHeight;
+        inputRef.current?.focus();
+      } else if (!shouldAutoScroll && scrollPositionRef.current > 0) {
+        // Khôi phục vị trí scroll khi xóa tin nhắn
+        messagesEndRef.current.scrollTop = scrollPositionRef.current;
+        setShouldAutoScroll(true); // Reset lại auto scroll
+        scrollPositionRef.current = 0;
+      }
+      
+      prevMessagesLength.current = allMessages.length;
     }
-  }, [allMessages]);
+  }, [allMessages, shouldAutoScroll]);
 
   // Close context menu on click outside
   useEffect(() => {
@@ -180,11 +197,13 @@ export default function ChatClient({
   const handleDeleteMessage = async () => {
     if (!contextMenu) return;
 
-    const confirmDelete = window.confirm("Bạn có chắc chắn muốn xóa tin nhắn này?");
-    if (!confirmDelete) {
-      setContextMenu(null);
-      return;
+    // Lưu vị trí scroll hiện tại trước khi xóa
+    if (messagesEndRef.current) {
+      scrollPositionRef.current = messagesEndRef.current.scrollTop;
     }
+
+    // Tắt auto scroll để không bị cuộn xuống cuối
+    setShouldAutoScroll(false);
 
     try {
       console.log("Deleting message:", contextMenu.messageId);
@@ -198,6 +217,7 @@ export default function ChatClient({
     } catch (error) {
       console.error("Error deleting message:", error);
       alert("Không thể xóa tin nhắn. Vui lòng thử lại.");
+      setShouldAutoScroll(true); // Reset lại auto scroll nếu lỗi
     }
   };
 
