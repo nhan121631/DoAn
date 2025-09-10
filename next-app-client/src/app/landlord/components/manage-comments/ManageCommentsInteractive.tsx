@@ -74,6 +74,7 @@ const ManageCommentsInteractive: React.FC = () => {
       title: "Score",
       dataIndex: "score",
       key: "score",
+      align: "right" as const,
       sorter: (a, b) => a.score - b.score,
     },
     {
