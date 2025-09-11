@@ -5,6 +5,8 @@ import MapSection from "./map";
 import { Slide } from "./Slide";
 import { getRoomById } from "@/services/RoomService";
 import type { RoomDetail } from "@/types/types";
+import IncreaseView from "./IncreaseView";
+import FavoriteCount from "./FavoriteCount";
 
 type RoomDetailProps = {
   id: string | null;
@@ -82,6 +84,10 @@ const RoomDetail: React.FC<RoomDetailProps> = ({ id }) => {
           <span className="text-base text-gray-500 dark:text-gray-300">
             · {room.area ? `${room.area} m²` : ""}
           </span>
+          <div className="flex items-center gap-3 ml-4">
+                              <IncreaseView roomId={room.id} />
+                              <FavoriteCount roomId={room.id} />
+                            </div>
         </div>
         <div className="text-gray-700 dark:text-gray-200 text-[15px] mb-1 flex justify-start">
           <span className="w-1/5">Ward</span>

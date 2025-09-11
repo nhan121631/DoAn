@@ -166,10 +166,12 @@ export type RoomInUser = {
   conveniences: Convenient[];
   images: Image[];
   landlord: Landlord;
+  postType: string;
   isVip?: boolean;
   mainImage?: string;
   favoriteCount?: number
   viewCount?: number;
+  
 };
 export type LandlordProfile = {
   id: string;
