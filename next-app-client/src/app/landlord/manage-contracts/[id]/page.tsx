@@ -24,6 +24,7 @@ export default function LandlordContractDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("overview");
+  const [messageApi, contextHolder] = message.useMessage();
 
   useEffect(() => {
     const fetchContract = async () => {
@@ -33,7 +34,7 @@ export default function LandlordContractDetail() {
         setContract(data);
       } catch (err: any) {
         setError("Cannot load contract");
-        message.error("Cannot load contract");
+        messageApi.error("Cannot load contract");
       } finally {
         setLoading(false);
       }
@@ -118,7 +119,9 @@ export default function LandlordContractDetail() {
   ];
 
   return (
+  
     <div className="flex flex-col flex-1 h-full w-full bg-white dark:bg-[#001529] text-gray-900 dark:text-white p-8 overflow-auto transition-colors duration-300">
+      {contextHolder}
       <div className="bg-white dark:bg-[#22304a] rounded-2xl shadow-md w-full mx-auto p-6 transition-colors duration-300">
         <h2 className="text-xl font-bold mb-6 text-gray-900 dark:text-white">
           Contract Management

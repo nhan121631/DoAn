@@ -28,6 +28,7 @@ function ModalPayment({
   );
   const [loading, setLoading] = useState(false);
   const [transferConfirmed, setTransferConfirmed] = useState(false);
+  const [messageApi, contextHolder] = message.useMessage();
 
   // Fetch landlord payment info when modal opens
   useEffect(() => {
@@ -40,7 +41,7 @@ function ModalPayment({
         setPaymentInfo(info);
       } catch (error) {
         console.error("Failed to fetch payment info:", error);
-        message.error("Failed to load payment information");
+        messageApi.error("Failed to load payment information");
       } finally {
         setLoading(false);
       }
@@ -52,18 +53,18 @@ function ModalPayment({
   // Handle confirm payment
   const handleConfirmPayment = async () => {
     if (!transferConfirmed) {
-      message.warning("Please confirm that you have completed the transfer");
+      messageApi.warning("Please confirm that you have completed the transfer");
       return;
     }
 
     try {
       await updateBookingStatus(bookingId, 3); // Set status to "waiting for deposit confirmation"
-      message.success("Payment confirmation submitted successfully!");
+      messageApi.success("Payment confirmation submitted successfully!");
       onConfirm();
       setTransferConfirmed(false);
     } catch (error) {
       console.error("Failed to update booking status:", error);
-      message.error("Failed to confirm payment");
+      messageApi.error("Failed to confirm payment");
     }
   };
 
@@ -75,7 +76,7 @@ function ModalPayment({
   const copyBankNumber = () => {
     if (paymentInfo?.bankNumber) {
       navigator.clipboard.writeText(paymentInfo.bankNumber);
-      message.success("Bank number copied to clipboard");
+      messageApi.success("Bank number copied to clipboard");
     }
   };
 
@@ -101,6 +102,7 @@ function ModalPayment({
       }
       width={500}
     >
+      {contextHolder}
       {paymentInfo ? (
         <div className="flex flex-col gap-4 p-4">
           {/* Payment Instructions */}
