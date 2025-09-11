@@ -10,8 +10,9 @@ import { FaMoneyBillWave } from "react-icons/fa";
 import { BsCamera } from "react-icons/bs";
 import { HiOutlineLocationMarker } from "react-icons/hi";
 import { useFavoriteStore } from "@/stores/FavoriteStore";
-import { addFavorite, removeFavorite } from "@/services/FavoriteService";
 import { message } from "antd";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 interface RoomCardProps {
   id?: string;
@@ -38,17 +39,23 @@ const RoomCard: React.FC<RoomCardProps> = ({
 }) => {
   const [imageError, setImageError] = useState(false);
   const [messageApi, contextHolder] = message.useMessage();
-  const { favoriteRoomIds } = useFavoriteStore();
+  const { favoriteRoomIds, addFavorite: addFavoriteStore, removeFavorite: removeFavoriteStore } = useFavoriteStore();
   const isFavorited = favoriteRoomIds.has(id);
   const [favoriteCount, setFavoriteCount] = useState(0);
 
+  const { data: session } = useSession();
+  const router = useRouter();
+
   useEffect(() => {
-    // Fetch số lượt tim khi mount
     async function fetchCount() {
       if (id) {
-        const countRes = await fetch(`/api/favorites/rooms/${id}/count`);
-        const newCount = await countRes.json();
-        setFavoriteCount(newCount);
+        try {
+          const countRes = await fetch(`/api/favorites/rooms/${id}/count`);
+          const newCount = await countRes.json();
+          setFavoriteCount(newCount);
+        } catch (err) {
+          console.error("Failed to fetch favorite count:", err);
+        }
       }
     }
     fetchCount();
@@ -56,20 +63,49 @@ const RoomCard: React.FC<RoomCardProps> = ({
 
   const handleFavoriteClick = async (e: React.MouseEvent) => {
     e.stopPropagation();
+    
+    if (!session) {
+      router.push("/auth/login");
+      return;
+    }
+
+    const wasFavorited = isFavorited;
+    
+    if (wasFavorited) {
+      removeFavoriteStore(id);
+      setFavoriteCount((prevCount) => prevCount > 0 ? prevCount - 1 : 0);
+    } else {
+      addFavoriteStore(id);
+      setFavoriteCount((prevCount) => prevCount + 1);
+    }
+
     try {
-      if (isFavorited) {
-        await removeFavorite(id);
-        messageApi.success("Removed from favorites");
-      } else {
-        await addFavorite(id);
-        messageApi.success("Added to favorites");
+      const res = await fetch(`/api/favorites/rooms/${id}`, {
+        method: wasFavorited ? "DELETE" : "POST",
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to update favorite status on the server.");
       }
-      // Fetch lại số lượt tim sau khi cập nhật
-      const countRes = await fetch(`/api/favorites/rooms/${id}/count`);
-      const newCount = await countRes.json();
-      setFavoriteCount(newCount);
-    } catch (error) {
-      messageApi.error("Failed to update favorite status");
+
+      setTimeout(() => {
+        messageApi.success(wasFavorited ? "Removed from favorites" : "Added to favorites");
+      }, 100);
+
+    } catch (err) { 
+      console.error("Failed to update favorite status:", err);
+      
+      if (wasFavorited) {
+        addFavoriteStore(id);
+        setFavoriteCount((prevCount) => prevCount + 1);
+      } else {
+        removeFavoriteStore(id);
+        setFavoriteCount((prevCount) => prevCount > 0 ? prevCount - 1 : 0);
+      }
+      
+      setTimeout(() => {
+        messageApi.error("Failed to update favorite status.");
+      }, 100);
     }
   };
 
@@ -239,4 +275,5 @@ const RoomCard: React.FC<RoomCardProps> = ({
     </div>
   );
 };
+
 export default RoomCard;

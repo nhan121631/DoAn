@@ -238,7 +238,6 @@ const FavoriteDashboardRoomCard: React.FC<RoomCardProps> = ({
             <span className="font-semibold text-gray-800">
               {room.landlord.landlordProfile.fullName}
             </span>
-            {/* ← HIỂN THỊ PHONE/EMAIL CHỈ KHI CÓ DATA */}
             {contactInfo && (
               <div className="text-xs font-medium text-blue-600">
                 {contactInfo}

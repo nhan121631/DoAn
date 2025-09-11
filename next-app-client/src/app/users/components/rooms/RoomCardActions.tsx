@@ -40,7 +40,6 @@ export default function RoomCartActions({
 
   const handleCompare = () => {
     if (items.length >= 2) {
-      // ✅ Gọi message trong event handler
       messageApi.warning({
         content: "You can only compare up to 2 rooms.",
         duration: 1.5,
@@ -64,34 +63,46 @@ export default function RoomCartActions({
       router.push("/auth/login");
       return;
     }
+    
+    const wasFavorite = isFavorite; 
+    
+    if (wasFavorite) {
+      removeFavorite(room.id);
+      if (onFavoriteChange) onFavoriteChange(room.id);
+      setFavoriteCount((prevCount) => prevCount > 0 ? prevCount - 1 : 0);
+    } else {
+      addFavorite(room.id);
+      setFavoriteCount((prevCount) => prevCount + 1);
+    }
+
     setLoadingFavorite(true);
+
     try {
       const res = await fetch(`/api/favorites/rooms/${room.id}`, {
-        method: isFavorite ? "DELETE" : "POST",
+        method: wasFavorite ? "DELETE" : "POST",
       });
 
-      if (res.ok) {
-        if (isFavorite) {
-          removeFavorite(room.id);
-          if (onFavoriteChange) onFavoriteChange(room.id);
-          messageApi.success("Removed from favorites");
-        } else {
-          addFavorite(room.id);
-          messageApi.success("Added to favorites");
-        }
-        const countRes = await fetch(`/api/favorites/rooms/${room.id}/count`);
-        const newCount = await countRes.json();
-        setFavoriteCount(newCount);
-      } else {
-        throw new Error("Failed to update favorite status");
+      if (!res.ok) {
+        throw new Error("Failed to update favorite status on the server.");
       }
-    } catch (error) {
-      console.error("Error updating favorite status:", error);
-      messageApi.error("Failed to update favorite status ");
-    } finally {
-      setLoadingFavorite(false);
+      
+      messageApi.success(wasFavorite ? "Removed from favorites" : "Added to favorites");
+  
+  } catch (err) { 
+    console.error("Failed to update favorite status:", err);
+    
+    if (wasFavorite) {
+      addFavorite(room.id); 
+      setFavoriteCount((prevCount) => prevCount + 1);
+    } else {
+      removeFavorite(room.id);
+      setFavoriteCount((prevCount) => prevCount > 0 ? prevCount - 1 : 0);
     }
-  };
+    messageApi.error("Failed to update favorite status.");
+  } finally {
+    setLoadingFavorite(false);
+  }
+};
   if (showHeartOnly) {
     return (
       <>
@@ -168,3 +179,5 @@ export default function RoomCartActions({
     </>
   );
 }
+
+

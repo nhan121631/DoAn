@@ -60,42 +60,14 @@ export default function FavoriteRoomList() {
     }
   };
 
+  
   const handleFavoriteChange = useCallback(async (id: string) => {
-    setRooms((prevRooms) => prevRooms.filter((room) => room.id !== id));
     
-    try {
-      const res = await fetch(
-        `/api/user-dashboard/favorited-rooms?page=${currentPage}&size=${pageSize}`
-      );
-      
-      if (res.ok) {
-        const data = await res.json();
-        const newRooms: RoomInUser[] = data.content || [];
-        const newTotalPages = data.totalPages || 0;
-        
-        if (newRooms.length === 0 && currentPage > 0 && newTotalPages > 0) {
-          setCurrentPage(currentPage - 1);
-          const prevPageRes = await fetch(
-            `/api/user-dashboard/favorited-rooms?page=${currentPage - 1}&size=${pageSize}`
-          );
-          if (prevPageRes.ok) {
-            const prevPageData = await prevPageRes.json();
-            setRooms(prevPageData.content || []);
-            setTotalPages(prevPageData.totalPages || 0);
-          }
-        } else {
-          setRooms(newRooms);
-          setTotalPages(newTotalPages);
-        }
-        
-        // Update favorite store
-        fetchAndUpdateFavorites();
-      }
-    } catch (error) {
-      console.error('Error refreshing favorite rooms:', error);
+    setTimeout(() => {
       fetchRooms(currentPage);
-    }
-  }, [currentPage, pageSize]);
+    }, 500); 
+  }, [currentPage, fetchRooms]);
+
 
   if (loading && rooms.length === 0) {
     return (
@@ -210,4 +182,3 @@ export default function FavoriteRoomList() {
     </div>
   );
 }
-
