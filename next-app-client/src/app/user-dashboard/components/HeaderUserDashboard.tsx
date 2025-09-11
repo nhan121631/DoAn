@@ -238,6 +238,7 @@ export default function HeaderUserDashboard({
                     <div className="relative">
                       <Avatar
                         src="https://i.pravatar.cc/40"
+                        alt="User Avatar"
                         size={36}
                         className="border-2 border-white shadow-lg transition-transform duration-300 group-hover:scale-110"
                       />
