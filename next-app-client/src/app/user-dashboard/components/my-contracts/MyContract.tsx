@@ -121,11 +121,12 @@ const MyContract: React.FC = () => {
       width: "12%",
     },
     {
-      title: "Rent ($)",
+      title: "Rent (vnđ)",
       dataIndex: "monthlyRent",
       key: "monthlyRent",
+      align: "right" as const,
       sorter: (a, b) => a.monthlyRent - b.monthlyRent,
-      render: (rent: number) => `$${rent.toLocaleString()}`,
+      render: (rent: number) => `${rent.toLocaleString()} vnđ`,
       width: "12%",
     },
     {

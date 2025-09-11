@@ -320,6 +320,7 @@ export default function BillsTab({
     {
       title: "Month",
       dataIndex: "month",
+      width: "90px",
       key: "month",
       render: (month: string) => (
         <span style={{ color: "red", fontWeight: 500 }}>{month}</span>
@@ -386,6 +387,7 @@ export default function BillsTab({
       title: "Total",
       dataIndex: "totalAmount",
       key: "totalAmount",
+      width: "130px",
       align: "right" as const,
       render: (v: number) => v?.toLocaleString() + "đ",
       sorter: (a: BillData, b: BillData) =>
