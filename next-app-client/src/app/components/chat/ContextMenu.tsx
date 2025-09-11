@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import Portal from "../common/Portal";
+import { Popconfirm } from "antd";
 
 interface ContextMenuProps {
   x: number;
@@ -11,7 +12,13 @@ interface ContextMenuProps {
   isVisible: boolean;
 }
 
-export default function ContextMenu({ x, y, onDelete, onClose, isVisible }: ContextMenuProps) {
+export default function ContextMenu({
+  x,
+  y,
+  onDelete,
+  onClose,
+  isVisible,
+}: ContextMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -54,25 +61,34 @@ export default function ContextMenu({ x, y, onDelete, onClose, isVisible }: Cont
           top: Math.max(0, adjustedY),
         }}
       >
-        <button
-          onClick={onDelete}
-          className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-2 transition-colors"
+        <Popconfirm
+          title="Bạn có chắc muốn xóa không?"
+          description="Hành động này không thể hoàn tác."
+          onConfirm={onDelete}
+          onCancel={onClose}
+          okText="Có"
+          cancelText="Không"
         >
-          <svg
-            className="w-4 h-4"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={2}
-            viewBox="0 0 24 24"
+          <button
+            type="button"
+            className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-2 transition-colors"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-            />
-          </svg>
-          Xóa tin nhắn
-        </button>
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2}
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+              />
+            </svg>
+            Delete this message
+          </button>
+        </Popconfirm>
       </div>
     </Portal>
   );

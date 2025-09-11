@@ -177,6 +177,7 @@ const RequestStatusInteractive: React.FC<RequestStatusInteractiveProps> = ({
     {
       title: "STT",
       key: "stt",
+      align: "right" as const,
       width: 80,
       render: (_: any, __: any, index: number) => index + 1,
     },
