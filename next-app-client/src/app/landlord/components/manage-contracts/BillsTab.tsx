@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { BillService } from "@/services/BillService";
 import { ContractService } from "@/services/ContractService";
 import { getRoomById } from "@/services/RoomService";
