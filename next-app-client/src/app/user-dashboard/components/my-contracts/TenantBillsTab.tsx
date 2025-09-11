@@ -1,28 +1,27 @@
-import React, { useState, useEffect } from "react";
+import { BillService } from "@/services/BillService";
+import { BillData, ContractData } from "@/types/types";
 import {
-  Table,
-  Tag,
-  Button,
-  Tooltip,
-  Space,
-  Card,
-  Statistic,
-  Input,
-  Select,
-  App,
-  message,
-} from "antd";
-import {
-  EyeOutlined,
-  DownloadOutlined,
   CreditCardOutlined,
   DollarOutlined,
-  SearchOutlined,
+  DownloadOutlined,
+  EyeOutlined,
   FilterOutlined,
+  SearchOutlined,
 } from "@ant-design/icons";
+import {
+  Button,
+  Card,
+  Input,
+  message,
+  Select,
+  Space,
+  Statistic,
+  Table,
+  Tag,
+  Tooltip
+} from "antd";
 import type { ColumnsType } from "antd/es/table";
-import { ContractData, BillData } from "@/types/types";
-import { BillService } from "@/services/BillService";
+import { useEffect, useState } from "react";
 import BillDetail from "./BillDetail";
 import BillPaymentModal from "./BillPaymentModal";
 

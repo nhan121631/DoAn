@@ -30,6 +30,7 @@ function BillPaymentModal({
   const [transferConfirmed, setTransferConfirmed] = useState(false);
   const [paymentLoading, setPaymentLoading] = useState(false);
 
+  const [messageApi, contextHolder] = message.useMessage();
   // Fetch landlord payment info when modal opens
   useEffect(() => {
     const fetchPaymentInfo = async () => {
@@ -68,7 +69,7 @@ function BillPaymentModal({
         }
       } catch (error) {
         console.error("Failed to process payment info:", error);
-        message.error("Failed to load payment information");
+        messageApi.error("Failed to load payment information");
       } finally {
         setLoading(false);
       }
@@ -83,7 +84,7 @@ function BillPaymentModal({
 
     try {
       setPaymentLoading(true);
-      
+
       const paymentPayload = {
         amount: bill.totalAmount,
         description: `Payment for bill ${bill.month} - Contract ${contract.id}`,
@@ -91,16 +92,16 @@ function BillPaymentModal({
       };
 
       const paymentResult = await createPayment(paymentPayload);
-      
+
       if (paymentResult.paymentUrl) {
         // Redirect to VNPay
         window.location.href = paymentResult.paymentUrl;
       } else {
-        message.error("Failed to create payment URL");
+        messageApi.error("Failed to create payment URL");
       }
     } catch (error) {
       console.error("VNPay payment failed:", error);
-      message.error("Failed to initiate VNPay payment");
+      messageApi.error("Failed to initiate VNPay payment");
     } finally {
       setPaymentLoading(false);
     }
@@ -109,7 +110,7 @@ function BillPaymentModal({
   // Handle confirm manual transfer
   const handleConfirmTransfer = async () => {
     if (!transferConfirmed) {
-      message.warning("Please confirm that you have completed the transfer");
+      messageApi.warning("Please confirm that you have completed the transfer");
       return;
     }
 
@@ -118,13 +119,13 @@ function BillPaymentModal({
     try {
       // Update bill status to "CONFIRMING" using the new API
       await BillService.updateBillStatus(contract.id, bill.id, "CONFIRMING");
-      
-      message.success("Transfer confirmation submitted successfully!");
+
+      messageApi.success("Transfer confirmation submitted successfully!");
       onConfirm();
       setTransferConfirmed(false);
     } catch (error) {
       console.error("Failed to update bill status:", error);
-      message.error("Failed to confirm transfer");
+      messageApi.error("Failed to confirm transfer");
     }
   };
 
@@ -136,7 +137,7 @@ function BillPaymentModal({
   const copyBankNumber = () => {
     if (paymentInfo?.bankNumber) {
       navigator.clipboard.writeText(paymentInfo.bankNumber);
-      message.success("Bank number copied to clipboard");
+      messageApi.success("Bank number copied to clipboard");
     }
   };
 
@@ -162,6 +163,7 @@ function BillPaymentModal({
       }
       width={600}
     >
+      {contextHolder}
       {paymentInfo && bill ? (
         <div className="flex flex-col gap-4 p-4">
           {/* Bill Information */}
@@ -173,23 +175,34 @@ function BillPaymentModal({
               <div className="flex justify-between">
                 <span className="text-gray-600">Month:</span>
                 <span className="font-semibold">
-                  {new Date(bill.month).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                  {new Date(bill.month).toLocaleDateString("en-US", {
+                    month: "long",
+                    year: "numeric",
+                  })}
                 </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Electricity:</span>
-                <span className="font-semibold">{bill.electricityFee.toLocaleString()} đ</span>
+                <span className="font-semibold">
+                  {bill.electricityFee.toLocaleString()} đ
+                </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Water:</span>
-                <span className="font-semibold">{bill.waterFee.toLocaleString()} đ</span>
+                <span className="font-semibold">
+                  {bill.waterFee.toLocaleString()} đ
+                </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Service:</span>
-                <span className="font-semibold">{bill.serviceFee.toLocaleString()} đ</span>
+                <span className="font-semibold">
+                  {bill.serviceFee.toLocaleString()} đ
+                </span>
               </div>
               <div className="flex justify-between border-t pt-2">
-                <span className="text-gray-800 font-semibold">Total Amount:</span>
+                <span className="text-gray-800 font-semibold">
+                  Total Amount:
+                </span>
                 <span className="font-bold text-lg text-red-600">
                   {bill.totalAmount.toLocaleString()} đ
                 </span>
@@ -203,7 +216,8 @@ function BillPaymentModal({
               Online Payment (Recommended)
             </h3>
             <p className="text-sm text-gray-600 mb-3">
-              Pay securely with VNPay - supports all major banks and payment methods
+              Pay securely with VNPay - supports all major banks and payment
+              methods
             </p>
             <Button
               type="primary"

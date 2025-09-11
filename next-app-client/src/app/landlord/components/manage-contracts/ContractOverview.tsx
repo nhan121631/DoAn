@@ -39,6 +39,7 @@ export default function ContractOverview({
 }: ContractOverviewProps) {
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [messageApi, contextHolder] = message.useMessage();
   const [form] = Form.useForm();
 
   const handleEdit = useCallback(() => {
@@ -85,11 +86,11 @@ export default function ContractOverview({
         onContractUpdate(updatedContract);
       }
 
-      message.success("Contract updated successfully!");
+      messageApi.success("Contract updated successfully!");
       setEditModalOpen(false);
     } catch (error) {
       console.error("Update contract error:", error);
-      message.error("Failed to update contract!");
+      messageApi.error("Failed to update contract!");
     } finally {
       setLoading(false);
     }
@@ -97,6 +98,7 @@ export default function ContractOverview({
 
   return (
     <div className="p-6 bg-white dark:bg-transparent transition-colors duration-300">
+      {contextHolder}
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
           Contract Information

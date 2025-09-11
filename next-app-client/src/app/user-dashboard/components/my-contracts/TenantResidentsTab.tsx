@@ -1,45 +1,42 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import React, { useState, useEffect } from "react";
-import { 
-  Table, 
-  Button, 
-  Modal, 
-  Form, 
-  Input, 
-  Select, 
-  message, 
-  Space, 
-  Card, 
-  Image, 
-  Tag, 
-  Tooltip,
-  Popconfirm,
-  DatePicker,
-  Avatar,
-  Upload
-} from "antd";
-import { 
-  UserOutlined, 
-  EyeOutlined, 
-  IdcardOutlined, 
-  EditOutlined, 
-  DeleteOutlined, 
-  PlusOutlined,
-  UploadOutlined,
-  InboxOutlined,
-  SearchOutlined,
-  FilterOutlined
-} from "@ant-design/icons";
-import type { ColumnsType } from "antd/es/table";
-import { ContractData, ResidentData } from "@/types/types";
 import { ResidentService } from "@/services/ResidentService";
+import { ContractData, ResidentData } from "@/types/types";
+import {
+  DeleteOutlined,
+  EditOutlined,
+  EyeOutlined,
+  FilterOutlined,
+  InboxOutlined,
+  PlusOutlined,
+  SearchOutlined,
+  UserOutlined,
+} from "@ant-design/icons";
+import {
+  Button,
+  Card,
+  DatePicker,
+  Form,
+  Image,
+  Input,
+  message,
+  Modal,
+  Popconfirm,
+  Select,
+  Space,
+  Table,
+  Tag,
+  Tooltip,
+  Upload,
+} from "antd";
+import type { ColumnsType } from "antd/es/table";
 import dayjs from "dayjs";
+import { useEffect, useState } from "react";
 
 // Helper function để convert relative path thành full Cloudinary URL
 const getCloudinaryImageUrl = (relativePath: string) => {
-  if (!relativePath) return '';
-  if (relativePath.startsWith('http')) return relativePath; // Đã là full URL
+  if (!relativePath) return "";
+  if (relativePath.startsWith("http")) return relativePath; // Đã là full URL
   return `https://res.cloudinary.com${relativePath}`;
 };
 
@@ -49,7 +46,7 @@ interface TenantResidentsTabProps {
 }
 
 const relationshipOptions = [
-  {value: "Bản thân", label: "Bản thân"},
+  { value: "Bản thân", label: "Bản thân" },
   { value: "Vợ/Chồng", label: "Vợ/Chồng" },
   { value: "Con", label: "Con" },
   { value: "Bố/Mẹ", label: "Bố/Mẹ" },
@@ -58,10 +55,14 @@ const relationshipOptions = [
   { value: "Khác", label: "Khác" },
 ];
 
-export default function TenantResidentsTab({ contract }: TenantResidentsTabProps) {
+export default function TenantResidentsTab({
+  contract,
+}: TenantResidentsTabProps) {
   const [residents, setResidents] = useState<ResidentData[]>([]);
   const [loading, setLoading] = useState(false);
-  const [selectedResident, setSelectedResident] = useState<ResidentData | null>(null);
+  const [selectedResident, setSelectedResident] = useState<ResidentData | null>(
+    null
+  );
   const [editResident, setEditResident] = useState<ResidentData | null>(null);
   const [addResidentOpen, setAddResidentOpen] = useState(false);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
@@ -70,7 +71,11 @@ export default function TenantResidentsTab({ contract }: TenantResidentsTabProps
   const [addForm] = Form.useForm();
   const [editForm] = Form.useForm();
   const [searchText, setSearchText] = useState("");
-  const [relationshipFilter, setRelationshipFilter] = useState<string | null>(null);
+  const [relationshipFilter, setRelationshipFilter] = useState<string | null>(
+    null
+  );
+
+  const [messageApi, contextHolder] = message.useMessage();
 
   // Helper to get current active form - với safety check
   const getCurrentForm = () => {
@@ -83,11 +88,13 @@ export default function TenantResidentsTab({ contract }: TenantResidentsTabProps
     const fetchResidents = async () => {
       try {
         setLoading(true);
-        const fetchedResidents = await ResidentService.getByContract(contract.id);
+        const fetchedResidents = await ResidentService.getByContract(
+          contract.id
+        );
         setResidents(fetchedResidents);
       } catch (error) {
         console.error("Error fetching residents:", error);
-        message.error("Failed to load residents");
+        messageApi.error("Failed to load residents");
         // Set empty array when API fails, no mock data
         setResidents([]);
       } finally {
@@ -109,31 +116,31 @@ export default function TenantResidentsTab({ contract }: TenantResidentsTabProps
         endDate: dayjs(editResident.endDate),
         note: editResident.note,
       });
-      
+
       // Load existing images with proper URL handling
       const frontImageList: any[] = [];
       const backImageList: any[] = [];
-      
+
       if (editResident.idCardFrontUrl) {
         const frontUrl = getCloudinaryImageUrl(editResident.idCardFrontUrl);
         frontImageList.push({
-          uid: '-1',
-          name: 'Front ID',
-          status: 'done',
+          uid: "-1",
+          name: "Front ID",
+          status: "done",
           url: frontUrl,
         });
       }
-      
+
       if (editResident.idCardBackUrl) {
         const backUrl = getCloudinaryImageUrl(editResident.idCardBackUrl);
         backImageList.push({
-          uid: '-1',
-          name: 'Back ID', 
-          status: 'done',
+          uid: "-1",
+          name: "Back ID",
+          status: "done",
           url: backUrl,
         });
       }
-      
+
       setFrontIdFileList(frontImageList);
       setBackIdFileList(backImageList);
     } else {
@@ -144,26 +151,30 @@ export default function TenantResidentsTab({ contract }: TenantResidentsTabProps
   }, [editResident]);
 
   // Handle file upload for ID card images
-  const handleUpload = (file: File, type: 'front' | 'back') => {
+  const handleUpload = (file: File, type: "front" | "back") => {
     // In real app, upload to server and get URL
     const reader = new FileReader();
     reader.onload = () => {
-      if (type === 'front') {
-        setFrontIdFileList([{
-          uid: '-1',
-          name: file.name,
-          status: 'done',
-          url: reader.result as string,
-          originFileObj: file, // Keep original file for API upload
-        }]);
+      if (type === "front") {
+        setFrontIdFileList([
+          {
+            uid: "-1",
+            name: file.name,
+            status: "done",
+            url: reader.result as string,
+            originFileObj: file, // Keep original file for API upload
+          },
+        ]);
       } else {
-        setBackIdFileList([{
-          uid: '-1',
-          name: file.name,
-          status: 'done',
-          url: reader.result as string,
-          originFileObj: file, // Keep original file for API upload
-        }]);
+        setBackIdFileList([
+          {
+            uid: "-1",
+            name: file.name,
+            status: "done",
+            url: reader.result as string,
+            originFileObj: file, // Keep original file for API upload
+          },
+        ]);
       }
     };
     reader.readAsDataURL(file);
@@ -171,14 +182,14 @@ export default function TenantResidentsTab({ contract }: TenantResidentsTabProps
   };
 
   const beforeUpload = (file: File) => {
-    const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png';
+    const isJpgOrPng = file.type === "image/jpeg" || file.type === "image/png";
     if (!isJpgOrPng) {
-      message.error('You can only upload JPG/PNG file!');
+      messageApi.error("You can only upload JPG/PNG file!");
       return false;
     }
     const isLt2M = file.size / 1024 / 1024 < 2;
     if (!isLt2M) {
-      message.error('Image must smaller than 2MB!');
+      messageApi.error("Image must smaller than 2MB!");
       return false;
     }
     return true;
@@ -192,22 +203,22 @@ export default function TenantResidentsTab({ contract }: TenantResidentsTabProps
   const handleAddResident = async (values: any) => {
     try {
       setLoading(true);
-      
+
       // Convert file list to actual files
       const frontImageFile = frontIdFileList[0]?.originFileObj || null;
       const backImageFile = backIdFileList[0]?.originFileObj || null;
-      
+
       // Create resident data
       const residentData = {
         fullName: values.fullName,
         idNumber: values.idNumber,
         relationship: values.relationship,
-        startDate: values.startDate.format('YYYY-MM-DD'), // Format như backend mong đợi
-        endDate: values.endDate.format('YYYY-MM-DD'),     // Format như backend mong đợi
+        startDate: values.startDate.format("YYYY-MM-DD"), // Format như backend mong đợi
+        endDate: values.endDate.format("YYYY-MM-DD"), // Format như backend mong đợi
         note: values.note || "",
         contractId: contract.id,
       };
-      
+
       // Call API to create resident
       const newResident = await ResidentService.createResident(
         contract.id,
@@ -216,16 +227,16 @@ export default function TenantResidentsTab({ contract }: TenantResidentsTabProps
         backImageFile
       );
       console.log("Created resident:", newResident);
-      
-      setResidents(prev => [...prev, newResident]);
-      message.success("Resident added successfully!");
+
+      setResidents((prev) => [...prev, newResident]);
+      messageApi.success("Resident added successfully!");
       setAddResidentOpen(false);
       addForm.resetFields();
       setFrontIdFileList([]);
       setBackIdFileList([]);
     } catch (error) {
       console.error("Add resident error:", error);
-      message.error("Failed to add resident!");
+      messageApi.error("Failed to add resident!");
     } finally {
       setLoading(false);
     }
@@ -233,25 +244,25 @@ export default function TenantResidentsTab({ contract }: TenantResidentsTabProps
 
   const handleEditResident = async (values: any) => {
     if (!editResident) return;
-    
+
     try {
       setLoading(true);
-      
+
       // Convert file list to actual files (only if new files were uploaded)
       const frontImageFile = frontIdFileList[0]?.originFileObj || null;
       const backImageFile = backIdFileList[0]?.originFileObj || null;
-      
+
       // Create resident data
       const residentData = {
         fullName: values.fullName,
         idNumber: values.idNumber,
         relationship: values.relationship,
-        startDate: values.startDate.format('YYYY-MM-DD'), // Format như backend mong đợi
-        endDate: values.endDate.format('YYYY-MM-DD'),     // Format như backend mong đợi
+        startDate: values.startDate.format("YYYY-MM-DD"), // Format như backend mong đợi
+        endDate: values.endDate.format("YYYY-MM-DD"), // Format như backend mong đợi
         note: values.note || "",
         contractId: contract.id,
       };
-      
+
       // Call API to update resident
       const updatedResident = await ResidentService.updateResident(
         contract.id,
@@ -260,14 +271,16 @@ export default function TenantResidentsTab({ contract }: TenantResidentsTabProps
         frontImageFile,
         backImageFile
       );
-      
-      setResidents(prev => prev.map(r => r.id === editResident.id ? updatedResident : r));
-      message.success("Resident updated successfully!");
+
+      setResidents((prev) =>
+        prev.map((r) => (r.id === editResident.id ? updatedResident : r))
+      );
+      messageApi.success("Resident updated successfully!");
       setEditResident(null);
       // editForm and fileList will be reset in useEffect when editResident becomes null
     } catch (error) {
       console.error("Update resident error:", error);
-      message.error("Failed to update resident!");
+      messageApi.error("Failed to update resident!");
     } finally {
       setLoading(false);
     }
@@ -276,15 +289,15 @@ export default function TenantResidentsTab({ contract }: TenantResidentsTabProps
   const handleDeleteResident = async (residentId: string) => {
     try {
       setLoading(true);
-      
+
       // Call API to delete resident
       await ResidentService.deleteResident(contract.id, residentId);
-      
-      setResidents(prev => prev.filter(r => r.id !== residentId));
-      message.success("Resident deleted successfully!");
+
+      setResidents((prev) => prev.filter((r) => r.id !== residentId));
+      messageApi.success("Resident deleted successfully!");
     } catch (error) {
       console.error("Delete resident error:", error);
-      message.error("Failed to delete resident!");
+      messageApi.error("Failed to delete resident!");
     } finally {
       setLoading(false);
     }
@@ -311,9 +324,7 @@ export default function TenantResidentsTab({ contract }: TenantResidentsTabProps
       title: "Relationship",
       dataIndex: "relationship",
       key: "relationship",
-      render: (relationship: string) => (
-        <Tag color="blue">{relationship}</Tag>
-      ),
+      render: (relationship: string) => <Tag color="blue">{relationship}</Tag>,
     },
     {
       title: "Period",
@@ -321,7 +332,9 @@ export default function TenantResidentsTab({ contract }: TenantResidentsTabProps
       render: (_: any, record: ResidentData) => (
         <div>
           <div>{new Date(record.startDate).toLocaleDateString()}</div>
-          <div className="text-gray-500 text-sm">to {new Date(record.endDate).toLocaleDateString()}</div>
+          <div className="text-gray-500 text-sm">
+            to {new Date(record.endDate).toLocaleDateString()}
+          </div>
         </div>
       ),
     },
@@ -366,18 +379,21 @@ export default function TenantResidentsTab({ contract }: TenantResidentsTabProps
 
   // Filter residents based on search and relationship - similar to MyContract
   const filteredResidents = residents.filter((resident: ResidentData) => {
-    const matchesSearch = 
+    const matchesSearch =
       resident.fullName.toLowerCase().includes(searchText.toLowerCase()) ||
       resident.idNumber.includes(searchText) ||
-      (resident.note && resident.note.toLowerCase().includes(searchText.toLowerCase()));
-    
-    const matchesRelationship = !relationshipFilter || resident.relationship === relationshipFilter;
-    
+      (resident.note &&
+        resident.note.toLowerCase().includes(searchText.toLowerCase()));
+
+    const matchesRelationship =
+      !relationshipFilter || resident.relationship === relationshipFilter;
+
     return matchesSearch && matchesRelationship;
   });
 
   return (
     <div className="p-6">
+      {contextHolder}
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold">Residents Management</h3>
         <Space>
@@ -397,7 +413,7 @@ export default function TenantResidentsTab({ contract }: TenantResidentsTabProps
             allowClear
             suffixIcon={<FilterOutlined />}
           >
-            {relationshipOptions.map(option => (
+            {relationshipOptions.map((option) => (
               <Select.Option key={option.value} value={option.value}>
                 <Tag color="blue">{option.label}</Tag>
               </Select.Option>
@@ -417,13 +433,13 @@ export default function TenantResidentsTab({ contract }: TenantResidentsTabProps
         columns={columns}
         dataSource={filteredResidents}
         rowKey="id"
-        pagination={{ 
+        pagination={{
           pageSize: 10,
           showSizeChanger: true,
           showQuickJumper: true,
           showTotal: (total, range) =>
             `${range[0]}-${range[1]} of ${total} residents`,
-          pageSizeOptions: ['5', '10', '20', '50'],
+          pageSizeOptions: ["5", "10", "20", "50"],
         }}
         loading={loading}
         size="middle"
@@ -432,13 +448,17 @@ export default function TenantResidentsTab({ contract }: TenantResidentsTabProps
             <div className="text-center py-8">
               <UserOutlined className="text-4xl text-gray-300 mb-4" />
               <p className="text-gray-500 text-lg">
-                {residents.length === 0 ? "No residents found" : "No residents match your search criteria"}
+                {residents.length === 0
+                  ? "No residents found"
+                  : "No residents match your search criteria"}
               </p>
               <p className="text-gray-400 text-sm">
-                {residents.length === 0 ? "Add residents to this contract to get started" : "Try adjusting your search or filter"}
+                {residents.length === 0
+                  ? "Add residents to this contract to get started"
+                  : "Try adjusting your search or filter"}
               </p>
             </div>
-          )
+          ),
         }}
       />
 
@@ -464,33 +484,40 @@ export default function TenantResidentsTab({ contract }: TenantResidentsTabProps
                   <strong>ID Number:</strong> {selectedResident.idNumber}
                 </div>
                 <div>
-                  <strong>Relationship:</strong> 
-                  <Tag color="blue" className="ml-2">{selectedResident.relationship}</Tag>
+                  <strong>Relationship:</strong>
+                  <Tag color="blue" className="ml-2">
+                    {selectedResident.relationship}
+                  </Tag>
                 </div>
                 <div>
-                  <strong>Start Date:</strong> {new Date(selectedResident.startDate).toLocaleDateString()}
+                  <strong>Start Date:</strong>{" "}
+                  {new Date(selectedResident.startDate).toLocaleDateString()}
                 </div>
                 <div>
-                  <strong>End Date:</strong> {new Date(selectedResident.endDate).toLocaleDateString()}
+                  <strong>End Date:</strong>{" "}
+                  {new Date(selectedResident.endDate).toLocaleDateString()}
                 </div>
                 <div className="col-span-2">
                   <strong>Note:</strong> {selectedResident.note}
                 </div>
               </div>
             </Card>
-            
-            {(selectedResident.idCardFrontUrl || selectedResident.idCardBackUrl) && (
+
+            {(selectedResident.idCardFrontUrl ||
+              selectedResident.idCardBackUrl) && (
               <Card title="ID Card Images">
                 <div className="flex gap-4">
                   {selectedResident.idCardFrontUrl && (
                     <div>
                       <p className="mb-2 font-medium">Front</p>
                       <Image
-                        src={getCloudinaryImageUrl(selectedResident.idCardFrontUrl)}
+                        src={getCloudinaryImageUrl(
+                          selectedResident.idCardFrontUrl
+                        )}
                         alt="ID Card Front"
                         width={200}
                         height={120}
-                        style={{ objectFit: 'cover' }}
+                        style={{ objectFit: "cover" }}
                       />
                     </div>
                   )}
@@ -498,11 +525,13 @@ export default function TenantResidentsTab({ contract }: TenantResidentsTabProps
                     <div>
                       <p className="mb-2 font-medium">Back</p>
                       <Image
-                        src={getCloudinaryImageUrl(selectedResident.idCardBackUrl)}
+                        src={getCloudinaryImageUrl(
+                          selectedResident.idCardBackUrl
+                        )}
                         alt="ID Card Back"
                         width={200}
                         height={120}
-                        style={{ objectFit: 'cover' }}
+                        style={{ objectFit: "cover" }}
                       />
                     </div>
                   )}
@@ -515,7 +544,7 @@ export default function TenantResidentsTab({ contract }: TenantResidentsTabProps
 
       {/* Add/Edit Resident Modal */}
       <Modal
-        key={editResident ? `edit-${editResident.id}` : 'add-new'}
+        key={editResident ? `edit-${editResident.id}` : "add-new"}
         title={editResident ? "Edit Resident" : "Add Resident"}
         open={addResidentOpen || !!editResident}
         onCancel={() => {
@@ -534,7 +563,7 @@ export default function TenantResidentsTab({ contract }: TenantResidentsTabProps
         width={600}
       >
         <Form
-          key={editResident ? `edit-${editResident.id}` : 'add-new'}
+          key={editResident ? `edit-${editResident.id}` : "add-new"}
           form={editResident ? editForm : addForm}
           layout="vertical"
           onFinish={editResident ? handleEditResident : handleAddResident}
@@ -542,7 +571,7 @@ export default function TenantResidentsTab({ contract }: TenantResidentsTabProps
           <Form.Item
             label="Full Name"
             name="fullName"
-            rules={[{ required: true, message: 'Please enter full name!' }]}
+            rules={[{ required: true, message: "Please enter full name!" }]}
           >
             <Input placeholder="Enter full name" />
           </Form.Item>
@@ -551,8 +580,8 @@ export default function TenantResidentsTab({ contract }: TenantResidentsTabProps
             label="ID Number"
             name="idNumber"
             rules={[
-              { required: true, message: 'Please enter ID number!' },
-              { len: 12, message: 'ID number must be 12 digits!' }
+              { required: true, message: "Please enter ID number!" },
+              { len: 12, message: "ID number must be 12 digits!" },
             ]}
           >
             <Input placeholder="Enter 12-digit ID number" maxLength={12} />
@@ -561,9 +590,12 @@ export default function TenantResidentsTab({ contract }: TenantResidentsTabProps
           <Form.Item
             label="Relationship"
             name="relationship"
-            rules={[{ required: true, message: 'Please select relationship!' }]}
+            rules={[{ required: true, message: "Please select relationship!" }]}
           >
-            <Select placeholder="Select relationship" options={relationshipOptions} />
+            <Select
+              placeholder="Select relationship"
+              options={relationshipOptions}
+            />
           </Form.Item>
 
           <div className="grid grid-cols-2 gap-4">
@@ -571,18 +603,18 @@ export default function TenantResidentsTab({ contract }: TenantResidentsTabProps
               label="Start Date"
               name="startDate"
               rules={[
-                { required: true, message: 'Please select start date!' }
+                { required: true, message: "Please select start date!" },
                 // Removed restriction: dates can be in the future
               ]}
             >
-              <DatePicker 
-                style={{ width: '100%' }} 
+              <DatePicker
+                style={{ width: "100%" }}
                 format="DD/MM/YYYY"
                 onChange={() => {
                   // Trigger validation for end date when start date changes
                   const currentForm = getCurrentForm();
                   if (currentForm) {
-                    currentForm.validateFields(['endDate']);
+                    currentForm.validateFields(["endDate"]);
                   }
                 }}
                 // Allow all dates including future dates
@@ -594,35 +626,43 @@ export default function TenantResidentsTab({ contract }: TenantResidentsTabProps
               label="End Date"
               name="endDate"
               rules={[
-                { required: true, message: 'Please select end date!' },
+                { required: true, message: "Please select end date!" },
                 ({ getFieldValue }) => ({
                   validator(_, value) {
-                    const startDate = getFieldValue('startDate');
+                    const startDate = getFieldValue("startDate");
                     if (!value || !startDate) {
                       return Promise.resolve();
                     }
-                    if (value.isBefore(startDate, 'day')) {
-                      return Promise.reject(new Error('End date must be after start date!'));
+                    if (value.isBefore(startDate, "day")) {
+                      return Promise.reject(
+                        new Error("End date must be after start date!")
+                      );
                     }
-                    if (value.isSame(startDate, 'day')) {
-                      return Promise.reject(new Error('End date must be different from start date!'));
+                    if (value.isSame(startDate, "day")) {
+                      return Promise.reject(
+                        new Error("End date must be different from start date!")
+                      );
                     }
                     return Promise.resolve();
                   },
                 }),
               ]}
             >
-              <DatePicker 
-                style={{ width: '100%' }} 
+              <DatePicker
+                style={{ width: "100%" }}
                 format="DD/MM/YYYY"
                 disabledDate={(current) => {
                   const currentForm = getCurrentForm();
                   if (!currentForm) return false;
-                  const startDate = currentForm.getFieldValue('startDate');
+                  const startDate = currentForm.getFieldValue("startDate");
                   if (!startDate) return false;
                   // Only disable dates before or equal to start date
                   // Allow future dates for both start and end
-                  return current && (current.isBefore(startDate, 'day') || current.isSame(startDate, 'day'));
+                  return (
+                    current &&
+                    (current.isBefore(startDate, "day") ||
+                      current.isSame(startDate, "day"))
+                  );
                 }}
               />
             </Form.Item>
@@ -640,7 +680,7 @@ export default function TenantResidentsTab({ contract }: TenantResidentsTabProps
                 fileList={frontIdFileList}
                 beforeUpload={(file) => {
                   if (beforeUpload(file)) {
-                    handleUpload(file, 'front');
+                    handleUpload(file, "front");
                   }
                   return false;
                 }}
@@ -662,7 +702,7 @@ export default function TenantResidentsTab({ contract }: TenantResidentsTabProps
                 fileList={backIdFileList}
                 beforeUpload={(file) => {
                   if (beforeUpload(file)) {
-                    handleUpload(file, 'back');
+                    handleUpload(file, "back");
                   }
                   return false;
                 }}
@@ -681,18 +721,20 @@ export default function TenantResidentsTab({ contract }: TenantResidentsTabProps
 
           <Form.Item className="mb-0 text-right">
             <Space>
-              <Button onClick={() => {
-                setAddResidentOpen(false);
-                setEditResident(null);
-                // Reset only the forms that were being used
-                if (editResident) {
-                  editForm.resetFields();
-                } else {
-                  addForm.resetFields();
-                }
-                setFrontIdFileList([]);
-                setBackIdFileList([]);
-              }}>
+              <Button
+                onClick={() => {
+                  setAddResidentOpen(false);
+                  setEditResident(null);
+                  // Reset only the forms that were being used
+                  if (editResident) {
+                    editForm.resetFields();
+                  } else {
+                    addForm.resetFields();
+                  }
+                  setFrontIdFileList([]);
+                  setBackIdFileList([]);
+                }}
+              >
                 Cancel
               </Button>
               <Button type="primary" htmlType="submit" loading={loading}>

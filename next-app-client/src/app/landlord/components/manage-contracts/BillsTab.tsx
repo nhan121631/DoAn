@@ -1,37 +1,36 @@
-import React, { useState } from "react";
-import type { Key } from "react";
+import { BillService } from "@/services/BillService";
+import { ContractService } from "@/services/ContractService";
+import { getRoomById } from "@/services/RoomService";
+import { BillData, ContractData } from "@/types/types";
 import {
-  Table,
-  Tag,
+  DeleteOutlined,
+  DollarOutlined,
+  DownloadOutlined,
+  EditOutlined,
+  ExportOutlined,
+  EyeOutlined,
+  FilterOutlined,
+  SearchOutlined,
+} from "@ant-design/icons";
+import {
   Button,
-  Modal,
-  Tooltip,
-  Popconfirm,
+  Card,
   DatePicker,
   Form,
-  Space,
   Input,
+  message,
+  Modal,
+  Popconfirm,
   Select,
-  Card,
+  Space,
   Statistic,
-  App,
+  Table,
+  Tag,
+  Tooltip,
 } from "antd";
-import type { ColumnType } from 'antd/es/table';
-import {
-  EyeOutlined,
-  EditOutlined,
-  DeleteOutlined,
-  ExportOutlined,
-  DownloadOutlined,
-  SearchOutlined,
-  FilterOutlined,
-  DollarOutlined,
-} from "@ant-design/icons";
 import dayjs from "dayjs";
-import { ContractData, BillData } from "@/types/types";
-import { ContractService } from "@/services/ContractService";
-import { BillService } from "@/services/BillService";
-import { getRoomById } from "@/services/RoomService";
+import type { Key } from "react";
+import React, { useState } from "react";
 import BillDetailModal from "./BillDetailModal";
 
 interface BillsTabProps {
@@ -46,8 +45,10 @@ const billStatusMap: Record<string, { text: string; color: string }> = {
   OVERDUE: { text: "Overdue", color: "red" },
 };
 
-export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) {
-  const { message } = App.useApp();
+export default function BillsTab({
+  contract,
+  onContractUpdate,
+}: BillsTabProps) {
   const [selectedBill, setSelectedBill] = useState<BillData | null>(null);
   const [editBill, setEditBill] = useState<BillData | null>(null);
   const [addBillOpen, setAddBillOpen] = useState(false);
@@ -57,6 +58,7 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
   const [exportForm] = Form.useForm();
   const [searchText, setSearchText] = useState("");
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
+  const [messageApi, contextHolder] = message.useMessage();
   const [roomData, setRoomData] = useState<{
     elecPrice?: number;
     waterPrice?: number;
@@ -102,32 +104,50 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
   // Update addForm serviceFee when roomData changes
   React.useEffect(() => {
     if (roomData?.priceMonth) {
-      setAddForm(prev => ({
+      setAddForm((prev) => ({
         ...prev,
         serviceFee: roomData.priceMonth || 0,
-        totalAmount: prev.electricityFee + prev.waterFee + (roomData.priceMonth || 0) + prev.damageFee
+        totalAmount:
+          prev.electricityFee +
+          prev.waterFee +
+          (roomData.priceMonth || 0) +
+          prev.damageFee,
       }));
     }
   }, [roomData]);
 
   // Calculate fees when usage changes
-  const calculateFees = (electricityUsage: number, waterUsage: number, damageFee: number = 0) => {
-    if (!roomData) return { electricityFee: 0, waterFee: 0, serviceFee: 0, totalAmount: damageFee };
-    
+  const calculateFees = (
+    electricityUsage: number,
+    waterUsage: number,
+    damageFee: number = 0
+  ) => {
+    if (!roomData)
+      return {
+        electricityFee: 0,
+        waterFee: 0,
+        serviceFee: 0,
+        totalAmount: damageFee,
+      };
+
     const electricityFee = electricityUsage * (roomData.elecPrice || 0);
     const waterFee = waterUsage * (roomData.waterPrice || 0);
     const serviceFee = roomData.priceMonth || 0; // Service fee from room priceMonth
     const totalAmount = electricityFee + waterFee + serviceFee + damageFee;
-    
+
     return { electricityFee, waterFee, serviceFee, totalAmount };
   };
 
   React.useEffect(() => {
     if (editBill) {
       // Calculate reverse usage from fees if possible
-      const electricityUsage = roomData?.elecPrice ? (editBill.electricityFee / roomData.elecPrice) : 0;
-      const waterUsage = roomData?.waterPrice ? (editBill.waterFee / roomData.waterPrice) : 0;
-      
+      const electricityUsage = roomData?.elecPrice
+        ? editBill.electricityFee / roomData.elecPrice
+        : 0;
+      const waterUsage = roomData?.waterPrice
+        ? editBill.waterFee / roomData.waterPrice
+        : 0;
+
       setEditForm({
         month: editBill.month,
         electricityUsage: electricityUsage,
@@ -160,12 +180,12 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
         waterPrice: roomData?.waterPrice,
       };
       await BillService.updateBill(contract.id, editBill.id, billData);
-      message.success("Bill updated!");
+      messageApi.success("Bill updated!");
       setEditBill(null);
       const data = await ContractService.getById(contract.id);
       onContractUpdate(data);
     } catch (_) {
-      message.error("Update bill failed!");
+      messageApi.error("Update bill failed!");
     } finally {
       setLoading(false);
     }
@@ -190,22 +210,22 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
         waterPrice: roomData?.waterPrice,
       };
       await BillService.createBill(contract.id, billData);
-      message.success("Bill added!");
+      messageApi.success("Bill added!");
       setAddBillOpen(false);
-      setAddForm({ 
-        month: "", 
-        electricityUsage: 0, 
-        waterUsage: 0, 
-        damageFee: 0, 
-        electricityFee: 0, 
-        waterFee: 0, 
-        serviceFee: roomData?.priceMonth || 0, 
-        totalAmount: roomData?.priceMonth || 0 
+      setAddForm({
+        month: "",
+        electricityUsage: 0,
+        waterUsage: 0,
+        damageFee: 0,
+        electricityFee: 0,
+        waterFee: 0,
+        serviceFee: roomData?.priceMonth || 0,
+        totalAmount: roomData?.priceMonth || 0,
       });
       const data = await ContractService.getById(contract.id);
       onContractUpdate(data);
     } catch (_) {
-      message.error("Add bill failed!");
+      messageApi.error("Add bill failed!");
     } finally {
       setLoading(false);
     }
@@ -216,11 +236,11 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
     try {
       setLoading(true);
       await BillService.deleteBill(contract.id, billId);
-      message.success("Bill deleted!");
+      messageApi.success("Bill deleted!");
       const data = await ContractService.getById(contract.id);
       onContractUpdate(data);
     } catch (_) {
-      message.error("Delete bill failed!");
+      messageApi.error("Delete bill failed!");
     } finally {
       setLoading(false);
     }
@@ -232,33 +252,40 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
       setLoading(true);
       // Update bill status to PAID
       await BillService.updateBillStatus(contract.id, bill.id, "PAID");
-      message.success("Payment confirmed successfully!");
+      messageApi.success("Payment confirmed successfully!");
       // Reload contract data to get updated bills
       const data = await ContractService.getById(contract.id);
       onContractUpdate(data);
     } catch (err) {
       console.error("Confirm payment failed:", err);
-      message.error("Failed to confirm payment!");
+      messageApi.error("Failed to confirm payment!");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleExport = async (values: { fromMonth: dayjs.Dayjs; toMonth: dayjs.Dayjs }) => {
+  const handleExport = async (values: {
+    fromMonth: dayjs.Dayjs;
+    toMonth: dayjs.Dayjs;
+  }) => {
     if (!contract) return;
-    
+
     try {
       setExportLoading(true);
-      const fromMonth = values.fromMonth.format('YYYY-MM');
-      const toMonth = values.toMonth.format('YYYY-MM');
-      
+      const fromMonth = values.fromMonth.format("YYYY-MM");
+      const toMonth = values.toMonth.format("YYYY-MM");
+
       if (dayjs(fromMonth).isAfter(dayjs(toMonth))) {
-        message.error("From month cannot be later than to month!");
+        messageApi.error("From month cannot be later than to month!");
         return;
       }
-      
-      const blob = await ContractService.exportBills(contract.id, fromMonth, toMonth);
-      const toMonthReverse = values.toMonth.format('MM-YYYY');
+
+      const blob = await ContractService.exportBills(
+        contract.id,
+        fromMonth,
+        toMonth
+      );
+      const toMonthReverse = values.toMonth.format("MM-YYYY");
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
@@ -267,13 +294,13 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
       a.click();
       a.remove();
       window.URL.revokeObjectURL(url);
-      
-      message.success("Bills exported successfully!");
+
+      messageApi.success("Bills exported successfully!");
       setExportModalOpen(false);
       exportForm.resetFields();
     } catch (error) {
       console.error("Export failed:", error);
-      message.error("Failed to export bills. Please try again.");
+      messageApi.error("Failed to export bills. Please try again.");
     } finally {
       setExportLoading(false);
     }
@@ -284,7 +311,9 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
       title: "Month",
       dataIndex: "month",
       key: "month",
-      render: (month: string) => <span style={{ color: 'red', fontWeight: 500 }}>{month}</span>,
+      render: (month: string) => (
+        <span style={{ color: "red", fontWeight: 500 }}>{month}</span>
+      ),
       sorter: (a: BillData, b: BillData) => a.month.localeCompare(b.month),
     },
     {
@@ -297,12 +326,14 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
           <div className="font-medium">{v?.toLocaleString()}đ</div>
           {record.electricityUsage && record.electricityPrice && (
             <div className="text-xs text-gray-500">
-              {record.electricityUsage.toFixed(2)} kWh × {record.electricityPrice.toLocaleString()}đ/kWh
+              {record.electricityUsage.toFixed(2)} kWh ×{" "}
+              {record.electricityPrice.toLocaleString()}đ/kWh
             </div>
           )}
         </div>
       ),
-      sorter: (a: BillData, b: BillData) => (a.electricityFee || 0) - (b.electricityFee || 0),
+      sorter: (a: BillData, b: BillData) =>
+        (a.electricityFee || 0) - (b.electricityFee || 0),
     },
     {
       title: "Water",
@@ -314,12 +345,14 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
           <div className="font-medium">{v?.toLocaleString()}đ</div>
           {record.waterUsage && record.waterPrice && (
             <div className="text-xs text-gray-500">
-              {record.waterUsage.toFixed(2)} m³ × {record.waterPrice.toLocaleString()}đ/m³
+              {record.waterUsage.toFixed(2)} m³ ×{" "}
+              {record.waterPrice.toLocaleString()}đ/m³
             </div>
           )}
         </div>
       ),
-      sorter: (a: BillData, b: BillData) => (a.waterFee || 0) - (b.waterFee || 0),
+      sorter: (a: BillData, b: BillData) =>
+        (a.waterFee || 0) - (b.waterFee || 0),
     },
     {
       title: "Service",
@@ -336,7 +369,8 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
           )}
         </div>
       ),
-      sorter: (a: BillData, b: BillData) => (a.serviceFee || 0) - (b.serviceFee || 0),
+      sorter: (a: BillData, b: BillData) =>
+        (a.serviceFee || 0) - (b.serviceFee || 0),
     },
     {
       title: "Total",
@@ -344,7 +378,8 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
       key: "totalAmount",
       align: "right" as const,
       render: (v: number) => v?.toLocaleString() + "đ",
-      sorter: (a: BillData, b: BillData) => (a.totalAmount || 0) - (b.totalAmount || 0),
+      sorter: (a: BillData, b: BillData) =>
+        (a.totalAmount || 0) - (b.totalAmount || 0),
     },
     {
       title: "Status",
@@ -362,14 +397,11 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
         } else {
           actualStatus = "PENDING"; // Default
         }
-        
-        const statusInfo = billStatusMap[actualStatus] || billStatusMap["PENDING"];
-        
-        return (
-          <Tag color={statusInfo.color}>
-            {statusInfo.text}
-          </Tag>
-        );
+
+        const statusInfo =
+          billStatusMap[actualStatus] || billStatusMap["PENDING"];
+
+        return <Tag color={statusInfo.color}>{statusInfo.text}</Tag>;
       },
       filters: [
         { text: "Pending", value: "PENDING" },
@@ -378,7 +410,8 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
         { text: "Overdue", value: "OVERDUE" },
       ],
       onFilter: (value: boolean | Key, record: BillData): boolean => {
-        const actualStatus = record.status || (record.paid === true ? "PAID" : "PENDING");
+        const actualStatus =
+          record.status || (record.paid === true ? "PAID" : "PENDING");
         return actualStatus === value;
       },
       sorter: (a: BillData, b: BillData) => {
@@ -391,10 +424,11 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
       title: "Action",
       key: "action",
       render: (_: unknown, record: BillData) => {
-        const actualStatus = record.status || (record.paid === true ? "PAID" : "PENDING");
+        const actualStatus =
+          record.status || (record.paid === true ? "PAID" : "PENDING");
         const isConfirming = actualStatus === "CONFIRMING";
         const isPaid = actualStatus === "PAID";
-        
+
         return (
           <div className="flex gap-2">
             <Tooltip title="Details">
@@ -444,118 +478,173 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
 
   // Filter bills based on search and status - similar to tenant
   const bills = contract.bills || [];
-  
+
   // Process bills to ensure damageFee is calculated if not provided
-  const processedBills = bills.map(bill => {
+  const processedBills = bills.map((bill) => {
     // Get room price data for calculations
     const elecPrice = roomData?.elecPrice || bill.electricityPrice;
     const waterPrice = roomData?.waterPrice || bill.waterPrice;
-    
+
     // Calculate usage from fees if not provided
     let electricityUsage = bill.electricityUsage;
     let waterUsage = bill.waterUsage;
-    
-    if (!electricityUsage && elecPrice && elecPrice > 0 && bill.electricityFee) {
+
+    if (
+      !electricityUsage &&
+      elecPrice &&
+      elecPrice > 0 &&
+      bill.electricityFee
+    ) {
       electricityUsage = bill.electricityFee / elecPrice;
     }
-    
+
     if (!waterUsage && waterPrice && waterPrice > 0 && bill.waterFee) {
       waterUsage = bill.waterFee / waterPrice;
     }
-    
+
     // Calculate damageFee if not provided
     let damageFee = bill.damageFee;
     if (damageFee === null || damageFee === undefined) {
-      const baseTotal = (bill.electricityFee || 0) + (bill.waterFee || 0) + (bill.serviceFee || 0);
+      const baseTotal =
+        (bill.electricityFee || 0) +
+        (bill.waterFee || 0) +
+        (bill.serviceFee || 0);
       const calculatedDamageFee = (bill.totalAmount || 0) - baseTotal;
       damageFee = calculatedDamageFee > 0 ? calculatedDamageFee : 0;
     }
-    
+
     return {
       ...bill,
       damageFee,
       electricityUsage,
       waterUsage,
       electricityPrice: elecPrice,
-      waterPrice: waterPrice
+      waterPrice: waterPrice,
     };
   });
-  
+
   const filteredBills = processedBills.filter((bill: BillData) => {
-    const matchesSearch = 
+    const matchesSearch =
       bill.month.toLowerCase().includes(searchText.toLowerCase()) ||
       bill.totalAmount.toString().includes(searchText);
-    
+
     let matchesStatus = true;
     if (statusFilter !== null && statusFilter !== undefined) {
-      const actualStatus = bill.status || (bill.paid === true ? "PAID" : "PENDING");
+      const actualStatus =
+        bill.status || (bill.paid === true ? "PAID" : "PENDING");
       matchesStatus = actualStatus === statusFilter;
     }
-    
+
     return matchesSearch && matchesStatus;
   });
 
   // Calculate bill statistics
   const totalBills = filteredBills.length;
-  const paidBills = filteredBills.filter(bill => {
+  const paidBills = filteredBills.filter((bill) => {
     const status = bill.status || (bill.paid === true ? "PAID" : "PENDING");
     return status === "PAID";
   }).length;
-  const pendingBills = filteredBills.filter(bill => {
+  const pendingBills = filteredBills.filter((bill) => {
     const status = bill.status || (bill.paid === true ? "PAID" : "PENDING");
     return status === "PENDING";
   }).length;
-  const confirmingBills = filteredBills.filter(bill => bill.status === "CONFIRMING").length;
-  const unpaidAmount = filteredBills.filter(bill => {
-    const status = bill.status || (bill.paid === true ? "PAID" : "PENDING");
-    return status !== "PAID";
-  }).reduce((sum, bill) => sum + bill.totalAmount, 0);
+  const confirmingBills = filteredBills.filter(
+    (bill) => bill.status === "CONFIRMING"
+  ).length;
+  const unpaidAmount = filteredBills
+    .filter((bill) => {
+      const status = bill.status || (bill.paid === true ? "PAID" : "PENDING");
+      return status !== "PAID";
+    })
+    .reduce((sum, bill) => sum + bill.totalAmount, 0);
 
   return (
     <div className="p-6 space-y-6 bg-white dark:bg-transparent transition-colors duration-300">
+      {contextHolder}
       {/* Bills Statistics */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-        <Card size="small" className="bg-white dark:bg-[#17223b] border-gray-200 dark:border-gray-600 transition-colors duration-300">
+        <Card
+          size="small"
+          className="bg-white dark:bg-[#17223b] border-gray-200 dark:border-gray-600 transition-colors duration-300"
+        >
           <Statistic
-            title={<span className="text-gray-600 dark:text-gray-300">Total Bills</span>}
+            title={
+              <span className="text-gray-600 dark:text-gray-300">
+                Total Bills
+              </span>
+            }
             value={totalBills}
-            prefix={<DollarOutlined className="text-blue-600 dark:text-blue-400" />}
-            valueStyle={{ color: '#1890ff' }}
+            prefix={
+              <DollarOutlined className="text-blue-600 dark:text-blue-400" />
+            }
+            valueStyle={{ color: "#1890ff" }}
           />
         </Card>
-        <Card size="small" className="bg-white dark:bg-[#17223b] border-gray-200 dark:border-gray-600 transition-colors duration-300">
+        <Card
+          size="small"
+          className="bg-white dark:bg-[#17223b] border-gray-200 dark:border-gray-600 transition-colors duration-300"
+        >
           <Statistic
-            title={<span className="text-gray-600 dark:text-gray-300">Paid Bills</span>}
+            title={
+              <span className="text-gray-600 dark:text-gray-300">
+                Paid Bills
+              </span>
+            }
             value={paidBills}
-            valueStyle={{ color: '#3f8600' }}
+            valueStyle={{ color: "#3f8600" }}
           />
         </Card>
-        <Card size="small" className="bg-white dark:bg-[#17223b] border-gray-200 dark:border-gray-600 transition-colors duration-300">
+        <Card
+          size="small"
+          className="bg-white dark:bg-[#17223b] border-gray-200 dark:border-gray-600 transition-colors duration-300"
+        >
           <Statistic
-            title={<span className="text-gray-600 dark:text-gray-300">Pending Bills</span>}
+            title={
+              <span className="text-gray-600 dark:text-gray-300">
+                Pending Bills
+              </span>
+            }
             value={pendingBills}
-            valueStyle={{ color: '#cf1322' }}
+            valueStyle={{ color: "#cf1322" }}
           />
         </Card>
-        <Card size="small" className="bg-white dark:bg-[#17223b] border-gray-200 dark:border-gray-600 transition-colors duration-300">
+        <Card
+          size="small"
+          className="bg-white dark:bg-[#17223b] border-gray-200 dark:border-gray-600 transition-colors duration-300"
+        >
           <Statistic
-            title={<span className="text-gray-600 dark:text-gray-300">Confirming</span>}
+            title={
+              <span className="text-gray-600 dark:text-gray-300">
+                Confirming
+              </span>
+            }
             value={confirmingBills}
-            valueStyle={{ color: '#1890ff' }}
+            valueStyle={{ color: "#1890ff" }}
           />
         </Card>
-        <Card size="small" className="bg-white dark:bg-[#17223b] border-gray-200 dark:border-gray-600 transition-colors duration-300">
+        <Card
+          size="small"
+          className="bg-white dark:bg-[#17223b] border-gray-200 dark:border-gray-600 transition-colors duration-300"
+        >
           <Statistic
-            title={<span className="text-gray-600 dark:text-gray-300">Unpaid Amount</span>}
+            title={
+              <span className="text-gray-600 dark:text-gray-300">
+                Unpaid Amount
+              </span>
+            }
             value={unpaidAmount}
-            valueStyle={{ color: '#cf1322' }}
+            valueStyle={{ color: "#cf1322" }}
             suffix="đ"
           />
         </Card>
       </div>
 
-      <Card 
-        title={<span className="text-gray-900 dark:text-white">Bills Management</span>}
+      <Card
+        title={
+          <span className="text-gray-900 dark:text-white">
+            Bills Management
+          </span>
+        }
         className="shadow-sm bg-white dark:bg-[#17223b] border-gray-200 dark:border-gray-600 transition-colors duration-300"
         extra={
           <Space>
@@ -591,8 +680,8 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
             <Button type="primary" onClick={() => setAddBillOpen(true)}>
               Add Bill
             </Button>
-            <Button 
-              type="default" 
+            <Button
+              type="default"
               icon={<ExportOutlined />}
               onClick={() => setExportModalOpen(true)}
             >
@@ -605,13 +694,13 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
           columns={billColumns}
           dataSource={filteredBills}
           rowKey="id"
-          pagination={{ 
+          pagination={{
             pageSize: 10,
             showSizeChanger: true,
             showQuickJumper: true,
             showTotal: (total, range) =>
               `${range[0]}-${range[1]} of ${total} bills`,
-            pageSizeOptions: ['5', '10', '20', '50'],
+            pageSizeOptions: ["5", "10", "20", "50"],
           }}
           scroll={{ y: 400 }}
           loading={loading}
@@ -638,79 +727,81 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
         footer={null}
         destroyOnHidden
       >
-        <Form
-          form={exportForm}
-          onFinish={handleExport}
-          layout="vertical"
-        >
+        <Form form={exportForm} onFinish={handleExport} layout="vertical">
           <Form.Item
             label="From Month"
             name="fromMonth"
             rules={[
-              { required: true, message: 'Please select from month!' },
+              { required: true, message: "Please select from month!" },
               ({ getFieldValue }) => ({
                 validator(_, value) {
-                  if (!value || !getFieldValue('toMonth')) {
+                  if (!value || !getFieldValue("toMonth")) {
                     return Promise.resolve();
                   }
-                  if (value.isAfter(getFieldValue('toMonth'))) {
-                    return Promise.reject(new Error('From month must be before to month!'));
+                  if (value.isAfter(getFieldValue("toMonth"))) {
+                    return Promise.reject(
+                      new Error("From month must be before to month!")
+                    );
                   }
                   return Promise.resolve();
                 },
               }),
             ]}
           >
-            <DatePicker 
-              picker="month" 
+            <DatePicker
+              picker="month"
               placeholder="Select from month"
-              style={{ width: '100%' }}
+              style={{ width: "100%" }}
               format="YYYY-MM"
               onChange={() => {
-                exportForm.validateFields(['toMonth']);
+                exportForm.validateFields(["toMonth"]);
               }}
             />
           </Form.Item>
-          
+
           <Form.Item
             label="To Month"
             name="toMonth"
             rules={[
-              { required: true, message: 'Please select to month!' },
+              { required: true, message: "Please select to month!" },
               ({ getFieldValue }) => ({
                 validator(_, value) {
-                  if (!value || !getFieldValue('fromMonth')) {
+                  if (!value || !getFieldValue("fromMonth")) {
                     return Promise.resolve();
                   }
-                  if (value.isBefore(getFieldValue('fromMonth'))) {
-                    return Promise.reject(new Error('To month must be after from month!'));
+                  if (value.isBefore(getFieldValue("fromMonth"))) {
+                    return Promise.reject(
+                      new Error("To month must be after from month!")
+                    );
                   }
                   return Promise.resolve();
                 },
               }),
             ]}
           >
-            <DatePicker 
-              picker="month" 
+            <DatePicker
+              picker="month"
               placeholder="Select to month"
-              style={{ width: '100%' }}
+              style={{ width: "100%" }}
               format="YYYY-MM"
               onChange={() => {
-                exportForm.validateFields(['fromMonth']);
+                exportForm.validateFields(["fromMonth"]);
               }}
             />
           </Form.Item>
 
           <Form.Item className="mb-0 text-right">
             <Space>
-              <Button onClick={() => {
-                setExportModalOpen(false);
-                exportForm.resetFields();
-              }}>
+              <Button
+                onClick={() => {
+                  setExportModalOpen(false);
+                  exportForm.resetFields();
+                }}
+              >
                 Cancel
               </Button>
-              <Button 
-                type="primary" 
+              <Button
+                type="primary"
                 htmlType="submit"
                 loading={exportLoading}
                 icon={<DownloadOutlined />}
@@ -731,22 +822,36 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
         confirmLoading={loading}
       >
         {editBill && (
-          <form className="space-y-3" onSubmit={e => { e.preventDefault(); handleEditBillSubmit(); }}>
+          <form
+            className="space-y-3"
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleEditBillSubmit();
+            }}
+          >
             <div>
-              <label className="block font-medium dark:text-gray-300 transition-colors duration-300">Month</label>
+              <label className="block font-medium dark:text-gray-300 transition-colors duration-300">
+                Month
+              </label>
               <DatePicker
                 picker="month"
                 placeholder="Select month"
-                style={{ width: '100%' }}
+                style={{ width: "100%" }}
                 format="YYYY-MM"
                 value={editForm.month ? dayjs(editForm.month) : null}
-                onChange={(date) => setEditForm(f => ({ ...f, month: date ? date.format('YYYY-MM') : '' }))}
+                onChange={(date) =>
+                  setEditForm((f) => ({
+                    ...f,
+                    month: date ? date.format("YYYY-MM") : "",
+                  }))
+                }
                 className="dark:bg-[#17223b] dark:border-gray-600 dark:text-white transition-colors duration-300"
               />
             </div>
             <div>
               <label className="block font-medium dark:text-gray-300 transition-colors duration-300">
-                Electricity Usage (kWh) - Price: {roomData?.elecPrice?.toLocaleString() || 0}đ/kWh
+                Electricity Usage (kWh) - Price:{" "}
+                {roomData?.elecPrice?.toLocaleString() || 0}đ/kWh
               </label>
               <input
                 type="number"
@@ -754,17 +859,26 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
                 step="0.01"
                 className="border rounded px-2 py-1 w-full dark:bg-[#17223b] dark:border-gray-600 dark:text-white transition-colors duration-300"
                 value={editForm.electricityUsage}
-                onChange={e => {
+                onChange={(e) => {
                   const usage = Number(e.target.value);
                   if (usage < 0) return; // Validation: không cho phép số âm
-                  const calculated = calculateFees(usage, editForm.waterUsage, editForm.damageFee);
-                  setEditForm(f => ({ ...f, electricityUsage: usage, ...calculated }));
+                  const calculated = calculateFees(
+                    usage,
+                    editForm.waterUsage,
+                    editForm.damageFee
+                  );
+                  setEditForm((f) => ({
+                    ...f,
+                    electricityUsage: usage,
+                    ...calculated,
+                  }));
                 }}
               />
             </div>
             <div>
               <label className="block font-medium dark:text-gray-300 transition-colors duration-300">
-                Water Usage (m³) - Price: {roomData?.waterPrice?.toLocaleString() || 0}đ/m³
+                Water Usage (m³) - Price:{" "}
+                {roomData?.waterPrice?.toLocaleString() || 0}đ/m³
               </label>
               <input
                 type="number"
@@ -772,17 +886,26 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
                 step="0.01"
                 className="border rounded px-2 py-1 w-full dark:bg-[#17223b] dark:border-gray-600 dark:text-white transition-colors duration-300"
                 value={editForm.waterUsage}
-                onChange={e => {
+                onChange={(e) => {
                   const usage = Number(e.target.value);
                   if (usage < 0) return; // Validation: không cho phép số âm
-                  const calculated = calculateFees(editForm.electricityUsage, usage, editForm.damageFee);
-                  setEditForm(f => ({ ...f, waterUsage: usage, ...calculated }));
+                  const calculated = calculateFees(
+                    editForm.electricityUsage,
+                    usage,
+                    editForm.damageFee
+                  );
+                  setEditForm((f) => ({
+                    ...f,
+                    waterUsage: usage,
+                    ...calculated,
+                  }));
                 }}
               />
             </div>
             <div>
               <label className="block font-medium dark:text-gray-300 transition-colors duration-300">
-                Service Fee: {roomData?.priceMonth?.toLocaleString() || 0}đ/month
+                Service Fee: {roomData?.priceMonth?.toLocaleString() || 0}
+                đ/month
               </label>
               <input
                 type="number"
@@ -793,23 +916,31 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
               />
             </div>
             <div>
-              <label className="block font-medium dark:text-gray-300 transition-colors duration-300">Damage Fee (đ)</label>
+              <label className="block font-medium dark:text-gray-300 transition-colors duration-300">
+                Damage Fee (đ)
+              </label>
               <input
                 type="number"
                 min="0"
                 className="border rounded px-2 py-1 w-full dark:bg-[#17223b] dark:border-gray-600 dark:text-white transition-colors duration-300"
                 value={editForm.damageFee}
-                onChange={e => {
+                onChange={(e) => {
                   const damageFee = Number(e.target.value);
                   if (damageFee < 0) return; // Validation: không cho phép số âm
-                  const calculated = calculateFees(editForm.electricityUsage, editForm.waterUsage, damageFee);
-                  setEditForm(f => ({ ...f, damageFee, ...calculated }));
+                  const calculated = calculateFees(
+                    editForm.electricityUsage,
+                    editForm.waterUsage,
+                    damageFee
+                  );
+                  setEditForm((f) => ({ ...f, damageFee, ...calculated }));
                 }}
               />
             </div>
             <div className="grid grid-cols-3 gap-2">
               <div>
-                <label className="block font-medium dark:text-gray-300 transition-colors duration-300">Electricity Fee</label>
+                <label className="block font-medium dark:text-gray-300 transition-colors duration-300">
+                  Electricity Fee
+                </label>
                 <input
                   type="number"
                   className="border rounded px-2 py-1 w-full bg-gray-100 dark:bg-[#22304a] dark:border-gray-600 dark:text-white transition-colors duration-300"
@@ -818,7 +949,9 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
                 />
               </div>
               <div>
-                <label className="block font-medium dark:text-gray-300 transition-colors duration-300">Water Fee</label>
+                <label className="block font-medium dark:text-gray-300 transition-colors duration-300">
+                  Water Fee
+                </label>
                 <input
                   type="number"
                   className="border rounded px-2 py-1 w-full bg-gray-100 dark:bg-[#22304a] dark:border-gray-600 dark:text-white transition-colors duration-300"
@@ -827,7 +960,9 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
                 />
               </div>
               <div>
-                <label className="block font-medium dark:text-gray-300 transition-colors duration-300">Total Amount</label>
+                <label className="block font-medium dark:text-gray-300 transition-colors duration-300">
+                  Total Amount
+                </label>
                 <input
                   type="number"
                   className="border rounded px-2 py-1 w-full bg-gray-100 dark:bg-[#22304a] dark:border-gray-600 dark:text-white transition-colors duration-300"
@@ -848,22 +983,36 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
         onOk={handleAddBillSubmit}
         confirmLoading={loading}
       >
-        <form className="space-y-3" onSubmit={e => { e.preventDefault(); handleAddBillSubmit(); }}>
+        <form
+          className="space-y-3"
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleAddBillSubmit();
+          }}
+        >
           <div>
-            <label className="block font-medium dark:text-gray-300 transition-colors duration-300">Month</label>
+            <label className="block font-medium dark:text-gray-300 transition-colors duration-300">
+              Month
+            </label>
             <DatePicker
               picker="month"
               placeholder="Select month"
-              style={{ width: '100%' }}
+              style={{ width: "100%" }}
               format="YYYY-MM"
               value={addForm.month ? dayjs(addForm.month) : null}
-              onChange={(date) => setAddForm(f => ({ ...f, month: date ? date.format('YYYY-MM') : '' }))}
+              onChange={(date) =>
+                setAddForm((f) => ({
+                  ...f,
+                  month: date ? date.format("YYYY-MM") : "",
+                }))
+              }
               className="dark:bg-[#17223b] dark:border-gray-600 dark:text-white transition-colors duration-300"
             />
           </div>
           <div>
             <label className="block font-medium dark:text-gray-300 transition-colors duration-300">
-              Electricity Usage (kWh) - Price: {roomData?.elecPrice?.toLocaleString() || 0}đ/kWh
+              Electricity Usage (kWh) - Price:{" "}
+              {roomData?.elecPrice?.toLocaleString() || 0}đ/kWh
             </label>
             <input
               type="number"
@@ -871,17 +1020,26 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
               step="0.01"
               className="border rounded px-2 py-1 w-full dark:bg-[#17223b] dark:border-gray-600 dark:text-white transition-colors duration-300"
               value={addForm.electricityUsage}
-              onChange={e => {
+              onChange={(e) => {
                 const usage = Number(e.target.value);
                 if (usage < 0) return; // Validation: không cho phép số âm
-                const calculated = calculateFees(usage, addForm.waterUsage, addForm.damageFee);
-                setAddForm(f => ({ ...f, electricityUsage: usage, ...calculated }));
+                const calculated = calculateFees(
+                  usage,
+                  addForm.waterUsage,
+                  addForm.damageFee
+                );
+                setAddForm((f) => ({
+                  ...f,
+                  electricityUsage: usage,
+                  ...calculated,
+                }));
               }}
             />
           </div>
           <div>
             <label className="block font-medium dark:text-gray-300 transition-colors duration-300">
-              Water Usage (m³) - Price: {roomData?.waterPrice?.toLocaleString() || 0}đ/m³
+              Water Usage (m³) - Price:{" "}
+              {roomData?.waterPrice?.toLocaleString() || 0}đ/m³
             </label>
             <input
               type="number"
@@ -889,11 +1047,15 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
               step="0.01"
               className="border rounded px-2 py-1 w-full dark:bg-[#17223b] dark:border-gray-600 dark:text-white transition-colors duration-300"
               value={addForm.waterUsage}
-              onChange={e => {
+              onChange={(e) => {
                 const usage = Number(e.target.value);
                 if (usage < 0) return; // Validation: không cho phép số âm
-                const calculated = calculateFees(addForm.electricityUsage, usage, addForm.damageFee);
-                setAddForm(f => ({ ...f, waterUsage: usage, ...calculated }));
+                const calculated = calculateFees(
+                  addForm.electricityUsage,
+                  usage,
+                  addForm.damageFee
+                );
+                setAddForm((f) => ({ ...f, waterUsage: usage, ...calculated }));
               }}
             />
           </div>
@@ -910,23 +1072,31 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
             />
           </div>
           <div>
-            <label className="block font-medium dark:text-gray-300 transition-colors duration-300">Damage Fee (đ)</label>
+            <label className="block font-medium dark:text-gray-300 transition-colors duration-300">
+              Damage Fee (đ)
+            </label>
             <input
               type="number"
               min="0"
               className="border rounded px-2 py-1 w-full dark:bg-[#17223b] dark:border-gray-600 dark:text-white transition-colors duration-300"
               value={addForm.damageFee}
-              onChange={e => {
+              onChange={(e) => {
                 const damageFee = Number(e.target.value);
                 if (damageFee < 0) return; // Validation: không cho phép số âm
-                const calculated = calculateFees(addForm.electricityUsage, addForm.waterUsage, damageFee);
-                setAddForm(f => ({ ...f, damageFee, ...calculated }));
+                const calculated = calculateFees(
+                  addForm.electricityUsage,
+                  addForm.waterUsage,
+                  damageFee
+                );
+                setAddForm((f) => ({ ...f, damageFee, ...calculated }));
               }}
             />
           </div>
           <div className="grid grid-cols-3 gap-2">
             <div>
-              <label className="block font-medium dark:text-gray-300 transition-colors duration-300">Electricity Fee</label>
+              <label className="block font-medium dark:text-gray-300 transition-colors duration-300">
+                Electricity Fee
+              </label>
               <input
                 type="number"
                 className="border rounded px-2 py-1 w-full bg-gray-100 dark:bg-[#22304a] dark:border-gray-600 dark:text-white transition-colors duration-300"
@@ -935,7 +1105,9 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
               />
             </div>
             <div>
-              <label className="block font-medium dark:text-gray-300 transition-colors duration-300">Water Fee</label>
+              <label className="block font-medium dark:text-gray-300 transition-colors duration-300">
+                Water Fee
+              </label>
               <input
                 type="number"
                 className="border rounded px-2 py-1 w-full bg-gray-100 dark:bg-[#22304a] dark:border-gray-600 dark:text-white transition-colors duration-300"
@@ -944,7 +1116,9 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
               />
             </div>
             <div>
-              <label className="block font-medium dark:text-gray-300 transition-colors duration-300">Total Amount</label>
+              <label className="block font-medium dark:text-gray-300 transition-colors duration-300">
+                Total Amount
+              </label>
               <input
                 type="number"
                 className="border rounded px-2 py-1 w-full bg-gray-100 dark:bg-[#22304a] dark:border-gray-600 dark:text-white transition-colors duration-300"

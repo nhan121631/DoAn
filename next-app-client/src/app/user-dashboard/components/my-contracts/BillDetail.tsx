@@ -1,8 +1,7 @@
 "use client";
 
-import React from "react";
-import { Modal, Tag } from "antd";
 import { BillData, ContractData } from "@/types/types";
+import { Modal } from "antd";
 
 interface BillDetailModalProps {
   open: boolean;
