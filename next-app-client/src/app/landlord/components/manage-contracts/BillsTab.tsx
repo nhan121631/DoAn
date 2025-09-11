@@ -291,6 +291,7 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
       title: "Electricity",
       dataIndex: "electricityFee",
       key: "electricityFee",
+      align: "right" as const,
       render: (v: number, record: BillData) => (
         <div>
           <div className="font-medium">{v?.toLocaleString()}đ</div>
@@ -307,6 +308,7 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
       title: "Water",
       dataIndex: "waterFee",
       key: "waterFee",
+      align: "right" as const,
       render: (v: number, record: BillData) => (
         <div>
           <div className="font-medium">{v?.toLocaleString()}đ</div>
@@ -323,6 +325,7 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
       title: "Service",
       dataIndex: "serviceFee",
       key: "serviceFee",
+      align: "right" as const,
       render: (v: number, record: BillData) => (
         <div>
           <div className="font-medium">{v?.toLocaleString()}đ</div>
@@ -339,6 +342,7 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
       title: "Total",
       dataIndex: "totalAmount",
       key: "totalAmount",
+      align: "right" as const,
       render: (v: number) => v?.toLocaleString() + "đ",
       sorter: (a: BillData, b: BillData) => (a.totalAmount || 0) - (b.totalAmount || 0),
     },

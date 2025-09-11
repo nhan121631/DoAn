@@ -179,13 +179,14 @@ export default function ModalProfile({
     >
       <Form form={form} layout="vertical" onFinish={onSave}>
         <div className="flex flex-col items-center mb-4">
-          <Image
-            src={previewUrl || avatarUrl}
-            alt="Avatar"
-            width={100}
-            height={100}
-            className="rounded-full border-2 border-blue-500 mb-2"
-          />
+          <div className="relative w-24 h-24 mb-2 rounded-full overflow-hidden border-2 border-blue-500">
+  <Image
+    src={previewUrl || avatarUrl || "/images/default/avatar.jpg"}
+    alt="Avatar"
+    fill
+    className="object-cover"
+  />
+</div>
           <Form.Item
             name="avatar"
             valuePropName="fileList"

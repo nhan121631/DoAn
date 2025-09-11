@@ -1,6 +1,25 @@
 import React, { useState, useEffect } from "react";
-import { Table, Tag, Button, Tooltip, Space, Card, Statistic, Input, Select, App } from "antd";
-import { EyeOutlined, DownloadOutlined, CreditCardOutlined, DollarOutlined, SearchOutlined, FilterOutlined } from "@ant-design/icons";
+import {
+  Table,
+  Tag,
+  Button,
+  Tooltip,
+  Space,
+  Card,
+  Statistic,
+  Input,
+  Select,
+  App,
+  message,
+} from "antd";
+import {
+  EyeOutlined,
+  DownloadOutlined,
+  CreditCardOutlined,
+  DollarOutlined,
+  SearchOutlined,
+  FilterOutlined,
+} from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
 import { ContractData, BillData } from "@/types/types";
 import { BillService } from "@/services/BillService";
@@ -20,7 +39,7 @@ const billStatusMap: Record<string, { text: string; color: string }> = {
 };
 
 export default function TenantBillsTab({ contract }: TenantBillsTabProps) {
-  const { message } = App.useApp();
+  const [messageApi, contextHolder] = message.useMessage();
   const [bills, setBills] = useState<BillData[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedBill, setSelectedBill] = useState<BillData | null>(null);
@@ -32,63 +51,76 @@ export default function TenantBillsTab({ contract }: TenantBillsTabProps) {
 
   useEffect(() => {
     // Process bills to ensure all data is complete
-    const processedBills = (contract.bills || []).map(bill => {
+    const processedBills = (contract.bills || []).map((bill) => {
       // Calculate usage from fees if not provided
       let electricityUsage = bill.electricityUsage;
       let waterUsage = bill.waterUsage;
-      
-      if (!electricityUsage && bill.electricityPrice && bill.electricityPrice > 0 && bill.electricityFee) {
+
+      if (
+        !electricityUsage &&
+        bill.electricityPrice &&
+        bill.electricityPrice > 0 &&
+        bill.electricityFee
+      ) {
         electricityUsage = bill.electricityFee / bill.electricityPrice;
       }
-      
-      if (!waterUsage && bill.waterPrice && bill.waterPrice > 0 && bill.waterFee) {
+
+      if (
+        !waterUsage &&
+        bill.waterPrice &&
+        bill.waterPrice > 0 &&
+        bill.waterFee
+      ) {
         waterUsage = bill.waterFee / bill.waterPrice;
       }
-      
+
       // Calculate damageFee if not provided
       let damageFee = bill.damageFee;
       if (damageFee === null || damageFee === undefined) {
-        const baseTotal = (bill.electricityFee || 0) + (bill.waterFee || 0) + (bill.serviceFee || 0);
+        const baseTotal =
+          (bill.electricityFee || 0) +
+          (bill.waterFee || 0) +
+          (bill.serviceFee || 0);
         const calculatedDamageFee = (bill.totalAmount || 0) - baseTotal;
         damageFee = calculatedDamageFee > 0 ? calculatedDamageFee : 0;
       }
-      
+
       return {
         ...bill,
         damageFee,
         electricityUsage,
-        waterUsage
+        waterUsage,
       };
     });
-    
+
     setBills(processedBills);
   }, [contract]);
 
   const handleDownload = async (billId: string, month: string) => {
     try {
       setLoading(true);
-      const hideLoading = message.loading("Preparing download...", 0);
-      
+      const hideLoading = messageApi.loading("Preparing download...", 0);
+
       // Call BillService to download the bill
       const blob = await BillService.downloadBill(contract.id, billId);
-      
+
       // Create download link
       const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       link.href = url;
       link.download = `bill-${contract.tenantName}-${month}.pdf`;
       document.body.appendChild(link);
       link.click();
-      
+
       // Cleanup
       window.URL.revokeObjectURL(url);
       document.body.removeChild(link);
-      
+
       hideLoading();
-      message.success("Bill downloaded successfully!");
+      messageApi.success("Bill downloaded successfully!");
     } catch (error) {
       console.error("Download failed:", error);
-      message.error("Failed to download bill. Please try again.");
+      messageApi.error("Failed to download bill. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -104,25 +136,28 @@ export default function TenantBillsTab({ contract }: TenantBillsTabProps) {
     setPaymentModalOpen(false);
     setPaymentBill(null);
     setPaymentLoading(true);
-    
+
     try {
       // Reload contract to get updated bills data
-      const updatedContract = await fetch(`/api/contracts/${contract.id}`)
-        .then(res => res.json());
-      
+      const updatedContract = await fetch(`/api/contracts/${contract.id}`).then(
+        (res) => res.json()
+      );
+
       if (updatedContract && updatedContract.bills) {
         setBills([...updatedContract.bills]);
-        message.success("Payment processed successfully! Bill status updated.");
+        messageApi.success(
+          "Payment processed successfully! Bill status updated."
+        );
       } else {
         // Fallback: just reload from current contract
-        setBills([...contract.bills || []]);
-        message.success("Payment processed successfully!");
+        setBills([...(contract.bills || [])]);
+        messageApi.success("Payment processed successfully!");
       }
     } catch (error) {
       console.error("Failed to reload bills:", error);
       // Fallback: just reload from current contract
-      setBills([...contract.bills || []]);
-      message.success("Payment processed successfully!");
+      setBills([...(contract.bills || [])]);
+      messageApi.success("Payment processed successfully!");
     } finally {
       setPaymentLoading(false);
     }
@@ -135,33 +170,38 @@ export default function TenantBillsTab({ contract }: TenantBillsTabProps) {
 
   // Calculate bill statistics
   const totalBills = bills.length;
-  const paidBills = bills.filter(bill => bill.status === 'PAID').length;
-  const pendingBills = bills.filter(bill => bill.status === 'PENDING').length;
-  const confirmingBills = bills.filter(bill => bill.status === 'CONFIRMING').length;
-  const overdueBills = bills.filter(bill => bill.status === 'OVERDUE').length;
+  const paidBills = bills.filter((bill) => bill.status === "PAID").length;
+  const pendingBills = bills.filter((bill) => bill.status === "PENDING").length;
+  const confirmingBills = bills.filter(
+    (bill) => bill.status === "CONFIRMING"
+  ).length;
+  const overdueBills = bills.filter((bill) => bill.status === "OVERDUE").length;
   const totalAmount = bills.reduce((sum, bill) => sum + bill.totalAmount, 0);
-  const unpaidAmount = bills.filter(bill => bill.status !== 'PAID').reduce((sum, bill) => sum + bill.totalAmount, 0);
+  const unpaidAmount = bills
+    .filter((bill) => bill.status !== "PAID")
+    .reduce((sum, bill) => sum + bill.totalAmount, 0);
 
   // Filter bills based on search and status
   const filteredBills = bills.filter((bill: BillData) => {
-    const matchesSearch = 
+    const matchesSearch =
       bill.month.toLowerCase().includes(searchText.toLowerCase()) ||
       bill.totalAmount.toString().includes(searchText);
-    
+
     // Handle both old boolean paid field and new status field
     let matchesStatus = true;
     if (statusFilter !== null && statusFilter !== undefined) {
-      if (statusFilter === 'PAID') {
-        matchesStatus = bill.status === 'PAID' || (bill.paid === true);
-      } else if (statusFilter === 'PENDING') {
-        matchesStatus = bill.status === 'PENDING' || (!bill.status && bill.paid !== true);
-      } else if (statusFilter === 'CONFIRMING') {
-        matchesStatus = bill.status === 'CONFIRMING';
-      } else if (statusFilter === 'OVERDUE') {
-        matchesStatus = bill.status === 'OVERDUE';
+      if (statusFilter === "PAID") {
+        matchesStatus = bill.status === "PAID" || bill.paid === true;
+      } else if (statusFilter === "PENDING") {
+        matchesStatus =
+          bill.status === "PENDING" || (!bill.status && bill.paid !== true);
+      } else if (statusFilter === "CONFIRMING") {
+        matchesStatus = bill.status === "CONFIRMING";
+      } else if (statusFilter === "OVERDUE") {
+        matchesStatus = bill.status === "OVERDUE";
       }
     }
-    
+
     return matchesSearch && matchesStatus;
   });
 
@@ -170,8 +210,13 @@ export default function TenantBillsTab({ contract }: TenantBillsTabProps) {
       title: "Month",
       dataIndex: "month",
       key: "month",
-      render: (month: string) => new Date(month).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
-      sorter: (a, b) => new Date(a.month).getTime() - new Date(b.month).getTime(),
+      render: (month: string) =>
+        new Date(month).toLocaleDateString("en-US", {
+          month: "long",
+          year: "numeric",
+        }),
+      sorter: (a, b) =>
+        new Date(a.month).getTime() - new Date(b.month).getTime(),
     },
     {
       title: "Electricity",
@@ -182,7 +227,8 @@ export default function TenantBillsTab({ contract }: TenantBillsTabProps) {
           <div className="font-medium">{amount.toLocaleString()} đ</div>
           {record.electricityUsage && record.electricityPrice && (
             <div className="text-xs text-gray-500">
-              {record.electricityUsage.toFixed(2)} kWh × {record.electricityPrice.toLocaleString()} đ/kWh
+              {record.electricityUsage.toFixed(2)} kWh ×{" "}
+              {record.electricityPrice.toLocaleString()} đ/kWh
             </div>
           )}
         </div>
@@ -198,7 +244,8 @@ export default function TenantBillsTab({ contract }: TenantBillsTabProps) {
           <div className="font-medium">{amount.toLocaleString()} đ</div>
           {record.waterUsage && record.waterPrice && (
             <div className="text-xs text-gray-500">
-              {record.waterUsage.toFixed(2)} m³ × {record.waterPrice.toLocaleString()} đ/m³
+              {record.waterUsage.toFixed(2)} m³ ×{" "}
+              {record.waterPrice.toLocaleString()} đ/m³
             </div>
           )}
         </div>
@@ -236,20 +283,12 @@ export default function TenantBillsTab({ contract }: TenantBillsTabProps) {
         // Use the status from the record directly
         const actualStatus = status; // Don't fallback to paid boolean anymore
         const statusInfo = billStatusMap[actualStatus];
-        
+
         if (!statusInfo) {
-          return (
-            <Tag color="gray">
-              Unknown ({actualStatus})
-            </Tag>
-          );
+          return <Tag color="gray">Unknown ({actualStatus})</Tag>;
         }
-        
-        return (
-          <Tag color={statusInfo.color}>
-            {statusInfo.text}
-          </Tag>
-        );
+
+        return <Tag color={statusInfo.color}>{statusInfo.text}</Tag>;
       },
       filters: [
         { text: "Pending", value: "PENDING" },
@@ -266,10 +305,10 @@ export default function TenantBillsTab({ contract }: TenantBillsTabProps) {
       key: "actions",
       render: (_, record) => {
         const status = record.status;
-        const canPay = status === 'PENDING' || status === 'OVERDUE';
-        const isConfirming = status === 'CONFIRMING';
-        const isPaid = status === 'PAID';
-        
+        const canPay = status === "PENDING" || status === "OVERDUE";
+        const isConfirming = status === "CONFIRMING";
+        const isPaid = status === "PAID";
+
         return (
           <Space>
             <Tooltip title="View Details">
@@ -316,7 +355,7 @@ export default function TenantBillsTab({ contract }: TenantBillsTabProps) {
                   type="default"
                   size="small"
                   disabled
-                  style={{ color: 'green' }}
+                  style={{ color: "green" }}
                 >
                   Paid ✓
                 </Button>
@@ -343,36 +382,36 @@ export default function TenantBillsTab({ contract }: TenantBillsTabProps) {
           <Statistic
             title="Paid Bills"
             value={paidBills}
-            valueStyle={{ color: '#3f8600' }}
+            valueStyle={{ color: "#3f8600" }}
           />
         </Card>
         <Card size="small">
           <Statistic
             title="Pending Bills"
             value={pendingBills}
-            valueStyle={{ color: '#cf1322' }}
+            valueStyle={{ color: "#cf1322" }}
           />
         </Card>
         <Card size="small">
           <Statistic
             title="Confirming"
             value={confirmingBills}
-            valueStyle={{ color: '#1890ff' }}
+            valueStyle={{ color: "#1890ff" }}
           />
         </Card>
         <Card size="small">
           <Statistic
             title="Unpaid Amount"
             value={unpaidAmount}
-            valueStyle={{ color: '#cf1322' }}
+            valueStyle={{ color: "#cf1322" }}
             suffix="đ"
           />
         </Card>
       </div>
 
       {/* Bills Table */}
-      <Card 
-        title="Bills History" 
+      <Card
+        title="Bills History"
         className="shadow-sm"
         extra={
           <Space>
@@ -419,7 +458,7 @@ export default function TenantBillsTab({ contract }: TenantBillsTabProps) {
             showQuickJumper: true,
             showTotal: (total, range) =>
               `${range[0]}-${range[1]} of ${total} bills`,
-            pageSizeOptions: ['5', '10', '20', '50'],
+            pageSizeOptions: ["5", "10", "20", "50"],
           }}
           scroll={{ x: 800 }}
           size="middle"
@@ -445,17 +484,21 @@ export default function TenantBillsTab({ contract }: TenantBillsTabProps) {
       />
 
       {/* Payment Instructions */}
+      {contextHolder}
       <Card title="Payment Information" className="shadow-sm">
         <div className="space-y-2">
-          <p><strong>Payment Methods:</strong></p>
+          <p>
+            <strong>Payment Methods:</strong>
+          </p>
           <ul className="list-disc list-inside space-y-1 text-sm">
             <li>Online payment via VNPay, MoMo, ZaloPay</li>
             <li>Bank transfer to landlord&apos;s account</li>
             <li>Cash payment (contact landlord)</li>
           </ul>
           <p className="text-sm text-gray-600 mt-4">
-            <strong>Note:</strong> Please pay your bills before the due date to avoid late fees.
-            Contact your landlord if you have any payment issues.
+            <strong>Note:</strong> Please pay your bills before the due date to
+            avoid late fees. Contact your landlord if you have any payment
+            issues.
           </p>
         </div>
       </Card>

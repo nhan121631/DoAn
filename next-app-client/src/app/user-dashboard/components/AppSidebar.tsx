@@ -39,16 +39,25 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
     "/user-dashboard/message": "7",
   };
 
-  const selectedKey = pathToKey[pathname || ""] || "1";
+  // const selectedKey = pathToKey[pathname || ""] || "1";
+  const getSelectedKey = () => {
+    const p = pathname || "";
+    if (/^\/user-dashboard\/my-contracts(\/|$)/.test(p)) return "2";
+    return pathToKey[p] || "1";
+  };
+  const selectedKey = getSelectedKey();
 
   if (!mounted) {
     return (
       <div
         style={{
           width: collapsed ? 80 : 200,
-          height: "100%",
+          height: "calc(100vh - 85px)",
           backgroundColor: "#f5f5f5",
           borderRight: "1px solid #d9d9d9",
+          position: "sticky",
+          top: 0,
+          left: 0,
         }}
         className="transition-all duration-200"
       >
@@ -66,7 +75,10 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
       collapsed={collapsed}
       theme={isDark ? "dark" : "light"}
       style={{
-        height: "100%",
+        height: "calc(100vh - 85px)",
+        position: "sticky",
+        top: 0,
+        left: 0,
         borderRight: isDark
           ? "1px solid #4A5565" // dark: slate-700
           : "1px solid #F8FAFC", // light: ant design default
@@ -129,6 +141,7 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
               <Link href="/user-dashboard/rental-history">Rental History</Link>
             ),
           },
+
           {
             key: "4",
             icon: (

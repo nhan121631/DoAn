@@ -23,26 +23,26 @@ public class TemporaryResidenceController {
     public ResponseEntity<TemporaryResidenceResponse> create(
             @Valid @RequestPart("data") TemporaryResidenceCreateRequest request,
             @RequestPart(value = "frontImage", required = false) MultipartFile frontImage,
-            @RequestPart(value = "backImage", required = false) MultipartFile backImage
-    ) {
+            @RequestPart(value = "backImage", required = false) MultipartFile backImage) {
         return ResponseEntity.ok(temporaryResidenceService.create(request, frontImage, backImage));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<TemporaryResidenceResponse> update(
-            @PathVariable UUID id,
+            @PathVariable("id") UUID id,
             @Valid @RequestPart("data") TemporaryResidenceUpdateRequest request,
             @RequestPart(value = "frontImage", required = false) MultipartFile frontImage,
-            @RequestPart(value = "backImage", required = false) MultipartFile backImage
-    ) {
+            @RequestPart(value = "backImage", required = false) MultipartFile backImage) {
         return ResponseEntity.ok(temporaryResidenceService.update(id, request, frontImage, backImage));
     }
+
     @GetMapping("/contract/{contractId}")
-    public ResponseEntity<List<TemporaryResidenceResponse>> getByContract(@PathVariable UUID contractId) {
+    public ResponseEntity<List<TemporaryResidenceResponse>> getByContract(@PathVariable("contractId") UUID contractId) {
         return ResponseEntity.ok(temporaryResidenceService.getByContract(contractId));
     }
+
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable UUID id) {
+    public ResponseEntity<Void> delete(@PathVariable("id") UUID id) {
         temporaryResidenceService.delete(id);
         return ResponseEntity.noContent().build();
     }

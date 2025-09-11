@@ -142,6 +142,7 @@ function ClientWrapper() {
       title: "Cost",
       dataIndex: "cost",
       key: "cost",
+      align: "right" as const,
       render: (cost) => cost.toLocaleString("vi-VN") + " ₫",
     },
     {

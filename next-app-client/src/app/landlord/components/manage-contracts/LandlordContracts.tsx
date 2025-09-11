@@ -116,6 +116,7 @@ const LandlordContracts: React.FC<LandlordContractsProps> = ({ contracts }) => {
       title: "Deposit",
       dataIndex: "depositAmount",
       key: "depositAmount",
+      align: "right" as const,
       render: (amount: number) =>
         amount ? amount.toLocaleString() + " ₫" : "-",
       sorter: (a: ContractData, b: ContractData) =>
@@ -125,6 +126,7 @@ const LandlordContracts: React.FC<LandlordContractsProps> = ({ contracts }) => {
       title: "Rent",
       dataIndex: "monthlyRent",
       key: "monthlyRent",
+      align: "right" as const,
       render: (amount: number) =>
         amount ? amount.toLocaleString() + " ₫/month" : "-",
       sorter: (a: ContractData, b: ContractData) =>
