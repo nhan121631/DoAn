@@ -158,13 +158,7 @@ const LandlordContracts: React.FC<LandlordContractsProps> = ({ contracts }) => {
               onClick={() => handleEdit(record)}
             />
           </Tooltip>
-          <Tooltip title="Export Invoice">
-            <Button
-              type="text"
-              icon={<FilePdfOutlined />}
-              onClick={() => handleOpenExportModal(record)}
-            />
-          </Tooltip>
+      
           <Tooltip title="Delete Contract">
             <Popconfirm
               title="Are you sure delete this contract?"
@@ -198,10 +192,14 @@ const LandlordContracts: React.FC<LandlordContractsProps> = ({ contracts }) => {
   return (
     <div className="space-y-6">
       {contextHolder}
+      <div className="mb-4">
+        <h2 className="text-4xl font-semibold dark:!text-white">Contract Management</h2>
+    
+      </div>
       <Card
         title={
           <span className="text-gray-900 dark:text-white">
-            Contract Management
+            Manage your rental contracts and agreements
           </span>
         }
         className="shadow-md bg-white dark:bg-[#22304a] border-gray-200 dark:border-gray-600 transition-colors duration-300"
