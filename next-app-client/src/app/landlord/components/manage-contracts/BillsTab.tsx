@@ -27,6 +27,7 @@ import {
   InputNumber,
   Tag,
   Tooltip,
+  Table,
 } from "antd";
 import dayjs from "dayjs";
 import type { Key } from "react";
@@ -36,6 +37,7 @@ import BillDetailModal from "./BillDetailModal";
 interface BillsTabProps {
   contract: ContractData;
   onContractUpdate: (contract: ContractData) => void;
+  messageApi: any;
 }
 
 const billStatusMap: Record<string, { text: string; color: string }> = {
@@ -45,7 +47,11 @@ const billStatusMap: Record<string, { text: string; color: string }> = {
   OVERDUE: { text: "Overdue", color: "red" },
 };
 
-export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) {
+export default function BillsTab({
+  contract,
+  onContractUpdate,
+  messageApi,
+}: BillsTabProps) {
   const [selectedBill, setSelectedBill] = useState<BillData | null>(null);
   const [editBill, setEditBill] = useState<BillData | null>(null);
   const [addBillOpen, setAddBillOpen] = useState(false);
@@ -57,7 +63,6 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
   const [addForm] = Form.useForm();
   const [searchText, setSearchText] = useState("");
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
-  const [messageApi, contextHolder] = message.useMessage();
   const [roomData, setRoomData] = useState<{
     elecPrice?: number;
     waterPrice?: number;
@@ -83,16 +88,19 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
   React.useEffect(() => {
     if (roomData?.priceMonth) {
       const currentValues = addForm.getFieldsValue();
-      const electricityFee = (currentValues.electricityUsage || 0) * (roomData.elecPrice || 0);
-      const waterFee = (currentValues.waterUsage || 0) * (roomData.waterPrice || 0);
+      const electricityFee =
+        (currentValues.electricityUsage || 0) * (roomData.elecPrice || 0);
+      const waterFee =
+        (currentValues.waterUsage || 0) * (roomData.waterPrice || 0);
       const damageFee = currentValues.damageFee || 0;
-      const totalAmount = electricityFee + waterFee + roomData.priceMonth + damageFee;
-      
+      const totalAmount =
+        electricityFee + waterFee + roomData.priceMonth + damageFee;
+
       addForm.setFieldsValue({
         serviceFee: roomData.priceMonth,
         electricityFee,
         waterFee,
-        totalAmount
+        totalAmount,
       });
     }
   }, [roomData, addForm]);
@@ -130,7 +138,7 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
         electricityFee: 0,
         waterFee: 0,
         serviceFee: roomData.priceMonth || 0,
-        totalAmount: roomData.priceMonth || 0
+        totalAmount: roomData.priceMonth || 0,
       });
     }
   }, [roomData, addForm]);
@@ -138,9 +146,13 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
   React.useEffect(() => {
     if (editBill && roomData) {
       // Calculate reverse usage from fees if possible
-      const electricityUsage = roomData?.elecPrice ? (editBill.electricityFee / roomData.elecPrice) : 0;
-      const waterUsage = roomData?.waterPrice ? (editBill.waterFee / roomData.waterPrice) : 0;
-      
+      const electricityUsage = roomData?.elecPrice
+        ? editBill.electricityFee / roomData.elecPrice
+        : 0;
+      const waterUsage = roomData?.waterPrice
+        ? editBill.waterFee / roomData.waterPrice
+        : 0;
+
       editForm.setFieldsValue({
         month: editBill.month ? dayjs(editBill.month) : null,
         electricityUsage: electricityUsage,
@@ -161,7 +173,7 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
       const values = editForm.getFieldsValue();
       // Send usage, prices, and calculated fees to backend
       const billData = {
-        month: values.month?.format('YYYY-MM'),
+        month: values.month?.format("YYYY-MM"),
         electricityFee: values.electricityFee,
         waterFee: values.waterFee,
         serviceFee: values.serviceFee,
@@ -193,7 +205,7 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
       const values = addForm.getFieldsValue();
       // Send usage, prices, and calculated fees to backend
       const billData = {
-        month: values.month?.format('YYYY-MM'),
+        month: values.month?.format("YYYY-MM"),
         electricityFee: values.electricityFee,
         waterFee: values.waterFee,
         serviceFee: values.serviceFee,
@@ -218,7 +230,7 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
         electricityFee: 0,
         waterFee: 0,
         serviceFee: roomData?.priceMonth || 0,
-        totalAmount: roomData?.priceMonth || 0
+        totalAmount: roomData?.priceMonth || 0,
       });
       const data = await ContractService.getById(contract.id);
       onContractUpdate(data);
@@ -292,7 +304,7 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
       a.click();
       a.remove();
       window.URL.revokeObjectURL(url);
-      
+
       messageApi.success("Bills exported successfully!");
       setExportModalOpen(false);
       exportForm.resetFields();
@@ -558,7 +570,6 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
 
   return (
     <div className="p-6 space-y-6 bg-white dark:bg-transparent transition-colors duration-300">
-      {contextHolder}
       {/* Bills Statistics */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <Card
@@ -675,21 +686,24 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
                 <Tag color="red">Overdue</Tag>
               </Select.Option>
             </Select>
-            <Button type="primary" onClick={() => {
-              setAddBillOpen(true);
-              // Reset form and set default values
-              addForm.resetFields();
-              addForm.setFieldsValue({
-                month: null,
-                electricityUsage: 0,
-                waterUsage: 0,
-                damageFee: 0,
-                electricityFee: 0,
-                waterFee: 0,
-                serviceFee: roomData?.priceMonth || 0,
-                totalAmount: roomData?.priceMonth || 0
-              });
-            }}>
+            <Button
+              type="primary"
+              onClick={() => {
+                setAddBillOpen(true);
+                // Reset form and set default values
+                addForm.resetFields();
+                addForm.setFieldsValue({
+                  month: null,
+                  electricityUsage: 0,
+                  waterUsage: 0,
+                  damageFee: 0,
+                  electricityFee: 0,
+                  waterFee: 0,
+                  serviceFee: roomData?.priceMonth || 0,
+                  totalAmount: roomData?.priceMonth || 0,
+                });
+              }}
+            >
               Add Bill
             </Button>
             <Button
@@ -842,9 +856,21 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
             layout="vertical"
             onFinish={handleEditBillSubmit}
             onValuesChange={(changedValues, allValues) => {
-              if ('electricityUsage' in changedValues || 'waterUsage' in changedValues || 'damageFee' in changedValues) {
-                const { electricityUsage = 0, waterUsage = 0, damageFee = 0 } = allValues;
-                const calculated = calculateFees(electricityUsage, waterUsage, damageFee);
+              if (
+                "electricityUsage" in changedValues ||
+                "waterUsage" in changedValues ||
+                "damageFee" in changedValues
+              ) {
+                const {
+                  electricityUsage = 0,
+                  waterUsage = 0,
+                  damageFee = 0,
+                } = allValues;
+                const calculated = calculateFees(
+                  electricityUsage,
+                  waterUsage,
+                  damageFee
+                );
                 editForm.setFieldsValue(calculated);
               }
             }}
@@ -852,7 +878,7 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
             <Form.Item
               label="Month"
               name="month"
-              rules={[{ required: true, message: 'Please select month!' }]}
+              rules={[{ required: true, message: "Please select month!" }]}
             >
               <DatePicker
                 picker="month"
@@ -862,110 +888,145 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
                 className="dark:bg-[#17223b] dark:border-gray-600 dark:text-white transition-colors duration-300"
               />
             </Form.Item>
-            
+
             <Form.Item
               label={
                 <span className="dark:text-gray-300 transition-colors duration-300">
-                  Electricity Usage (kWh) - Price: {roomData?.elecPrice?.toLocaleString() || 0}đ/kWh 
+                  Electricity Usage (kWh) - Price:{" "}
+                  {roomData?.elecPrice?.toLocaleString() || 0}đ/kWh
                 </span>
               }
               name="electricityUsage"
-              rules={[{ required: true, message: 'Please enter electricity usage!' }]}
+              rules={[
+                { required: true, message: "Please enter electricity usage!" },
+              ]}
             >
               <InputNumber
                 min={0}
                 step={0.01}
                 placeholder="Enter electricity usage"
-                style={{ width: '100%' }}
-                formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                parser={(value) => value?.replace(/\$\s?|(,*)/g, '') as any}
+                style={{ width: "100%" }}
+                formatter={(value) =>
+                  `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                }
+                parser={(value) => value?.replace(/\$\s?|(,*)/g, "") as any}
                 className="dark:bg-[#17223b] dark:border-gray-600 dark:text-white transition-colors duration-300"
               />
             </Form.Item>
-            
+
             <Form.Item
               label={
                 <span className="dark:text-gray-300 transition-colors duration-300">
-                  Water Usage (m³) - Price: {roomData?.waterPrice?.toLocaleString() || 0}đ/m³ 
+                  Water Usage (m³) - Price:{" "}
+                  {roomData?.waterPrice?.toLocaleString() || 0}đ/m³
                 </span>
               }
               name="waterUsage"
-              rules={[{ required: true, message: 'Please enter water usage!' }]}
+              rules={[{ required: true, message: "Please enter water usage!" }]}
             >
               <InputNumber
                 min={0}
                 step={0.01}
                 placeholder="Enter water usage"
-                style={{ width: '100%' }}
-                formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                parser={(value) => value?.replace(/\$\s?|(,*)/g, '') as any}
+                style={{ width: "100%" }}
+                formatter={(value) =>
+                  `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                }
+                parser={(value) => value?.replace(/\$\s?|(,*)/g, "") as any}
                 className="dark:bg-[#17223b] dark:border-gray-600 dark:text-white transition-colors duration-300"
               />
             </Form.Item>
-            
+
             <Form.Item
               label={
                 <span className="dark:text-gray-300 transition-colors duration-300">
-                  Service Fee: {roomData?.priceMonth?.toLocaleString() || 0}đ/month
+                  Service Fee: {roomData?.priceMonth?.toLocaleString() || 0}
+                  đ/month
                 </span>
               }
               name="serviceFee"
             >
               <InputNumber
-                style={{ width: '100%' }}
+                style={{ width: "100%" }}
                 disabled
-                formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                formatter={(value) =>
+                  `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                }
                 className="dark:bg-[#22304a] dark:border-gray-600 dark:text-white transition-colors duration-300"
               />
             </Form.Item>
-            
+
             <Form.Item
-              label={<span className="dark:text-gray-300 transition-colors duration-300">Damage Fee (đ)</span>}
+              label={
+                <span className="dark:text-gray-300 transition-colors duration-300">
+                  Damage Fee (đ)
+                </span>
+              }
               name="damageFee"
             >
               <InputNumber
                 min={0}
                 placeholder="Enter damage fee"
-                style={{ width: '100%' }}
-                formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                parser={(value) => value?.replace(/\$\s?|(,*)/g, '') as any}
+                style={{ width: "100%" }}
+                formatter={(value) =>
+                  `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                }
+                parser={(value) => value?.replace(/\$\s?|(,*)/g, "") as any}
                 className="dark:bg-[#17223b] dark:border-gray-600 dark:text-white transition-colors duration-300"
               />
             </Form.Item>
-            
+
             <div className="grid grid-cols-3 gap-2">
               <Form.Item
-                label={<span className="dark:text-gray-300 transition-colors duration-300">Electricity Fee</span>}
+                label={
+                  <span className="dark:text-gray-300 transition-colors duration-300">
+                    Electricity Fee
+                  </span>
+                }
                 name="electricityFee"
               >
                 <InputNumber
-                  style={{ width: '100%' }}
+                  style={{ width: "100%" }}
                   disabled
-                  formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                  formatter={(value) =>
+                    `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                  }
                   className="dark:bg-[#22304a] dark:border-gray-600 dark:text-white transition-colors duration-300"
                 />
               </Form.Item>
-              
+
               <Form.Item
-                label={<span className="dark:text-gray-300 transition-colors duration-300">Water Fee</span>}
+                label={
+                  <span className="dark:text-gray-300 transition-colors duration-300">
+                    Water Fee
+                  </span>
+                }
                 name="waterFee"
               >
                 <InputNumber
-                  style={{ width: '100%' }}
+                  style={{ width: "100%" }}
                   disabled
-                  formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                  formatter={(value) =>
+                    `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                  }
                   className="dark:bg-[#22304a] dark:border-gray-600 dark:text-white transition-colors duration-300"
                 />
               </Form.Item>
-              
+
               <Form.Item
-                label={<span className="dark:text-gray-300 transition-colors duration-300">Total Amount</span>}
+                label={
+                  <span className="dark:text-gray-300 transition-colors duration-300">
+                    Total Amount
+                  </span>
+                }
                 name="totalAmount"
               >
                 <InputNumber
-                  style={{ width: '100%' }}
+                  style={{ width: "100%" }}
                   disabled
-                  formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                  formatter={(value) =>
+                    `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                  }
                   className="dark:bg-[#22304a] dark:border-gray-600 dark:text-white transition-colors duration-300"
                 />
               </Form.Item>
@@ -973,7 +1034,6 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
           </Form>
         )}
       </Modal>
-{contextHolder}
       {/* Modal Add Bill */}
       <Modal
         open={addBillOpen}
@@ -990,9 +1050,21 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
           layout="vertical"
           onFinish={handleAddBillSubmit}
           onValuesChange={(changedValues, allValues) => {
-            if ('electricityUsage' in changedValues || 'waterUsage' in changedValues || 'damageFee' in changedValues) {
-              const { electricityUsage = 0, waterUsage = 0, damageFee = 0 } = allValues;
-              const calculated = calculateFees(electricityUsage, waterUsage, damageFee);
+            if (
+              "electricityUsage" in changedValues ||
+              "waterUsage" in changedValues ||
+              "damageFee" in changedValues
+            ) {
+              const {
+                electricityUsage = 0,
+                waterUsage = 0,
+                damageFee = 0,
+              } = allValues;
+              const calculated = calculateFees(
+                electricityUsage,
+                waterUsage,
+                damageFee
+              );
               addForm.setFieldsValue(calculated);
             }
           }}
@@ -1000,7 +1072,7 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
           <Form.Item
             label="Month"
             name="month"
-            rules={[{ required: true, message: 'Please select month!' }]}
+            rules={[{ required: true, message: "Please select month!" }]}
           >
             <DatePicker
               picker="month"
@@ -1010,112 +1082,145 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
               className="dark:bg-[#17223b] dark:border-gray-600 dark:text-white transition-colors duration-300"
             />
           </Form.Item>
-          
+
           <Form.Item
             label={
               <span className="dark:text-gray-300 transition-colors duration-300">
-                Electricity Usage (kWh) - Price: {roomData?.elecPrice?.toLocaleString() || 0}đ/kWh 
+                Electricity Usage (kWh) - Price:{" "}
+                {roomData?.elecPrice?.toLocaleString() || 0}đ/kWh
               </span>
             }
             name="electricityUsage"
-            rules={[{ required: true, message: 'Please enter electricity usage!' }]}
+            rules={[
+              { required: true, message: "Please enter electricity usage!" },
+            ]}
           >
             <InputNumber
               min={0}
               step={0.01}
               placeholder="Enter electricity usage"
-              style={{ width: '100%' }}
-              formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-              parser={(value) => value?.replace(/\$\s?|(,*)/g, '') as any}
+              style={{ width: "100%" }}
+              formatter={(value) =>
+                `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+              }
+              parser={(value) => value?.replace(/\$\s?|(,*)/g, "") as any}
               className="dark:bg-[#17223b] dark:border-gray-600 dark:text-white transition-colors duration-300"
             />
           </Form.Item>
-          
+
           <Form.Item
             label={
               <span className="dark:text-gray-300 transition-colors duration-300">
-                Water Usage (m³) - Price: {roomData?.waterPrice?.toLocaleString() || 0}đ/m³ 
-
-              
+                Water Usage (m³) - Price:{" "}
+                {roomData?.waterPrice?.toLocaleString() || 0}đ/m³
               </span>
             }
             name="waterUsage"
-            rules={[{ required: true, message: 'Please enter water usage!' }]}
+            rules={[{ required: true, message: "Please enter water usage!" }]}
           >
             <InputNumber
               min={0}
               step={0.01}
               placeholder="Enter water usage"
-              style={{ width: '100%' }}
-              formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-              parser={(value) => value?.replace(/\$\s?|(,*)/g, '') as any}
+              style={{ width: "100%" }}
+              formatter={(value) =>
+                `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+              }
+              parser={(value) => value?.replace(/\$\s?|(,*)/g, "") as any}
               className="dark:bg-[#17223b] dark:border-gray-600 dark:text-white transition-colors duration-300"
             />
           </Form.Item>
-          
+
           <Form.Item
             label={
               <span className="dark:text-gray-300 transition-colors duration-300">
-                Service Fee: {roomData?.priceMonth?.toLocaleString() || 0}đ/month
+                Service Fee: {roomData?.priceMonth?.toLocaleString() || 0}
+                đ/month
               </span>
             }
             name="serviceFee"
           >
             <InputNumber
-              style={{ width: '100%' }}
+              style={{ width: "100%" }}
               disabled
-              formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+              formatter={(value) =>
+                `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+              }
               className="dark:bg-[#22304a] dark:border-gray-600 dark:text-white transition-colors duration-300"
             />
           </Form.Item>
-          
+
           <Form.Item
-            label={<span className="dark:text-gray-300 transition-colors duration-300">Damage Fee (đ)</span>}
+            label={
+              <span className="dark:text-gray-300 transition-colors duration-300">
+                Damage Fee (đ)
+              </span>
+            }
             name="damageFee"
           >
             <InputNumber
               min={0}
               placeholder="Enter damage fee"
-              style={{ width: '100%' }}
-              formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-              parser={(value) => value?.replace(/\$\s?|(,*)/g, '') as any}
+              style={{ width: "100%" }}
+              formatter={(value) =>
+                `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+              }
+              parser={(value) => value?.replace(/\$\s?|(,*)/g, "") as any}
               className="dark:bg-[#17223b] dark:border-gray-600 dark:text-white transition-colors duration-300"
             />
           </Form.Item>
-          
+
           <div className="grid grid-cols-3 gap-2">
             <Form.Item
-              label={<span className="dark:text-gray-300 transition-colors duration-300">Electricity Fee</span>}
+              label={
+                <span className="dark:text-gray-300 transition-colors duration-300">
+                  Electricity Fee
+                </span>
+              }
               name="electricityFee"
             >
               <InputNumber
-                style={{ width: '100%' }}
+                style={{ width: "100%" }}
                 disabled
-                formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                formatter={(value) =>
+                  `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                }
                 className="dark:bg-[#22304a] dark:border-gray-600 dark:text-white transition-colors duration-300"
               />
             </Form.Item>
-            
+
             <Form.Item
-              label={<span className="dark:text-gray-300 transition-colors duration-300">Water Fee</span>}
+              label={
+                <span className="dark:text-gray-300 transition-colors duration-300">
+                  Water Fee
+                </span>
+              }
               name="waterFee"
             >
               <InputNumber
-                style={{ width: '100%' }}
+                style={{ width: "100%" }}
                 disabled
-                formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                formatter={(value) =>
+                  `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                }
                 className="dark:bg-[#22304a] dark:border-gray-600 dark:text-white transition-colors duration-300"
               />
             </Form.Item>
-            
+
             <Form.Item
-              label={<span className="dark:text-gray-300 transition-colors duration-300">Total Amount</span>}
+              label={
+                <span className="dark:text-gray-300 transition-colors duration-300">
+                  Total Amount
+                </span>
+              }
               name="totalAmount"
             >
               <InputNumber
-                style={{ width: '100%' }}
+                style={{ width: "100%" }}
                 disabled
-                formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                formatter={(value) =>
+                  `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                }
                 className="dark:bg-[#22304a] dark:border-gray-600 dark:text-white transition-colors duration-300"
               />
             </Form.Item>

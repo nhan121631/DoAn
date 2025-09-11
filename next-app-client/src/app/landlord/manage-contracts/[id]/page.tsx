@@ -86,6 +86,7 @@ export default function LandlordContractDetail() {
           contract={contract}
           onContractUpdate={handleContractUpdate}
           autoEdit={searchParams?.get("edit") === "true"}
+          messageApi={messageApi}
         />
       ),
     },
@@ -98,7 +99,11 @@ export default function LandlordContractDetail() {
         </span>
       ),
       children: (
-        <BillsTab contract={contract} onContractUpdate={handleContractUpdate} />
+        <BillsTab
+          contract={contract}
+          onContractUpdate={handleContractUpdate}
+          messageApi={messageApi}
+        />
       ),
     },
     {
@@ -113,13 +118,13 @@ export default function LandlordContractDetail() {
         <ResidentsTab
           contract={contract}
           onContractUpdate={handleContractUpdate}
+          messageApi={messageApi}
         />
       ),
     },
   ];
 
   return (
-  
     <div className="flex flex-col flex-1 h-full w-full bg-white dark:bg-[#001529] text-gray-900 dark:text-white p-8 overflow-auto transition-colors duration-300">
       {contextHolder}
       <div className="bg-white dark:bg-[#22304a] rounded-2xl shadow-md w-full mx-auto p-6 transition-colors duration-300">

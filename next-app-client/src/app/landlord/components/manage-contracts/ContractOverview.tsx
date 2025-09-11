@@ -23,6 +23,7 @@ interface ContractOverviewProps {
   contract: ContractData;
   onContractUpdate?: (contract: ContractData) => void;
   autoEdit?: boolean;
+  messageApi: any;
 }
 
 const statusMap: Record<number, { text: string; color: string }> = {
@@ -36,10 +37,10 @@ export default function ContractOverview({
   contract,
   onContractUpdate,
   autoEdit,
+  messageApi,
 }: ContractOverviewProps) {
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [messageApi, contextHolder] = message.useMessage();
   const [form] = Form.useForm();
 
   const handleEdit = useCallback(() => {
@@ -98,7 +99,6 @@ export default function ContractOverview({
 
   return (
     <div className="p-6 bg-white dark:bg-transparent transition-colors duration-300">
-      {contextHolder}
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
           Contract Information

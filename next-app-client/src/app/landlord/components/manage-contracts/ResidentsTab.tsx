@@ -36,6 +36,7 @@ import dayjs from "dayjs";
 interface ResidentsTabProps {
   contract: ContractData;
   onContractUpdate: (contract: ContractData) => void;
+  messageApi: any;
 }
 
 const relationshipOptions = [
@@ -56,6 +57,7 @@ const getCloudinaryUrl = (relativePath: string): string => {
 export default function ResidentsTab({
   contract,
   onContractUpdate,
+  messageApi,
 }: ResidentsTabProps) {
   const [residents, setResidents] = useState<ResidentData[]>([]);
   const [selectedResident, setSelectedResident] = useState<ResidentData | null>(
@@ -71,7 +73,6 @@ export default function ResidentsTab({
   const [frontImagePreview, setFrontImagePreview] = useState<string>("");
   const [backImagePreview, setBackImagePreview] = useState<string>("");
   const [searchText, setSearchText] = useState("");
-  const [messageApi, contextHolder] = message.useMessage();
   const [relationshipFilter, setRelationshipFilter] = useState<string | null>(
     null
   );
@@ -386,7 +387,6 @@ export default function ResidentsTab({
             style={{ width: 200 }}
             allowClear
           />
-          {contextHolder}
           <Select
             placeholder={
               <div className="flex items-center gap-1">
