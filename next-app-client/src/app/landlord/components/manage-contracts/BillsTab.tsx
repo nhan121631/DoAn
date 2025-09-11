@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { BillService } from "@/services/BillService";
 import { ContractService } from "@/services/ContractService";
 import { getRoomById } from "@/services/RoomService";
@@ -569,9 +570,9 @@ export default function BillsTab({
     .reduce((sum, bill) => sum + bill.totalAmount, 0);
 
   return (
-    <div className="p-6 space-y-6 bg-white dark:bg-transparent transition-colors duration-300">
+    <div className="p-6 space-y-6 transition-colors duration-300 bg-white dark:bg-transparent">
       {/* Bills Statistics */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-5">
         <Card
           size="small"
           className="bg-white dark:bg-[#17223b] border-gray-200 dark:border-gray-600 transition-colors duration-300"
@@ -891,7 +892,7 @@ export default function BillsTab({
 
             <Form.Item
               label={
-                <span className="dark:text-gray-300 transition-colors duration-300">
+                <span className="transition-colors duration-300 dark:text-gray-300">
                   Electricity Usage (kWh) - Price:{" "}
                   {roomData?.elecPrice?.toLocaleString() || 0}đ/kWh
                 </span>
@@ -916,7 +917,7 @@ export default function BillsTab({
 
             <Form.Item
               label={
-                <span className="dark:text-gray-300 transition-colors duration-300">
+                <span className="transition-colors duration-300 dark:text-gray-300">
                   Water Usage (m³) - Price:{" "}
                   {roomData?.waterPrice?.toLocaleString() || 0}đ/m³
                 </span>
@@ -939,7 +940,7 @@ export default function BillsTab({
 
             <Form.Item
               label={
-                <span className="dark:text-gray-300 transition-colors duration-300">
+                <span className="transition-colors duration-300 dark:text-gray-300">
                   Service Fee: {roomData?.priceMonth?.toLocaleString() || 0}
                   đ/month
                 </span>
@@ -958,7 +959,7 @@ export default function BillsTab({
 
             <Form.Item
               label={
-                <span className="dark:text-gray-300 transition-colors duration-300">
+                <span className="transition-colors duration-300 dark:text-gray-300">
                   Damage Fee (đ)
                 </span>
               }
@@ -979,7 +980,7 @@ export default function BillsTab({
             <div className="grid grid-cols-3 gap-2">
               <Form.Item
                 label={
-                  <span className="dark:text-gray-300 transition-colors duration-300">
+                  <span className="transition-colors duration-300 dark:text-gray-300">
                     Electricity Fee
                   </span>
                 }
@@ -997,7 +998,7 @@ export default function BillsTab({
 
               <Form.Item
                 label={
-                  <span className="dark:text-gray-300 transition-colors duration-300">
+                  <span className="transition-colors duration-300 dark:text-gray-300">
                     Water Fee
                   </span>
                 }
@@ -1015,7 +1016,7 @@ export default function BillsTab({
 
               <Form.Item
                 label={
-                  <span className="dark:text-gray-300 transition-colors duration-300">
+                  <span className="transition-colors duration-300 dark:text-gray-300">
                     Total Amount
                   </span>
                 }
@@ -1085,7 +1086,7 @@ export default function BillsTab({
 
           <Form.Item
             label={
-              <span className="dark:text-gray-300 transition-colors duration-300">
+              <span className="transition-colors duration-300 dark:text-gray-300">
                 Electricity Usage (kWh) - Price:{" "}
                 {roomData?.elecPrice?.toLocaleString() || 0}đ/kWh
               </span>
@@ -1110,7 +1111,7 @@ export default function BillsTab({
 
           <Form.Item
             label={
-              <span className="dark:text-gray-300 transition-colors duration-300">
+              <span className="transition-colors duration-300 dark:text-gray-300">
                 Water Usage (m³) - Price:{" "}
                 {roomData?.waterPrice?.toLocaleString() || 0}đ/m³
               </span>
@@ -1133,7 +1134,7 @@ export default function BillsTab({
 
           <Form.Item
             label={
-              <span className="dark:text-gray-300 transition-colors duration-300">
+              <span className="transition-colors duration-300 dark:text-gray-300">
                 Service Fee: {roomData?.priceMonth?.toLocaleString() || 0}
                 đ/month
               </span>
@@ -1152,7 +1153,7 @@ export default function BillsTab({
 
           <Form.Item
             label={
-              <span className="dark:text-gray-300 transition-colors duration-300">
+              <span className="transition-colors duration-300 dark:text-gray-300">
                 Damage Fee (đ)
               </span>
             }
@@ -1173,7 +1174,7 @@ export default function BillsTab({
           <div className="grid grid-cols-3 gap-2">
             <Form.Item
               label={
-                <span className="dark:text-gray-300 transition-colors duration-300">
+                <span className="transition-colors duration-300 dark:text-gray-300">
                   Electricity Fee
                 </span>
               }
@@ -1191,7 +1192,7 @@ export default function BillsTab({
 
             <Form.Item
               label={
-                <span className="dark:text-gray-300 transition-colors duration-300">
+                <span className="transition-colors duration-300 dark:text-gray-300">
                   Water Fee
                 </span>
               }
@@ -1209,7 +1210,7 @@ export default function BillsTab({
 
             <Form.Item
               label={
-                <span className="dark:text-gray-300 transition-colors duration-300">
+                <span className="transition-colors duration-300 dark:text-gray-300">
                   Total Amount
                 </span>
               }
