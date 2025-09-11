@@ -36,6 +36,7 @@ import dayjs from "dayjs";
 interface ResidentsTabProps {
   contract: ContractData;
   onContractUpdate: (contract: ContractData) => void;
+  messageApi: any;
 }
 
 const relationshipOptions = [
@@ -56,6 +57,7 @@ const getCloudinaryUrl = (relativePath: string): string => {
 export default function ResidentsTab({
   contract,
   onContractUpdate,
+  messageApi,
 }: ResidentsTabProps) {
   const [residents, setResidents] = useState<ResidentData[]>([]);
   const [selectedResident, setSelectedResident] = useState<ResidentData | null>(
@@ -87,7 +89,7 @@ export default function ResidentsTab({
       setResidents(data);
     } catch (error) {
       console.error("Failed to load residents:", error);
-      message.error("Failed to load residents!");
+      messageApi.error("Failed to load residents!");
     } finally {
       setLoading(false);
     }
@@ -151,13 +153,13 @@ export default function ResidentsTab({
         backImageFile || undefined
       );
 
-      message.success("Resident added successfully!");
+      messageApi.success("Resident added successfully!");
       setAddResidentOpen(false);
       resetForm();
       loadResidents(); // Reload data
     } catch (error) {
       console.error("Failed to add resident:", error);
-      message.error("Failed to add resident!");
+      messageApi.error("Failed to add resident!");
     } finally {
       setLoading(false);
     }
@@ -185,13 +187,13 @@ export default function ResidentsTab({
         backImageFile || undefined
       );
 
-      message.success("Resident updated successfully!");
+      messageApi.success("Resident updated successfully!");
       setEditResident(null);
       resetForm();
       loadResidents(); // Reload data
     } catch (error) {
       console.error("Failed to update resident:", error);
-      message.error("Failed to update resident!");
+      messageApi.error("Failed to update resident!");
     } finally {
       setLoading(false);
     }
@@ -201,11 +203,11 @@ export default function ResidentsTab({
     try {
       setLoading(true);
       await ResidentService.deleteResident(contract.id, residentId);
-      message.success("Resident deleted successfully!");
+      messageApi.success("Resident deleted successfully!");
       loadResidents(); // Reload data
     } catch (error) {
       console.error("Failed to delete resident:", error);
-      message.error("Failed to delete resident!");
+      messageApi.error("Failed to delete resident!");
     } finally {
       setLoading(false);
     }
@@ -218,7 +220,7 @@ export default function ResidentsTab({
       const preview = await ResidentService.fileToBase64(file);
       setFrontImagePreview(preview);
     } catch (error) {
-      message.error("Failed to process image!");
+      messageApi.error("Failed to process image!");
     }
     return false; // Prevent auto upload
   };
@@ -230,7 +232,7 @@ export default function ResidentsTab({
       const preview = await ResidentService.fileToBase64(file);
       setBackImagePreview(preview);
     } catch (error) {
-      message.error("Failed to process image!");
+      messageApi.error("Failed to process image!");
     }
     return false; // Prevent auto upload
   };

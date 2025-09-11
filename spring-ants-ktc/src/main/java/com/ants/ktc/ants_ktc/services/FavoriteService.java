@@ -103,6 +103,11 @@ public class FavoriteService {
                 Room room = favorite.getRoom();
                 long favoriteCount = favoriteJpaRepository.countByRoomId(room.getId());
 
+                String postTypeName = null;
+                if (room.getPostType() != null) {
+                        postTypeName = room.getPostType().getName(); // "Post VIP" hoặc "Post Normal"
+                }
+
                 return FavoriteRoomProjection.builder()
                                 .id(room.getId())
                                 .title(room.getTitle())
@@ -189,6 +194,8 @@ public class FavoriteService {
                                                                 .build())
                                 .favoriteCount(favoriteCount)
                                 // .favoriteCount(favoriteJpaRepository.countByRoomId(room.getId()))
+
+                                .postType(postTypeName)
                                 .build();
         }
 }

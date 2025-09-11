@@ -15,6 +15,7 @@ const ManageCommentsInteractive: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [isViewDetailsModalOpen, setViewDetailsModalOpen] = useState(false);
+  const [messageApi, contextHolder] = message.useMessage();
   const [selectedComment, setSelectedComment] =
     useState<RatingResponseDto | null>(null);
 
@@ -24,7 +25,7 @@ const ManageCommentsInteractive: React.FC = () => {
     ratingService
       .getFeedbacksByLandlord(landlordId)
       .then((res) => setData(res))
-      .catch(() => message.error("Không tải được feedback"))
+      .catch(() => messageApi.error("Không tải được feedback"))
       .finally(() => setLoading(false));
   }, [landlordId]);
 
@@ -43,12 +44,12 @@ const ManageCommentsInteractive: React.FC = () => {
       setData((prev) =>
         prev.map((item) => (item.id === selectedComment.id ? updated : item))
       );
-      message.success("Đã phản hồi thành công!");
+      messageApi.success("Đã phản hồi thành công!");
       setIsFormModalOpen(false);
       setSelectedComment(null);
     } catch (error) {
       console.error("Error replying to comment:", error);
-      message.error("Trả lời không thành công");
+      messageApi.error("Trả lời không thành công");
     }
   };
 
@@ -130,6 +131,7 @@ const ManageCommentsInteractive: React.FC = () => {
 
   return (
     <div className="flex flex-col flex-1">
+      {contextHolder}
       <div className="flex justify-between items-center mt-2 mb-2">
         <Input.Search placeholder="Search comments..." style={{ width: 250 }} />
       </div>

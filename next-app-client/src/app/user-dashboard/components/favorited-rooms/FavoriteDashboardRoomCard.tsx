@@ -1,18 +1,34 @@
 import Image from "next/image";
-import React from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { URL_IMAGE } from "@/services/Constant";
 import { RoomInUser } from "@/types/types";
-// import { FaMapMarkerAlt } from "react-icons/fa";
-// import { PiRuler } from "react-icons/pi";
 import Link from "next/link";
-import RoomCardActions from "@/app/users/components/rooms/RoomCardActions";
+import { ButtonForVipCard } from "@/app/users/components/rooms/ButtonForVipCard";
+import { IoCameraOutline } from "react-icons/io5"; 
 
 export interface RoomCardProps {
   room: RoomInUser;
   isFavorite?: boolean;
   onFavoriteChange?: (id: string) => void;
 }
+
+const getAvatarSrc = (avatar?: string) => {
+  console.log('Avatar value:', avatar);
+  if (!avatar || avatar.trim() === '' || avatar === 'null' || avatar === 'undefined') {
+    return "/images/default/avatar.jpg";
+  }
+  if (avatar.startsWith('/dmvvs0ags/')) {
+    return `https://res.cloudinary.com${avatar}`;
+  }
+  if (avatar.startsWith('http') || avatar.startsWith('https://')) {
+    return avatar;
+  }
+  if (avatar.startsWith('/')) {
+    return avatar;
+  }
+  return "/images/avatar.jpg";
+};
 
 const maxShowConveniences = 2;
 
@@ -21,16 +37,34 @@ const FavoriteDashboardRoomCard: React.FC<RoomCardProps> = ({
   isFavorite,
   onFavoriteChange,
 }) => {
-  const landlordAvatar = room.landlord?.landlordProfile?.avatar
-    ? `${URL_IMAGE}/${room.landlord.landlordProfile.avatar}`
-    : "/images/useravt.png";
+  const [hoveredImageIndex, setHoveredImageIndex] = useState<number | null>(null);
+
+  const landlordAvatar = getAvatarSrc(room.landlord?.landlordProfile?.avatar);
+
 
   const conveniences =
     (room.conveniences || []).map((c: { name: string } | string) =>
-  typeof c === "string" ? c : c.name
-) || [];
+      typeof c === "string" ? c : c.name
+    ) || [];
   const showConveniences = conveniences.slice(0, maxShowConveniences);
   const moreCount = conveniences.length - maxShowConveniences;
+
+  const getContactInfo = () => {
+    const phone = room.landlord?.landlordProfile?.phoneNumber;
+    const email = room.landlord?.landlordProfile?.email;
+    
+    if (phone && phone.trim() !== '' && phone !== 'null') {
+      return phone;
+    }
+    if (email && email.trim() !== '' && email !== 'null') {
+      return email;
+    }
+    return null; 
+  };
+
+  const contactInfo = getContactInfo();
+
+
 
   return (
     <motion.div
@@ -40,38 +74,74 @@ const FavoriteDashboardRoomCard: React.FC<RoomCardProps> = ({
       transition={{ duration: 0.7, ease: "easeOut" }}
       className="relative flex w-full h-[250px] bg-white rounded-2xl overflow-hidden shadow-lg border border-blue-400 hover:shadow-blue-200 hover:-translate-y-1 hover:scale-[1.015] transition-all duration-300"
     >
-      {/* IMAGE SECTION */}
-      <div className="relative w-1/3 min-w-[250px] h-full flex-shrink-0">
-        <Link href={`/detail/${room.id}`}>
-          <Image
-            src={
-              room.images?.[0]?.url
-                ? URL_IMAGE + room.images[0].url
-                : "/images/room-placeholder.jpg"
-            }
-            alt={room.title || "Room image"}
-            fill
-            sizes="100vw"
-            className="object-cover transition-transform duration-300 transform hover:scale-110"
-            priority
-          />
-        </Link>
-        <div className="absolute z-40 top-4 right-4">
-          <RoomCardActions
-            room={room}
-            isFavorite={isFavorite}
-            onFavoriteChange={onFavoriteChange}
-            showHeartOnly={true}
-          />
+      {/* IMAGE SECTION -  MULTIPLE IMAGES */}
+      <div className="relative w-1/3 min-w-[250px] h-full flex-shrink-0 p-4">
+        <div className="relative w-full h-full overflow-hidden bg-gray-100 shadow-inner rounded-2xl">
+          {/* MAIN IMAGE với hover switching */}
+          <Link href={`/detail/${room.id}`}>
+            <Image
+              src={
+                room.images?.[hoveredImageIndex ?? 0]?.url
+                  ? URL_IMAGE + room.images[hoveredImageIndex ?? 0].url
+                  : "/images/room-placeholder.jpg"
+              }
+              alt={room.title || "Room image"}
+              fill
+              sizes="100vw"
+              className={`object-cover transition-transform duration-500 ${
+                hoveredImageIndex !== null ? "scale-105" : "hover:scale-105"
+              }`}
+              priority
+              style={{ borderRadius: '1rem' }}
+            />
+          </Link>
+
+          <div className="absolute bottom-3 left-3 flex items-center gap-1 px-2.5 py-1.5 bg-slate-800/80 text-white text-xs rounded-lg backdrop-blur-md border border-white/10">
+            <IoCameraOutline className="w-3 h-3" />
+            <span>{room.images?.length ?? 0}</span>
+          </div>
+
+          {/* THUMBNAILS*/}
+          {room.images && room.images.length > 1 && (
+            <div className="absolute z-20 flex-col hidden gap-2 right-3 bottom-6 sm:flex">
+              {room.images.slice(1, 4).map((img, idx) => {
+                const isLast = idx === 2 && room.images.length > 4;
+                const imageUrl = img?.url
+                  ? URL_IMAGE + img.url
+                  : "/images/room-placeholder.jpg";
+                
+                return (
+                  <div
+                    key={idx}
+                    onMouseEnter={() => setHoveredImageIndex(1 + idx)}
+                    onMouseLeave={() => setHoveredImageIndex(null)}
+                    className="relative flex-shrink-0 w-8 h-8 overflow-hidden transition-colors bg-white border-2 rounded-lg shadow-lg cursor-pointer md:w-10 md:h-10 border-white/90 hover:border-blue-400"
+                  >
+                    <Image
+                      src={imageUrl}
+                      alt={`${room.title} ${idx + 2}`}
+                      fill
+                      className={`object-cover ${isLast ? "opacity-70" : ""}`}
+                      sizes="40px"
+                    />
+                    {isLast && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+                        <span className="text-sm font-bold text-white">
+                          +{room.images.length - 3}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       </div>
 
       {/* CONTENT SECTION */}
       <div className="flex flex-col flex-grow p-4">
         <div className="flex flex-wrap items-center gap-2 mb-1">
-          <span className="text-xl font-bold text-yellow-400 drop-shadow">
-            ★★★★★
-          </span>
           <span
             className="text-xl font-extrabold text-blue-700 uppercase break-words transition-colors duration-200 group-hover:text-emerald-600 line-clamp-2 text-ellipsis"
             style={{
@@ -147,40 +217,52 @@ const FavoriteDashboardRoomCard: React.FC<RoomCardProps> = ({
           </div>
         )}
 
+        {/* FOOTER */}
         <div className="flex items-center justify-between gap-3 pt-4 mt-auto border-t border-gray-200">
-  <div className="flex items-center gap-3">
-    <Image
-      src={landlordAvatar}
-      alt="Avatar"
-      width={40}
-      height={40}
-      className="rounded-full"
-    />
-    <span className="font-semibold text-gray-800">
-      {room.landlord.landlordProfile.fullName}
-    </span>
-  </div>
-  <div className="flex items-center gap-2">
-    <button className="px-4 py-2 text-sm font-semibold text-white transition-colors bg-blue-500 rounded-lg hover:bg-blue-600">
-      Compare
-    </button>
-    <Link
-      href={`/detail/${room.id}`}
-      className="px-4 py-2 text-sm font-semibold text-gray-700 transition-colors bg-white border border-gray-300 rounded-lg hover:bg-gray-100"
-    >
-      See Detail
-    </Link>
-  </div>
+          <div className="flex items-center gap-3">
+            <div className="relative w-10 h-10 overflow-hidden bg-gray-200 rounded-full">
+  <Image
+    src={landlordAvatar}
+    alt={`${room.landlord.landlordProfile.fullName || 'Landlord'}'s avatar`}
+    width={40}
+    height={40}
+    className="object-cover w-full h-full"
+    onError={(e) => {
+      console.error('Avatar load error:', e);
+      e.currentTarget.src = "/images/default/avatar.jpg";
+    }}
+  />
 </div>
+            
+            <div>
+            <span className="font-semibold text-gray-800">
+              {room.landlord.landlordProfile.fullName}
+            </span>
+            {contactInfo && (
+              <div className="text-xs font-medium text-blue-600">
+                {contactInfo}
+              </div>
+            )}
+          </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <ButtonForVipCard
+              room={room}
+              isFavorite={isFavorite}
+              onFavoriteChange={onFavoriteChange}
+              showHeartOnly={true}
+            />
+            <Link
+              href={`/detail/${room.id}`}
+              className="px-4 py-2 text-sm font-semibold text-gray-700 transition-colors bg-white border border-gray-300 rounded-lg hover:bg-gray-100"
+            >
+              See Detail
+            </Link>
+          </div>
+        </div>
       </div>
     </motion.div>
   );
 };
 
 export default FavoriteDashboardRoomCard;
-
-
-
-
-
-
