@@ -197,24 +197,6 @@ function BillPaymentModal({
             </div>
           </div>
 
-          {/* VNPay Payment Button */}
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <h3 className="text-lg font-semibold text-blue-800 mb-3">
-              Online Payment (Recommended)
-            </h3>
-            <p className="text-sm text-gray-600 mb-3">
-              Pay securely with VNPay - supports all major banks and payment methods
-            </p>
-            <Button
-              type="primary"
-              size="large"
-              onClick={handleVNPayPayment}
-              loading={paymentLoading}
-              className="w-full bg-blue-600 hover:bg-blue-700"
-            >
-              Pay with VNPay - {bill.totalAmount.toLocaleString()} đ
-            </Button>
-          </div>
 
           {/* Manual Transfer Section */}
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">

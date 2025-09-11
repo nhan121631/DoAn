@@ -15,6 +15,8 @@ import {
   Card,
   Statistic,
   App,
+  message,
+  InputNumber,
 } from "antd";
 import type { ColumnType } from 'antd/es/table';
 import {
@@ -47,7 +49,7 @@ const billStatusMap: Record<string, { text: string; color: string }> = {
 };
 
 export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) {
-  const { message } = App.useApp();
+  const [messageApi, contextHolder] = message.useMessage();
   const [selectedBill, setSelectedBill] = useState<BillData | null>(null);
   const [editBill, setEditBill] = useState<BillData | null>(null);
   const [addBillOpen, setAddBillOpen] = useState(false);
@@ -55,6 +57,8 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
   const [exportLoading, setExportLoading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [exportForm] = Form.useForm();
+  const [editForm] = Form.useForm();
+  const [addForm] = Form.useForm();
   const [searchText, setSearchText] = useState("");
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const [roomData, setRoomData] = useState<{
@@ -62,27 +66,6 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
     waterPrice?: number;
     priceMonth?: number;
   } | null>(null);
-
-  const [editForm, setEditForm] = useState({
-    month: "",
-    electricityUsage: 0,
-    waterUsage: 0,
-    damageFee: 0,
-    electricityFee: 0,
-    waterFee: 0,
-    serviceFee: 0,
-    totalAmount: 0,
-  });
-  const [addForm, setAddForm] = useState({
-    month: "",
-    electricityUsage: 0,
-    waterUsage: 0,
-    damageFee: 0,
-    electricityFee: 0,
-    waterFee: 0,
-    serviceFee: 0,
-    totalAmount: 0,
-  });
 
   // Fetch room data to get electricity and water prices
   React.useEffect(() => {
@@ -102,13 +85,20 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
   // Update addForm serviceFee when roomData changes
   React.useEffect(() => {
     if (roomData?.priceMonth) {
-      setAddForm(prev => ({
-        ...prev,
-        serviceFee: roomData.priceMonth || 0,
-        totalAmount: prev.electricityFee + prev.waterFee + (roomData.priceMonth || 0) + prev.damageFee
-      }));
+      const currentValues = addForm.getFieldsValue();
+      const electricityFee = (currentValues.electricityUsage || 0) * (roomData.elecPrice || 0);
+      const waterFee = (currentValues.waterUsage || 0) * (roomData.waterPrice || 0);
+      const damageFee = currentValues.damageFee || 0;
+      const totalAmount = electricityFee + waterFee + roomData.priceMonth + damageFee;
+      
+      addForm.setFieldsValue({
+        serviceFee: roomData.priceMonth,
+        electricityFee,
+        waterFee,
+        totalAmount
+      });
     }
-  }, [roomData]);
+  }, [roomData, addForm]);
 
   // Calculate fees when usage changes
   const calculateFees = (electricityUsage: number, waterUsage: number, damageFee: number = 0) => {
@@ -122,14 +112,30 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
     return { electricityFee, waterFee, serviceFee, totalAmount };
   };
 
+  // Initialize add form with default values when room data is loaded
   React.useEffect(() => {
-    if (editBill) {
+    if (roomData) {
+      addForm.setFieldsValue({
+        month: null,
+        electricityUsage: 0,
+        waterUsage: 0,
+        damageFee: 0,
+        electricityFee: 0,
+        waterFee: 0,
+        serviceFee: roomData.priceMonth || 0,
+        totalAmount: roomData.priceMonth || 0
+      });
+    }
+  }, [roomData, addForm]);
+
+  React.useEffect(() => {
+    if (editBill && roomData) {
       // Calculate reverse usage from fees if possible
       const electricityUsage = roomData?.elecPrice ? (editBill.electricityFee / roomData.elecPrice) : 0;
       const waterUsage = roomData?.waterPrice ? (editBill.waterFee / roomData.waterPrice) : 0;
       
-      setEditForm({
-        month: editBill.month,
+      editForm.setFieldsValue({
+        month: editBill.month ? dayjs(editBill.month) : null,
         electricityUsage: electricityUsage,
         waterUsage: waterUsage,
         damageFee: editBill.damageFee || 0,
@@ -139,33 +145,35 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
         totalAmount: editBill.totalAmount,
       });
     }
-  }, [editBill, roomData]);
+  }, [editBill, roomData, editForm]);
 
   const handleEditBillSubmit = async () => {
     if (!editBill || !contract) return;
     try {
       setLoading(true);
+      const values = editForm.getFieldsValue();
       // Send usage, prices, and calculated fees to backend
       const billData = {
-        month: editForm.month,
-        electricityFee: editForm.electricityFee,
-        waterFee: editForm.waterFee,
-        serviceFee: editForm.serviceFee,
-        damageFee: editForm.damageFee,
-        totalAmount: editForm.totalAmount,
+        month: values.month?.format('YYYY-MM'),
+        electricityFee: values.electricityFee,
+        waterFee: values.waterFee,
+        serviceFee: values.serviceFee,
+        damageFee: values.damageFee,
+        totalAmount: values.totalAmount,
         // Include usage and price data
-        electricityUsage: editForm.electricityUsage,
-        waterUsage: editForm.waterUsage,
+        electricityUsage: values.electricityUsage,
+        waterUsage: values.waterUsage,
         electricityPrice: roomData?.elecPrice,
         waterPrice: roomData?.waterPrice,
       };
       await BillService.updateBill(contract.id, editBill.id, billData);
-      message.success("Bill updated!");
+      messageApi.success("Bill updated!");
       setEditBill(null);
+      editForm.resetFields();
       const data = await ContractService.getById(contract.id);
       onContractUpdate(data);
     } catch (_) {
-      message.error("Update bill failed!");
+      messageApi.error("Update bill failed!");
     } finally {
       setLoading(false);
     }
@@ -175,37 +183,40 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
     if (!contract) return;
     try {
       setLoading(true);
+      const values = addForm.getFieldsValue();
       // Send usage, prices, and calculated fees to backend
       const billData = {
-        month: addForm.month,
-        electricityFee: addForm.electricityFee,
-        waterFee: addForm.waterFee,
-        serviceFee: addForm.serviceFee,
-        damageFee: addForm.damageFee,
-        totalAmount: addForm.totalAmount,
+        month: values.month?.format('YYYY-MM'),
+        electricityFee: values.electricityFee,
+        waterFee: values.waterFee,
+        serviceFee: values.serviceFee,
+        damageFee: values.damageFee,
+        totalAmount: values.totalAmount,
         // Include usage and price data
-        electricityUsage: addForm.electricityUsage,
-        waterUsage: addForm.waterUsage,
+        electricityUsage: values.electricityUsage,
+        waterUsage: values.waterUsage,
         electricityPrice: roomData?.elecPrice,
         waterPrice: roomData?.waterPrice,
       };
       await BillService.createBill(contract.id, billData);
-      message.success("Bill added!");
+      messageApi.success("Bill added!");
       setAddBillOpen(false);
-      setAddForm({ 
-        month: "", 
-        electricityUsage: 0, 
-        waterUsage: 0, 
-        damageFee: 0, 
-        electricityFee: 0, 
-        waterFee: 0, 
-        serviceFee: roomData?.priceMonth || 0, 
-        totalAmount: roomData?.priceMonth || 0 
+      addForm.resetFields();
+      // Reset form with default values
+      addForm.setFieldsValue({
+        month: null,
+        electricityUsage: 0,
+        waterUsage: 0,
+        damageFee: 0,
+        electricityFee: 0,
+        waterFee: 0,
+        serviceFee: roomData?.priceMonth || 0,
+        totalAmount: roomData?.priceMonth || 0
       });
       const data = await ContractService.getById(contract.id);
       onContractUpdate(data);
     } catch (_) {
-      message.error("Add bill failed!");
+      messageApi.error("Add bill failed!");
     } finally {
       setLoading(false);
     }
@@ -216,11 +227,11 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
     try {
       setLoading(true);
       await BillService.deleteBill(contract.id, billId);
-      message.success("Bill deleted!");
+      messageApi.success("Bill deleted!");
       const data = await ContractService.getById(contract.id);
       onContractUpdate(data);
     } catch (_) {
-      message.error("Delete bill failed!");
+      messageApi.error("Delete bill failed!");
     } finally {
       setLoading(false);
     }
@@ -232,13 +243,13 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
       setLoading(true);
       // Update bill status to PAID
       await BillService.updateBillStatus(contract.id, bill.id, "PAID");
-      message.success("Payment confirmed successfully!");
+      messageApi.success("Payment confirmed successfully!");
       // Reload contract data to get updated bills
       const data = await ContractService.getById(contract.id);
       onContractUpdate(data);
     } catch (err) {
       console.error("Confirm payment failed:", err);
-      message.error("Failed to confirm payment!");
+      messageApi.error("Failed to confirm payment!");
     } finally {
       setLoading(false);
     }
@@ -253,7 +264,7 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
       const toMonth = values.toMonth.format('YYYY-MM');
       
       if (dayjs(fromMonth).isAfter(dayjs(toMonth))) {
-        message.error("From month cannot be later than to month!");
+        messageApi.error("From month cannot be later than to month!");
         return;
       }
       
@@ -268,12 +279,12 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
       a.remove();
       window.URL.revokeObjectURL(url);
       
-      message.success("Bills exported successfully!");
+      messageApi.success("Bills exported successfully!");
       setExportModalOpen(false);
       exportForm.resetFields();
     } catch (error) {
       console.error("Export failed:", error);
-      message.error("Failed to export bills. Please try again.");
+      messageApi.error("Failed to export bills. Please try again.");
     } finally {
       setExportLoading(false);
     }
@@ -588,7 +599,21 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
                 <Tag color="red">Overdue</Tag>
               </Select.Option>
             </Select>
-            <Button type="primary" onClick={() => setAddBillOpen(true)}>
+            <Button type="primary" onClick={() => {
+              setAddBillOpen(true);
+              // Reset form and set default values
+              addForm.resetFields();
+              addForm.setFieldsValue({
+                month: null,
+                electricityUsage: 0,
+                waterUsage: 0,
+                damageFee: 0,
+                electricityFee: 0,
+                waterFee: 0,
+                serviceFee: roomData?.priceMonth || 0,
+                totalAmount: roomData?.priceMonth || 0
+              });
+            }}>
               Add Bill
             </Button>
             <Button 
@@ -726,234 +751,298 @@ export default function BillsTab({ contract, onContractUpdate }: BillsTabProps) 
       <Modal
         open={!!editBill}
         title={editBill ? `Edit Bill - ${editBill.month}` : "Edit Bill"}
-        onCancel={() => setEditBill(null)}
-        onOk={handleEditBillSubmit}
+        onCancel={() => {
+          setEditBill(null);
+          editForm.resetFields();
+        }}
+        onOk={() => editForm.submit()}
         confirmLoading={loading}
       >
         {editBill && (
-          <form className="space-y-3" onSubmit={e => { e.preventDefault(); handleEditBillSubmit(); }}>
-            <div>
-              <label className="block font-medium dark:text-gray-300 transition-colors duration-300">Month</label>
+          <Form
+            form={editForm}
+            layout="vertical"
+            onFinish={handleEditBillSubmit}
+            onValuesChange={(changedValues, allValues) => {
+              if ('electricityUsage' in changedValues || 'waterUsage' in changedValues || 'damageFee' in changedValues) {
+                const { electricityUsage = 0, waterUsage = 0, damageFee = 0 } = allValues;
+                const calculated = calculateFees(electricityUsage, waterUsage, damageFee);
+                editForm.setFieldsValue(calculated);
+              }
+            }}
+          >
+            <Form.Item
+              label="Month"
+              name="month"
+              rules={[{ required: true, message: 'Please select month!' }]}
+            >
               <DatePicker
                 picker="month"
                 placeholder="Select month"
                 style={{ width: '100%' }}
                 format="YYYY-MM"
-                value={editForm.month ? dayjs(editForm.month) : null}
-                onChange={(date) => setEditForm(f => ({ ...f, month: date ? date.format('YYYY-MM') : '' }))}
                 className="dark:bg-[#17223b] dark:border-gray-600 dark:text-white transition-colors duration-300"
               />
-            </div>
-            <div>
-              <label className="block font-medium dark:text-gray-300 transition-colors duration-300">
-                Electricity Usage (kWh) - Price: {roomData?.elecPrice?.toLocaleString() || 0}đ/kWh
-              </label>
-              <input
-                type="number"
-                min="0"
-                step="0.01"
-                className="border rounded px-2 py-1 w-full dark:bg-[#17223b] dark:border-gray-600 dark:text-white transition-colors duration-300"
-                value={editForm.electricityUsage}
-                onChange={e => {
-                  const usage = Number(e.target.value);
-                  if (usage < 0) return; // Validation: không cho phép số âm
-                  const calculated = calculateFees(usage, editForm.waterUsage, editForm.damageFee);
-                  setEditForm(f => ({ ...f, electricityUsage: usage, ...calculated }));
-                }}
+            </Form.Item>
+            
+            <Form.Item
+              label={
+                <span className="dark:text-gray-300 transition-colors duration-300">
+                  Electricity Usage (kWh) - Price: {roomData?.elecPrice?.toLocaleString() || 0}đ/kWh 
+                </span>
+              }
+              name="electricityUsage"
+              rules={[{ required: true, message: 'Please enter electricity usage!' }]}
+            >
+              <InputNumber
+                min={0}
+                step={0.01}
+                placeholder="Enter electricity usage"
+                style={{ width: '100%' }}
+                formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                parser={(value) => value?.replace(/\$\s?|(,*)/g, '') as any}
+                className="dark:bg-[#17223b] dark:border-gray-600 dark:text-white transition-colors duration-300"
               />
-            </div>
-            <div>
-              <label className="block font-medium dark:text-gray-300 transition-colors duration-300">
-                Water Usage (m³) - Price: {roomData?.waterPrice?.toLocaleString() || 0}đ/m³
-              </label>
-              <input
-                type="number"
-                min="0"
-                step="0.01"
-                className="border rounded px-2 py-1 w-full dark:bg-[#17223b] dark:border-gray-600 dark:text-white transition-colors duration-300"
-                value={editForm.waterUsage}
-                onChange={e => {
-                  const usage = Number(e.target.value);
-                  if (usage < 0) return; // Validation: không cho phép số âm
-                  const calculated = calculateFees(editForm.electricityUsage, usage, editForm.damageFee);
-                  setEditForm(f => ({ ...f, waterUsage: usage, ...calculated }));
-                }}
+            </Form.Item>
+            
+            <Form.Item
+              label={
+                <span className="dark:text-gray-300 transition-colors duration-300">
+                  Water Usage (m³) - Price: {roomData?.waterPrice?.toLocaleString() || 0}đ/m³ 
+                </span>
+              }
+              name="waterUsage"
+              rules={[{ required: true, message: 'Please enter water usage!' }]}
+            >
+              <InputNumber
+                min={0}
+                step={0.01}
+                placeholder="Enter water usage"
+                style={{ width: '100%' }}
+                formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                parser={(value) => value?.replace(/\$\s?|(,*)/g, '') as any}
+                className="dark:bg-[#17223b] dark:border-gray-600 dark:text-white transition-colors duration-300"
               />
-            </div>
-            <div>
-              <label className="block font-medium dark:text-gray-300 transition-colors duration-300">
-                Service Fee: {roomData?.priceMonth?.toLocaleString() || 0}đ/month
-              </label>
-              <input
-                type="number"
-                className="border rounded px-2 py-1 w-full bg-gray-100 dark:bg-[#22304a] dark:border-gray-600 dark:text-white transition-colors duration-300"
-                value={editForm.serviceFee}
-                readOnly
+            </Form.Item>
+            
+            <Form.Item
+              label={
+                <span className="dark:text-gray-300 transition-colors duration-300">
+                  Service Fee: {roomData?.priceMonth?.toLocaleString() || 0}đ/month
+                </span>
+              }
+              name="serviceFee"
+            >
+              <InputNumber
+                style={{ width: '100%' }}
                 disabled
+                formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                className="dark:bg-[#22304a] dark:border-gray-600 dark:text-white transition-colors duration-300"
               />
-            </div>
-            <div>
-              <label className="block font-medium dark:text-gray-300 transition-colors duration-300">Damage Fee (đ)</label>
-              <input
-                type="number"
-                min="0"
-                className="border rounded px-2 py-1 w-full dark:bg-[#17223b] dark:border-gray-600 dark:text-white transition-colors duration-300"
-                value={editForm.damageFee}
-                onChange={e => {
-                  const damageFee = Number(e.target.value);
-                  if (damageFee < 0) return; // Validation: không cho phép số âm
-                  const calculated = calculateFees(editForm.electricityUsage, editForm.waterUsage, damageFee);
-                  setEditForm(f => ({ ...f, damageFee, ...calculated }));
-                }}
+            </Form.Item>
+            
+            <Form.Item
+              label={<span className="dark:text-gray-300 transition-colors duration-300">Damage Fee (đ)</span>}
+              name="damageFee"
+            >
+              <InputNumber
+                min={0}
+                placeholder="Enter damage fee"
+                style={{ width: '100%' }}
+                formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                parser={(value) => value?.replace(/\$\s?|(,*)/g, '') as any}
+                className="dark:bg-[#17223b] dark:border-gray-600 dark:text-white transition-colors duration-300"
               />
-            </div>
+            </Form.Item>
+            
             <div className="grid grid-cols-3 gap-2">
-              <div>
-                <label className="block font-medium dark:text-gray-300 transition-colors duration-300">Electricity Fee</label>
-                <input
-                  type="number"
-                  className="border rounded px-2 py-1 w-full bg-gray-100 dark:bg-[#22304a] dark:border-gray-600 dark:text-white transition-colors duration-300"
-                  value={editForm.electricityFee}
-                  readOnly
+              <Form.Item
+                label={<span className="dark:text-gray-300 transition-colors duration-300">Electricity Fee</span>}
+                name="electricityFee"
+              >
+                <InputNumber
+                  style={{ width: '100%' }}
+                  disabled
+                  formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                  className="dark:bg-[#22304a] dark:border-gray-600 dark:text-white transition-colors duration-300"
                 />
-              </div>
-              <div>
-                <label className="block font-medium dark:text-gray-300 transition-colors duration-300">Water Fee</label>
-                <input
-                  type="number"
-                  className="border rounded px-2 py-1 w-full bg-gray-100 dark:bg-[#22304a] dark:border-gray-600 dark:text-white transition-colors duration-300"
-                  value={editForm.waterFee}
-                  readOnly
+              </Form.Item>
+              
+              <Form.Item
+                label={<span className="dark:text-gray-300 transition-colors duration-300">Water Fee</span>}
+                name="waterFee"
+              >
+                <InputNumber
+                  style={{ width: '100%' }}
+                  disabled
+                  formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                  className="dark:bg-[#22304a] dark:border-gray-600 dark:text-white transition-colors duration-300"
                 />
-              </div>
-              <div>
-                <label className="block font-medium dark:text-gray-300 transition-colors duration-300">Total Amount</label>
-                <input
-                  type="number"
-                  className="border rounded px-2 py-1 w-full bg-gray-100 dark:bg-[#22304a] dark:border-gray-600 dark:text-white transition-colors duration-300"
-                  value={editForm.totalAmount}
-                  readOnly
+              </Form.Item>
+              
+              <Form.Item
+                label={<span className="dark:text-gray-300 transition-colors duration-300">Total Amount</span>}
+                name="totalAmount"
+              >
+                <InputNumber
+                  style={{ width: '100%' }}
+                  disabled
+                  formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                  className="dark:bg-[#22304a] dark:border-gray-600 dark:text-white transition-colors duration-300"
                 />
-              </div>
+              </Form.Item>
             </div>
-          </form>
+          </Form>
         )}
       </Modal>
-
+{contextHolder}
       {/* Modal Add Bill */}
       <Modal
         open={addBillOpen}
         title="Add Bill"
-        onCancel={() => setAddBillOpen(false)}
-        onOk={handleAddBillSubmit}
+        onCancel={() => {
+          setAddBillOpen(false);
+          addForm.resetFields();
+        }}
+        onOk={() => addForm.submit()}
         confirmLoading={loading}
       >
-        <form className="space-y-3" onSubmit={e => { e.preventDefault(); handleAddBillSubmit(); }}>
-          <div>
-            <label className="block font-medium dark:text-gray-300 transition-colors duration-300">Month</label>
+        <Form
+          form={addForm}
+          layout="vertical"
+          onFinish={handleAddBillSubmit}
+          onValuesChange={(changedValues, allValues) => {
+            if ('electricityUsage' in changedValues || 'waterUsage' in changedValues || 'damageFee' in changedValues) {
+              const { electricityUsage = 0, waterUsage = 0, damageFee = 0 } = allValues;
+              const calculated = calculateFees(electricityUsage, waterUsage, damageFee);
+              addForm.setFieldsValue(calculated);
+            }
+          }}
+        >
+          <Form.Item
+            label="Month"
+            name="month"
+            rules={[{ required: true, message: 'Please select month!' }]}
+          >
             <DatePicker
               picker="month"
               placeholder="Select month"
               style={{ width: '100%' }}
               format="YYYY-MM"
-              value={addForm.month ? dayjs(addForm.month) : null}
-              onChange={(date) => setAddForm(f => ({ ...f, month: date ? date.format('YYYY-MM') : '' }))}
               className="dark:bg-[#17223b] dark:border-gray-600 dark:text-white transition-colors duration-300"
             />
-          </div>
-          <div>
-            <label className="block font-medium dark:text-gray-300 transition-colors duration-300">
-              Electricity Usage (kWh) - Price: {roomData?.elecPrice?.toLocaleString() || 0}đ/kWh
-            </label>
-            <input
-              type="number"
-              min="0"
-              step="0.01"
-              className="border rounded px-2 py-1 w-full dark:bg-[#17223b] dark:border-gray-600 dark:text-white transition-colors duration-300"
-              value={addForm.electricityUsage}
-              onChange={e => {
-                const usage = Number(e.target.value);
-                if (usage < 0) return; // Validation: không cho phép số âm
-                const calculated = calculateFees(usage, addForm.waterUsage, addForm.damageFee);
-                setAddForm(f => ({ ...f, electricityUsage: usage, ...calculated }));
-              }}
+          </Form.Item>
+          
+          <Form.Item
+            label={
+              <span className="dark:text-gray-300 transition-colors duration-300">
+                Electricity Usage (kWh) - Price: {roomData?.elecPrice?.toLocaleString() || 0}đ/kWh 
+              </span>
+            }
+            name="electricityUsage"
+            rules={[{ required: true, message: 'Please enter electricity usage!' }]}
+          >
+            <InputNumber
+              min={0}
+              step={0.01}
+              placeholder="Enter electricity usage"
+              style={{ width: '100%' }}
+              formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+              parser={(value) => value?.replace(/\$\s?|(,*)/g, '') as any}
+              className="dark:bg-[#17223b] dark:border-gray-600 dark:text-white transition-colors duration-300"
             />
-          </div>
-          <div>
-            <label className="block font-medium dark:text-gray-300 transition-colors duration-300">
-              Water Usage (m³) - Price: {roomData?.waterPrice?.toLocaleString() || 0}đ/m³
-            </label>
-            <input
-              type="number"
-              min="0"
-              step="0.01"
-              className="border rounded px-2 py-1 w-full dark:bg-[#17223b] dark:border-gray-600 dark:text-white transition-colors duration-300"
-              value={addForm.waterUsage}
-              onChange={e => {
-                const usage = Number(e.target.value);
-                if (usage < 0) return; // Validation: không cho phép số âm
-                const calculated = calculateFees(addForm.electricityUsage, usage, addForm.damageFee);
-                setAddForm(f => ({ ...f, waterUsage: usage, ...calculated }));
-              }}
+          </Form.Item>
+          
+          <Form.Item
+            label={
+              <span className="dark:text-gray-300 transition-colors duration-300">
+                Water Usage (m³) - Price: {roomData?.waterPrice?.toLocaleString() || 0}đ/m³ 
+
+              
+              </span>
+            }
+            name="waterUsage"
+            rules={[{ required: true, message: 'Please enter water usage!' }]}
+          >
+            <InputNumber
+              min={0}
+              step={0.01}
+              placeholder="Enter water usage"
+              style={{ width: '100%' }}
+              formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+              parser={(value) => value?.replace(/\$\s?|(,*)/g, '') as any}
+              className="dark:bg-[#17223b] dark:border-gray-600 dark:text-white transition-colors duration-300"
             />
-          </div>
-          <div>
-            <label className="block font-medium dark:text-gray-300 transition-colors duration-300">
-              Service Fee: {roomData?.priceMonth?.toLocaleString() || 0}đ/month
-            </label>
-            <input
-              type="number"
-              className="border rounded px-2 py-1 w-full bg-gray-100 dark:bg-[#22304a] dark:border-gray-600 dark:text-white transition-colors duration-300"
-              value={addForm.serviceFee}
-              readOnly
+          </Form.Item>
+          
+          <Form.Item
+            label={
+              <span className="dark:text-gray-300 transition-colors duration-300">
+                Service Fee: {roomData?.priceMonth?.toLocaleString() || 0}đ/month
+              </span>
+            }
+            name="serviceFee"
+          >
+            <InputNumber
+              style={{ width: '100%' }}
               disabled
+              formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+              className="dark:bg-[#22304a] dark:border-gray-600 dark:text-white transition-colors duration-300"
             />
-          </div>
-          <div>
-            <label className="block font-medium dark:text-gray-300 transition-colors duration-300">Damage Fee (đ)</label>
-            <input
-              type="number"
-              min="0"
-              className="border rounded px-2 py-1 w-full dark:bg-[#17223b] dark:border-gray-600 dark:text-white transition-colors duration-300"
-              value={addForm.damageFee}
-              onChange={e => {
-                const damageFee = Number(e.target.value);
-                if (damageFee < 0) return; // Validation: không cho phép số âm
-                const calculated = calculateFees(addForm.electricityUsage, addForm.waterUsage, damageFee);
-                setAddForm(f => ({ ...f, damageFee, ...calculated }));
-              }}
+          </Form.Item>
+          
+          <Form.Item
+            label={<span className="dark:text-gray-300 transition-colors duration-300">Damage Fee (đ)</span>}
+            name="damageFee"
+          >
+            <InputNumber
+              min={0}
+              placeholder="Enter damage fee"
+              style={{ width: '100%' }}
+              formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+              parser={(value) => value?.replace(/\$\s?|(,*)/g, '') as any}
+              className="dark:bg-[#17223b] dark:border-gray-600 dark:text-white transition-colors duration-300"
             />
-          </div>
+          </Form.Item>
+          
           <div className="grid grid-cols-3 gap-2">
-            <div>
-              <label className="block font-medium dark:text-gray-300 transition-colors duration-300">Electricity Fee</label>
-              <input
-                type="number"
-                className="border rounded px-2 py-1 w-full bg-gray-100 dark:bg-[#22304a] dark:border-gray-600 dark:text-white transition-colors duration-300"
-                value={addForm.electricityFee}
-                readOnly
+            <Form.Item
+              label={<span className="dark:text-gray-300 transition-colors duration-300">Electricity Fee</span>}
+              name="electricityFee"
+            >
+              <InputNumber
+                style={{ width: '100%' }}
+                disabled
+                formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                className="dark:bg-[#22304a] dark:border-gray-600 dark:text-white transition-colors duration-300"
               />
-            </div>
-            <div>
-              <label className="block font-medium dark:text-gray-300 transition-colors duration-300">Water Fee</label>
-              <input
-                type="number"
-                className="border rounded px-2 py-1 w-full bg-gray-100 dark:bg-[#22304a] dark:border-gray-600 dark:text-white transition-colors duration-300"
-                value={addForm.waterFee}
-                readOnly
+            </Form.Item>
+            
+            <Form.Item
+              label={<span className="dark:text-gray-300 transition-colors duration-300">Water Fee</span>}
+              name="waterFee"
+            >
+              <InputNumber
+                style={{ width: '100%' }}
+                disabled
+                formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                className="dark:bg-[#22304a] dark:border-gray-600 dark:text-white transition-colors duration-300"
               />
-            </div>
-            <div>
-              <label className="block font-medium dark:text-gray-300 transition-colors duration-300">Total Amount</label>
-              <input
-                type="number"
-                className="border rounded px-2 py-1 w-full bg-gray-100 dark:bg-[#22304a] dark:border-gray-600 dark:text-white transition-colors duration-300"
-                value={addForm.totalAmount}
-                readOnly
+            </Form.Item>
+            
+            <Form.Item
+              label={<span className="dark:text-gray-300 transition-colors duration-300">Total Amount</span>}
+              name="totalAmount"
+            >
+              <InputNumber
+                style={{ width: '100%' }}
+                disabled
+                formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                className="dark:bg-[#22304a] dark:border-gray-600 dark:text-white transition-colors duration-300"
               />
-            </div>
+            </Form.Item>
           </div>
-        </form>
+        </Form>
       </Modal>
     </div>
   );
