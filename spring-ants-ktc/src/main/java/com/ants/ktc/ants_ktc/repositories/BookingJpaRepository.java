@@ -82,10 +82,13 @@ public interface BookingJpaRepository extends JpaRepository<Booking, UUID> {
                         Pageable pageable);
 
         // Lấy userId và landlordId (room.user.id) cho 1 booking, tối ưu cho xóa nhanh
-        @Query("SELECT b.user.id, r.user.id FROM Booking b JOIN b.room r WHERE b.id = :bookingId")
-        Object[] findBookingUserAndLandlordIds(@Param("bookingId") UUID bookingId);
+        // Use LEFT JOINs so the query returns a row even if booking.user or room.user
+        // is null
+        @Query("SELECT u.id, ru.id FROM Booking b LEFT JOIN b.user u LEFT JOIN b.room r LEFT JOIN r.user ru WHERE b.id = :bookingId")
+        java.util.List<Object[]> findBookingUserAndLandlordIds(@Param("bookingId") UUID bookingId);
 
         // Update nhanh trường isRemoved cho 1 booking
+        @Modifying(clearAutomatically = true)
         @Query("UPDATE Booking b SET b.isRemoved = :isRemoved WHERE b.id = :bookingId")
         int updateIsRemovedById(@Param("bookingId") UUID bookingId, @Param("isRemoved") int isRemoved);
 
