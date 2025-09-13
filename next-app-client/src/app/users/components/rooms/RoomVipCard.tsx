@@ -550,9 +550,44 @@ export default function RoomVipCard({
                   Contact
                 </div>
                 <div className="text-sm font-semibold truncate text-slate-800">
-                  {room.landlord.landlordProfile.phoneNumber
-                    ? room.landlord.landlordProfile.phoneNumber
-                    : room.landlord.landlordProfile.email}
+                  {(() => {
+                    const phone = room.landlord.landlordProfile.phoneNumber;
+                    const email = room.landlord.landlordProfile.email;
+
+                    function maskPhone(p: string | undefined | null) {
+                      if (!p) return "";
+                      const cleaned = p.replace(/\s+/g, "");
+                      if (cleaned.length <= 6) {
+                        // fallback: replace middle chars with asterisks
+                        return cleaned.replace(/.(?=.{3}$)/g, "*");
+                      }
+                      const prefix = cleaned.slice(0, 2);
+                      const suffix = cleaned.slice(-2);
+                      return `${prefix}***${suffix}`;
+                    }
+
+                    function maskEmail(e: string | undefined | null) {
+                      if (!e) return "";
+                      const parts = e.split("@");
+                      if (parts.length !== 2) {
+                        // not a standard email, mask similarly to phone
+                        return e.replace(/.(?=.{3}$)/g, "*");
+                      }
+                      const local = parts[0];
+                      const domain = parts[1];
+                      if (local.length <= 3) {
+                        return `${local[0] || ""}***@${domain}`;
+                      }
+                      const localPrefix = local.slice(0, 1);
+                      const localSuffix = local.length > 6 ? local.slice(-1) : "";
+                      const maskedLocal = localSuffix
+                        ? `${localPrefix}***${localSuffix}`
+                        : `${localPrefix}***`;
+                      return `${maskedLocal}@${domain}`;
+                    }
+
+                    return phone ? maskPhone(phone) : maskEmail(email);
+                  })()}
                 </div>
               </div>
             </div>
