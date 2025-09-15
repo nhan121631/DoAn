@@ -23,6 +23,7 @@ interface ContractOverviewProps {
   contract: ContractData;
   onContractUpdate?: (contract: ContractData) => void;
   autoEdit?: boolean;
+  messageApi: any;
 }
 
 const statusMap: Record<number, { text: string; color: string }> = {
@@ -36,6 +37,7 @@ export default function ContractOverview({
   contract,
   onContractUpdate,
   autoEdit,
+  messageApi,
 }: ContractOverviewProps) {
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -85,11 +87,11 @@ export default function ContractOverview({
         onContractUpdate(updatedContract);
       }
 
-      message.success("Contract updated successfully!");
+      messageApi.success("Contract updated successfully!");
       setEditModalOpen(false);
     } catch (error) {
       console.error("Update contract error:", error);
-      message.error("Failed to update contract!");
+      messageApi.error("Failed to update contract!");
     } finally {
       setLoading(false);
     }

@@ -4,7 +4,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { RoomInUser } from "@/types/types";
 import { message } from "antd";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { FaHeart } from "react-icons/fa6";
 import { useFavoriteStore } from "@/stores/FavoriteStore";
 
@@ -22,7 +22,6 @@ export function ButtonForVipCard({
   showHeartOnly,
 }: ButtonFavoriteProps) {
   const [messageApi, contextHolder] = message.useMessage();
-  const [loading, setLoading] = useState(false);
   const [favoriteCount, setFavoriteCount] = useState(0);
 
   const { data: session } = useSession();
@@ -30,43 +29,64 @@ export function ButtonForVipCard({
 
   const { favoriteRoomIds, addFavorite, removeFavorite } = useFavoriteStore();
   const isFavorite = favoriteRoomIds.has(room.id);
-  useEffect(() => {
-    fetch(`/api/favorites/rooms/${room.id}/count`)
-      .then((res) => res.json())
-      .then(setFavoriteCount);
+
+  const fetchFavoriteCount = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/favorites/rooms/${room.id}/count`);
+      const data = await res.json();
+      setFavoriteCount(data);
+    } catch (error) {
+      console.error("Failed to fetch favorite count:", error);
+    }
   }, [room.id]);
+
+  useEffect(() => {
+    fetchFavoriteCount();
+  }, [fetchFavoriteCount]);
+
   const handleFavorite = async () => {
     if (!session) {
       router.push("/auth/login");
       return;
     }
-    setLoading(true);
+
+    const wasFavorite = isFavorite; 
+    
+    if (wasFavorite) {
+      removeFavorite(room.id);
+      if (onFavoriteChange) onFavoriteChange(room.id);
+      setFavoriteCount((prevCount) => prevCount > 0 ? prevCount - 1 : 0);
+    } else {
+      addFavorite(room.id);
+      setFavoriteCount((prevCount) => prevCount + 1);
+    }
+
     try {
       const res = await fetch(`/api/favorites/rooms/${room.id}`, {
-        method: isFavorite ? "DELETE" : "POST",
+        method: wasFavorite ? "DELETE" : "POST",
       });
 
-      if (res.ok) {
-        if (isFavorite) {
-          removeFavorite(room.id);
-          if (onFavoriteChange) onFavoriteChange(room.id);
-          messageApi.success("Removed from favorites");
-        } else {
-          addFavorite(room.id);
-          messageApi.success("Added to favorites");
-        }
-        const countRes = await fetch(`/api/favorites/rooms/${room.id}/count`);
-        const newCount = await countRes.json();
-        setFavoriteCount(newCount);
-      } else {
-        throw new Error("Failed to update favorite status");
+      if (!res.ok) {
+        throw new Error("Failed to update favorite status on the server.");
       }
-    } catch (error) {
-      messageApi.error("Failed to update favorite status");
-    } finally {
-      setLoading(false);
+      
+      messageApi.success(wasFavorite ? "Removed from favorites" : "Added to favorites");
+  
+  } catch (err) { 
+    console.error("Failed to update favorite status:", err);
+    
+    if (wasFavorite) {
+      addFavorite(room.id); 
+      setFavoriteCount((prevCount) => prevCount + 1);
+    } else {
+      removeFavorite(room.id);
+      setFavoriteCount((prevCount) => prevCount > 0 ? prevCount - 1 : 0);
     }
-  };
+    messageApi.error("Failed to update favorite status.");
+  }
+};
+  
+
   if (showHeartOnly) {
     return (
       <>
@@ -74,14 +94,8 @@ export function ButtonForVipCard({
         <button
           aria-label="Favorite"
           className={`flex items-center gap-2 px-4 py-2 transition-all duration-200 rounded-full border shadow-sm hover:shadow-md focus:ring-2 focus:ring-red-200
-        ${
-          isFavorite
-            ? "text-red-500 bg-white border-red-300 hover:border-red-400 hover:bg-red-50"
-            : "text-gray-500 bg-white border-red-300 hover:text-red-500 hover:border-red-400 hover:bg-red-50"
-        }
-        ${loading ? "opacity-60 cursor-not-allowed" : ""}`}
+            ${isFavorite ? "text-red-500 bg-white border-red-300 hover:border-red-400 hover:bg-red-50" : "text-gray-500 bg-white border-red-300 hover:text-red-500 hover:border-red-400 hover:bg-red-50"}`}
           onClick={handleFavorite}
-          disabled={loading}
           type="button"
           title={isFavorite ? "Remove from favorites" : "Add to favorites"}
         >
@@ -100,14 +114,8 @@ export function ButtonForVipCard({
       <button
         aria-label="Favorite"
         className={`flex items-center gap-1.5 px-3 py-1.5 transition-all duration-200 rounded-full border shadow-sm hover:shadow-md focus:ring-2 focus:ring-red-200
-      ${
-        isFavorite
-          ? "text-red-500 bg-white border-red-300 hover:border-red-400 hover:bg-red-50"
-          : "text-gray-500 bg-white border-red-300 hover:text-red-500 hover:border-red-400 hover:bg-red-50"
-      }
-      ${loading ? "opacity-60 cursor-not-allowed" : ""}`}
+          ${isFavorite ? "text-red-500 bg-white border-red-300 hover:border-red-400 hover:bg-red-50" : "text-gray-500 bg-white border-red-300 hover:text-red-500 hover:border-red-400 hover:bg-red-50"}`}
         onClick={handleFavorite}
-        disabled={loading}
         type="button"
         title={isFavorite ? "Remove from favorites" : "Add to favorites"}
       >

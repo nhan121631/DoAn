@@ -47,4 +47,10 @@ public class FavoriteRoomProjection {
     private List<ConvenientResponseDto> conveniences;
     private LandlordResponseDto landlord;
     private long favoriteCount;
+    // thêm
+    private String postType;
+
+    public Boolean getIsVip() {
+        return "Post VIP".equals(postType);
+    }
 }

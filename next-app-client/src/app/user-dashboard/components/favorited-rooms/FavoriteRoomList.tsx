@@ -8,6 +8,9 @@ import FavoriteDashboardRoomVipCard from "./FavoriteDashboardRoomVipCard";
 import { BiChevronLeft, BiChevronRight } from "react-icons/bi";
 import { useFavoriteStore } from "@/stores/FavoriteStore";
 
+import { Spin } from "antd"; 
+import { Empty } from "antd";
+
 export default function FavoriteRoomList() {
   const { favoriteRoomIds } = useFavoriteStore();
   const [rooms, setRooms] = useState<RoomInUser[]>([]);
@@ -57,29 +60,65 @@ export default function FavoriteRoomList() {
     }
   };
 
-  const handleFavoriteChange = useCallback((id: string) => {
-    setRooms((prevRooms) => prevRooms.filter((room) => room.id !== id));
-  }, []);
+  
+  const handleFavoriteChange = useCallback(async (id: string) => {
+    
+    setTimeout(() => {
+      fetchRooms(currentPage);
+    }, 500); 
+  }, [currentPage, fetchRooms]);
+
 
   if (loading && rooms.length === 0) {
-    return <p className="text-center text-gray-500">Loading...</p>;
+    return (
+      <div className="flex flex-col items-center justify-center py-20">
+        <Spin size="large" />
+        <p className="mt-4 text-lg text-gray-500">Loading your favorite rooms...</p>
+      </div>
+    );
   }
 
   if (error) {
-    return <p className="text-center text-red-500">Error: {error}</p>;
+    return (
+      <div className="flex flex-col items-center justify-center py-20">
+        <div className="text-center text-red-500">
+          <div className="mb-4 text-4xl">⚠️</div>
+          <p className="text-lg font-semibold">Error loading rooms</p>
+          <p className="text-sm text-gray-600">{error}</p>
+        </div>
+      </div>
+    );
   }
 
   if (rooms.length === 0) {
     return (
-      <p className="text-center text-gray-500">You have no favorite rooms.</p>
+      <div className="flex flex-col items-center justify-center py-20">
+        <Empty
+          image={Empty.PRESENTED_IMAGE_SIMPLE}
+          description={
+            <div className="text-center">
+              <p className="mb-2 text-lg font-semibold text-gray-600">
+                You have no favorite rooms.
+              </p>
+              <p className="text-sm text-gray-400">
+                Start exploring and add rooms to your favorites!
+              </p>
+            </div>
+          }
+        />
+      </div>
     );
   }
 
   return (
     <div className="flex flex-col w-full">
+      
       <div className="flex flex-col w-full gap-6">
         {rooms.map((room) => {
           const isFavorite = favoriteRoomIds.has(room.id);
+          
+          // console.log('Room ID:', room.id, 'isVip:', room.isVip, 'Type:', typeof room.isVip);
+          
           return (
             <div key={room.id}>
               {room.isVip ? (
@@ -100,25 +139,7 @@ export default function FavoriteRoomList() {
         })}
       </div>
 
-      {/* <div className="flex items-center justify-center gap-4 py-6">
-        <button
-          onClick={() => handlePageChange(currentPage - 1)}
-          disabled={currentPage === 0}
-          className="px-4 py-2 text-white bg-blue-500 rounded-md disabled:bg-gray-400"
-        >
-          Trang trước
-        </button>
-        <span className="text-lg font-semibold">
-          Trang {currentPage + 1} / {totalPages || 1}
-        </span>
-        <button
-          onClick={() => handlePageChange(currentPage + 1)}
-          disabled={currentPage >= totalPages - 1 || totalPages === 0}
-          className="px-4 py-2 text-white bg-blue-500 rounded-md disabled:bg-gray-400"
-        >
-          Trang tiếp
-        </button>
-      </div> */}
+      
       <div className="flex items-center justify-center gap-4 py-6">
         <button
           onClick={() => handlePageChange(currentPage - 1)}

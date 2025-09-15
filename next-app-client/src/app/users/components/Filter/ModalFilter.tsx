@@ -29,6 +29,7 @@ export default function ModalFilter({
   const [wards, setWards] = useState<SelectOption[]>([]);
   const [loadingDistricts, setLoadingDistricts] = useState(false);
   const [loadingWards, setLoadingWards] = useState(false);
+  const [messageApi, contextHolder] = message.useMessage();
 
   // Remove old filter initialization logic, only need to load provinces initially
 
@@ -127,12 +128,12 @@ export default function ModalFilter({
           },
           session
         );
-        message.success("Update successful!");
+        messageApi.success("Update successful!");
         handleClose();
       }
     } catch (error) {
       if (error instanceof Error) {
-        message.error("Update failed! " + error.message);
+        messageApi.error("Update failed! " + error.message);
         // If response has JSON error body, log details
         if ((error as any).response) {
           try {
@@ -143,7 +144,7 @@ export default function ModalFilter({
           }
         }
       } else {
-        message.error("Update failed!");
+        messageApi.error("Update failed!");
       }
       console.error("Error updating user preferences:", error);
     }
@@ -160,6 +161,7 @@ export default function ModalFilter({
       styles={{ body: { maxHeight: "70vh", overflowY: "auto", padding: 24 } }}
       centered
     >
+      {contextHolder}
       <Form form={form} layout="vertical">
         <Form.Item label="Specific Address" name="specificAddress">
           <Input
