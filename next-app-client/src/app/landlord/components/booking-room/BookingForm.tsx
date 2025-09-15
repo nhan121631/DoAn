@@ -112,7 +112,7 @@ export default function BookingForm({
       );
 
       await createBooking(bookingData);
-      await createBookingNotification("0b2c48dc-c369-4eff-aef3-719edac27f53", session?.user.id);
+      await createBookingNotification(roomId, session?.user.id);
 
       // Hiển thị thông báo thành công
       messageApi.success({

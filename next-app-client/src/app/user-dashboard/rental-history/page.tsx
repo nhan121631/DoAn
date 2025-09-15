@@ -10,6 +10,8 @@ import { userFetchBookings } from "@/services/BookingService";
 import { RequirementRequestRoomDto } from "@/types/types";
 import { createRequest } from "@/services/Requirements";
 import { AlignCenter } from "lucide-react";
+import { createRequestNotification } from "@/services/NotificationService";
+import { useSession } from "next-auth/react";
 
 function useRentalStatusModal() {
   const [visible, setVisible] = useState(false);
@@ -54,6 +56,7 @@ function RentalHistory() {
   const [loading, setLoading] = useState(false);
   const modal = useRentalStatusModal();
   const [messageApi, contextHolder] = message.useMessage();
+  const { data: session } = useSession();
 
   const mapBookingToRentalData = (booking: any): RentalData => {
     const address = booking.room.address;
@@ -285,13 +288,14 @@ function RentalHistory() {
           <Button
             type="primary"
             size="small"
-            onClick={() => {
+            onClick={async () => {
               if (record.status === 4) {
                 setFieldValue(record);
                 setModalType("add");
                 modal.setSelectedKey(record.key);
                 modal.setSelectedIdRoom(record.idRoom);
                 setOpen(true);
+                await createRequestNotification("0b2c48dc-c369-4eff-aef3-719edac27f53", session?.user.id);
               }
             }}
             title="Add Request"

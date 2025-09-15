@@ -15,7 +15,7 @@ import {
 } from "antd";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
-import "dayjs/locale/vi"; // tiếng Việt (nếu muốn)
+import "dayjs/locale/en"; // tiếng Việt (nếu muốn)
 
 import { IoIosLogOut } from "react-icons/io";
 import { ThemeContext } from "@/app/context/ThemeContext";
@@ -48,7 +48,7 @@ type Notification = {
 
 function AppHeader({ collapsed, toggleCollapsed }: AppHeaderProps) {
   dayjs.extend(relativeTime);
-  dayjs.locale("vi");
+  dayjs.locale("en");
   const router = useRouter();
   const { data: session } = useSession();
   const { isDark, setIsDark } = useContext(ThemeContext);
@@ -104,8 +104,10 @@ function AppHeader({ collapsed, toggleCollapsed }: AppHeaderProps) {
   const handleNotificationClick = async (id: string, type: string) => {
     try {
       await updateDoc(doc(db, "notifications", id), { isRead: true });
-      if(type === "booking_success"){
+      if (type === "booking_success") {
         router.push(`/landlord/rentals`);
+      } else if (type === "request_success") {
+        router.push(`/landlord/manage-requests`);
       }
       console.log("Notification clicked:", id);
     } catch (err) {
@@ -131,15 +133,17 @@ function AppHeader({ collapsed, toggleCollapsed }: AppHeaderProps) {
             className={`cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 ${
               !item.read ? "bg-blue-50 dark:bg-blue-900/20" : ""
             }`}
-            onClick={() => handleNotificationClick(item.id,item.type)}
+            onClick={() => handleNotificationClick(item.id, item.type)}
           >
             <List.Item.Meta
               title={
                 <div className="flex justify-between items-start">
                   <span className={`${!item.read ? "font-semibold" : ""}`}>
                     {item.type === "booking_success"
-                      ? "Rental Booking"
-                      : "Thông báo"}
+                      && "Rental Booking"}
+                    {item.type === "request_success"
+                      && "Rental Request"
+                      }
                   </span>
                   {!item.read && (
                     <div className="w-2 h-2 bg-blue-500 rounded-full ml-2 mt-1"></div>
@@ -149,15 +153,13 @@ function AppHeader({ collapsed, toggleCollapsed }: AppHeaderProps) {
               description={
                 <div>
                   <div className="text-gray-600 dark:text-gray-300 mb-1">
-                    {item.type == "booking_success"
-                      ? item.message
-                      : "Chi tiết thông báo"}
+                    {item.message}
                   </div>
                   <div className="text-xs text-gray-400">
-  {item.createdAt?.toDate
-    ? dayjs(item.createdAt.toDate()).fromNow()
-    : ""}
-</div>
+                    {item.createdAt?.toDate
+                      ? dayjs(item.createdAt.toDate()).fromNow()
+                      : ""}
+                  </div>
                 </div>
               }
             />
