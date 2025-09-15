@@ -13,6 +13,10 @@ import {
   Typography,
   message,
 } from "antd";
+import dayjs from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime";
+import "dayjs/locale/vi"; // tiếng Việt (nếu muốn)
+
 import { IoIosLogOut } from "react-icons/io";
 import { ThemeContext } from "@/app/context/ThemeContext";
 import { signOut, useSession } from "next-auth/react";
@@ -26,6 +30,7 @@ import {
   updateDoc,
   doc,
 } from "firebase/firestore";
+import { useRouter } from "next/navigation";
 
 interface AppHeaderProps {
   collapsed: boolean;
@@ -36,12 +41,15 @@ type Notification = {
   id: string;
   landlordId: string;
   type: string;
-  booking: any;
   createdAt: any;
+  message: string;
   read: boolean;
 };
 
 function AppHeader({ collapsed, toggleCollapsed }: AppHeaderProps) {
+  dayjs.extend(relativeTime);
+  dayjs.locale("vi");
+  const router = useRouter();
   const { data: session } = useSession();
   const { isDark, setIsDark } = useContext(ThemeContext);
   const [notificationOpen, setNotificationOpen] = useState(false);
@@ -93,9 +101,12 @@ function AppHeader({ collapsed, toggleCollapsed }: AppHeaderProps) {
     }
   };
 
-  const handleNotificationClick = async (id: string) => {
+  const handleNotificationClick = async (id: string, type: string) => {
     try {
-      await updateDoc(doc(db, "notifications", id), { read: true });
+      await updateDoc(doc(db, "notifications", id), { isRead: true });
+      if(type === "booking_success"){
+        router.push(`/landlord/rentals`);
+      }
       console.log("Notification clicked:", id);
     } catch (err) {
       console.error("Error update notification:", err);
@@ -120,14 +131,14 @@ function AppHeader({ collapsed, toggleCollapsed }: AppHeaderProps) {
             className={`cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 ${
               !item.read ? "bg-blue-50 dark:bg-blue-900/20" : ""
             }`}
-            onClick={() => handleNotificationClick(item.id)}
+            onClick={() => handleNotificationClick(item.id,item.type)}
           >
             <List.Item.Meta
               title={
                 <div className="flex justify-between items-start">
                   <span className={`${!item.read ? "font-semibold" : ""}`}>
-                    {item.type === "BOOKING_CREATED"
-                      ? "Có booking mới"
+                    {item.type === "booking_success"
+                      ? "Rental Booking"
                       : "Thông báo"}
                   </span>
                   {!item.read && (
@@ -138,28 +149,28 @@ function AppHeader({ collapsed, toggleCollapsed }: AppHeaderProps) {
               description={
                 <div>
                   <div className="text-gray-600 dark:text-gray-300 mb-1">
-                    {item.booking?.roomId
-                      ? `Phòng ${item.booking.roomId} vừa được booking`
+                    {item.type == "booking_success"
+                      ? item.message
                       : "Chi tiết thông báo"}
                   </div>
                   <div className="text-xs text-gray-400">
-                    {item.createdAt?.toDate
-                      ? item.createdAt.toDate().toLocaleString()
-                      : ""}
-                  </div>
+  {item.createdAt?.toDate
+    ? dayjs(item.createdAt.toDate()).fromNow()
+    : ""}
+</div>
                 </div>
               }
             />
           </List.Item>
         )}
       />
-      {notifications.length > 3 && (
+      {/* {notifications.length > 3 && (
         <div className="text-center p-3 border-t">
           <Typography.Link onClick={() => console.log("Xem tất cả thông báo")}>
             Xem tất cả thông báo
           </Typography.Link>
         </div>
-      )}
+      )} */}
     </div>
   );
 
