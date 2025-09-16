@@ -5,6 +5,8 @@ import ModalProfile from "./ModalProfile";
 import { Form, message } from "antd";
 import { UploadChangeParam, UploadFile } from "antd/es/upload";
 import { URL_IMAGE } from "@/services/Constant";
+import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 
 export default function ButtonEditProfile({
   userProfile,
@@ -15,6 +17,8 @@ export default function ButtonEditProfile({
   const [form] = Form.useForm();
   const [avatarUrl, setAvatarUrl] = useState("");
   const [messageApi, contextHolder] = message.useMessage();
+  const router = useRouter();
+  const { update: updateSession } = useSession();
 
   // Nhận userProfile qua props
   // const props = arguments[0] || {};
@@ -79,12 +83,32 @@ export default function ButtonEditProfile({
       });
       const data = await res.json();
       if (res.ok) {
+        // Cập nhật avatar URL ngay lập tức nếu có file mới
+        let newAvatarUrl = avatarUrl;
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            const fileUrl = e.target?.result as string;
+            setAvatarUrl(fileUrl);
+            newAvatarUrl = fileUrl;
+            
+            // Dispatch custom event để notify Header component
+            window.dispatchEvent(new CustomEvent('avatarUpdated', {
+              detail: { newAvatarUrl: fileUrl }
+            }));
+          };
+          reader.readAsDataURL(file);
+        }
+        
         messageApi.success({
           content: "Profile updated successfully",
           duration: 1.5,
         });
         form.resetFields();
         setOpen(false);
+        
+        // Refresh để lấy dữ liệu mới từ server
+        router.refresh();
       } else {
         // Hiển thị lỗi chi tiết từ API
         const msg =
@@ -104,6 +128,11 @@ export default function ButtonEditProfile({
       });
     }
   };
+
+  const handleCancel = () => {
+    form.resetFields();
+    setOpen(false);
+  };
   return (
     <>
       {contextHolder}
@@ -115,7 +144,7 @@ export default function ButtonEditProfile({
       </button>
       <ModalProfile
         open={open}
-        onCancel={() => setOpen(false)}
+        onCancel={handleCancel}
         onSave={handleSave}
         avatarUrl={avatarUrl}
         onAvatarChange={handleAvatarChange}

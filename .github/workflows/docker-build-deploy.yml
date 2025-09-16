@@ -63,9 +63,22 @@ jobs:
       # Nên bỏ comment để đảm bảo code quality trước khi deploy
       # - name: Run tests
       #   run: cd spring-ants-ktc && ./gradlew test
+
       # Bước 6: Build ứng dụng Spring Boot thành file JAR
       - name: Build with Gradle
         run: cd spring-ants-ktc && ./gradlew clean bootJar --no-daemon
+
+      # Bước 6.1: Tạo file .env từ GitHub Secrets
+      - name: Create .env file from secrets
+        run: |
+          echo "MAIL_USERNAME=${{ secrets.MAIL_USERNAME }}" >> spring-ants-ktc/.env
+          echo "MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }}" >> spring-ants-ktc/.env
+          echo "CLOUDINARY_CLOUD_NAME=${{ secrets.CLOUDINARY_CLOUD_NAME }}" >> spring-ants-ktc/.env
+          echo "CLOUDINARY_API_KEY=${{ secrets.CLOUDINARY_API_KEY }}" >> spring-ants-ktc/.env
+          echo "CLOUDINARY_API_SECRET=${{ secrets.CLOUDINARY_API_SECRET }}" >> spring-ants-ktc/.env
+          echo "HERE_API_KEY=${{ secrets.HERE_API_KEY }}" >> spring-ants-ktc/.env
+          echo "GOONG_API_KEY=${{ secrets.GOONG_API_KEY }}" >> spring-ants-ktc/.env
+          echo "SLACK_BOT_TOKEN=${{ secrets.SLACK_BOT_TOKEN }}" >> spring-ants-ktc/.env
         # clean: xóa thư mục build cũ
         # bootJar: tạo file JAR có thể chạy độc lập (executable JAR)
         # --no-daemon: không sử dụng Gradle daemon để tránh memory leak

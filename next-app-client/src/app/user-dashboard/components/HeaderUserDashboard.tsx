@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { Avatar, Dropdown } from "antd";
@@ -17,6 +18,7 @@ import {
 import { IoIosLogOut } from "react-icons/io";
 import { IoClose, IoLogInOutline } from "react-icons/io5";
 import { RxHamburgerMenu } from "react-icons/rx";
+import { URL_IMAGE } from "@/services/Constant";
 
 export default function HeaderUserDashboard({
   fixed = true,
@@ -27,7 +29,39 @@ export default function HeaderUserDashboard({
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   // const [isScrolled, setIsScrolled] = useState(false);
   const [activeItem, setActiveItem] = useState("");
+  const [currentAvatarUrl, setCurrentAvatarUrl] = useState("");
   const router = useRouter();
+
+  // Tạo avatar URL từ session data
+  const getAvatarUrl = () => {
+    const userProfile = session?.user?.userProfile;
+    if (!userProfile?.avatar) {
+      return "/images/default/avatar.jpg";
+    }
+    return userProfile.avatar.startsWith("http")
+      ? userProfile.avatar
+      : `${URL_IMAGE}${userProfile.avatar}`;
+  };
+
+  // Update avatar URL khi session thay đổi
+  useEffect(() => {
+    setCurrentAvatarUrl(getAvatarUrl());
+  }, [session]);
+
+  // Listen for avatar update events
+  useEffect(() => {
+    const handleAvatarUpdate = (event: any) => {
+      if (event.detail?.newAvatarUrl) {
+        setCurrentAvatarUrl(event.detail.newAvatarUrl);
+      }
+    };
+
+    window.addEventListener('avatarUpdated', handleAvatarUpdate);
+    
+    return () => {
+      window.removeEventListener('avatarUpdated', handleAvatarUpdate);
+    };
+  }, []);
 
   // Handle scroll effect with enhanced animation
   // useEffect(() => {
@@ -237,8 +271,7 @@ export default function HeaderUserDashboard({
                   <div className="flex items-center gap-3 px-3 py-2 bg-gradient-to-r from-blue-50 to-purple-50 hover:from-blue-100 hover:to-purple-100 rounded-xl cursor-pointer transition-all duration-300 border border-gray-200/50 hover:border-blue-300/50 hover:shadow-lg hover:scale-105 group">
                     <div className="relative">
                       <Avatar
-                        src="https://i.pravatar.cc/40"
-                        alt="User Avatar"
+                        src={currentAvatarUrl}
                         size={36}
                         className="border-2 border-white shadow-lg transition-transform duration-300 group-hover:scale-110"
                       />

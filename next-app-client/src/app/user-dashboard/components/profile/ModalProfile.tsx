@@ -69,6 +69,9 @@ export default function ModalProfile({
         ward: wardId,
       });
 
+      // Reset preview URL khi mở modal
+      setPreviewUrl(undefined);
+
       // Tự động fetch lại districts và wards để Select hiển thị label
       if (provinceId) {
         setSelectedProvince(provinceId);
@@ -165,10 +168,16 @@ export default function ModalProfile({
       setLoadingWards(false);
     }
   };
+
+  const handleCancel = () => {
+    setPreviewUrl(undefined);
+    form.resetFields();
+    onCancel();
+  };
   return (
     <Modal
       open={open}
-      onCancel={onCancel}
+      onCancel={handleCancel}
       footer={null}
       centered
       width={560}
@@ -357,7 +366,7 @@ export default function ModalProfile({
           <Input placeholder="Enter your address" />
         </Form.Item>
         <div className="flex justify-end gap-2 mt-4">
-          <Button onClick={onCancel}>Cancel</Button>
+          <Button onClick={handleCancel}>Cancel</Button>
           <Button type="primary" htmlType="submit">
             Save
           </Button>
