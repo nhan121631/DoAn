@@ -382,4 +382,50 @@ export type TransactionStatisticsDto = {
   cost: number; // Chi phí trong ngày
   date: string; // Ngày ở định dạng 'YYYY-MM-DD'
 }
+export interface LandlordTaskCreateDto {
+  title: string;
+  description?: string;
+  priority?: 'LOW' | 'MEDIUM' | 'HIGH';
+  dueDate?: string;
+  contractId?: string;
+  roomId?: string;
+  assignedToId?: string;
+}
+
+export interface LandlordTaskUpdateDto {
+  title?: string;
+  description?: string;
+  priority?: 'LOW' | 'MEDIUM' | 'HIGH';
+  status?: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
+  dueDate?: string;
+  assignedToId?: string;
+}
+
+export interface LandlordTaskResponseDto {
+  id: string;
+  title: string;
+  description?: string;
+  priority: 'LOW' | 'MEDIUM' | 'HIGH';
+  status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
+  dueDate?: string;
+  createdAt: string;
+  updatedAt: string;
+  landlordId: string;
+  contractId?: string;
+  roomId?: string;
+  assignedToId?: string;
+  assignedTo?: {
+    id: string;
+    name: string;
+    email: string;
+  };
+  contract?: {
+    id: string;
+    contractName: string;
+  };
+  room?: {
+    id: string;
+    title: string;
+  };
+}
  
