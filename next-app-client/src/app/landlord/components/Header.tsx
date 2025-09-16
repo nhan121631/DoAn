@@ -42,8 +42,9 @@ type Notification = {
   landlordId: string;
   type: string;
   createdAt: any;
+  contractId?: number | string | undefined;
   message: string;
-  read: boolean;
+  isRead: boolean;
 };
 
 function AppHeader({ collapsed, toggleCollapsed }: AppHeaderProps) {
@@ -87,11 +88,11 @@ function AppHeader({ collapsed, toggleCollapsed }: AppHeaderProps) {
     return () => unsub();
   }, [landlordId]);
 
-  const unreadCount = notifications.filter((n) => !n.read).length;
+  const unreadCount = notifications.filter((n) => !n.isRead).length;
 
   const markAllAsRead = async () => {
     try {
-      const unread = notifications.filter((n) => !n.read);
+      const unread = notifications.filter((n) => !n.isRead);
       for (const n of unread) {
         await updateDoc(doc(db, "notifications", n.id), { read: true });
       }
@@ -101,13 +102,15 @@ function AppHeader({ collapsed, toggleCollapsed }: AppHeaderProps) {
     }
   };
 
-  const handleNotificationClick = async (id: string, type: string) => {
+  const handleNotificationClick = async (id: string, type: string, contractId: number | string | undefined) => {
     try {
       await updateDoc(doc(db, "notifications", id), { isRead: true });
       if (type === "booking_success") {
         router.push(`/landlord/rentals`);
       } else if (type === "request_success") {
         router.push(`/landlord/manage-requests`);
+      } else if (type === "resident_success") {
+        router.push(`/landlord/manage-contracts/${contractId}`);
       }
       console.log("Notification clicked:", id);
     } catch (err) {
@@ -131,21 +134,24 @@ function AppHeader({ collapsed, toggleCollapsed }: AppHeaderProps) {
           <List.Item
             key={item.id}
             className={`cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 ${
-              !item.read ? "bg-blue-50 dark:bg-blue-900/20" : ""
+              !item.isRead ? "bg-blue-50 dark:bg-blue-900/20" : ""
             }`}
-            onClick={() => handleNotificationClick(item.id, item.type)}
+            onClick={() => handleNotificationClick(item.id, item.type, item.contractId)}
           >
             <List.Item.Meta
               title={
                 <div className="flex justify-between items-start">
-                  <span className={`${!item.read ? "font-semibold" : ""}`}>
+                  <span className={`${!item.isRead ? "font-semibold" : ""}`}>
                     {item.type === "booking_success"
                       && "Rental Booking"}
                     {item.type === "request_success"
                       && "Rental Request"
                       }
+                    {item.type === "resident_success"
+                      && "Rental resident"
+                      }
                   </span>
-                  {!item.read && (
+                  {!item.isRead && (
                     <div className="w-2 h-2 bg-blue-500 rounded-full ml-2 mt-1"></div>
                   )}
                 </div>

@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
+import { createResidentNotification } from "@/services/NotificationService";
 import { ResidentService } from "@/services/ResidentService";
 import { ContractData, ResidentData } from "@/types/types";
 import {
@@ -226,6 +227,7 @@ export default function TenantResidentsTab({
         frontImageFile,
         backImageFile
       );
+      await createResidentNotification(contract.landlordId, contract.tenantId, contract.id);
       console.log("Created resident:", newResident);
 
       setResidents((prev) => [...prev, newResident]);

@@ -295,7 +295,7 @@ function RentalHistory() {
                 modal.setSelectedKey(record.key);
                 modal.setSelectedIdRoom(record.idRoom);
                 setOpen(true);
-                await createRequestNotification("0b2c48dc-c369-4eff-aef3-719edac27f53", session?.user.id);
+                await createRequestNotification(record.idRoom, session?.user.id);
               }
             }}
             title="Add Request"

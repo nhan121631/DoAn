@@ -23,19 +23,39 @@ export const createBookingNotification = async (
 };
 
 export const createRequestNotification = async (
-  landlordId: number | string | undefined,
+  roomId: number | string | undefined,
   tenantId: number | string | undefined,
 ) => {
+  const landlordId = await getLandlordByRoomId(roomId as string);
   try {
     await addDoc(collection(db, "notifications"), {
-      receiverId: landlordId,     // landlord sẽ nhận
+      receiverId: landlordId.id,     // landlord sẽ nhận
       senderId: tenantId,         // user tạo booking
       type: "request_success",
       message: "You have a new request from a tenant!",
       isRead: false,
       createdAt: serverTimestamp()
     });
-     console.error("Request notification created successfully");
+  } catch (error) {
+    console.error("Lỗi khi tạo notification:", error);
+  }
+};
+
+export const createResidentNotification = async (
+  landlordId: number | string | undefined,
+  tenantId: number | string | undefined,
+  contractId: number | string | undefined,
+) => {
+  try {
+    await addDoc(collection(db, "notifications"), {
+      receiverId: landlordId,     // landlord sẽ nhận
+      senderId: tenantId,         // user tạo booking
+      type: "resident_success",
+      message: "You have a new resident from a tenant!",
+      contractId: contractId,
+      isRead: false,
+      createdAt: serverTimestamp()
+    });
   } catch (error) {
     console.error("Lỗi khi tạo notification:", error);
   }
