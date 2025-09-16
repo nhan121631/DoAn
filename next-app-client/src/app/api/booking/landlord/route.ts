@@ -53,8 +53,18 @@ export async function PATCH(request: Request) {
     return new Response("Missing userId", { status: 400 });
   }
 
+  // Log incoming values for debugging (temporary)
+  console.log(
+    "[api/booking/landlord] delete request for bookingId:",
+    bookingId,
+    "userId:",
+    userId
+  );
+
   const response = await fetch(
-    `${API_URL}/bookings/${bookingId}/delete?userId=${userId}`,
+    `${API_URL}/bookings/${encodeURIComponent(
+      bookingId
+    )}/delete?userId=${encodeURIComponent(String(userId))}`,
     {
       method: "PATCH",
       headers: {
@@ -64,12 +74,13 @@ export async function PATCH(request: Request) {
   );
 
   if (!response.ok) {
-    let errorText;
-    try {
-      errorText = await response.text();
-    } catch {
-      errorText = "Unknown error";
-    }
+    const errorText = await response.text().catch(() => "<no response body>");
+    console.error(
+      "[api/booking/landlord] backend error",
+      response.status,
+      errorText
+    );
+    // Return backend message to client for easier debugging
     return new Response(errorText, { status: response.status });
   }
 

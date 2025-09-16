@@ -23,10 +23,14 @@ import com.ants.ktc.ants_ktc.dtos.booking.PaginationLandlordResponseDto;
 import com.ants.ktc.ants_ktc.dtos.booking.PaginationUserBookingRoomResponseDto;
 import com.ants.ktc.ants_ktc.services.BookingService;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/bookings")
+@Tag(name = "Booking API", description = "API quản lý đặt phòng")
+
 public class BookingController {
 
     @Autowired
@@ -34,6 +38,7 @@ public class BookingController {
 
     // createbooking
     @PostMapping("/user/{userId}")
+    @Operation(summary = "Create a new booking", description = "Creates a new booking for a user")
     public ResponseEntity<?> createBooking(
             @PathVariable("userId") UUID userId,
             @Valid @RequestBody BookingRoomRequestDto request) {

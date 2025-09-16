@@ -3,9 +3,14 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useParams, useSearchParams } from "next/navigation";
-import { Spin, message, Tabs } from "antd";
-import { FileTextOutlined, DollarOutlined, TeamOutlined } from "@ant-design/icons";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { Spin, message, Tabs, Button } from "antd";
+import {
+  FileTextOutlined,
+  DollarOutlined,
+  TeamOutlined,
+  ArrowLeftOutlined,
+} from "@ant-design/icons";
 import { ContractData } from "@/types/types";
 import { ContractService } from "@/services/ContractService";
 import TenantContractOverview from "../../components/my-contracts/TenantContractOverview";
@@ -13,6 +18,7 @@ import TenantBillsTab from "../../components/my-contracts/TenantBillsTab";
 import TenantResidentsTab from "../../components/my-contracts/TenantResidentsTab";
 
 export default function TenantContractDetail() {
+  const router = useRouter();
   const params = useParams();
   const searchParams = useSearchParams();
   const contractId = params?.id as string;
@@ -118,8 +124,16 @@ export default function TenantContractDetail() {
   return (
     <div className="flex flex-col flex-1 h-full w-full bg-white dark:bg-[#001529] text-gray-900 dark:text-white p-8 overflow-auto">
       <div className="bg-white rounded-2xl shadow-md w-full mx-auto p-6">
-        <h2 className="text-xl font-bold mb-6">Contract Details</h2>
-
+        <div className="flex items-center justify-start gap-5 mb-4">
+          <Button
+            icon={<ArrowLeftOutlined />}
+            onClick={() => router.push("/user-dashboard/my-contracts")}
+            className="mb-4 !bg-sky-600 dark:!bg-[#171f2f] !text-white"
+          >
+            Go Back
+          </Button>
+          <h2 className="text-xl font-bold mb-6">Contract Details</h2>
+        </div>
         <Tabs
           activeKey={activeTab}
           onChange={setActiveTab}

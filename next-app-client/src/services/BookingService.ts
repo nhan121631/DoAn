@@ -95,7 +95,13 @@ export async function getLandlordPaymentInfo(
 }
 
 export async function deleteBooking(bookingId: string) {
-  const response = await fetch(`/api/booking?bookingId=${bookingId}`, {
+  if (!bookingId) {
+    throw new Error("Missing bookingId");
+  }
+
+  const response = await fetch(`/api/booking/landlord?bookingId=${encodeURIComponent(
+    bookingId
+  )}`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
@@ -103,10 +109,19 @@ export async function deleteBooking(bookingId: string) {
   });
 
   if (!response.ok) {
-    const errorJson = await response.json();
-    throw new Error(errorJson.message || "Failed to delete booking");
+    // Backend may return plain text (error message) or JSON. Read text and try to parse JSON.
+    const text = await response.text();
+    let message = "Failed to delete booking";
+    try {
+      const parsed = JSON.parse(text);
+      message = parsed.message || text || message;
+    } catch (_) {
+      message = text || message;
+    }
+    throw new Error(message);
   }
 
-  return { success: true };
-  
+  // Success: backend may return plain text confirmation
+  const successText = await response.text();
+  return { success: true, message: successText };
 }
