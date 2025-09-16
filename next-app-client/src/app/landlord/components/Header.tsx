@@ -128,9 +128,10 @@ function AppHeader({ collapsed, toggleCollapsed }: AppHeaderProps) {
           Đánh dấu tất cả đã đọc
         </Typography.Link>
       </div>
-      <List
-        dataSource={notifications}
-        renderItem={(item) => (
+      <div className="max-h-80 overflow-y-auto">
+        <List
+          dataSource={notifications.slice(0, 5)}
+          renderItem={(item) => (
           <List.Item
             key={item.id}
             className={`cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 ${
@@ -172,13 +173,14 @@ function AppHeader({ collapsed, toggleCollapsed }: AppHeaderProps) {
           </List.Item>
         )}
       />
-      {/* {notifications.length > 3 && (
+      </div>
+      {notifications.length > 5 && (
         <div className="text-center p-3 border-t">
           <Typography.Link onClick={() => console.log("Xem tất cả thông báo")}>
-            Xem tất cả thông báo
+            Xem tất cả thông báo ({notifications.length})
           </Typography.Link>
         </div>
-      )} */}
+      )}
     </div>
   );
 
