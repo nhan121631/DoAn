@@ -12,10 +12,13 @@ export async function GET(request: Request, { params }: { params: Promise<{ land
   
   const url = `${API_URL}/landlord-tasks/landlord/${landlordId}`;
   
-  const response = await fetch(url, {
-    headers: { Authorization: `Bearer ${session.user.accessToken}` },
-  });
-  
-  const data = await response.json();
-  return new Response(JSON.stringify(data), { status: response.status });
+const response = await fetch(url, {
+  headers: { Authorization: `Bearer ${session.user.accessToken}` },
+});
+if (!response.ok) {
+  const errorText = await response.text();
+  return new Response(errorText, { status: response.status });
+}
+const data = await response.json();
+return new Response(JSON.stringify(data), { status: response.status });
 }

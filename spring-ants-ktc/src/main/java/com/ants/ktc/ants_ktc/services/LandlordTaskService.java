@@ -2,6 +2,14 @@ package com.ants.ktc.ants_ktc.services;
 
 
 
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.ants.ktc.ants_ktc.dtos.LandlordTask.LandlordTaskCreateDto;
 import com.ants.ktc.ants_ktc.dtos.LandlordTask.LandlordTaskResponseDto;
 import com.ants.ktc.ants_ktc.dtos.LandlordTask.LandlordTaskUpdateDto;
@@ -11,15 +19,8 @@ import com.ants.ktc.ants_ktc.entities.User;
 import com.ants.ktc.ants_ktc.repositories.LandlordTaskJpaRepository;
 import com.ants.ktc.ants_ktc.repositories.RoomJpaRepository;
 import com.ants.ktc.ants_ktc.repositories.UserJpaRepository;
-import jakarta.persistence.EntityNotFoundException;
-import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
+import jakarta.persistence.EntityNotFoundException;
 
 @Service
 
