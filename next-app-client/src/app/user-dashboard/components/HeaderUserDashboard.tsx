@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { Avatar, Dropdown } from "antd";
+import { Avatar, Dropdown, Badge, Popover, List, Typography, message } from "antd";
 import { signOut, useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
@@ -18,19 +18,165 @@ import {
 import { IoIosLogOut } from "react-icons/io";
 import { IoClose, IoLogInOutline } from "react-icons/io5";
 import { RxHamburgerMenu } from "react-icons/rx";
+import { BellOutlined } from "@ant-design/icons";
 import { URL_IMAGE } from "@/services/Constant";
+import { db } from "@/lib/firebase";
+import {
+  collection,
+  query,
+  where,
+  onSnapshot,
+  orderBy,
+  updateDoc,
+  doc,
+} from "firebase/firestore";
+import dayjs from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime";
+import "dayjs/locale/en";
+
+type Notification = {
+  id: string;
+  receiverId: string;
+  type: string;
+  createdAt: any;
+  contractId?: number | string | undefined;
+  message: string;
+  isRead: boolean;
+};
 
 export default function HeaderUserDashboard({
   fixed = true,
 }: {
   fixed?: boolean;
 }) {
+  dayjs.extend(relativeTime);
+  dayjs.locale("en");
   const { data: session } = useSession();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   // const [isScrolled, setIsScrolled] = useState(false);
   const [activeItem, setActiveItem] = useState("");
   const [currentAvatarUrl, setCurrentAvatarUrl] = useState("");
+  const [notificationOpen, setNotificationOpen] = useState(false);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [messageApi, contextHolder] = message.useMessage();
   const router = useRouter();
+
+  const userId = session?.user?.id || "";
+
+  // Lắng nghe realtime notifications
+  useEffect(() => {
+    if (!userId) return;
+
+    const q = query(
+      collection(db, "notifications"),
+      where("receiverId", "==", userId),
+      orderBy("createdAt", "desc")
+    );
+
+    const unsub = onSnapshot(q, (snapshot) => {
+      const data = snapshot.docs.map(
+        (docSnap) =>
+          ({
+            id: docSnap.id,
+            ...docSnap.data(),
+          } as Notification)
+      );
+      setNotifications(data);
+    });
+
+    return () => unsub();
+  }, [userId]);
+
+  const unreadCount = notifications.filter((n) => !n.isRead).length;
+
+  const markAllAsRead = async () => {
+    try {
+      const unread = notifications.filter((n) => !n.isRead);
+      for (const n of unread) {
+        await updateDoc(doc(db, "notifications", n.id), { isRead: true });
+      }
+      messageApi.success("Marked all notifications as read");
+    } catch (err) {
+      console.error("Error mark all as read:", err);
+    }
+  };
+
+  const handleNotificationClick = async (id: string, type: string, contractId: number | string | undefined) => {
+    try {
+      await updateDoc(doc(db, "notifications", id), { isRead: true });
+      if (type === "booking_success") {
+        router.push(`/user-dashboard/rental-history`);
+      } else if (type === "request_success") {
+        router.push(`/user-dashboard/rental-history`);
+      } else if (type === "resident_success") {
+        router.push(`/user-dashboard/rental-history`);
+      }
+      setNotificationOpen(false);
+    } catch (err) {
+      console.error("Error update notification:", err);
+    }
+  };
+
+  const notificationContent = (
+    <div className="w-80">
+      <div className="flex justify-between items-center p-3 border-b">
+        <Typography.Title level={5} className="!m-0">
+          Notifications
+        </Typography.Title>
+        <Typography.Link onClick={markAllAsRead}>
+          Mark all as read
+        </Typography.Link>
+      </div>
+      <div className="max-h-80 overflow-y-auto">
+        <List
+          dataSource={notifications.slice(0, 5)}
+          renderItem={(item) => (
+            <List.Item
+              key={item.id}
+              className={`cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 ${
+                !item.isRead ? "bg-blue-50 dark:bg-blue-900/20" : ""
+              }`}
+              onClick={() => handleNotificationClick(item.id, item.type, item.contractId)}
+            >
+              <List.Item.Meta
+                title={
+                  <div className="flex justify-between items-start">
+                    <span className={`${!item.isRead ? "font-semibold" : ""}`}>
+                      {item.type === "booking_success" && "Rental Booking"}
+                      {item.type === "request_success" && "Rental Request"}
+                      {item.type === "resident_success" && "Rental resident"}
+                    </span>
+                    {!item.isRead && (
+                      <div className="w-2 h-2 bg-blue-500 rounded-full ml-2 mt-1"></div>
+                    )}
+                  </div>
+                }
+                description={
+                  <div>
+                    <div className="text-gray-600 dark:text-gray-300 mb-1">
+                      {item.message}
+                    </div>
+                    <div className="text-xs text-gray-400">
+                      {item.createdAt?.toDate
+                        ? dayjs(item.createdAt.toDate()).fromNow()
+                        : ""}
+                    </div>
+                  </div>
+                }
+              />
+            </List.Item>
+          )}
+        />
+      </div>
+      {notifications.length > 5 && (
+        <div className="text-center p-3 border-t">
+          <Typography.Link onClick={() => console.log("View all notifications")}>
+            View all notifications ({notifications.length})
+          </Typography.Link>
+        </div>
+      )}
+    </div>
+  );
 
   // Tạo avatar URL từ session data
   const getAvatarUrl = () => {
@@ -159,6 +305,7 @@ export default function HeaderUserDashboard({
 
   return (
     <>
+      {contextHolder}
       <header
         className={` ${
           fixed ? "fixed" : "absolute"
@@ -252,16 +399,32 @@ export default function HeaderUserDashboard({
           <div className="flex items-center gap-3">
             {session ? (
               <>
-                {" "}
                 <Link
                   href="/user-dashboard"
                   className="flex items-center gap-2 px-3 py-2 text-gray-700 font-medium transition-all duration-300 rounded-lg hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 hover:text-blue-600 hover:scale-105 group"
                 >
-                  {/* <AiOutlineUserAdd className="w-5 h-5 transition-transform duration-300 group-hover:rotate-12" /> */}
                   <span className="hidden sm:inline transition-all duration-300 group-hover:tracking-wide">
                     Dashboard
                   </span>
                 </Link>
+
+                <Popover
+                  content={notificationContent}
+                  title={null}
+                  trigger="click"
+                  open={notificationOpen}
+                  onOpenChange={setNotificationOpen}
+                  placement="bottomRight"
+                  overlayClassName="notification-popover"
+                >
+                  <Badge count={unreadCount} size="small">
+                    <BellOutlined
+                      className="text-xl cursor-pointer text-gray-700 hover:text-blue-500 transition-all duration-300 hover:scale-110"
+                      onClick={() => setNotificationOpen(!notificationOpen)}
+                    />
+                  </Badge>
+                </Popover>
+
                 <Dropdown
                   menu={{ items: dropdownItems }}
                   trigger={["click"]}

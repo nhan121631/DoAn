@@ -41,7 +41,7 @@ type Notification = {
   id: string;
   landlordId: string;
   type: string;
-  createdAt: any;
+  createdAt: Date;
   contractId?: number | string | undefined;
   message: string;
   isRead: boolean;
@@ -122,10 +122,10 @@ function AppHeader({ collapsed, toggleCollapsed }: AppHeaderProps) {
     <div className="w-80">
       <div className="flex justify-between items-center p-3 border-b">
         <Typography.Title level={5} className="!m-0">
-          Thông báo
+          Notification
         </Typography.Title>
         <Typography.Link onClick={markAllAsRead}>
-          Đánh dấu tất cả đã đọc
+          Mark all as read
         </Typography.Link>
       </div>
       <div className="max-h-80 overflow-y-auto">
@@ -163,8 +163,8 @@ function AppHeader({ collapsed, toggleCollapsed }: AppHeaderProps) {
                     {item.message}
                   </div>
                   <div className="text-xs text-gray-400">
-                    {item.createdAt?.toDate
-                      ? dayjs(item.createdAt.toDate()).fromNow()
+                    {item.createdAt
+                      ? dayjs(item.createdAt).fromNow()
                       : ""}
                   </div>
                 </div>
