@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { Popconfirm, Button, message } from "antd";
 import { useState, startTransition } from "react";
@@ -9,9 +9,13 @@ type StatusButtonProps = {
   status: 0 | 1;
 };
 
-export default function StatusButton({ id, status: initialStatus }: StatusButtonProps) {
+export default function StatusButton({
+  id,
+  status: initialStatus,
+}: StatusButtonProps) {
   const [status, setStatus] = useState<0 | 1>(initialStatus);
   const [loading, setLoading] = useState(false);
+  const [messageApi, contextHolder] = message.useMessage();
 
   const handleStatusChange = async () => {
     const newStatus = status === 0 ? 1 : 0;
@@ -22,10 +26,10 @@ export default function StatusButton({ id, status: initialStatus }: StatusButton
       updateRequestStatus(id, newStatus)
         .then(() => {
           setStatus(newStatus);
-          message.success("Status updated!");
+          messageApi.success("Status updated!");
         })
         .catch(() => {
-          message.error("Failed to update status.");
+          messageApi.error("Failed to update status.");
         })
         .finally(() => setLoading(false));
     });
@@ -33,15 +37,12 @@ export default function StatusButton({ id, status: initialStatus }: StatusButton
 
   return (
     <Popconfirm
-      title={
-        status === 0
-          ? "Mark as completed?"
-          : "Mark as not processed?"
-      }
+      title={status === 0 ? "Mark as completed?" : "Mark as not processed?"}
       onConfirm={handleStatusChange}
       okText="Yes"
       cancelText="No"
     >
+      {contextHolder}
       <Button
         type={status === 0 ? "primary" : "default"}
         size="small"

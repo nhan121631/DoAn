@@ -2,7 +2,11 @@
 import { useContext, useState, useEffect } from "react";
 import { Menu, Layout } from "antd";
 import { FaChartLine } from "react-icons/fa";
-import { MdHistoryEdu, MdOutlineRequestQuote } from "react-icons/md";
+import {
+  MdHistoryEdu,
+  MdOutlineRequestQuote,
+  MdOutlineSpaceDashboard,
+} from "react-icons/md";
 import { RiContractLine, RiHotelLine } from "react-icons/ri";
 import { ThemeContext } from "@/app/context/ThemeContext";
 import Link from "next/link";
@@ -30,25 +34,26 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
   }, []);
 
   const pathToKey: Record<string, string> = {
-    "/landlord/statistics": "1",
-    "/landlord/profile": "2",
-    "/landlord/manage-rooms": "3",
-    "/landlord/rentals": "4",
-    "/landlord/manage-contracts": "5",
-    "/landlord/manage-requests": "6",
-    "/landlord/manage-maintain": "7",
-    "/landlord/manage-comments": "8",
-    "/landlord/add-funds": "9",
-    "/landlord/payment-history": "10",
-    "/landlord/manage-chat": "11",
+    "/landlord/dashboard": "1",
+    "/landlord/statistics": "2",
+    "/landlord/profile": "3",
+    "/landlord/manage-rooms": "4",
+    "/landlord/rentals": "5",
+    "/landlord/manage-contracts": "6",
+    "/landlord/manage-requests": "7",
+    "/landlord/manage-maintain": "8",
+    "/landlord/manage-comments": "9",
+    "/landlord/add-funds": "10",
+    "/landlord/payment-history": "11",
+    "/landlord/manage-chat": "12",
   };
 
   // const selectedKey = pathToKey[pathname] || "1";
   const getSelectedKey = () => {
     const p = pathname || "";
-    if (/^\/landlord\/manage-rooms(\/|$)/.test(p)) return "3";
-    if (/^\/landlord\/manage-contracts(\/|$)/.test(p)) return "5";
-    if (/^\/landlord\/add-funds(\/|$)/.test(p)) return "9";
+    if (/^\/landlord\/manage-rooms(\/|$)/.test(p)) return "4";
+    if (/^\/landlord\/manage-contracts(\/|$)/.test(p)) return "6";
+    if (/^\/landlord\/add-funds(\/|$)/.test(p)) return "10";
     return pathToKey[p] || "1";
   };
   const selectedKey = getSelectedKey();
@@ -105,13 +110,29 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
                   alignItems: "center",
                 }}
               >
-                <FaChartLine />
+                <MdOutlineSpaceDashboard />
               </span>
             ),
-            label: <Link href="/landlord/statistics">Dashboard</Link>,
+            label: <Link href="/landlord/dashboard">Dashboard</Link>,
           },
           {
             key: "2",
+            icon: (
+              <span
+                style={{
+                  fontSize: 16,
+                  marginRight: 4,
+                  display: "inline-flex",
+                  alignItems: "center",
+                }}
+              >
+                <FaChartLine />
+              </span>
+            ),
+            label: <Link href="/landlord/statistics">Statistics</Link>,
+          },
+          {
+            key: "3",
             icon: (
               <span
                 style={{
@@ -127,7 +148,7 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
             label: <Link href="/landlord/profile">Profile</Link>,
           },
           {
-            key: "3",
+            key: "4",
             icon: (
               <span
                 style={{
@@ -143,7 +164,7 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
             label: <Link href="/landlord/manage-rooms">Rooms Management</Link>,
           },
           {
-            key: "4",
+            key: "5",
             icon: (
               <span
                 style={{
@@ -159,7 +180,7 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
             label: <Link href="/landlord/rentals">Rentals Management</Link>,
           },
           {
-            key: "5",
+            key: "6",
             icon: (
               <span
                 style={{
@@ -177,7 +198,7 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
             ),
           },
           {
-            key: "6",
+            key: "7",
             icon: (
               <span
                 style={{
@@ -195,7 +216,7 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
             ),
           },
           {
-            key: "7",
+            key: "8",
             icon: (
               <span
                 style={{
@@ -215,7 +236,7 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
             ),
           },
           {
-            key: "8",
+            key: "9",
             icon: (
               <span
                 style={{
@@ -233,7 +254,7 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
             ),
           },
           {
-            key: "9",
+            key: "10",
             icon: (
               <span
                 style={{
@@ -249,7 +270,7 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
             label: <Link href="/landlord/add-funds">Deposit Management</Link>,
           },
           {
-            key: "10",
+            key: "11",
             icon: (
               <span
                 style={{
@@ -267,7 +288,7 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
             ),
           },
           {
-            key: "11",
+            key: "12",
             icon: (
               <span
                 style={{

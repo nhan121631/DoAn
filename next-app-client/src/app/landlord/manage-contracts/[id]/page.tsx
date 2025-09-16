@@ -3,12 +3,13 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useParams, useSearchParams } from "next/navigation";
-import { Spin, message, Tabs } from "antd";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { Spin, message, Tabs, Button } from "antd";
 import {
   FileTextOutlined,
   DollarOutlined,
   TeamOutlined,
+  ArrowLeftOutlined,
 } from "@ant-design/icons";
 import { ContractData } from "@/types/types";
 import { ContractService } from "@/services/ContractService";
@@ -17,6 +18,7 @@ import BillsTab from "../../components/manage-contracts/BillsTab";
 import ResidentsTab from "../../components/manage-contracts/ResidentsTab";
 
 export default function LandlordContractDetail() {
+  const router = useRouter();
   const params = useParams();
   const searchParams = useSearchParams();
   const contractId = params?.id as string;
@@ -24,6 +26,7 @@ export default function LandlordContractDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("overview");
+  const [messageApi, contextHolder] = message.useMessage();
 
   useEffect(() => {
     const fetchContract = async () => {
@@ -33,7 +36,7 @@ export default function LandlordContractDetail() {
         setContract(data);
       } catch (err: any) {
         setError("Cannot load contract");
-        message.error("Cannot load contract");
+        messageApi.error("Cannot load contract");
       } finally {
         setLoading(false);
       }
@@ -85,6 +88,7 @@ export default function LandlordContractDetail() {
           contract={contract}
           onContractUpdate={handleContractUpdate}
           autoEdit={searchParams?.get("edit") === "true"}
+          messageApi={messageApi}
         />
       ),
     },
@@ -97,7 +101,11 @@ export default function LandlordContractDetail() {
         </span>
       ),
       children: (
-        <BillsTab contract={contract} onContractUpdate={handleContractUpdate} />
+        <BillsTab
+          contract={contract}
+          onContractUpdate={handleContractUpdate}
+          messageApi={messageApi}
+        />
       ),
     },
     {
@@ -112,6 +120,7 @@ export default function LandlordContractDetail() {
         <ResidentsTab
           contract={contract}
           onContractUpdate={handleContractUpdate}
+          messageApi={messageApi}
         />
       ),
     },
@@ -119,10 +128,20 @@ export default function LandlordContractDetail() {
 
   return (
     <div className="flex flex-col flex-1 h-full w-full bg-white dark:bg-[#001529] text-gray-900 dark:text-white p-8 overflow-auto transition-colors duration-300">
+      {contextHolder}
       <div className="bg-white dark:bg-[#22304a] rounded-2xl shadow-md w-full mx-auto p-6 transition-colors duration-300">
-        <h2 className="text-xl font-bold mb-6 text-gray-900 dark:text-white">
-          Contract Management
-        </h2>
+        <div className="flex items-center justify-start gap-5 mb-4">
+          <Button
+            icon={<ArrowLeftOutlined />}
+            onClick={() => router.push("/landlord/manage-contracts")}
+            className="mb-4 !bg-sky-600 dark:!bg-[#171f2f] !text-white"
+          >
+            Go Back
+          </Button>
+          <h2 className="text-xl font-bold mb-6 text-gray-900 dark:text-white">
+            Contract Management
+          </h2>
+        </div>
 
         <Tabs
           activeKey={activeTab}
