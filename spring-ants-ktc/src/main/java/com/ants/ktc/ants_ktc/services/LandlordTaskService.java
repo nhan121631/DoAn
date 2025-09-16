@@ -1,7 +1,5 @@
 package com.ants.ktc.ants_ktc.services;
 
-
-
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -63,7 +61,8 @@ public class LandlordTaskService {
 
     public LandlordTaskResponseDto getTaskDetail(UUID taskId) {
         LandlordTask task = taskRepository.findByIdWithDetails(taskId);
-        if (task == null) throw new EntityNotFoundException("Task not found");
+        if (task == null)
+            throw new EntityNotFoundException("Task not found");
         return convertToDto(task);
     }
 
@@ -73,16 +72,22 @@ public class LandlordTaskService {
         }
         taskRepository.deleteById(taskId);
     }
+
     @Transactional
     public LandlordTaskResponseDto updateTask(UUID taskId, LandlordTaskUpdateDto dto) {
         LandlordTask task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new EntityNotFoundException("Task not found"));
 
-        if (dto.getTitle() != null) task.setTitle(dto.getTitle());
-        if (dto.getDescription() != null) task.setDescription(dto.getDescription());
-        if (dto.getDueDate() != null) task.setDueDate(dto.getDueDate());
-        if (dto.getStatus() != null) task.setStatus(dto.getStatus());
-        if (dto.getPriority() != null) task.setPriority(dto.getPriority());
+        if (dto.getTitle() != null)
+            task.setTitle(dto.getTitle());
+        if (dto.getDescription() != null)
+            task.setDescription(dto.getDescription());
+        if (dto.getDueDate() != null)
+            task.setDueDate(dto.getDueDate());
+        if (dto.getStatus() != null)
+            task.setStatus(dto.getStatus());
+        if (dto.getPriority() != null)
+            task.setPriority(dto.getPriority());
 
         return convertToDto(task);
         // Không cần taskRepository.save(task) vì @Transactional sẽ auto flush
@@ -100,8 +105,8 @@ public class LandlordTaskService {
 
         if (task.getLandlord() != null) {
             dto.setLandlordId(task.getLandlord().getId().toString());
-            dto.setLandlordName(task.getLandlord().getProfile() != null ?
-                    task.getLandlord().getProfile().getFullName() : null);
+            dto.setLandlordName(
+                    task.getLandlord().getProfile() != null ? task.getLandlord().getProfile().getFullName() : null);
         }
         if (task.getRoom() != null) {
             dto.setRoomId(task.getRoom().getId().toString());

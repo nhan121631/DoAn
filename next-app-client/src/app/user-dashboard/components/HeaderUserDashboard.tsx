@@ -56,10 +56,10 @@ export default function HeaderUserDashboard({
       }
     };
 
-    window.addEventListener('avatarUpdated', handleAvatarUpdate);
-    
+    window.addEventListener("avatarUpdated", handleAvatarUpdate);
+
     return () => {
-      window.removeEventListener('avatarUpdated', handleAvatarUpdate);
+      window.removeEventListener("avatarUpdated", handleAvatarUpdate);
     };
   }, []);
 
@@ -271,7 +271,11 @@ export default function HeaderUserDashboard({
                   <div className="flex items-center gap-3 px-3 py-2 bg-gradient-to-r from-blue-50 to-purple-50 hover:from-blue-100 hover:to-purple-100 rounded-xl cursor-pointer transition-all duration-300 border border-gray-200/50 hover:border-blue-300/50 hover:shadow-lg hover:scale-105 group">
                     <div className="relative">
                       <Avatar
-                        src={currentAvatarUrl}
+                        src={
+                          currentAvatarUrl && currentAvatarUrl !== ""
+                            ? currentAvatarUrl
+                            : null
+                        }
                         size={36}
                         className="border-2 border-white shadow-lg transition-transform duration-300 group-hover:scale-110"
                       />
