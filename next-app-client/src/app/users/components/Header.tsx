@@ -1,6 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { AiOutlineUserAdd } from "react-icons/ai";
@@ -10,10 +11,43 @@ import { RxHamburgerMenu } from "react-icons/rx";
 import { Avatar, Dropdown } from "antd";
 import { signOut, useSession } from "next-auth/react";
 import { IoIosLogOut } from "react-icons/io";
+import { URL_IMAGE } from "@/services/Constant";
 
 export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { data: session } = useSession();
+  const [currentAvatarUrl, setCurrentAvatarUrl] = useState("");
+
+  // Tạo avatar URL từ session data
+  const getAvatarUrl = () => {
+    const userProfile = session?.user?.userProfile;
+    if (!userProfile?.avatar) {
+      return "/images/default/avatar.jpg";
+    }
+    return userProfile.avatar.startsWith("http")
+      ? userProfile.avatar
+      : `${URL_IMAGE}${userProfile.avatar}`;
+  };
+
+  // Update avatar URL khi session thay đổi
+  useEffect(() => {
+    setCurrentAvatarUrl(getAvatarUrl());
+  }, [session]);
+
+  // Listen for avatar update events
+  useEffect(() => {
+    const handleAvatarUpdate = (event: any) => {
+      if (event.detail?.newAvatarUrl) {
+        setCurrentAvatarUrl(event.detail.newAvatarUrl);
+      }
+    };
+
+    window.addEventListener('avatarUpdated', handleAvatarUpdate);
+    
+    return () => {
+      window.removeEventListener('avatarUpdated', handleAvatarUpdate);
+    };
+  }, []);
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -128,8 +162,8 @@ export default function Header() {
             >
               <div className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors duration-200">
                 <Avatar
-                  src="https://i.pravatar.cc/40"
-                  alt="User Avatar"
+                  src={currentAvatarUrl}
+
                   size={36}
                   className="border border-gray-200"
                 />
@@ -287,8 +321,7 @@ export default function Header() {
               </Link>
               <div className="flex items-center gap-3 px-4 py-3">
                 <Avatar
-                  src="https://i.pravatar.cc/40"
-                  alt="User Avatar"
+                  src={currentAvatarUrl}
                   size={32}
                   className="border border-gray-200"
                 />
