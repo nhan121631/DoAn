@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -23,6 +25,7 @@ import {
   Typography,
   Empty,
   Spin,
+  Drawer,
 } from "antd";
 import {
   PlusOutlined,
@@ -48,6 +51,7 @@ import {
   LandlordTaskResponseDto,
   LandlordTaskUpdateDto,
 } from "@/types/types";
+import TaskDetailDrawer from "../components/dashboard/TaskDetailDrawer";
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;
@@ -91,7 +95,10 @@ export default function LandlordDashboardPage() {
   // Modal states
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDetailDrawerOpen, setIsDetailDrawerOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<LandlordTaskResponseDto | null>(null);
+  const [isSubmittingCreate, setIsSubmittingCreate] = useState(false);
+  const [isSubmittingEdit, setIsSubmittingEdit] = useState(false);
 
   // Filter states
   const [searchText, setSearchText] = useState("");
@@ -111,6 +118,7 @@ export default function LandlordDashboardPage() {
     try {
       const fetchedTasks = await LandlordTaskService.getTasksByLandlord(session.user.id);
       setTasks(fetchedTasks);
+      console.log("Fetched tasks:", fetchedTasks);
       setFilteredTasks(fetchedTasks);
       calculateStats(fetchedTasks);
     } catch (error) {
@@ -163,24 +171,60 @@ export default function LandlordDashboardPage() {
 
   // Handle task creation
   const handleCreateTask = async (values: LandlordTaskCreateDto) => {
+    setIsSubmittingCreate(true);
     try {
-      await LandlordTaskService.createTask(values);
+      // Validate required fields
+      if (!values.title?.trim()) {
+        messageApi.error("Task title is required");
+        return;
+      }
+
+      // Format due date if provided
+      const taskData = {
+        ...values,
+        title: values.title.trim(),
+        description: values.description?.trim() || undefined,
+        dueDate: values.dueDate ? dayjs(values.dueDate).format() : undefined,
+      };
+
+      await LandlordTaskService.createTask(taskData);
       messageApi.success("Task created successfully!");
       setIsCreateModalOpen(false);
       createForm.resetFields();
       fetchTasks();
     } catch (error) {
       console.error("Error creating task:", error);
-      messageApi.error("Failed to create task");
+      const errorMessage = error instanceof Error ? error.message : "Failed to create task";
+      messageApi.error(errorMessage);
+    } finally {
+      setIsSubmittingCreate(false);
     }
   };
 
   // Handle task update
   const handleUpdateTask = async (values: LandlordTaskUpdateDto) => {
-    if (!selectedTask) return;
+    if (!selectedTask) {
+      messageApi.error("No task selected for update");
+      return;
+    }
     
+    setIsSubmittingEdit(true);
     try {
-      await LandlordTaskService.updateTask(selectedTask.id, values);
+      // Validate required fields
+      if (!values.title?.trim()) {
+        messageApi.error("Task title is required");
+        return;
+      }
+
+      // Format updated data
+      const updateData = {
+        ...values,
+        title: values.title.trim(),
+        description: values.description?.trim() || undefined,
+        dueDate: values.dueDate ? dayjs(values.dueDate).format() : undefined,
+      };
+
+      await LandlordTaskService.updateTask(selectedTask.id, updateData);
       messageApi.success("Task updated successfully!");
       setIsEditModalOpen(false);
       setSelectedTask(null);
@@ -188,7 +232,10 @@ export default function LandlordDashboardPage() {
       fetchTasks();
     } catch (error) {
       console.error("Error updating task:", error);
-      messageApi.error("Failed to update task");
+      const errorMessage = error instanceof Error ? error.message : "Failed to update task";
+      messageApi.error(errorMessage);
+    } finally {
+      setIsSubmittingEdit(false);
     }
   };
 
@@ -214,6 +261,12 @@ export default function LandlordDashboardPage() {
       console.error("Error updating status:", error);
       messageApi.error("Failed to update status");
     }
+  };
+
+  // Open detail drawer
+  const openDetailDrawer = (task: LandlordTaskResponseDto) => {
+    setSelectedTask(task);
+    setIsDetailDrawerOpen(true);
   };
 
   // Open edit modal
@@ -257,11 +310,6 @@ export default function LandlordDashboardPage() {
           {record.contract && (
             <Tag className="mt-1 text-xs">
               Contract: {record.contract.contractName}
-            </Tag>
-          )}
-          {record.room && (
-            <Tag className="mt-1 text-xs">
-              Room: {record.room.title}
             </Tag>
           )}
         </div>
@@ -311,21 +359,30 @@ export default function LandlordDashboardPage() {
       },
     },
     {
-      title: "Assigned To",
-      key: "assignedTo",
-      render: (record: LandlordTaskResponseDto) => (
-        record.assignedTo ? (
-          <div className="flex items-center">
-            <Avatar size="small" icon={<UserOutlined />} className="mr-2" />
-            <div>
-              <div className="text-sm font-medium">{record.assignedTo.name}</div>
-              <div className="text-xs text-gray-500">{record.assignedTo.email}</div>
+      title: "Room Title",
+      key: "roomTitle", 
+      render: (record: LandlordTaskResponseDto) => {
+        const roomTitle = (record as any).roomTitle || record.room?.title;
+        const roomId = (record as any).roomId || record.room?.id;
+        
+        return roomTitle ? (
+          <div>
+            <div className="text-sm font-medium text-gray-900 dark:text-white">
+              {roomTitle.length > 60 
+                ? `${roomTitle.substring(0, 60)}...`
+                : roomTitle
+              }
             </div>
+            {roomId && (
+              <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                Room ID: {roomId}
+              </div>
+            )}
           </div>
         ) : (
-          <Text type="secondary">Unassigned</Text>
-        )
-      ),
+          <Text type="secondary">General Task</Text>
+        );
+      },
     },
     {
       title: "Actions",
@@ -350,7 +407,7 @@ export default function LandlordDashboardPage() {
                 type="text"
                 size="small"
                 icon={<EyeOutlined />}
-                onClick={() => openEditModal(record)}
+                onClick={() => openDetailDrawer(record)}
               />
             </Tooltip>
             
@@ -626,6 +683,7 @@ export default function LandlordDashboardPage() {
         onCancel={() => {
           setIsCreateModalOpen(false);
           createForm.resetFields();
+          setIsSubmittingCreate(false);
         }}
         footer={null}
         width={600}
@@ -635,17 +693,38 @@ export default function LandlordDashboardPage() {
           layout="vertical"
           onFinish={handleCreateTask}
           className="mt-4"
+          validateTrigger={["onBlur", "onChange"]}
         >
           <Form.Item
             name="title"
             label="Task Title"
-            rules={[{ required: true, message: "Please enter task title" }]}
+            rules={[
+              { required: true, message: "Task title is required" },
+              { min: 3, message: "Task title must be at least 3 characters long" },
+              { max: 100, message: "Task title cannot exceed 100 characters" },
+              { whitespace: true, message: "Task title cannot be empty spaces" }
+            ]}
           >
-            <Input placeholder="Enter task title" />
+            <Input 
+              placeholder="Enter task title (3-100 characters)" 
+              showCount 
+              maxLength={100}
+            />
           </Form.Item>
 
-          <Form.Item name="description" label="Description">
-            <TextArea rows={3} placeholder="Enter task description" />
+          <Form.Item 
+            name="description" 
+            label="Description"
+            rules={[
+              { max: 500, message: "Description cannot exceed 500 characters" }
+            ]}
+          >
+            <TextArea 
+              rows={3} 
+              placeholder="Enter task description (optional, max 500 characters)" 
+              showCount 
+              maxLength={500}
+            />
           </Form.Item>
 
           <Row gutter={16}>
@@ -654,8 +733,11 @@ export default function LandlordDashboardPage() {
                 name="priority"
                 label="Priority"
                 initialValue="MEDIUM"
+                rules={[
+                  { required: true, message: "Please select a priority level" }
+                ]}
               >
-                <Select>
+                <Select placeholder="Select priority level">
                   {Object.entries(priorityConfig).map(([key, config]) => (
                     <Option key={key} value={key}>
                       <Tag color={config.color}>{config.label}</Tag>
@@ -666,18 +748,45 @@ export default function LandlordDashboardPage() {
             </Col>
             
             <Col span={12}>
-              <Form.Item name="dueDate" label="Due Date">
-                <DatePicker style={{ width: "100%" }} />
+              <Form.Item 
+                name="dueDate" 
+                label="Due Date"
+                rules={[
+                  {
+                    validator: (_, value) => {
+                      if (value && dayjs(value).isBefore(dayjs(), 'day')) {
+                        return Promise.reject(new Error('Due date cannot be in the past'));
+                      }
+                      return Promise.resolve();
+                    }
+                  }
+                ]}
+              >
+                <DatePicker 
+                  style={{ width: "100%" }} 
+                  placeholder="Select due date (optional)"
+                  disabledDate={(current) => current && current < dayjs().startOf('day')}
+                  showTime={{ format: 'HH:mm' }}
+                  format="YYYY-MM-DD HH:mm"
+                />
               </Form.Item>
             </Col>
           </Row>
 
           <Form.Item>
             <Space>
-              <Button type="primary" htmlType="submit">
-                Create Task
+              <Button 
+                type="primary" 
+                htmlType="submit" 
+                loading={isSubmittingCreate}
+                disabled={isSubmittingCreate}
+              >
+                {isSubmittingCreate ? "Creating..." : "Create Task"}
               </Button>
-              <Button onClick={() => setIsCreateModalOpen(false)}>
+              <Button 
+                onClick={() => setIsCreateModalOpen(false)}
+                disabled={isSubmittingCreate}
+              >
                 Cancel
               </Button>
             </Space>
@@ -693,6 +802,7 @@ export default function LandlordDashboardPage() {
           setIsEditModalOpen(false);
           setSelectedTask(null);
           editForm.resetFields();
+          setIsSubmittingEdit(false);
         }}
         footer={null}
         width={600}
@@ -702,23 +812,50 @@ export default function LandlordDashboardPage() {
           layout="vertical"
           onFinish={handleUpdateTask}
           className="mt-4"
+          validateTrigger={["onBlur", "onChange"]}
         >
           <Form.Item
             name="title"
             label="Task Title"
-            rules={[{ required: true, message: "Please enter task title" }]}
+            rules={[
+              { required: true, message: "Task title is required" },
+              { min: 3, message: "Task title must be at least 3 characters long" },
+              { max: 100, message: "Task title cannot exceed 100 characters" },
+              { whitespace: true, message: "Task title cannot be empty spaces" }
+            ]}
           >
-            <Input placeholder="Enter task title" />
+            <Input 
+              placeholder="Enter task title (3-100 characters)" 
+              showCount 
+              maxLength={100}
+            />
           </Form.Item>
 
-          <Form.Item name="description" label="Description">
-            <TextArea rows={3} placeholder="Enter task description" />
+          <Form.Item 
+            name="description" 
+            label="Description"
+            rules={[
+              { max: 500, message: "Description cannot exceed 500 characters" }
+            ]}
+          >
+            <TextArea 
+              rows={3} 
+              placeholder="Enter task description (optional, max 500 characters)" 
+              showCount 
+              maxLength={500}
+            />
           </Form.Item>
 
           <Row gutter={16}>
             <Col span={8}>
-              <Form.Item name="priority" label="Priority">
-                <Select>
+              <Form.Item 
+                name="priority" 
+                label="Priority"
+                rules={[
+                  { required: true, message: "Please select a priority level" }
+                ]}
+              >
+                <Select placeholder="Select priority level">
                   {Object.entries(priorityConfig).map(([key, config]) => (
                     <Option key={key} value={key}>
                       <Tag color={config.color}>{config.label}</Tag>
@@ -729,8 +866,14 @@ export default function LandlordDashboardPage() {
             </Col>
             
             <Col span={8}>
-              <Form.Item name="status" label="Status">
-                <Select>
+              <Form.Item 
+                name="status" 
+                label="Status"
+                rules={[
+                  { required: true, message: "Please select a status" }
+                ]}
+              >
+                <Select placeholder="Select status">
                   {Object.entries(statusConfig).map(([key, config]) => (
                     <Option key={key} value={key}>
                       <Tag color={config.color}>{config.label}</Tag>
@@ -741,24 +884,64 @@ export default function LandlordDashboardPage() {
             </Col>
             
             <Col span={8}>
-              <Form.Item name="dueDate" label="Due Date">
-                <DatePicker style={{ width: "100%" }} />
+              <Form.Item 
+                name="dueDate" 
+                label="Due Date"
+                rules={[
+                  {
+                    validator: (_, value) => {
+                      if (value && dayjs(value).isBefore(dayjs(), 'day')) {
+                        return Promise.reject(new Error('Due date cannot be in the past'));
+                      }
+                      return Promise.resolve();
+                    }
+                  }
+                ]}
+              >
+                <DatePicker 
+                  style={{ width: "100%" }} 
+                  placeholder="Select due date (optional)"
+                  showTime={{ format: 'HH:mm' }}
+                  format="YYYY-MM-DD HH:mm"
+                />
               </Form.Item>
             </Col>
           </Row>
 
           <Form.Item>
             <Space>
-              <Button type="primary" htmlType="submit">
-                Update Task
+              <Button 
+                type="primary" 
+                htmlType="submit"
+                loading={isSubmittingEdit}
+                disabled={isSubmittingEdit}
+              >
+                {isSubmittingEdit ? "Updating..." : "Update Task"}
               </Button>
-              <Button onClick={() => setIsEditModalOpen(false)}>
+              <Button 
+                onClick={() => setIsEditModalOpen(false)}
+                disabled={isSubmittingEdit}
+              >
                 Cancel
               </Button>
             </Space>
           </Form.Item>
         </Form>
       </Modal>
+
+      {/* Task Detail Drawer */}
+      <TaskDetailDrawer
+        open={isDetailDrawerOpen}
+        task={selectedTask}
+        onClose={() => {
+          setIsDetailDrawerOpen(false);
+          setSelectedTask(null);
+        }}
+        onEdit={(task) => {
+          setIsDetailDrawerOpen(false);
+          openEditModal(task);
+        }}
+      />
     </div>
   );
 }
