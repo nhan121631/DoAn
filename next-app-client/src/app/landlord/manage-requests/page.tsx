@@ -22,7 +22,9 @@ export default function ManageRequests() {
   const [loading, setLoading] = useState<boolean>(false);
   const [messageApi, contextHolder] = message.useMessage();
   const [detailModalOpen, setDetailModalOpen] = useState(false);
-  const [selectedRequest, setSelectedRequest] = useState<Requirement | null>(null);
+  const [selectedRequest, setSelectedRequest] = useState<Requirement | null>(
+    null
+  );
 
   const fetchData = async (page = 0, size = 5) => {
     setLoading(true);
@@ -145,14 +147,15 @@ export default function ManageRequests() {
       key: "createdDate",
       width: 120,
       render: (date: string) => {
-        if (!date) return 'N/A';
-        return new Date(date).toLocaleDateString('vi-VN', {
-          day: '2-digit',
-          month: '2-digit',
-          year: 'numeric',
+        if (!date) return "N/A";
+        return new Date(date).toLocaleDateString("vi-VN", {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
         });
       },
-      sorter: (a, b) => new Date(a.createdDate).getTime() - new Date(b.createdDate).getTime(),
+      sorter: (a, b) =>
+        new Date(a.createdDate).getTime() - new Date(b.createdDate).getTime(),
     },
     {
       title: "Detail",
@@ -190,7 +193,7 @@ export default function ManageRequests() {
           <Tag color="red">Rejected</Tag>
         ),
     },
-    
+
     {
       title: "Action",
       dataIndex: "action",

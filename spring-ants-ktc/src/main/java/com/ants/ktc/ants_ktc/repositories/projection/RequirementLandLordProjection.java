@@ -5,6 +5,10 @@ import java.time.LocalDateTime;
 public interface RequirementLandLordProjection {
     String getId();
 
+    String getUserId();
+
+    String getRoomId();
+
     String getRoomTitle();
 
     String getUserName();

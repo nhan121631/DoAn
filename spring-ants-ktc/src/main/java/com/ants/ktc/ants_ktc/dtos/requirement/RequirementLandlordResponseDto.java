@@ -14,14 +14,14 @@ import lombok.NoArgsConstructor;
 @Builder
 public class RequirementLandlordResponseDto {
     private UUID id;
+    private UUID userId;
+    private UUID roomId;
     private String roomTitle;
     private String userName;
     private String email;
     private String description;
     private int status;
-
     private String imageUrl;
-
     private LocalDateTime createdDate;
 
 }
