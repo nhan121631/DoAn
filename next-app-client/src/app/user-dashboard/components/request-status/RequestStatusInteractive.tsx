@@ -1,32 +1,23 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { getRequestsByUser, updateRequest } from "@/services/Requirements";
+import { getRequestsByUser, updateRequest, uploadRequirementImage } from "@/services/Requirements";
 import {
   PaginatedResponse,
   RequirementDetail,
   UpdateRequestRoomDto,
 } from "@/types/types";
-import { Button, Form, Input, message, Modal, Space, Table, Tag, Image } from "antd";
+import { Button, Form, Input, message, Modal, Space, Table, Tag, Image, Upload } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { useSession } from "next-auth/react";
 import React, { useEffect, useState } from "react";
 import { AiOutlineEdit } from "react-icons/ai";
-
-import { Upload, Button as AntdButton } from "antd";
-import { UploadOutlined } from "@ant-design/icons";
-import { uploadRequirementImage } from "@/services/Requirements"; 
-import { EyeOutlined } from "@ant-design/icons";
-
+import { UploadOutlined, EyeOutlined } from "@ant-design/icons";
 
 export type RequestFormValues = {
   roomName: string;
   requestDescription: string;
 };
-
-interface RequestStatusInteractiveProps {
-  // Remove initialRequests prop since we'll fetch data inside component
-}
 
 const RequestEditModalContent: React.FC<{
   open: boolean;
@@ -36,6 +27,7 @@ const RequestEditModalContent: React.FC<{
   setData: React.Dispatch<React.SetStateAction<PaginatedResponse<RequirementDetail>>>;
 }> = ({ open, onCancel, onSubmit, editingRequest, setData }) => {
   const [form] = Form.useForm();
+  const [fileList, setFileList] = useState<any[]>([]);
 
   useEffect(() => {
     if (open && editingRequest) {
@@ -48,28 +40,24 @@ const RequestEditModalContent: React.FC<{
   const handleFinish = (values: RequestFormValues) => {
     onSubmit(values);
   };
-const [fileList, setFileList] = useState<any[]>([]);
 
-const handleUpload = async (file: File) => {
-  if (!editingRequest) return;
-  await uploadRequirementImage(editingRequest.id, file);
-  setData((prev) => ({
-    ...prev,
-    data: prev.data.map((item) =>
-      item.id === editingRequest.id
-        ? { ...item, imageUrl: `/dmvvs0ags/image/upload/...${file.name}` } 
-        : item
-    ),
-  }));
-  message.success("Image updated!");
-};
-  // const handleRoomNameChange = (value: string) => {};
+  const handleUpload = async (file: File) => {
+    if (!editingRequest) return;
+    await uploadRequirementImage(editingRequest.id, file);
+    setData((prev) => ({
+      ...prev,
+      data: prev.data.map((item) =>
+        item.id === editingRequest.id
+          ? { ...item, imageUrl: `/dmvvs0ags/image/upload/...${file.name}` }
+          : item
+      ),
+    }));
+    message.success("Image updated!");
+  };
 
   return (
     <Modal
       title={"Edit Request"}
-      // title={editingRequest ? "Edit Request" : "Add New Request"}
-
       open={open}
       onCancel={onCancel}
       footer={null}
@@ -92,14 +80,8 @@ const handleUpload = async (file: File) => {
             name="requestDescription"
             rules={[
               { required: true, message: "Please enter request description!" },
-              {
-                min: 5,
-                message: "Request description must be at least 5 characters.",
-              },
-              {
-                max: 500,
-                message: "Request description cannot exceed 500 characters.",
-              },
+              { min: 5, message: "Request description must be at least 5 characters." },
+              { max: 500, message: "Request description cannot exceed 500 characters." },
             ]}
           >
             <Input.TextArea
@@ -111,28 +93,29 @@ const handleUpload = async (file: File) => {
               }
             />
           </Form.Item>
+
           <Form.Item label="Update Image">
-  <Upload
-    beforeUpload={file => {
-      handleUpload(file);
-      return false; // Ngăn auto upload
-    }}
-    fileList={fileList}
-    onChange={({ fileList }) => setFileList(fileList)}
-    accept="image/*"
-    maxCount={1}
-    showUploadList={true}
-  >
-    <AntdButton icon={<UploadOutlined />}>Select Image</AntdButton>
-  </Upload>
-  {editingRequest?.imageUrl && (
-    <img
-      src={`https://res.cloudinary.com${editingRequest.imageUrl}`}
-      alt="Current"
-      style={{ marginTop: 8, maxWidth: 120, borderRadius: 8 }}
-    />
-  )}
-</Form.Item>
+            <Upload
+              beforeUpload={(file) => {
+                handleUpload(file);
+                return false; // Ngăn auto upload
+              }}
+              fileList={fileList}
+              onChange={({ fileList }) => setFileList(fileList)}
+              accept="image/*"
+              maxCount={1}
+              showUploadList={true}
+            >
+              <Button icon={<UploadOutlined />}>Select Image</Button>
+            </Upload>
+            {editingRequest?.imageUrl && (
+              <img
+                src={`https://res.cloudinary.com${editingRequest.imageUrl}`}
+                alt="Current"
+                style={{ marginTop: 8, maxWidth: 120, borderRadius: 8 }}
+              />
+            )}
+          </Form.Item>
         </div>
 
         <Form.Item>
@@ -148,16 +131,23 @@ const handleUpload = async (file: File) => {
   );
 };
 
-const RequestStatusInteractive: React.FC<
-  RequestStatusInteractiveProps
-> = () => {
+const RequestStatusInteractive: React.FC = () => {
   const { data: session } = useSession();
-  const [data, setData] = useState<PaginatedResponse<RequirementDetail>>();
+
+  // ✅ Fix: khởi tạo mặc định rỗng
+  const [data, setData] = useState<PaginatedResponse<RequirementDetail>>({
+    data: [],
+    page: 0,
+    size: 5,
+    totalElements: 0,
+    totalRecords: 0,
+    totalPages: 0,
+  });
+
   const [requests, setRequests] = useState<RequirementDetail[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
-  const [editingRequest, setEditingRequest] =
-    useState<RequirementDetail | null>(null);
+  const [editingRequest, setEditingRequest] = useState<RequirementDetail | null>(null);
   const [messageApi, contextHolder] = message.useMessage();
 
   const fetchData = async (page = 0, size = 5) => {
@@ -192,7 +182,6 @@ const RequestStatusInteractive: React.FC<
 
   useEffect(() => {
     if (!session?.user) return;
-    // Initial load: page 0, size 5
     fetchData(0, 5);
   }, [session?.user]);
 
@@ -217,13 +206,9 @@ const RequestStatusInteractive: React.FC<
       };
       try {
         await updateRequest(payload);
-        // Update local state only after successful API call
         const updatedRequests = requests.map((item: RequirementDetail) =>
           item.id === editingRequest.id
-            ? {
-                ...item,
-                description: values.requestDescription,
-              }
+            ? { ...item, description: values.requestDescription }
             : item
         );
         setRequests(updatedRequests);
@@ -256,42 +241,42 @@ const RequestStatusInteractive: React.FC<
     {
       title: "STT",
       key: "stt",
-      align: "right" as const,
+      align: "right",
       width: 80,
       render: (_: any, __: any, index: number) =>
-        (data?.page ?? 0) * (data?.size ?? 5) + index + 1,
+        (data.page ?? 0) * (data.size ?? 5) + index + 1,
     },
     {
-  title: "Image",
-  dataIndex: "imageUrl",
-  key: "imageUrl",
-  render: (imageUrl: string | undefined) =>
-    imageUrl ? (
-      <Image
-        src={`https://res.cloudinary.com${imageUrl}`}
-        alt="Request"
-        width={40}
-        height={40}
-        style={{ borderRadius: 8, objectFit: "cover" }}
-        preview={{
-  mask: <EyeOutlined style={{ fontSize: 22, color: "#fff" }} />,
-}}
-        placeholder={
-          <div
-            style={{
-              width: 40,
-              height: 40,
-              background: "#eee",
-              borderRadius: 8,
+      title: "Image",
+      dataIndex: "imageUrl",
+      key: "imageUrl",
+      render: (imageUrl: string | undefined) =>
+        imageUrl ? (
+          <Image
+            src={`https://res.cloudinary.com${imageUrl}`}
+            alt="Request"
+            width={40}
+            height={40}
+            style={{ borderRadius: 8, objectFit: "cover" }}
+            preview={{
+              mask: <EyeOutlined style={{ fontSize: 22, color: "#fff" }} />,
             }}
+            placeholder={
+              <div
+                style={{
+                  width: 40,
+                  height: 40,
+                  background: "#eee",
+                  borderRadius: 8,
+                }}
+              />
+            }
           />
-        }
-      />
-    ) : (
-      <span style={{ color: "#ffffff" }}>No image</span>
-    ),
-  width: 100,
-},
+        ) : (
+          <span style={{ color: "#ffffff" }}>No image</span>
+        ),
+      width: 100,
+    },
     {
       title: "Room Name",
       dataIndex: "roomTitle",
@@ -318,14 +303,16 @@ const RequestStatusInteractive: React.FC<
       key: "createdDate",
       width: 130,
       render: (date: string) => {
-        if (!date) return 'N/A';
-        return new Date(date).toLocaleDateString('vi-VN', {
-          day: '2-digit',
-          month: '2-digit',
-          year: 'numeric',
+        if (!date) return "N/A";
+        return new Date(date).toLocaleDateString("vi-VN", {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
         });
       },
-      sorter: (a, b) => new Date(a.createdDate || '').getTime() - new Date(b.createdDate || '').getTime(),
+      sorter: (a, b) =>
+        new Date(a.createdDate || "").getTime() -
+        new Date(b.createdDate || "").getTime(),
     },
     {
       title: "Status",
@@ -354,8 +341,6 @@ const RequestStatusInteractive: React.FC<
         </Space>
       ),
     },
-    
-    
   ];
 
   return (
@@ -371,11 +356,9 @@ const RequestStatusInteractive: React.FC<
         rowKey="id"
         loading={loading}
         pagination={{
-          current: (data?.page ?? 0) + 1, // Convert backend 0-based to AntD 1-based
-          pageSize: data?.size ?? 5,
-          total: data?.totalRecords ?? 0,
-          // showSizeChanger: true,
-          // showQuickJumper: true,
+          current: (data.page ?? 0) + 1,
+          pageSize: data.size ?? 5,
+          total: data.totalRecords ?? 0,
           showTotal: (total, range) =>
             `${range[0]}-${range[1]} of ${total} items`,
         }}
