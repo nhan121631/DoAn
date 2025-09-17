@@ -1,15 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { updateRequest } from "@/services/Requirements";
+import { getRequestsByUser, updateRequest } from "@/services/Requirements";
 import {
   PaginatedResponse,
-  // Requirement,
   RequirementDetail,
   UpdateRequestRoomDto,
 } from "@/types/types";
 import { Button, Form, Input, message, Modal, Space, Table, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
+import { useSession } from "next-auth/react";
 import React, { useEffect, useState } from "react";
 import { AiOutlineEdit } from "react-icons/ai";
 
@@ -20,7 +20,7 @@ export type RequestFormValues = {
 };
 
 interface RequestStatusInteractiveProps {
-  initialRequests: PaginatedResponse<RequirementDetail>;
+  // Remove initialRequests prop since we'll fetch data inside component
 }
 
 // Component con để chứa Modal và Form của nó, quản lý useForm riêng
@@ -107,15 +107,53 @@ const RequestEditModalContent: React.FC<{
   );
 };
 
-const RequestStatusInteractive: React.FC<RequestStatusInteractiveProps> = ({
-  initialRequests,
-}) => {
-  const [data, setData] =
-    useState<PaginatedResponse<RequirementDetail>>(initialRequests);
+const RequestStatusInteractive: React.FC<
+  RequestStatusInteractiveProps
+> = () => {
+  const { data: session } = useSession();
+  const [data, setData] = useState<PaginatedResponse<RequirementDetail>>();
+  const [requests, setRequests] = useState<RequirementDetail[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [editingRequest, setEditingRequest] =
     useState<RequirementDetail | null>(null);
   const [messageApi, contextHolder] = message.useMessage();
+
+  const fetchData = async (page = 0, size = 5) => {
+    if (!session) return;
+
+    setLoading(true);
+    try {
+      const res = await getRequestsByUser(session, page, size);
+      setRequests(res?.data || []);
+      setData(res);
+      console.log("User Requests Paging:", {
+        page: res.page,
+        size: res.size,
+        totalRecords: res.totalRecords,
+        totalPages: res.totalPages,
+      });
+    } catch (error: any) {
+      messageApi.error({
+        content: error.message,
+        duration: 2,
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleTableChange = (pagination: any) => {
+    const page = pagination.current - 1 || 0; // Convert AntD 1-based to backend 0-based
+    const size = pagination.pageSize || 5;
+    fetchData(page, size);
+  };
+
+  useEffect(() => {
+    if (!session?.user) return;
+    // Initial load: page 0, size 5
+    fetchData(0, 5);
+  }, [session?.user]);
 
   const getStatusDisplay = (status: 0 | 1 | 2) => {
     switch (status) {
@@ -139,7 +177,7 @@ const RequestStatusInteractive: React.FC<RequestStatusInteractiveProps> = ({
       try {
         await updateRequest(payload);
         // Update local state only after successful API call
-        const updatedData = data.data.map((item: RequirementDetail) =>
+        const updatedRequests = requests.map((item: RequirementDetail) =>
           item.id === editingRequest.id
             ? {
                 ...item,
@@ -147,7 +185,7 @@ const RequestStatusInteractive: React.FC<RequestStatusInteractiveProps> = ({
               }
             : item
         );
-        setData({ ...data, data: updatedData });
+        setRequests(updatedRequests);
         messageApi.success({
           content: "Request updated successfully!",
           duration: 2,
@@ -179,7 +217,8 @@ const RequestStatusInteractive: React.FC<RequestStatusInteractiveProps> = ({
       key: "stt",
       align: "right" as const,
       width: 80,
-      render: (_: any, __: any, index: number) => index + 1,
+      render: (_: any, __: any, index: number) =>
+        (data?.page ?? 0) * (data?.size ?? 5) + index + 1,
     },
     {
       title: "Room Name",
@@ -263,9 +302,19 @@ const RequestStatusInteractive: React.FC<RequestStatusInteractiveProps> = ({
 
       <Table
         columns={columns}
-        dataSource={data.data}
+        dataSource={requests || []}
         rowKey="id"
-        pagination={{ pageSize: 7 }}
+        loading={loading}
+        pagination={{
+          current: (data?.page ?? 0) + 1, // Convert backend 0-based to AntD 1-based
+          pageSize: data?.size ?? 5,
+          total: data?.totalRecords ?? 0,
+          // showSizeChanger: true,
+          // showQuickJumper: true,
+          showTotal: (total, range) =>
+            `${range[0]}-${range[1]} of ${total} items`,
+        }}
+        onChange={handleTableChange}
         className="mt-4 mb-8 border border-gray-200 rounded-md dark:border-gray-700"
       />
 

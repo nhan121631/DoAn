@@ -17,7 +17,36 @@ import { useSession } from "next-auth/react";
 export default function ManageRequests() {
   const [requests, setRequests] = useState<Requirement[]>([]);
   const [paging, setPaging] = useState<PaginatedResponse<Requirement>>();
+  const [loading, setLoading] = useState<boolean>(false);
   const [messageApi, contextHolder] = message.useMessage();
+
+  const fetchData = async (page = 0, size = 5) => {
+    setLoading(true);
+    try {
+      const res = await getRequestsByLandlordId(page, size);
+      setRequests(res?.data || []);
+      setPaging(res);
+      console.log("Paging:", {
+        page: res.page,
+        size: res.size,
+        totalRecords: res.totalRecords,
+        totalPages: res.totalPages,
+      });
+    } catch (error: any) {
+      messageApi.error({
+        content: error.message,
+        duration: 2,
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleTableChange = (pagination: any) => {
+    const page = pagination.current - 1 || 0; // Convert AntD 1-based to backend 0-based
+    const size = pagination.pageSize || 5;
+    fetchData(page, size);
+  };
 
   const handleStatusChange = async (id: string) => {
     try {
@@ -61,29 +90,8 @@ export default function ManageRequests() {
 
   useEffect(() => {
     if (!session?.user) return;
-
-    const fetchData = async () => {
-      try {
-        const res =
-          (await getRequestsByLandlordId()) as PaginatedResponse<Requirement>;
-
-        setRequests(res?.data || []);
-        setPaging(res);
-        console.log(
-          "Requests:",
-          res?.data.map((req) => ({
-            id: req.id,
-            status: req.status,
-          }))
-        );
-      } catch (error: any) {
-        messageApi.error({
-          content: error.message,
-          duration: 2,
-        });
-      }
-    };
-    fetchData();
+    // Initial load: page 0, size 5 (matching backend defaults)
+    fetchData(0, 5);
   }, [session?.user]);
 
   const columns: ColumnsType<Requirement> = [
@@ -92,7 +100,8 @@ export default function ManageRequests() {
       key: "stt",
       align: "right" as const,
       width: 80,
-      render: (_: any, __: any, index: number) => index + 1,
+      render: (_: any, __: any, index: number) =>
+        (paging?.page ?? 0) * (paging?.size ?? 5) + index + 1,
     },
     {
       title: "Room Name",
@@ -181,11 +190,17 @@ export default function ManageRequests() {
         columns={columns}
         dataSource={requests || []}
         rowKey="id"
+        loading={loading}
         pagination={{
-          current: (paging?.page ?? 0) + 1,
+          current: (paging?.page ?? 0) + 1, // Convert backend 0-based to AntD 1-based
           pageSize: paging?.size ?? 5,
           total: paging?.totalRecords ?? 0,
+          // showSizeChanger: true,
+          // showQuickJumper: true,
+          showTotal: (total, range) =>
+            `${range[0]}-${range[1]} of ${total} items`,
         }}
+        onChange={handleTableChange}
       />
     </div>
   );
