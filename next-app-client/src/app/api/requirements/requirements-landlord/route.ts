@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { authOptions } from "@/lib/auth";
 import { API_URL } from "@/services/Constant";
 import { getServerSession } from "next-auth";
