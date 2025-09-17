@@ -22,6 +22,8 @@ public interface RequirementJpaRepository extends JpaRepository<Requirement, UUI
        @Query("""
                          SELECT r.id AS id,
                                 ro.title AS roomTitle,
+                                r.user.id as userId,
+                                ro.id as roomId,
                                 r.user.profile.fullName AS userName,
                                 r.user.profile.email AS email,
                                 r.description AS description,
@@ -38,6 +40,8 @@ public interface RequirementJpaRepository extends JpaRepository<Requirement, UUI
        @Query("""
                          SELECT r.id AS id,
                                 ro.title AS roomTitle,
+                                 r.user.id as userId,
+                                   ro.id as roomId,
                                 ro.user.profile.fullName AS userName,
                                 ro.user.profile.email AS email,
                                 r.description AS description,

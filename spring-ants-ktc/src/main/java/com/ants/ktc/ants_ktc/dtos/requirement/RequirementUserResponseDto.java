@@ -14,6 +14,8 @@ import lombok.NoArgsConstructor;
 @Builder
 public class RequirementUserResponseDto {
     private UUID id;
+    private UUID userId;
+    private UUID roomId;
     private String roomTitle;
     private String userName;
     private String email;

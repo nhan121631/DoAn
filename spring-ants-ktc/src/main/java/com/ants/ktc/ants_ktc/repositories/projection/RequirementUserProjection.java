@@ -7,6 +7,10 @@ public interface RequirementUserProjection {
 
     String getRoomTitle();
 
+    String getUserId();
+
+    String getRoomId();
+
     String getUserName();
 
     String getEmail();

@@ -117,12 +117,14 @@ const RequestModal: React.FC<RequestModalProps> = ({
             label="Upload Image (Optional)"
             name="image"
           >
+            <>  
             <Upload {...uploadProps}>
               <Button icon={<UploadOutlined />}>Select Image</Button>
             </Upload>
             <div className="mt-1 text-sm text-gray-500">
               Upload an image to help describe your request (Max: 10MB)
             </div>
+            </>
           </Form.Item>
         </div>
 
