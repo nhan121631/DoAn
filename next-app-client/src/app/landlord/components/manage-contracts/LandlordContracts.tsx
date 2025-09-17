@@ -3,6 +3,7 @@
 
 "use client";
 import { ContractData, InvoiceFormValues } from "@/types/types";
+import { ContractService } from "@/services/ContractService";
 import {
   DeleteOutlined,
   EditOutlined,
@@ -28,6 +29,7 @@ import InvoiceExportModal from "./InvoiceExportModal";
 
 interface LandlordContractsProps {
   contracts: ContractData[];
+  onContractDeleted?: () => void;
 }
 
 const statusMap: Record<number, { text: string; color: string }> = {
@@ -37,7 +39,7 @@ const statusMap: Record<number, { text: string; color: string }> = {
   3: { text: "Pending", color: "blue" },
 };
 
-const LandlordContracts: React.FC<LandlordContractsProps> = ({ contracts }) => {
+const LandlordContracts: React.FC<LandlordContractsProps> = ({ contracts, onContractDeleted }) => {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<number | null>(null);
   const [isInvoiceModalOpen, setIsInvoiceModalOpen] = useState(false);
@@ -51,8 +53,22 @@ const LandlordContracts: React.FC<LandlordContractsProps> = ({ contracts }) => {
     window.location.href = `/landlord/manage-contracts/${record.id}?tab=overview&edit=true`;
   };
 
-  const handleDelete = (record: ContractData) => {
-    messageApi.success(`Deleted contract ${record.id}`);
+  const handleDelete = async (record: ContractData) => {
+    try {
+      await ContractService.deleteContract(record.id);
+      messageApi.success(`Deleted contract ${record.contractName} successfully`);
+      // Call the callback to refresh data
+      if (onContractDeleted) {
+        onContractDeleted();
+      }
+    } catch (error) {
+      console.error("Error deleting contract:", error);
+      messageApi.error(
+        error instanceof Error 
+          ? error.message 
+          : "Failed to delete contract. Please try again."
+      );
+    }
   };
 
   const handleOpenExportModal = (record: ContractData) => {
