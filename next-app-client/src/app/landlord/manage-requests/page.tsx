@@ -63,9 +63,7 @@ export default function ManageRequests() {
           item.id === id ? { ...item, status: (item.status = 1) } : item
         )
       );
-      requests.filter(item => item.id === id).map(async (item) => {
-        await requestProcessedNotification(session?.user.id, item.userId,  "Request successfully processed by landlord.");
-      });
+        await requestProcessedNotification(session?.user.id, userId,  "Request successfully processed by landlord.");
       // Send notification to tenant
       messageApi.success({
         content: "Status updated successfully!",
