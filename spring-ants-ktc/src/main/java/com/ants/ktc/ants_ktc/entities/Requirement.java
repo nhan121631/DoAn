@@ -22,6 +22,12 @@ public class Requirement extends BaseEntity {
     @Column(name = "status", nullable = false)
     private int status;
 
+    @Column(name = "image_url")
+    private String imageUrl;
+
+    @Column(name = "image_public_id")
+    private String imagePublicId;
+
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "room_id", nullable = false)
     private Room room;

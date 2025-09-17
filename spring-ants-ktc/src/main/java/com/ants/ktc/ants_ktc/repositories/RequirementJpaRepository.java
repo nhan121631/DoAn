@@ -19,49 +19,53 @@ import jakarta.transaction.Transactional;
 @Repository
 public interface RequirementJpaRepository extends JpaRepository<Requirement, UUID> {
 
-    @Query("""
-                SELECT r.id AS id,
-                       ro.title AS roomTitle,
-                       r.user.profile.fullName AS userName,
-                       r.user.profile.email AS email,
-                       r.description AS description,
-                       r.status AS status
-                FROM Requirement r
-                JOIN r.room ro
-                WHERE ro.user.id = :userId
-            """)
-    Page<RequirementLandLordProjection> findRequirmentsByLandlordId(
-            @Param("userId") UUID userId, Pageable pageable);
+       @Query("""
+                         SELECT r.id AS id,
+                                ro.title AS roomTitle,
+                                r.user.profile.fullName AS userName,
+                                r.user.profile.email AS email,
+                                r.description AS description,
+                       r.status AS status,
+                       r.imageUrl AS imageUrl,
+                       r.createdDate AS createdDate
+                         FROM Requirement r
+                         JOIN r.room ro
+                         WHERE ro.user.id = :userId
+                     """)
+       Page<RequirementLandLordProjection> findRequirmentsByLandlordId(
+                     @Param("userId") UUID userId, Pageable pageable);
 
-    @Query("""
-                SELECT r.id AS id,
-                       ro.title AS roomTitle,
-                       ro.user.profile.fullName AS userName,
-                       ro.user.profile.email AS email,
-                       r.description AS description,
-                       r.status AS status
-                FROM Requirement r
-                JOIN r.room ro
-                WHERE r.user.id = :userId
-            """)
-    Page<RequirementUserProjection> findRequirmentsByUserId(
-            @Param("userId") UUID userId, Pageable pageable);
+       @Query("""
+                         SELECT r.id AS id,
+                                ro.title AS roomTitle,
+                                ro.user.profile.fullName AS userName,
+                                ro.user.profile.email AS email,
+                                r.description AS description,
+                       r.status AS status,
+                       r.imageUrl AS imageUrl,
+                       r.createdDate AS createdDate
+                         FROM Requirement r
+                         JOIN r.room ro
+                         WHERE r.user.id = :userId
+                     """)
+       Page<RequirementUserProjection> findRequirmentsByUserId(
+                     @Param("userId") UUID userId, Pageable pageable);
 
-    @Modifying
-    @Transactional
-    @Query("""
-            UPDATE Requirement r
-            SET r.status = 1
-            WHERE r.id = :id
-            """)
-    int updateRequirementStatus(@Param("id") UUID id);
+       @Modifying
+       @Transactional
+       @Query("""
+                     UPDATE Requirement r
+                     SET r.status = 1
+                     WHERE r.id = :id
+                     """)
+       int updateRequirementStatus(@Param("id") UUID id);
 
-    @Modifying
-    @Transactional
-    @Query("""
-            UPDATE Requirement r
-            SET r.status = 2
-            WHERE r.id = :id
-            """)
-    int rejectRequirements(@Param("id") UUID id);
+       @Modifying
+       @Transactional
+       @Query("""
+                     UPDATE Requirement r
+                     SET r.status = 2
+                     WHERE r.id = :id
+                     """)
+       int rejectRequirements(@Param("id") UUID id);
 }

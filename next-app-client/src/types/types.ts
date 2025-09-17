@@ -182,6 +182,7 @@ export type LandlordProfile = {
 };
 
 export type RequirementRequestRoomDto = {
+  idRequirement: string;
   userId: string;
   roomId: string;
   description: string;
@@ -211,8 +212,13 @@ export type Requirement = {
   id: string;
   userId: string;
   roomId: string;
+  roomTitle: string;  
+  userName: string;      
+  email: string; 
   description: string;
   status: 0 | 1 | 2; // 0 = pending, 1 = approved, 2 = rejected
+  imageUrl?: string;
+  createdDate: string;
 };
 
 export type RequirementDetail = {
@@ -222,6 +228,8 @@ export type RequirementDetail = {
   email: string;
   description: string;
   status: 0 | 1 | 2;
+  imageUrl?: string;
+  createdDate: string;
 };
 
 export type Reply = {
