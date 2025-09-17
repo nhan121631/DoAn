@@ -1,6 +1,7 @@
 package com.ants.ktc.ants_ktc.services;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -9,6 +10,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.ants.ktc.ants_ktc.dtos.requirement.RequirementLandlordResponseDto;
 import com.ants.ktc.ants_ktc.dtos.requirement.RequirementPaging;
@@ -35,8 +37,10 @@ public class RequirementService {
         private RoomJpaRepository roomJpaRepository;
         @Autowired
         private UserJpaRepository userJpaRepository;
+        @Autowired
+        private CloudinaryService cloudinaryService;
 
-        public boolean createRequestRoom(RequirementRequestRoomDto requestRoomDto) {
+        public RequirementRequestRoomDto createRequestRoom(RequirementRequestRoomDto requestRoomDto) {
                 User user = userJpaRepository.findById(requestRoomDto.getUserId())
                                 .orElseThrow(
                                                 () -> new IllegalArgumentException("User not found"));
@@ -44,12 +48,49 @@ public class RequirementService {
                 Room room = roomJpaRepository.findById(requestRoomDto.getRoomId())
                                 .orElseThrow(
                                                 () -> new IllegalArgumentException("Room not found"));
+
                 int status = 0;
                 Requirement request = new Requirement(requestRoomDto.getDescription(), status, room, user);
-                requirementJpaRepository.save(request);
 
-                return true;
+                Requirement savedRequirement = requirementJpaRepository.save(request);
+
+                // Set ID vào DTO để trả về
+                requestRoomDto.setIdRequirement(savedRequirement.getId());
+
+                return requestRoomDto;
         }
+
+        // upload image
+        public boolean uploadRequirementImage(UUID idRequirement, MultipartFile image) {
+                try {
+                        Requirement requirement = requirementJpaRepository.findById(idRequirement)
+                                        .orElseThrow(() -> new IllegalArgumentException("Requirement not found"));
+                        // Kiểm tra file có phải ảnh không
+                        if (image.isEmpty() || !isImageFile(image)) {
+                                throw new IllegalArgumentException("Invalid image file");
+                        }
+                        // Xóa ảnh cũ nếu có
+                        if (requirement.getImagePublicId() != null) {
+                                cloudinaryService.deleteFile(requirement.getImagePublicId());
+                        }
+                        // Upload ảnh mới lên Cloudinary
+                        Map<String, String> uploadResult = cloudinaryService.uploadFile(image);
+                        // Cập nhật thông tin ảnh vào database
+                        requirement.setImageUrl(uploadResult.get("url"));
+                        requirement.setImagePublicId(uploadResult.get("publicId"));
+                        requirementJpaRepository.save(requirement);
+
+                        return true;
+                } catch (Exception e) {
+                        throw new RuntimeException("Failed to upload image: " + e.getMessage(), e);
+                }
+        }
+
+        private boolean isImageFile(MultipartFile file) {
+                String contentType = file.getContentType();
+                return contentType != null && contentType.startsWith("image/");
+        }
+        ////
 
         private String formatHexToUuid(String hex) {
                 return hex.replaceFirst(
@@ -70,6 +111,8 @@ public class RequirementService {
                                                 .email(req.getEmail())
                                                 .description(req.getDescription())
                                                 .status(req.getStatus())
+                                                .imageUrl(req.getImageUrl())
+                                                .createdDate(req.getCreatedDate())
                                                 .build())
                                 .collect(Collectors.toList());
 
@@ -97,6 +140,8 @@ public class RequirementService {
                                                 .email(req.getEmail())
                                                 .description(req.getDescription())
                                                 .status(req.getStatus())
+                                                .imageUrl(req.getImageUrl())
+                                                .createdDate(req.getCreatedDate())
                                                 .build())
                                 .collect(Collectors.toList());
 

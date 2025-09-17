@@ -1,37 +1,36 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import React, { useState, useEffect } from "react";
 import {
-  Table,
+  DeleteOutlined,
+  EditOutlined,
+  EyeOutlined,
+  FilterOutlined,
+  PlusOutlined,
+  SearchOutlined,
+  UploadOutlined,
+  UserOutlined,
+} from "@ant-design/icons";
+import {
   Button,
-  Modal,
-  message,
-  Tooltip,
-  Popconfirm,
   Card,
-  Image,
-  Tag,
-  Space,
-  Form,
-  Input,
   DatePicker,
+  Form,
+  Image,
+  Input,
+  Modal,
+  Popconfirm,
   Select,
+  Space,
+  Table,
+  Tag,
+  Tooltip,
   Upload,
 } from "antd";
-import {
-  EyeOutlined,
-  EditOutlined,
-  DeleteOutlined,
-  PlusOutlined,
-  UserOutlined,
-  UploadOutlined,
-  SearchOutlined,
-  FilterOutlined,
-} from "@ant-design/icons";
-import { ContractData, ResidentData } from "../../../../types/types";
-import { ResidentService } from "../../../../services/ResidentService";
 import dayjs from "dayjs";
+import { useEffect, useState } from "react";
+import { ResidentService } from "../../../../services/ResidentService";
+import { ContractData, ResidentData } from "../../../../types/types";
 
 interface ResidentsTabProps {
   contract: ContractData;

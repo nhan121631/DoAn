@@ -4,6 +4,7 @@
 import { ColumnsType } from "antd/es/table";
 import { Table, Popconfirm, Button, message, Tag } from "antd";
 import React, { useEffect } from "react";
+import { EyeOutlined } from "@ant-design/icons";
 
 import { useState } from "react";
 import { PaginatedResponse, Requirement } from "@/types/types";
@@ -14,11 +15,43 @@ import {
 } from "@/services/Requirements";
 import { useSession } from "next-auth/react";
 import { createRequestNotification, requestProcessedNotification } from "@/services/NotificationService";
+import RequestDetailModal from "../components/manage-requests/ModalRequest";
 
 export default function ManageRequests() {
   const [requests, setRequests] = useState<Requirement[]>([]);
   const [paging, setPaging] = useState<PaginatedResponse<Requirement>>();
+  const [loading, setLoading] = useState<boolean>(false);
   const [messageApi, contextHolder] = message.useMessage();
+  const [detailModalOpen, setDetailModalOpen] = useState(false);
+  const [selectedRequest, setSelectedRequest] = useState<Requirement | null>(null);
+
+  const fetchData = async (page = 0, size = 5) => {
+    setLoading(true);
+    try {
+      const res = await getRequestsByLandlordId(page, size);
+      setRequests(res?.data || []);
+      setPaging(res);
+      console.log("Paging:", {
+        page: res.page,
+        size: res.size,
+        totalRecords: res.totalRecords,
+        totalPages: res.totalPages,
+      });
+    } catch (error: any) {
+      messageApi.error({
+        content: error.message,
+        duration: 2,
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleTableChange = (pagination: any) => {
+    const page = pagination.current - 1 || 0; // Convert AntD 1-based to backend 0-based
+    const size = pagination.pageSize || 5;
+    fetchData(page, size);
+  };
 
   const handleStatusChange = async (id: string, userId: string) => {
     try {
@@ -26,10 +59,12 @@ export default function ManageRequests() {
       setRequests((prev) =>
         prev.map((item) =>
           item.id === id ? { ...item, status: (item.status = 1) } : item
-      
         )
       );
-      await requestProcessedNotification(session?.user.id, userId,  "You have a new request from a tenant!");
+      requests.filter(item => item.id === id).map(async (item) => {
+        await requestProcessedNotification(session?.user.id, item.userId,  "Request successfully processed by landlord.");
+      });
+      // Send notification to tenant
       messageApi.success({
         content: "Status updated successfully!",
         duration: 2,
@@ -41,6 +76,7 @@ export default function ManageRequests() {
       });
     }
   };
+
   const handleReject = async (id: string) => {
     try {
       await rejectRequirement(id);
@@ -60,33 +96,18 @@ export default function ManageRequests() {
       });
     }
   };
+
+  const handleViewDetail = (record: Requirement) => {
+    setSelectedRequest(record);
+    setDetailModalOpen(true);
+  };
+
   const { data: session } = useSession();
 
   useEffect(() => {
     if (!session?.user) return;
-
-    const fetchData = async () => {
-      try {
-        const res =
-          (await getRequestsByLandlordId()) as PaginatedResponse<Requirement>;
-
-        setRequests(res?.data || []);
-        setPaging(res);
-        console.log(
-          "Requests:",
-          res?.data.map((req) => ({
-            id: req.id,
-            status: req.status,
-          }))
-        );
-      } catch (error: any) {
-        messageApi.error({
-          content: error.message,
-          duration: 2,
-        });
-      }
-    };
-    fetchData();
+    // Initial load: page 0, size 5 (matching backend defaults)
+    fetchData(0, 5);
   }, [session?.user]);
 
   const columns: ColumnsType<Requirement> = [
@@ -95,7 +116,8 @@ export default function ManageRequests() {
       key: "stt",
       align: "right" as const,
       width: 80,
-      render: (_: any, __: any, index: number) => index + 1,
+      render: (_: any, __: any, index: number) =>
+        (paging?.page ?? 0) * (paging?.size ?? 5) + index + 1,
     },
     {
       title: "Room Name",
@@ -116,6 +138,40 @@ export default function ManageRequests() {
       title: "Request Description",
       dataIndex: "description",
       key: "description",
+      render: (text: string) => (
+        <div className="max-w-xs truncate" title={text}>
+          {text}
+        </div>
+      ),
+    },
+    {
+      title: "Created Date",
+      dataIndex: "createdDate",
+      key: "createdDate",
+      width: 120,
+      render: (date: string) => {
+        if (!date) return 'N/A';
+        return new Date(date).toLocaleDateString('vi-VN', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
+        });
+      },
+      sorter: (a, b) => new Date(a.createdDate).getTime() - new Date(b.createdDate).getTime(),
+    },
+    {
+      title: "Detail",
+      key: "detail",
+      width: 80,
+      render: (_, record) => (
+        <Button
+          type="text"
+          icon={<EyeOutlined />}
+          onClick={() => handleViewDetail(record)}
+          className="text-blue-500 hover:text-blue-700"
+          title="View Details"
+        />
+      ),
     },
     {
       title: "Status",
@@ -139,6 +195,7 @@ export default function ManageRequests() {
           <Tag color="red">Rejected</Tag>
         ),
     },
+    
     {
       title: "Action",
       dataIndex: "action",
@@ -184,11 +241,27 @@ export default function ManageRequests() {
         columns={columns}
         dataSource={requests || []}
         rowKey="id"
+        loading={loading}
         pagination={{
-          current: (paging?.page ?? 0) + 1,
+          current: (paging?.page ?? 0) + 1, // Convert backend 0-based to AntD 1-based
           pageSize: paging?.size ?? 5,
           total: paging?.totalRecords ?? 0,
+          // showSizeChanger: true,
+          // showQuickJumper: true,
+          showTotal: (total, range) =>
+            `${range[0]}-${range[1]} of ${total} items`,
         }}
+        onChange={handleTableChange}
+      />
+
+      {/* Detail Modal */}
+      <RequestDetailModal
+        open={detailModalOpen}
+        onCancel={() => {
+          setDetailModalOpen(false);
+          setSelectedRequest(null);
+        }}
+        request={selectedRequest}
       />
     </div>
   );

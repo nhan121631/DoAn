@@ -1,36 +1,33 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { updateRequest } from "@/services/Requirements";
+import { getRequestsByUser, updateRequest, uploadRequirementImage } from "@/services/Requirements";
 import {
   PaginatedResponse,
-  // Requirement,
   RequirementDetail,
   UpdateRequestRoomDto,
 } from "@/types/types";
-import { Button, Form, Input, message, Modal, Space, Table, Tag } from "antd";
+import { Button, Form, Input, message, Modal, Space, Table, Tag, Image, Upload } from "antd";
 import type { ColumnsType } from "antd/es/table";
+import { useSession } from "next-auth/react";
 import React, { useEffect, useState } from "react";
 import { AiOutlineEdit } from "react-icons/ai";
+import { UploadOutlined, EyeOutlined } from "@ant-design/icons";
 
-//trường trong bảng
 export type RequestFormValues = {
   roomName: string;
   requestDescription: string;
 };
 
-interface RequestStatusInteractiveProps {
-  initialRequests: PaginatedResponse<RequirementDetail>;
-}
-
-// Component con để chứa Modal và Form của nó, quản lý useForm riêng
 const RequestEditModalContent: React.FC<{
   open: boolean;
   onCancel: () => void;
   onSubmit: (values: RequestFormValues) => void;
   editingRequest: RequirementDetail | null;
-}> = ({ open, onCancel, onSubmit, editingRequest }) => {
+  setData: React.Dispatch<React.SetStateAction<PaginatedResponse<RequirementDetail>>>;
+}> = ({ open, onCancel, onSubmit, editingRequest, setData }) => {
   const [form] = Form.useForm();
+  const [fileList, setFileList] = useState<any[]>([]);
 
   useEffect(() => {
     if (open && editingRequest) {
@@ -44,13 +41,23 @@ const RequestEditModalContent: React.FC<{
     onSubmit(values);
   };
 
-  // const handleRoomNameChange = (value: string) => {};
+  const handleUpload = async (file: File) => {
+    if (!editingRequest) return;
+    await uploadRequirementImage(editingRequest.id, file);
+    setData((prev) => ({
+      ...prev,
+      data: prev.data.map((item) =>
+        item.id === editingRequest.id
+          ? { ...item, imageUrl: `/dmvvs0ags/image/upload/...${file.name}` }
+          : item
+      ),
+    }));
+    message.success("Image updated!");
+  };
 
   return (
     <Modal
       title={"Edit Request"}
-      // title={editingRequest ? "Edit Request" : "Add New Request"}
-
       open={open}
       onCancel={onCancel}
       footer={null}
@@ -73,14 +80,8 @@ const RequestEditModalContent: React.FC<{
             name="requestDescription"
             rules={[
               { required: true, message: "Please enter request description!" },
-              {
-                min: 5,
-                message: "Request description must be at least 5 characters.",
-              },
-              {
-                max: 500,
-                message: "Request description cannot exceed 500 characters.",
-              },
+              { min: 5, message: "Request description must be at least 5 characters." },
+              { max: 500, message: "Request description cannot exceed 500 characters." },
             ]}
           >
             <Input.TextArea
@@ -91,6 +92,29 @@ const RequestEditModalContent: React.FC<{
                   : "e.g., Request description"
               }
             />
+          </Form.Item>
+
+          <Form.Item label="Update Image">
+            <Upload
+              beforeUpload={(file) => {
+                handleUpload(file);
+                return false; // Ngăn auto upload
+              }}
+              fileList={fileList}
+              onChange={({ fileList }) => setFileList(fileList)}
+              accept="image/*"
+              maxCount={1}
+              showUploadList={true}
+            >
+              <Button icon={<UploadOutlined />}>Select Image</Button>
+            </Upload>
+            {editingRequest?.imageUrl && (
+              <img
+                src={`https://res.cloudinary.com${editingRequest.imageUrl}`}
+                alt="Current"
+                style={{ marginTop: 8, maxWidth: 120, borderRadius: 8 }}
+              />
+            )}
           </Form.Item>
         </div>
 
@@ -107,15 +131,59 @@ const RequestEditModalContent: React.FC<{
   );
 };
 
-const RequestStatusInteractive: React.FC<RequestStatusInteractiveProps> = ({
-  initialRequests,
-}) => {
-  const [data, setData] =
-    useState<PaginatedResponse<RequirementDetail>>(initialRequests);
+const RequestStatusInteractive: React.FC = () => {
+  const { data: session } = useSession();
+
+  // ✅ Fix: khởi tạo mặc định rỗng
+  const [data, setData] = useState<PaginatedResponse<RequirementDetail>>({
+    data: [],
+    page: 0,
+    size: 5,
+    totalElements: 0,
+    totalRecords: 0,
+    totalPages: 0,
+  });
+
+  const [requests, setRequests] = useState<RequirementDetail[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
-  const [editingRequest, setEditingRequest] =
-    useState<RequirementDetail | null>(null);
+  const [editingRequest, setEditingRequest] = useState<RequirementDetail | null>(null);
   const [messageApi, contextHolder] = message.useMessage();
+
+  const fetchData = async (page = 0, size = 5) => {
+    if (!session) return;
+
+    setLoading(true);
+    try {
+      const res = await getRequestsByUser(session, page, size);
+      setRequests(res?.data || []);
+      setData(res);
+      console.log("User Requests Paging:", {
+        page: res.page,
+        size: res.size,
+        totalRecords: res.totalRecords,
+        totalPages: res.totalPages,
+      });
+    } catch (error: any) {
+      messageApi.error({
+        content: error.message,
+        duration: 2,
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleTableChange = (pagination: any) => {
+    const page = pagination.current - 1 || 0; // Convert AntD 1-based to backend 0-based
+    const size = pagination.pageSize || 5;
+    fetchData(page, size);
+  };
+
+  useEffect(() => {
+    if (!session?.user) return;
+    fetchData(0, 5);
+  }, [session?.user]);
 
   const getStatusDisplay = (status: 0 | 1 | 2) => {
     switch (status) {
@@ -138,16 +206,12 @@ const RequestStatusInteractive: React.FC<RequestStatusInteractiveProps> = ({
       };
       try {
         await updateRequest(payload);
-        // Update local state only after successful API call
-        const updatedData = data.data.map((item: RequirementDetail) =>
+        const updatedRequests = requests.map((item: RequirementDetail) =>
           item.id === editingRequest.id
-            ? {
-                ...item,
-                description: values.requestDescription,
-              }
+            ? { ...item, description: values.requestDescription }
             : item
         );
-        setData({ ...data, data: updatedData });
+        setRequests(updatedRequests);
         messageApi.success({
           content: "Request updated successfully!",
           duration: 2,
@@ -177,9 +241,41 @@ const RequestStatusInteractive: React.FC<RequestStatusInteractiveProps> = ({
     {
       title: "STT",
       key: "stt",
-      align: "right" as const,
+      align: "right",
       width: 80,
-      render: (_: any, __: any, index: number) => index + 1,
+      render: (_: any, __: any, index: number) =>
+        (data.page ?? 0) * (data.size ?? 5) + index + 1,
+    },
+    {
+      title: "Image",
+      dataIndex: "imageUrl",
+      key: "imageUrl",
+      render: (imageUrl: string | undefined) =>
+        imageUrl ? (
+          <Image
+            src={`https://res.cloudinary.com${imageUrl}`}
+            alt="Request"
+            width={40}
+            height={40}
+            style={{ borderRadius: 8, objectFit: "cover" }}
+            preview={{
+              mask: <EyeOutlined style={{ fontSize: 22, color: "#fff" }} />,
+            }}
+            placeholder={
+              <div
+                style={{
+                  width: 40,
+                  height: 40,
+                  background: "#eee",
+                  borderRadius: 8,
+                }}
+              />
+            }
+          />
+        ) : (
+          <span style={{ color: "#ffffff" }}>No image</span>
+        ),
+      width: 100,
     },
     {
       title: "Room Name",
@@ -200,6 +296,23 @@ const RequestStatusInteractive: React.FC<RequestStatusInteractiveProps> = ({
       title: "Request Description",
       dataIndex: "description",
       key: "description",
+    },
+    {
+      title: "Created Date",
+      dataIndex: "createdDate",
+      key: "createdDate",
+      width: 130,
+      render: (date: string) => {
+        if (!date) return "N/A";
+        return new Date(date).toLocaleDateString("vi-VN", {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+        });
+      },
+      sorter: (a, b) =>
+        new Date(a.createdDate || "").getTime() -
+        new Date(b.createdDate || "").getTime(),
     },
     {
       title: "Status",
@@ -236,36 +349,20 @@ const RequestStatusInteractive: React.FC<RequestStatusInteractiveProps> = ({
       <h2 className="mb-6 text-2xl font-bold text-gray-800 dark:text-white">
         Request Management
       </h2>
-      {/* <div className="flex items-center justify-end mb-6">
-        <Input.Search
-          placeholder="Search requests..."
-          style={{ width: 250 }}
-          onSearch={(value) => {
-            const filteredData = initialRequests.filter(
-              (request) =>
-                request.roomName.toLowerCase().includes(value.toLowerCase()) ||
-                request.customerName
-                  .toLowerCase()
-                  .includes(value.toLowerCase()) ||
-                request.requestDescription
-                  .toLowerCase()
-                  .includes(value.toLowerCase())
-            );
-            setData(filteredData);
-          }}
-          onChange={(e) => {
-            if (e.target.value === "") {
-              setData(initialRequests);
-            }
-          }}
-        />
-      </div> */}
 
       <Table
         columns={columns}
-        dataSource={data.data}
+        dataSource={requests || []}
         rowKey="id"
-        pagination={{ pageSize: 7 }}
+        loading={loading}
+        pagination={{
+          current: (data.page ?? 0) + 1,
+          pageSize: data.size ?? 5,
+          total: data.totalRecords ?? 0,
+          showTotal: (total, range) =>
+            `${range[0]}-${range[1]} of ${total} items`,
+        }}
+        onChange={handleTableChange}
         className="mt-4 mb-8 border border-gray-200 rounded-md dark:border-gray-700"
       />
 
@@ -275,6 +372,7 @@ const RequestStatusInteractive: React.FC<RequestStatusInteractiveProps> = ({
           onCancel={handleCancelModal}
           onSubmit={handleFormSubmit}
           editingRequest={editingRequest}
+          setData={setData}
         />
       )}
     </div>

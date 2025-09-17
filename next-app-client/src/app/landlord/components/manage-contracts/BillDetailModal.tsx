@@ -84,7 +84,7 @@ export default function BillDetailModal({
                   <span className="font-medium text-gray-600 dark:text-gray-300 transition-colors duration-300">
                     Month:
                   </span>
-                  <p className="text-gray-800 dark:text-white font-semibold text-red-600 dark:text-red-400 transition-colors duration-300">
+                  <p className="text-gray-800 dark:text-white font-semiboldtransition-colors duration-300">
                     {selectedBill.month}
                   </p>
                 </div>

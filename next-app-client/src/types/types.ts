@@ -182,6 +182,7 @@ export type LandlordProfile = {
 };
 
 export type RequirementRequestRoomDto = {
+  idRequirement: string;
   userId: string;
   roomId: string;
   description: string;
@@ -211,8 +212,13 @@ export type Requirement = {
   id: string;
   userId: string;
   roomId: string;
+  roomTitle: string;  
+  userName: string;      
+  email: string; 
   description: string;
   status: 0 | 1 | 2; // 0 = pending, 1 = approved, 2 = rejected
+  imageUrl?: string;
+  createdDate: string;
 };
 
 export type RequirementDetail = {
@@ -222,6 +228,8 @@ export type RequirementDetail = {
   email: string;
   description: string;
   status: 0 | 1 | 2;
+  imageUrl?: string;
+  createdDate: string;
 };
 
 export type Reply = {
@@ -381,5 +389,53 @@ export type MaintainStatisticDto = {
 export type TransactionStatisticsDto = {
   cost: number; // Chi phí trong ngày
   date: string; // Ngày ở định dạng 'YYYY-MM-DD'
+}
+export interface LandlordTaskCreateDto {
+  title: string;
+  description?: string;
+  priority?: 'LOW' | 'MEDIUM' | 'HIGH';
+  dueDate?: string;
+  status?: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
+  landlordId?: string;
+  contractId?: string;
+  roomId?: string;
+  assignedToId?: string;
+}
+
+export interface LandlordTaskUpdateDto {
+  title?: string;
+  description?: string;
+  priority?: 'LOW' | 'MEDIUM' | 'HIGH';
+  status?: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
+  dueDate?: string;
+  assignedToId?: string;
+}
+
+export interface LandlordTaskResponseDto {
+  id: string;
+  title: string;
+  description?: string;
+  priority: 'LOW' | 'MEDIUM' | 'HIGH';
+  status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
+  dueDate?: string;
+  createdAt: string;
+  updatedAt: string;
+  landlordId: string;
+  contractId?: string;
+  roomId?: string;
+  assignedToId?: string;
+  assignedTo?: {
+    id: string;
+    name: string;
+    email: string;
+  };
+  contract?: {
+    id: string;
+    contractName: string;
+  };
+  room?: {
+    id: string;
+    title: string;
+  };
 }
  

@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.ants.ktc.ants_ktc.dtos.requirement.RequirementLandlordResponseDto;
 import com.ants.ktc.ants_ktc.dtos.requirement.RequirementPaging;
@@ -32,14 +33,39 @@ public class RequirementController {
     @PostMapping("/request-room")
     public ResponseEntity<RequirementRequestRoomDto> createRequestRoom(
             @RequestBody @Valid RequirementRequestRoomDto requestRoomDto) {
-        boolean isTrue = requirementService.createRequestRoom(requestRoomDto);
-        if (isTrue) {
-            return ResponseEntity.ok(requestRoomDto);
-        } else {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        try {
+            RequirementRequestRoomDto result = requirementService.createRequestRoom(requestRoomDto);
+            return ResponseEntity.status(HttpStatus.CREATED).body(result);
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
 
+    // upload image
+    @PostMapping("/{idRequirement}/upload-image")
+    public ResponseEntity<String> uploadRequirementImage(
+            @PathVariable("idRequirement") UUID idRequirement,
+            @RequestParam("image") MultipartFile image) {
+        try {
+            boolean isUploaded = requirementService.uploadRequirementImage(idRequirement, image);
+            if (isUploaded) {
+                return ResponseEntity.ok("Image uploaded successfully");
+            } else {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body("Failed to upload image");
+            }
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("Requirement not found");
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error uploading image: " + ex.getMessage());
+        }
+    }
+
+    ////
     @GetMapping("/landlord/{landlordId}/requests")
     public ResponseEntity<RequirementPaging<RequirementLandlordResponseDto>> getAllRequestsForLandlord(
             @PathVariable("landlordId") UUID landlordId,

@@ -218,19 +218,21 @@ export default function ModalProfile({
       centered
       width={560}
       title={
-        <span className="font-bold text-lg">Edit Personal Information</span>
+        <span className="text-lg font-bold">Edit Personal Information</span>
       }
       styles={{ body: { paddingTop: 24, paddingBottom: 8 } }}
     >
       <Form form={form} layout="vertical" onFinish={onSave}>
         <div className="flex flex-col items-center mb-4">
+          <div className="relative w-24 h-24 mb-2 overflow-hidden border-2 border-blue-500 rounded-full">
           <Image
             src={previewUrl || avatarUrl}
             alt="Avatar"
             width={100}
             height={100}
-            className="rounded-full border-2 border-blue-500 mb-2"
+            className="mb-2 border-2 border-blue-500 rounded-full"
           />
+           </div>
           <Form.Item
             name="avatar"
             valuePropName="fileList"
