@@ -295,25 +295,85 @@ public class BookingService {
         // xoa booking set isRemoved = 1
         @Transactional
         public void deleteBooking(UUID bookingId, UUID userId) {
-                Booking booking = bookingJpaRepository.findByIdForStatusUpdate(bookingId);
+                // Try a simple findById first to avoid missing results due to inner JOIN FETCH
+                // in custom query
+                Booking booking = bookingJpaRepository.findById(bookingId).orElse(null);
                 if (booking == null) {
-                        throw new RuntimeException("Booking not found");
+                        // Fallback to the fetch-with-joins query used elsewhere; it may return null if
+                        // related
+                        // associations are missing due to inner joins.
+                        booking = bookingJpaRepository.findByIdForStatusUpdate(bookingId);
+                }
+                if (booking == null) {
+                        System.err.println("[BookingService.deleteBooking] Booking not found for id: " + bookingId);
+                        throw new RuntimeException("Booking not found: " + bookingId);
                 }
                 // Only select needed fields for fast check
-                Object[] result = bookingJpaRepository.findBookingUserAndLandlordIds(bookingId);
-                if (result == null || result.length < 2) {
-                        throw new IllegalArgumentException("Booking not found");
+                java.util.List<Object[]> resultList = bookingJpaRepository.findBookingUserAndLandlordIds(bookingId);
+                // Debug: print raw result list and related ids to help track missing ownership
+                // info
+                try {
+                        System.out.println(
+                                        "[BookingService.deleteBooking] findBookingUserAndLandlordIds raw result list size: "
+                                                        + (resultList == null ? "null" : resultList.size()));
+                        if (resultList != null && !resultList.isEmpty()) {
+                                System.out.println("[BookingService.deleteBooking] first row: "
+                                                + java.util.Arrays.toString(resultList.get(0)));
+                        }
+                        System.out.println("[BookingService.deleteBooking] booking.user id: "
+                                        + (booking.getUser() != null ? booking.getUser().getId() : null));
+                        System.out.println("[BookingService.deleteBooking] booking.room id: "
+                                        + (booking.getRoom() != null ? booking.getRoom().getId() : null));
+                        System.out.println("[BookingService.deleteBooking] booking.room.user id: "
+                                        + (booking.getRoom() != null && booking.getRoom().getUser() != null
+                                                        ? booking.getRoom().getUser().getId()
+                                                        : null));
+                } catch (Exception e) {
+                        System.err.println("[BookingService.deleteBooking] Failed to log ownership debug info: "
+                                        + e.getMessage());
                 }
-                UUID bookingUserId = (UUID) result[0];
-                UUID landlordId = (UUID) result[1];
 
-                if (!userId.equals(bookingUserId) && (landlordId == null || !userId.equals(landlordId))) {
+                if (resultList == null || resultList.isEmpty() || resultList.get(0) == null) {
+                        System.err.println(
+                                        "[BookingService.deleteBooking] Missing ownership info (no rows) for booking id: "
+                                                        + bookingId);
+                        throw new IllegalArgumentException("Booking not found or missing ownership info: " + bookingId);
+                }
+
+                Object[] firstRow = resultList.get(0);
+                if (firstRow.length < 2) {
+                        System.err.println(
+                                        "[BookingService.deleteBooking] Unexpected ownership row structure for booking id: "
+                                                        + bookingId);
+                        throw new IllegalArgumentException("Booking not found or missing ownership info: " + bookingId);
+                }
+
+                UUID bookingUserId = firstRow[0] != null ? (UUID) firstRow[0] : null;
+                UUID landlordId = firstRow[1] != null ? (UUID) firstRow[1] : null;
+
+                // If both ids are missing, we cannot verify ownership
+                if (bookingUserId == null && landlordId == null) {
+                        System.err.println(
+                                        "[BookingService.deleteBooking] Both bookingUserId and landlordId are null for booking id: "
+                                                        + bookingId);
+                        throw new IllegalArgumentException("Booking not found or missing ownership info: " + bookingId);
+                }
+
+                // Allow deletion if requester is booking owner or landlord of the room
+                if ((bookingUserId == null || !userId.equals(bookingUserId))
+                                && (landlordId == null || !userId.equals(landlordId))) {
                         throw new IllegalArgumentException(
                                         "You can only delete your own bookings or bookings for your own rooms");
                 }
                 Room room = booking.getRoom();
-                room.setAvailable(0);
-                roomJpaRepository.save(room);
+                if (room != null) {
+                        room.setAvailable(0);
+                        roomJpaRepository.save(room);
+                } else {
+                        System.err.println(
+                                        "[BookingService.deleteBooking] Warning: booking.room is null for booking id: "
+                                                        + bookingId);
+                }
 
                 // Update only isRemoved field for performance
                 bookingJpaRepository.updateIsRemovedById(bookingId, 1);

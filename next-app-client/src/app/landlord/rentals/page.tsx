@@ -10,7 +10,7 @@ import React from "react";
 import { useEffect, useState } from "react";
 
 interface RentalData {
-  key: number;
+  key: string | number;
   name_tenant: string;
   phone_tenant: string;
   room: string;
@@ -90,12 +90,12 @@ export default function RentalsPage() {
   };
 
   const handleUpdateBookingStatus = async (
-    bookingId: number,
+    bookingId: string | number,
     newStatus: number,
     actionName: string
   ) => {
     try {
-      await updateBookingStatus(bookingId.toString(), newStatus);
+      await updateBookingStatus(String(bookingId), newStatus);
       messageApi.success({
         content: `Booking ${actionName} successfully!`,
         duration: 2,
@@ -111,9 +111,16 @@ export default function RentalsPage() {
     }
   };
 
-  const handleDeleteBooking = async (bookingId: number) => {
+  const handleDeleteBooking = async (bookingId: string | number) => {
     try {
-      await deleteBooking(bookingId.toString());
+      const idStr = String(bookingId);
+      if (!idStr || idStr === "0") {
+        console.error("Attempted to delete with invalid bookingId:", bookingId);
+        messageApi.error({ content: "Invalid booking id", duration: 2 });
+        return;
+      }
+      // Pass raw id string; BookingService.deleteBooking will encode it once when building the request URL.
+      await deleteBooking(idStr);
       messageApi.success({
         content: "Booking removed successfully!",
         duration: 2,
@@ -121,10 +128,8 @@ export default function RentalsPage() {
       await fetchTableData(pagination.current, pagination.pageSize);
     } catch (error) {
       console.error("Failed to delete booking:", error);
-      messageApi.error({
-        content: "Failed to remove booking",
-        duration: 2,
-      });
+      const errMsg = error instanceof Error ? error.message : String(error);
+      messageApi.error({ content: `Failed to remove booking: ${errMsg}`, duration: 4 });
     }
   };
 
@@ -306,14 +311,15 @@ export default function RentalsPage() {
     {
       title: "Removed",
       dataIndex: "isRemoved",
-      render: (isRemoved: number) =>
-        isRemoved === 1 ? (
+      // Use full record so we can access the booking id (key)
+      render: (_: any, record: RentalData) =>
+        record.isRemoved === 1 ? (
           <Tag color="red">Removed</Tag>
         ) : (
           <Popconfirm
             title="Remove this booking?"
             description="Are you sure you want to remove this booking?"
-            onConfirm={() => handleDeleteBooking(isRemoved)}
+            onConfirm={() => handleDeleteBooking(record.key)}
             okText="Yes"
             cancelText="No"
           >
@@ -326,7 +332,6 @@ export default function RentalsPage() {
                 borderColor: "red",
                 fontWeight: 400,
               }}
-              color="green"
             >
               Remove
             </Button>

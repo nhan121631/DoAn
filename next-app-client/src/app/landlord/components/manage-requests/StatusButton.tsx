@@ -21,7 +21,7 @@ export default function StatusButton({
     const newStatus = status === 0 ? 1 : 0;
 
     setLoading(true);
-
+    
     startTransition(() => {
       updateRequestStatus(id, newStatus)
         .then(() => {

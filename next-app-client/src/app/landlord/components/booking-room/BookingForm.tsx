@@ -12,6 +12,7 @@ import dayjs, { Dayjs } from "dayjs";
 import { redirect, useRouter } from "next/navigation";
 // import { getServerSession } from "next-auth";
 import { useSession } from "next-auth/react";
+import { createBookingNotification } from "@/services/NotificationService";
 
 interface BookingFormProps {
   roomId: string;
@@ -111,6 +112,7 @@ export default function BookingForm({
       );
 
       await createBooking(bookingData);
+      await createBookingNotification(roomId, session?.user.id);
 
       // Hiển thị thông báo thành công
       messageApi.success({
