@@ -13,20 +13,23 @@ import {
   updateRequirementStatus,
 } from "@/services/Requirements";
 import { useSession } from "next-auth/react";
+import { createRequestNotification, requestProcessedNotification } from "@/services/NotificationService";
 
 export default function ManageRequests() {
   const [requests, setRequests] = useState<Requirement[]>([]);
   const [paging, setPaging] = useState<PaginatedResponse<Requirement>>();
   const [messageApi, contextHolder] = message.useMessage();
 
-  const handleStatusChange = async (id: string) => {
+  const handleStatusChange = async (id: string, userId: string) => {
     try {
       await updateRequirementStatus(id);
       setRequests((prev) =>
         prev.map((item) =>
           item.id === id ? { ...item, status: (item.status = 1) } : item
+      
         )
       );
+      await requestProcessedNotification(session?.user.id, userId,  "You have a new request from a tenant!");
       messageApi.success({
         content: "Status updated successfully!",
         duration: 2,
@@ -122,7 +125,7 @@ export default function ManageRequests() {
         status === 0 ? (
           <Popconfirm
             title="Mark as completed?"
-            onConfirm={() => handleStatusChange(record.id)}
+            onConfirm={() => handleStatusChange(record.id, record.userId)}
             okText="Yes"
             cancelText="No"
           >
