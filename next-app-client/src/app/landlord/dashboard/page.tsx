@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -26,6 +25,8 @@ import {
   Empty,
   Spin,
   Drawer,
+  Popconfirm,
+
 } from "antd";
 import {
   PlusOutlined,
@@ -51,8 +52,6 @@ import {
   LandlordTaskResponseDto,
   LandlordTaskUpdateDto,
 } from "@/types/types";
-import TaskDetailDrawer from "../components/dashboard/TaskDetailDrawer";
-
 const { Title, Text } = Typography;
 const { TextArea } = Input;
 const { Option } = Select;
@@ -179,13 +178,25 @@ export default function LandlordDashboardPage() {
         return;
       }
 
-      // Format due date if provided
+
+      if (!session?.user?.id) {
+        messageApi.error("User session not found");
+        return;
+      }
+
+      // Format the task data to match API expectations
       const taskData = {
-        ...values,
         title: values.title.trim(),
         description: values.description?.trim() || undefined,
-        dueDate: values.dueDate ? dayjs(values.dueDate).format() : undefined,
+        dueDate: values.dueDate ? dayjs(values.dueDate).format("YYYY-MM-DDTHH:mm:ss") : undefined,
+        status: "PENDING" as const, // Always start with PENDING status
+        priority: values.priority || ("MEDIUM" as const), // Default to MEDIUM if not specified
+        landlordId: session.user.id, // Add landlordId from session
+        roomId: values.roomId || undefined, // Optional roomId
       };
+
+      console.log("Creating task with formatted data:", taskData);
+      
 
       await LandlordTaskService.createTask(taskData);
       messageApi.success("Task created successfully!");
@@ -194,10 +205,18 @@ export default function LandlordDashboardPage() {
       fetchTasks();
     } catch (error) {
       console.error("Error creating task:", error);
-      const errorMessage = error instanceof Error ? error.message : "Failed to create task";
+      let errorMessage = "Failed to create task";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+        // Try to extract more specific error from API response
+        if (error.message.includes("400")) {
+          errorMessage = "Invalid data provided. Please check your input and try again.";
+        } else if (error.message.includes("500")) {
+          errorMessage = "Server error occurred. Please try again later.";
+        }
+      }
       messageApi.error(errorMessage);
-    } finally {
-      setIsSubmittingCreate(false);
+
     }
   };
 
@@ -216,13 +235,19 @@ export default function LandlordDashboardPage() {
         return;
       }
 
-      // Format updated data
+
+      // Format the update data properly
+
       const updateData = {
         ...values,
         title: values.title.trim(),
         description: values.description?.trim() || undefined,
-        dueDate: values.dueDate ? dayjs(values.dueDate).format() : undefined,
+        dueDate: values.dueDate ? dayjs(values.dueDate).format("YYYY-MM-DDTHH:mm:ss") : undefined,
       };
+
+      console.log("Updating task with formatted data:", updateData);
+      console.log("Selected task ID:", selectedTask.id);
+      
 
       await LandlordTaskService.updateTask(selectedTask.id, updateData);
       messageApi.success("Task updated successfully!");
@@ -232,10 +257,20 @@ export default function LandlordDashboardPage() {
       fetchTasks();
     } catch (error) {
       console.error("Error updating task:", error);
-      const errorMessage = error instanceof Error ? error.message : "Failed to update task";
+      let errorMessage = "Failed to update task";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+        // Try to extract more specific error from API response
+        if (error.message.includes("400")) {
+          errorMessage = "Invalid data provided. Please check your input and try again.";
+        } else if (error.message.includes("500")) {
+          errorMessage = "Server error occurred. Please try again later.";
+        } else if (error.message.includes("404")) {
+          errorMessage = "Task not found. It may have been deleted.";
+        }
+      }
       messageApi.error(errorMessage);
-    } finally {
-      setIsSubmittingEdit(false);
+
     }
   };
 
@@ -271,11 +306,26 @@ export default function LandlordDashboardPage() {
 
   // Open edit modal
   const openEditModal = (task: LandlordTaskResponseDto) => {
+    console.log("Opening edit modal for task:", task);
+    
+    if (!task || !task.id) {
+      messageApi.error("Invalid task data");
+      return;
+    }
+
     setSelectedTask(task);
-    editForm.setFieldsValue({
-      ...task,
+    
+    // Safely set form values with fallbacks
+    const formValues = {
+      title: task.title || '',
+      description: task.description || '',
+      priority: task.priority || 'MEDIUM',
+      status: task.status || 'PENDING',
       dueDate: task.dueDate ? dayjs(task.dueDate) : null,
-    });
+    };
+    
+    console.log("Setting form values:", formValues);
+    editForm.setFieldsValue(formValues);
     setIsEditModalOpen(true);
   };
 
@@ -292,27 +342,47 @@ export default function LandlordDashboardPage() {
   // Table columns
   const columns = [
     {
-      title: "Task",
-      key: "task",
-      render: (record: LandlordTaskResponseDto) => (
+      title: "Title",
+      dataIndex: "title",
+      key: "title",
+      width: 250,
+      render: (title: string, record: LandlordTaskResponseDto) => (
         <div>
           <div className="font-semibold text-gray-900 dark:text-white">
-            {record.title}
+            {title}
           </div>
-          {record.description && (
-            <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-              {record.description.length > 50 
-                ? `${record.description.substring(0, 50)}...`
-                : record.description
-              }
-            </div>
-          )}
-          {record.contract && (
-            <Tag className="mt-1 text-xs">
-              Contract: {record.contract.contractName}
-            </Tag>
-          )}
+          <div className="flex flex-wrap gap-1 mt-1">
+            {record.contract && (
+              <Tag className="text-xs" color="blue">
+                Contract: {record.contract.contractName}
+              </Tag>
+            )}
+            {record.room && (
+              <Tag className="text-xs" color="green">
+                Room: {record.room.title}
+              </Tag>
+            )}
+          </div>
+
         </div>
+      ),
+    },
+    {
+      title: "Description",
+      dataIndex: "description",
+      key: "description",
+      width: 300,
+      render: (description: string) => (
+        description ? (
+          <div className="text-sm text-gray-600 dark:text-gray-300">
+            {description.length > 80 
+              ? `${description.substring(0, 80)}...`
+              : description
+            }
+          </div>
+        ) : (
+          <Text type="secondary" className="text-xs">No description</Text>
+        )
       ),
     },
     {
@@ -355,32 +425,6 @@ export default function LandlordDashboardPage() {
             {date.format("MMM DD, YYYY")}
             {isOverdue && <Text type="danger" className="ml-2">(Overdue)</Text>}
           </div>
-        );
-      },
-    },
-    {
-      title: "Room Title",
-      key: "roomTitle", 
-      render: (record: LandlordTaskResponseDto) => {
-        const roomTitle = (record as any).roomTitle || record.room?.title;
-        const roomId = (record as any).roomId || record.room?.id;
-        
-        return roomTitle ? (
-          <div>
-            <div className="text-sm font-medium text-gray-900 dark:text-white">
-              {roomTitle.length > 60 
-                ? `${roomTitle.substring(0, 60)}...`
-                : roomTitle
-              }
-            </div>
-            {roomId && (
-              <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                Room ID: {roomId}
-              </div>
-            )}
-          </div>
-        ) : (
-          <Text type="secondary">General Task</Text>
         );
       },
     },
@@ -433,16 +477,22 @@ export default function LandlordDashboardPage() {
                   },
                   {
                     key: "delete",
-                    label: <Text type="danger">Delete Task</Text>,
-                    onClick: () => {
-                      Modal.confirm({
-                        title: "Delete Task",
-                        content: "Are you sure you want to delete this task?",
-                        okText: "Delete",
-                        okType: "danger",
-                        onOk: () => handleDeleteTask(record.id),
-                      });
-                    },
+                    label: (
+                      <Popconfirm
+                        title="Delete Task"
+                        description="Are you sure you want to delete this task?"
+                        onConfirm={() => handleDeleteTask(record.id)}
+                        okText="Delete"
+                        cancelText="Cancel"
+                        okType="danger"
+                        placement="topRight"
+                      >
+                        <span className="text-red-500 hover:text-red-700">
+                          <DeleteOutlined className="mr-2" />
+                          Delete Task
+                        </span>
+                      </Popconfirm>
+                    ),
                   },
                 ],
               }}
@@ -457,6 +507,8 @@ export default function LandlordDashboardPage() {
   ];
 
   const completionRate = taskStats.total > 0 ? (taskStats.completed / taskStats.total) * 100 : 0;
+  console.log("Task Stats:", taskStats);
+  console.log("Completion Rate:", completionRate);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:bg-gradient-to-br dark:from-[#001529] dark:to-[#002140] p-6">
@@ -551,9 +603,9 @@ export default function LandlordDashboardPage() {
       {/* Progress Card */}
       <Row gutter={[24, 24]} className="mb-8">
         <Col span={24}>
-          <Card className="shadow-lg bg-white dark:bg-[#22304a] border border-gray-200 dark:border-gray-600">
-            <Title level={4} className="!text-gray-900 dark:!text-white !mb-4">
-              📊 Completion Progress
+          <Card className="shadow-lg bg-white dark:bg-[#22304a] border border-gray-200 dark:border-gray-600 min-h-[200px]">
+            <Title level={4} className="!text-gray-900 dark:!text-white !mb-6">
+              📊 Task Completion Progress
             </Title>
             <Progress
               percent={Math.round(completionRate)}
@@ -561,10 +613,20 @@ export default function LandlordDashboardPage() {
                 "0%": "#1890ff",
                 "100%": "#52c41a",
               }}
-              size={12}
-              format={(percent) => `${percent}% Complete`}
-              style={{ fontSize: '16px', fontWeight: 'bold' }}
+              trailColor="#f0f0f0"
+              size={{ height: 16 }}
+              format={(percent) => (
+                <span className="text-gray-900 dark:text-white font-bold">
+                  {percent}% Complete
+                </span>
+              )}
+              className="mb-4"
             />
+            
+            {/* Debug info */}
+            <div className="text-xs text-gray-500 mb-2">
+              Progress: {taskStats.completed} completed out of {taskStats.total} total tasks
+            </div>
             <div className="mt-6 grid grid-cols-2 gap-4">
               <div className="text-center p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
                 <div className="text-2xl font-bold text-green-600 dark:text-green-400">
@@ -740,7 +802,10 @@ export default function LandlordDashboardPage() {
                 <Select placeholder="Select priority level">
                   {Object.entries(priorityConfig).map(([key, config]) => (
                     <Option key={key} value={key}>
-                      <Tag color={config.color}>{config.label}</Tag>
+                      <span className="flex items-center gap-2">
+                        <FlagOutlined />
+                        <span className="text-gray-900">{config.label}</span>
+                      </span>
                     </Option>
                   ))}
                 </Select>
@@ -748,26 +813,14 @@ export default function LandlordDashboardPage() {
             </Col>
             
             <Col span={12}>
-              <Form.Item 
-                name="dueDate" 
-                label="Due Date"
-                rules={[
-                  {
-                    validator: (_, value) => {
-                      if (value && dayjs(value).isBefore(dayjs(), 'day')) {
-                        return Promise.reject(new Error('Due date cannot be in the past'));
-                      }
-                      return Promise.resolve();
-                    }
-                  }
-                ]}
-              >
+              <Form.Item name="dueDate" label="Due Date">
                 <DatePicker 
                   style={{ width: "100%" }} 
                   placeholder="Select due date (optional)"
-                  disabledDate={(current) => current && current < dayjs().startOf('day')}
                   showTime={{ format: 'HH:mm' }}
                   format="YYYY-MM-DD HH:mm"
+                  disabledDate={(current) => current && current < dayjs().startOf('day')}
+
                 />
               </Form.Item>
             </Col>
@@ -928,20 +981,192 @@ export default function LandlordDashboardPage() {
           </Form.Item>
         </Form>
       </Modal>
-
-      {/* Task Detail Drawer */}
-      <TaskDetailDrawer
+      {/* Task Detail Drawer - Asana Style */}
+      <Drawer
+        title={
+          <div className="flex items-center justify-between">
+            <span className="text-lg font-semibold">Task Details</span>
+            {selectedTask && (
+              <Button
+                type="text"
+                size="small"
+                icon={<EditOutlined />}
+                onClick={() => {
+                  setIsDetailDrawerOpen(false);
+                  openEditModal(selectedTask);
+                }}
+              >
+                Edit
+              </Button>
+            )}
+          </div>
+        }
         open={isDetailDrawerOpen}
-        task={selectedTask}
+
         onClose={() => {
           setIsDetailDrawerOpen(false);
           setSelectedTask(null);
         }}
-        onEdit={(task) => {
-          setIsDetailDrawerOpen(false);
-          openEditModal(task);
+
+        width={480}
+        placement="right"
+        styles={{
+          body: { padding: 0 }
         }}
-      />
+      >
+        {selectedTask && (
+          <div className="h-full">
+            {/* Task Header */}
+            <div className="p-6 border-b border-gray-200 dark:border-gray-600">
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                {selectedTask.title}
+              </h2>
+              <div className="flex items-center gap-3 mb-4">
+                <Tag 
+                  color={priorityConfig[selectedTask.priority as keyof typeof priorityConfig]?.color} 
+                  icon={<FlagOutlined />}
+                >
+                  {priorityConfig[selectedTask.priority as keyof typeof priorityConfig]?.label} Priority
+                </Tag>
+                <Tag 
+                  color={statusConfig[selectedTask.status as keyof typeof statusConfig]?.color} 
+                  icon={statusConfig[selectedTask.status as keyof typeof statusConfig]?.icon}
+                >
+                  {statusConfig[selectedTask.status as keyof typeof statusConfig]?.label}
+                </Tag>
+              </div>
+            </div>
+
+            {/* Task Content */}
+            <div className="p-6 space-y-6">
+              {/* Description */}
+              <div>
+                <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Description
+                </h3>
+                <div className="text-gray-900 dark:text-white">
+                  {selectedTask.description || (
+                    <Text type="secondary">No description provided</Text>
+                  )}
+                </div>
+              </div>
+
+              {/* Due Date */}
+              {selectedTask.dueDate && (
+                <div>
+                  <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Due Date
+                  </h3>
+                  <div className="flex items-center text-gray-900 dark:text-white">
+                    <CalendarOutlined className="mr-2" />
+                    {dayjs(selectedTask.dueDate).format("MMMM DD, YYYY HH:mm")}
+                    {dayjs(selectedTask.dueDate).isBefore(dayjs()) && selectedTask.status !== "COMPLETED" && (
+                      <Tag color="red" className="ml-2">Overdue</Tag>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Contract & Room Info */}
+              {(selectedTask.contract || selectedTask.room) && (
+                <div>
+                  <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Related Information
+                  </h3>
+                  <div className="space-y-2">
+                    {selectedTask.contract && (
+                      <div className="flex items-center text-gray-900 dark:text-white">
+                        <span className="font-medium mr-2">Contract:</span>
+                        <Tag color="blue">{selectedTask.contract.contractName}</Tag>
+                      </div>
+                    )}
+                    {selectedTask.room && (
+                      <div className="flex items-center text-gray-900 dark:text-white">
+                        <span className="font-medium mr-2">Room:</span>
+                        <Tag color="green">{selectedTask.room.title}</Tag>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Timestamps */}
+              <div>
+                <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Timeline
+                </h3>
+                <div className="text-sm text-gray-600 dark:text-gray-400">
+                  <div>Last Updated: {dayjs(selectedTask.updatedAt).format("MMM DD, YYYY HH:mm")}</div>
+                </div>
+              </div>
+
+              {/* Quick Actions */}
+              <div>
+                <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                  Quick Actions
+                </h3>
+                
+                {/* Status Change Actions */}
+                <div className="mb-4">
+                  <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wider">
+                    Change Status
+                  </h4>
+                  <div className="space-y-2">
+                    {Object.entries(statusConfig)
+                      .filter(([key]) => key !== selectedTask.status)
+                      .map(([key, config]) => (
+                       <div className="mb-2" key={key}>
+                         <Button
+                          key={key}
+                          block
+                          size="small"
+                          icon={config.icon}
+                          onClick={() => {
+                            handleStatusChange(selectedTask.id, key);
+                            setIsDetailDrawerOpen(false);
+                          }}
+                        >
+                          Mark as {config.label}
+                        </Button>
+                       </div>
+                      ))
+                    }
+                  </div>
+                </div>
+
+                {/* Danger Zone */}
+                <div>
+                  <h4 className="text-xs font-medium text-red-500 dark:text-red-400 mb-2 uppercase tracking-wider">
+                    Danger Zone
+                  </h4>
+                  <Popconfirm
+                    title="Delete Task"
+                    description="Are you sure you want to delete this task?"
+                    onConfirm={() => {
+                      handleDeleteTask(selectedTask.id);
+                      setIsDetailDrawerOpen(false);
+                    }}
+                    okText="Delete"
+                    cancelText="Cancel"
+                    okType="danger"
+                    placement="topLeft"
+                  >
+                    <Button
+                      block
+                      size="small"
+                      danger
+                      icon={<DeleteOutlined />}
+                    >
+                      Delete Task
+                    </Button>
+                  </Popconfirm>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </Drawer>
+
     </div>
   );
 }

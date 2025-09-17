@@ -387,6 +387,8 @@ export interface LandlordTaskCreateDto {
   description?: string;
   priority?: 'LOW' | 'MEDIUM' | 'HIGH';
   dueDate?: string;
+  status?: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
+  landlordId?: string;
   contractId?: string;
   roomId?: string;
   assignedToId?: string;
