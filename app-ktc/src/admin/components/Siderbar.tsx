@@ -6,6 +6,7 @@ import { Link, useLocation } from "react-router";
 import { FaChartLine } from "react-icons/fa";
 import { MdSupervisorAccount } from "react-icons/md";
 import { RiHotelLine } from "react-icons/ri";
+import { BsFillFilePostFill } from "react-icons/bs";
 
 const { Sider } = Layout;
 
@@ -64,7 +65,7 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
           },
           {
             key: "4",
-            icon: <RiHotelLine />,
+            icon: <BsFillFilePostFill />,
             label: <Link to="/admin/manage-post-type">Manage Post Type</Link>,
           },
         ]}
