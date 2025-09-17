@@ -65,6 +65,29 @@ export async function updateRequirementStatus(id: string): Promise<void> {
     }
 }
 
+
+//upload image
+export async function uploadRequirementImage(idRequirement: string, imageFile: File): Promise<void> {
+    const formData = new FormData();
+    formData.append('idRequirement', idRequirement);
+    formData.append('image', imageFile);
+
+    const response = await fetch(`/api/requirements/upload-image`, {
+        method: 'POST',
+        body: formData,
+    });
+
+    if (!response.ok) {
+        const result = await response.json();
+        let errorMsg = result?.error || result?.message || 'Failed to upload image';
+        if (Array.isArray(errorMsg)) {
+            errorMsg = errorMsg[0];
+        }
+        throw new Error(errorMsg);
+    }
+}
+////
+
 export async function rejectRequirement(id: string): Promise<void> {
     const response = await fetch(`/api/requirements/reject`, {
         method: 'PATCH',

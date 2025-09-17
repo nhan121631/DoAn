@@ -1,5 +1,7 @@
 package com.ants.ktc.ants_ktc.repositories.projection;
 
+import java.time.LocalDateTime;
+
 public interface RequirementUserProjection {
     String getId();
 
@@ -13,4 +15,7 @@ public interface RequirementUserProjection {
 
     int getStatus();
 
+    String getImageUrl();
+
+    LocalDateTime getCreatedDate();
 }

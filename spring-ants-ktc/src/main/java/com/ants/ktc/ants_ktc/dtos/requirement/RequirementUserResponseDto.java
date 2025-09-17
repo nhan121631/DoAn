@@ -1,5 +1,6 @@
 package com.ants.ktc.ants_ktc.dtos.requirement;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 import lombok.AllArgsConstructor;
@@ -18,5 +19,9 @@ public class RequirementUserResponseDto {
     private String email;
     private String description;
     private int status;
+
+    private String imageUrl;
+
+    private LocalDateTime createdDate;
 
 }

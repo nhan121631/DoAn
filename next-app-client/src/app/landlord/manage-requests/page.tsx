@@ -4,6 +4,7 @@
 import { ColumnsType } from "antd/es/table";
 import { Table, Popconfirm, Button, message, Tag } from "antd";
 import React, { useEffect } from "react";
+import { EyeOutlined } from "@ant-design/icons";
 
 import { useState } from "react";
 import { PaginatedResponse, Requirement } from "@/types/types";
@@ -13,11 +14,14 @@ import {
   updateRequirementStatus,
 } from "@/services/Requirements";
 import { useSession } from "next-auth/react";
+import RequestDetailModal from "../components/manage-requests/ModalRequest";
 
 export default function ManageRequests() {
   const [requests, setRequests] = useState<Requirement[]>([]);
   const [paging, setPaging] = useState<PaginatedResponse<Requirement>>();
   const [messageApi, contextHolder] = message.useMessage();
+  const [detailModalOpen, setDetailModalOpen] = useState(false);
+  const [selectedRequest, setSelectedRequest] = useState<Requirement | null>(null);
 
   const handleStatusChange = async (id: string) => {
     try {
@@ -38,6 +42,7 @@ export default function ManageRequests() {
       });
     }
   };
+
   const handleReject = async (id: string) => {
     try {
       await rejectRequirement(id);
@@ -57,6 +62,12 @@ export default function ManageRequests() {
       });
     }
   };
+
+  const handleViewDetail = (record: Requirement) => {
+    setSelectedRequest(record);
+    setDetailModalOpen(true);
+  };
+
   const { data: session } = useSession();
 
   useEffect(() => {
@@ -113,6 +124,40 @@ export default function ManageRequests() {
       title: "Request Description",
       dataIndex: "description",
       key: "description",
+      render: (text: string) => (
+        <div className="max-w-xs truncate" title={text}>
+          {text}
+        </div>
+      ),
+    },
+    {
+      title: "Created Date",
+      dataIndex: "createdDate",
+      key: "createdDate",
+      width: 120,
+      render: (date: string) => {
+        if (!date) return 'N/A';
+        return new Date(date).toLocaleDateString('vi-VN', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
+        });
+      },
+      sorter: (a, b) => new Date(a.createdDate).getTime() - new Date(b.createdDate).getTime(),
+    },
+    {
+      title: "Detail",
+      key: "detail",
+      width: 80,
+      render: (_, record) => (
+        <Button
+          type="text"
+          icon={<EyeOutlined />}
+          onClick={() => handleViewDetail(record)}
+          className="text-blue-500 hover:text-blue-700"
+          title="View Details"
+        />
+      ),
     },
     {
       title: "Status",
@@ -136,6 +181,7 @@ export default function ManageRequests() {
           <Tag color="red">Rejected</Tag>
         ),
     },
+    
     {
       title: "Action",
       dataIndex: "action",
@@ -186,6 +232,16 @@ export default function ManageRequests() {
           pageSize: paging?.size ?? 5,
           total: paging?.totalRecords ?? 0,
         }}
+      />
+
+      {/* Detail Modal */}
+      <RequestDetailModal
+        open={detailModalOpen}
+        onCancel={() => {
+          setDetailModalOpen(false);
+          setSelectedRequest(null);
+        }}
+        request={selectedRequest}
       />
     </div>
   );
