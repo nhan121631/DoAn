@@ -8,23 +8,48 @@ const BASE_URL = "/api/landlord-tasks";
 export const LandlordTaskService = {
   // Create a new landlord task
   async createTask(data: LandlordTaskCreateDto): Promise<LandlordTaskResponseDto> {
+    console.log("Sending task data to API:", data);
+    
     const res = await fetch(`${BASE_URL}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
     });
-    if (!res.ok) throw new Error("Failed to create landlord task");
+    
+    if (!res.ok) {
+      const errorData = await res.text();
+      console.error("Create task API error:", {
+        status: res.status,
+        statusText: res.statusText,
+        error: errorData
+      });
+      throw new Error(`Failed to create landlord task: ${res.status} - ${errorData}`);
+    }
+    
     return res.json();
   },
 
   // Update an existing landlord task
   async updateTask(taskId: string, data: LandlordTaskUpdateDto): Promise<LandlordTaskResponseDto> {
+    console.log("Updating task ID:", taskId, "with data:", data);
+    
     const res = await fetch(`${BASE_URL}/${taskId}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
     });
-    if (!res.ok) throw new Error("Failed to update landlord task");
+    
+    if (!res.ok) {
+      const errorData = await res.text();
+      console.error("Update task API error:", {
+        taskId,
+        status: res.status,
+        statusText: res.statusText,
+        error: errorData
+      });
+      throw new Error(`Failed to update landlord task: ${res.status} - ${errorData}`);
+    }
+    
     return res.json();
   },
 
