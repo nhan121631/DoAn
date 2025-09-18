@@ -10,8 +10,9 @@ import { userFetchBookings } from "@/services/BookingService";
 import { RequirementRequestRoomDto } from "@/types/types";
 import { createRequest, uploadRequirementImage  } from "@/services/Requirements";
 import { AlignCenter } from "lucide-react";
-import { createRequestNotification } from "@/services/NotificationService";
+import { bookingConfirmationNotification, createRequestNotification } from "@/services/NotificationService";
 import { useSession } from "next-auth/react";
+import { getLandlordByRoomId } from "@/services/RoomService";
 
 function useRentalStatusModal() {
   const [visible, setVisible] = useState(false);
@@ -44,6 +45,7 @@ interface RentalData {
   price: string;
   status: number;
   isRemoved?: number;
+  userId?: string | number;
 }
 
 function RentalHistory() {
@@ -168,9 +170,11 @@ function RentalHistory() {
   }
 };
 
-  const handleAccept = (key: string) => {
+  const handleAccept = async (key: string, idRoom: string | number | undefined) => {
     modal.setSelectedKey(key);
     modal.setVisible(true);
+    const landlordId = await getLandlordByRoomId(idRoom as string);
+    await bookingConfirmationNotification(session?.user.id, landlordId.id, "Your booking deposit is confirmed and waiting for landlord's confirmation.");
   };
 
   const handleConfirm = async () => {
@@ -253,7 +257,7 @@ function RentalHistory() {
               <Button
                 type="primary"
                 size="small"
-                onClick={() => handleAccept(record.key)}
+                onClick={() => handleAccept(record.key, record.idRoom)}
               >
                 Confirm Deposit
               </Button>

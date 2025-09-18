@@ -33,6 +33,7 @@ import dayjs from "dayjs";
 import type { Key } from "react";
 import React, { useState } from "react";
 import BillDetailModal from "./BillDetailModal";
+import { paymentNotification } from "@/services/NotificationService";
 
 interface BillsTabProps {
   contract: ContractData;
@@ -218,6 +219,7 @@ export default function BillsTab({
         waterPrice: roomData?.waterPrice,
       };
       await BillService.createBill(contract.id, billData);
+      await paymentNotification(contract.landlordId, contract.tenantId, contract.id, "New bill added to your contract. Please check and make payment on time.");
       messageApi.success("Bill added!");
       setAddBillOpen(false);
       addForm.resetFields();

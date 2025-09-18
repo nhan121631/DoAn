@@ -5,6 +5,7 @@ import Image from "next/image";
 import { BillData, ContractData, LandlordPaymentInfo } from "@/types/types";
 import { BillService } from "@/services/BillService";
 import { createPayment } from "@/services/PaymentServive";
+import { paymentNotification } from "@/services/NotificationService";
 
 interface BillPaymentModalProps {
   open: boolean;
@@ -121,6 +122,8 @@ function BillPaymentModal({
       await BillService.updateBillStatus(contract.id, bill.id, "CONFIRMING");
 
       messageApi.success("Transfer confirmation submitted successfully!");
+
+      await paymentNotification(contract.tenantId, contract.landlordId, contract.id, "Transfer confirmation submitted successfully for room: "+ contract.contractName +". Please verify the payment.");
       onConfirm();
       setTransferConfirmed(false);
     } catch (error) {

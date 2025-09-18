@@ -111,6 +111,8 @@ function AppHeader({ collapsed, toggleCollapsed }: AppHeaderProps) {
         router.push(`/landlord/manage-requests`);
       } else if (type === "resident_success") {
         router.push(`/landlord/manage-contracts/${contractId}`);
+      } else if (type === "payment_success") {
+        router.push(`/landlord/manage-contracts/${contractId}`);
       }
       console.log("Notification clicked:", id);
     } catch (err) {
@@ -151,6 +153,9 @@ function AppHeader({ collapsed, toggleCollapsed }: AppHeaderProps) {
                     {item.type === "resident_success"
                       && "Rental resident"
                       }
+                    {item.type === "payment_success"
+                      && "Bill Payment"
+                    }
                   </span>
                   {!item.isRead && (
                     <div className="w-2 h-2 bg-blue-500 rounded-full ml-2 mt-1"></div>

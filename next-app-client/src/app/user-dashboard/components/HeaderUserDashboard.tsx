@@ -110,6 +110,8 @@ export default function HeaderUserDashboard({
         router.push(`/user-dashboard/request-status`);
       } else if (type === "resident_success") {
         router.push(`/user-dashboard/rental-history`);
+      } else if (type === "payment_success") {
+        router.push(`/user-dashboard/my-contracts/${contractId}`);
       }
       setNotificationOpen(false);
     } catch (err) {
@@ -145,6 +147,7 @@ export default function HeaderUserDashboard({
                       {item.type === "booking_success" && "Rental Booking"}
                       {item.type === "request_success" && "Rental Request"}
                       {item.type === "resident_success" && "Rental resident"}
+                      {item.type === "payment_success" && "Payment request"}
                     </span>
                     {!item.isRead && (
                       <div className="w-2 h-2 bg-blue-500 rounded-full ml-2 mt-1"></div>
