@@ -194,14 +194,44 @@ export default function LandlordDashboardPage() {
   const handleCreateTask = async (values: LandlordTaskCreateDto) => {
     setIsSubmittingCreate(true);
     try {
+      // Validate form fields first
+      await createForm.validateFields();
+    } catch (error) {
+      // If validation fails, don't proceed
+      setIsSubmittingCreate(false);
+      return;
+    }
+    
+    try {
       // Validate required fields
       if (!values.title?.trim()) {
         messageApi.error("Task title is required");
+        setIsSubmittingCreate(false);
         return;
       }
 
       if (!session?.user?.id) {
         messageApi.error("User session not found");
+        setIsSubmittingCreate(false);
+        return;
+      }
+
+      // Additional validation for dates
+      if (values.startDate && dayjs(values.startDate).isBefore(dayjs())) {
+        messageApi.error("Start date must be in the future");
+        setIsSubmittingCreate(false);
+        return;
+      }
+
+      if (values.dueDate && dayjs(values.dueDate).isBefore(dayjs())) {
+        messageApi.error("Due date must be in the future");
+        setIsSubmittingCreate(false);
+        return;
+      }
+
+      if (values.startDate && values.dueDate && dayjs(values.dueDate).isBefore(dayjs(values.startDate))) {
+        messageApi.error("Due date must be after or equal to start date");
+        setIsSubmittingCreate(false);
         return;
       }
 
@@ -209,6 +239,9 @@ export default function LandlordDashboardPage() {
       const taskData = {
         title: values.title.trim(),
         description: values.description?.trim() || undefined,
+        startDate: values.startDate
+          ? dayjs(values.startDate).format("YYYY-MM-DDTHH:mm:ss")
+          : undefined,
         dueDate: values.dueDate
           ? dayjs(values.dueDate).format("YYYY-MM-DDTHH:mm:ss")
           : undefined,
@@ -239,6 +272,8 @@ export default function LandlordDashboardPage() {
         }
       }
       messageApi.error(errorMessage);
+    } finally {
+      setIsSubmittingCreate(false);
     }
   };
 
@@ -249,11 +284,39 @@ export default function LandlordDashboardPage() {
       return;
     }
 
+    // Validate form first to prevent submission if there are errors
+    try {
+      await editForm.validateFields();
+    } catch (errorInfo) {
+      console.log('Validation failed:', errorInfo);
+      return; // Don't proceed if validation fails
+    }
+
     setIsSubmittingEdit(true);
     try {
       // Validate required fields
       if (!values.title?.trim()) {
         messageApi.error("Task title is required");
+        setIsSubmittingEdit(false);
+        return;
+      }
+
+      // Additional validation for dates
+      if (values.startDate && dayjs(values.startDate).isBefore(dayjs())) {
+        messageApi.error("Start date must be in the future");
+        setIsSubmittingEdit(false);
+        return;
+      }
+
+      if (values.dueDate && dayjs(values.dueDate).isBefore(dayjs())) {
+        messageApi.error("Due date must be in the future");
+        setIsSubmittingEdit(false);
+        return;
+      }
+
+      if (values.startDate && values.dueDate && dayjs(values.dueDate).isBefore(dayjs(values.startDate))) {
+        messageApi.error("Due date must be after or equal to start date");
+        setIsSubmittingEdit(false);
         return;
       }
 
@@ -263,6 +326,9 @@ export default function LandlordDashboardPage() {
         ...values,
         title: values.title.trim(),
         description: values.description?.trim() || undefined,
+        startDate: values.startDate
+          ? dayjs(values.startDate).format("YYYY-MM-DDTHH:mm:ss")
+          : undefined,
         dueDate: values.dueDate
           ? dayjs(values.dueDate).format("YYYY-MM-DDTHH:mm:ss")
           : undefined,
@@ -293,6 +359,8 @@ export default function LandlordDashboardPage() {
         }
       }
       messageApi.error(errorMessage);
+    } finally {
+      setIsSubmittingEdit(false);
     }
   };
 
@@ -345,6 +413,7 @@ export default function LandlordDashboardPage() {
       description: task.description || "",
       priority: task.priority || "MEDIUM",
       status: task.status || "PENDING",
+      startDate: task.startDate ? dayjs(task.startDate) : null,
       dueDate: task.dueDate ? dayjs(task.dueDate) : null,
     };
 
@@ -435,6 +504,22 @@ export default function LandlordDashboardPage() {
       },
     },
     {
+      title: "Start Date",
+      dataIndex: "startDate",
+      key: "startDate",
+      render: (startDate: string) => {
+        if (!startDate) return <Text type="secondary">No start date</Text>;
+
+        const date = dayjs(startDate);
+        return (
+          <div>
+            <CalendarOutlined className="mr-1" />
+            {date.format("MMM DD, YYYY HH:mm")}
+          </div>
+        );
+      },
+    },
+    {
       title: "Due Date",
       dataIndex: "dueDate",
       key: "dueDate",
@@ -448,7 +533,7 @@ export default function LandlordDashboardPage() {
         return (
           <div className={isOverdue ? "text-red-500" : ""}>
             <CalendarOutlined className="mr-1" />
-            {date.format("MMM DD, YYYY")}
+            {date.format("MMM DD, YYYY HH:mm")}
             {isOverdue && (
               <Text type="danger" className="ml-2">
                 (Overdue)
@@ -839,6 +924,89 @@ export default function LandlordDashboardPage() {
 
           <Row gutter={16}>
             <Col span={12}>
+              <Form.Item 
+                name="startDate" 
+                label="Start Date"
+                rules={[
+                  {
+                    validator: (_, value) => {
+                      if (value && dayjs(value).isBefore(dayjs())) {
+                        return Promise.reject(
+                          new Error("Start date and time must be in the future")
+                        );
+                      }
+                      return Promise.resolve();
+                    },
+                  },
+                ]}
+              >
+                <DatePicker
+                  style={{ width: "100%" }}
+                  placeholder="Select start date (optional)"
+                  showTime={{ 
+                    format: "HH:mm",
+                    defaultValue: dayjs().hour(18).minute(0) // Default 18:00
+                  }}
+                  format="YYYY-MM-DD HH:mm"
+                  disabledDate={(current) =>
+                    current && current < dayjs().startOf("day")
+                  }
+                  onChange={() => {
+                    // Trigger validation for due date when start date changes
+                    createForm.validateFields(['dueDate']);
+                  }}
+                />
+              </Form.Item>
+            </Col>
+
+            <Col span={12}>
+              <Form.Item 
+                name="dueDate" 
+                label="Due Date"
+                rules={[
+                  {
+                    validator: (_, value) => {
+                      if (value && dayjs(value).isBefore(dayjs())) {
+                        return Promise.reject(
+                          new Error("Due date and time must be in the future")
+                        );
+                      }
+                      const startDate = createForm.getFieldValue("startDate");
+                      if (value && startDate && dayjs(value).isBefore(dayjs(startDate))) {
+                        return Promise.reject(
+                          new Error("Due date must be after or equal to start date")
+                        );
+                      }
+                      return Promise.resolve();
+                    },
+                  },
+                ]}
+              >
+                <DatePicker
+                  style={{ width: "100%" }}
+                  placeholder="Select due date (optional)"
+                  showTime={{ 
+                    format: "HH:mm",
+                    defaultValue: dayjs().hour(18).minute(0) // Default 18:00
+                  }}
+                  format="YYYY-MM-DD HH:mm"
+                  disabledDate={(current) => {
+                    if (current && current < dayjs().startOf("day")) {
+                      return true;
+                    }
+                    return false;
+                  }}
+                  onChange={() => {
+                    // Trigger validation when due date changes
+                    createForm.validateFields(['dueDate']);
+                  }}
+                />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Row gutter={16}>
+            <Col span={12}>
               <Form.Item
                 name="priority"
                 label="Priority"
@@ -857,20 +1025,6 @@ export default function LandlordDashboardPage() {
                     </Option>
                   ))}
                 </Select>
-              </Form.Item>
-            </Col>
-
-            <Col span={12}>
-              <Form.Item name="dueDate" label="Due Date">
-                <DatePicker
-                  style={{ width: "100%" }}
-                  placeholder="Select due date (optional)"
-                  showTime={{ format: "HH:mm" }}
-                  format="YYYY-MM-DD HH:mm"
-                  disabledDate={(current) =>
-                    current && current < dayjs().startOf("day")
-                  }
-                />
               </Form.Item>
             </Col>
           </Row>
@@ -955,6 +1109,78 @@ export default function LandlordDashboardPage() {
           </Form.Item>
 
           <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item 
+                name="startDate" 
+                label="Start Date"
+                validateTrigger={["onChange", "onBlur"]}
+                rules={[
+                  {
+                    validator: (_, value) => {
+                      if (value && dayjs(value).isBefore(dayjs())) {
+                        return Promise.reject(
+                          new Error("Start date and time must be in the future")
+                        );
+                      }
+                      return Promise.resolve();
+                    },
+                  },
+                ]}
+              >
+                <DatePicker
+                  style={{ width: "100%" }}
+                  placeholder="Select start date (optional)"
+                  showTime={{ format: "HH:mm" }}
+                  format="YYYY-MM-DD HH:mm"
+                  onChange={(value) => {
+                    // Trigger validation immediately when value changes
+                    setTimeout(() => {
+                      createForm.validateFields(['startDate', 'dueDate']);
+                    }, 0);
+                  }}
+                />
+              </Form.Item>
+            </Col>
+
+            <Col span={12}>
+              <Form.Item
+                name="dueDate"
+                label="Due Date"
+                rules={[
+                  {
+                    validator: (_, value) => {
+                      if (value && dayjs(value).isBefore(dayjs())) {
+                        return Promise.reject(
+                          new Error("Due date and time must be in the future")
+                        );
+                      }
+                      // Validate due date is after start date
+                      const startDate = editForm.getFieldValue("startDate");
+                      if (startDate && value && dayjs(value).isBefore(dayjs(startDate))) {
+                        return Promise.reject(
+                          new Error("Due date must be after or equal to start date")
+                        );
+                      }
+                      return Promise.resolve();
+                    },
+                  },
+                ]}
+              >
+                <DatePicker
+                  style={{ width: "100%" }}
+                  placeholder="Select due date (optional)"
+                  showTime={{ format: "HH:mm" }}
+                  format="YYYY-MM-DD HH:mm"
+                  onChange={() => {
+                    // Trigger validation when due date changes
+                    editForm.validateFields(['dueDate']);
+                  }}
+                />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Row gutter={16}>
             <Col span={8}>
               <Form.Item
                 name="priority"
@@ -986,32 +1212,6 @@ export default function LandlordDashboardPage() {
                     </Option>
                   ))}
                 </Select>
-              </Form.Item>
-            </Col>
-
-            <Col span={8}>
-              <Form.Item
-                name="dueDate"
-                label="Due Date"
-                rules={[
-                  {
-                    validator: (_, value) => {
-                      if (value && dayjs(value).isBefore(dayjs(), "day")) {
-                        return Promise.reject(
-                          new Error("Due date cannot be in the past")
-                        );
-                      }
-                      return Promise.resolve();
-                    },
-                  },
-                ]}
-              >
-                <DatePicker
-                  style={{ width: "100%" }}
-                  placeholder="Select due date (optional)"
-                  showTime={{ format: "HH:mm" }}
-                  format="YYYY-MM-DD HH:mm"
-                />
               </Form.Item>
             </Col>
           </Row>
@@ -1124,6 +1324,19 @@ export default function LandlordDashboardPage() {
                   )}
                 </div>
               </div>
+
+              {/* Start Date */}
+              {selectedTask.startDate && (
+                <div>
+                  <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Start Date
+                  </h3>
+                  <div className="flex items-center text-gray-900 dark:text-white">
+                    <CalendarOutlined className="mr-2" />
+                    {dayjs(selectedTask.startDate).format("MMMM DD, YYYY HH:mm")}
+                  </div>
+                </div>
+              )}
 
               {/* Due Date */}
               {selectedTask.dueDate && (

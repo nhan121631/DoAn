@@ -399,6 +399,7 @@ export interface LandlordTaskCreateDto {
   title: string;
   description?: string;
   priority?: 'LOW' | 'MEDIUM' | 'HIGH';
+  startDate?: string;
   dueDate?: string;
   status?: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
   landlordId?: string;
@@ -412,6 +413,7 @@ export interface LandlordTaskUpdateDto {
   description?: string;
   priority?: 'LOW' | 'MEDIUM' | 'HIGH';
   status?: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
+  startDate?: string;
   dueDate?: string;
   assignedToId?: string;
 }
@@ -422,6 +424,7 @@ export interface LandlordTaskResponseDto {
   description?: string;
   priority: 'LOW' | 'MEDIUM' | 'HIGH';
   status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
+  startDate?: string;
   dueDate?: string;
   createdAt: string;
   updatedAt: string;

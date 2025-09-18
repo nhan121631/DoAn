@@ -20,12 +20,14 @@ public class LandlordTaskUpdateDto {
     @Size(max = 500, message = "Description must be less than 500 characters")
     private String description;
 
+    @FutureOrPresent(message = "Start date must be today or in the future")
+    private LocalDateTime startDate;
+
     @FutureOrPresent(message = "Due date must be today or in the future")
     private LocalDateTime dueDate;
 
-    private String status;   // optional update
+    private String status; // optional update
 
     private String priority; // optional update
-
 
 }

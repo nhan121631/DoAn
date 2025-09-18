@@ -14,9 +14,10 @@ public class LandlordTask extends BaseEntity {
 
     private String title;
     private String description;
+    private LocalDateTime startDate;
     private LocalDateTime dueDate;
-    private String status;       // PENDING, IN_PROGRESS, COMPLETED, CANCELED
-    private String priority;     // LOW, MEDIUM, HIGH
+    private String status; // PENDING, IN_PROGRESS, COMPLETED, CANCELED
+    private String priority; // LOW, MEDIUM, HIGH
 
     @ManyToOne
     @JoinColumn(name = "landlord_id")

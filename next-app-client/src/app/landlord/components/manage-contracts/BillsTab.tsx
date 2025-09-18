@@ -86,7 +86,7 @@ export default function BillsTab({
 
   // Update addForm serviceFee when roomData changes
   React.useEffect(() => {
-    if (roomData?.priceMonth) {
+    if (roomData?.priceMonth && addBillOpen) {
       const currentValues = addForm.getFieldsValue();
       const electricityFee =
         (currentValues.electricityUsage || 0) * (roomData.elecPrice || 0);
@@ -103,7 +103,7 @@ export default function BillsTab({
         totalAmount,
       });
     }
-  }, [roomData, addForm]);
+  }, [roomData, addForm, addBillOpen]);
 
   // Calculate fees when usage changes
   const calculateFees = (
@@ -129,7 +129,7 @@ export default function BillsTab({
 
   // Initialize add form with default values when room data is loaded
   React.useEffect(() => {
-    if (roomData) {
+    if (roomData && addBillOpen) {
       addForm.setFieldsValue({
         month: null,
         electricityUsage: 0,
@@ -141,10 +141,10 @@ export default function BillsTab({
         totalAmount: roomData.priceMonth || 0,
       });
     }
-  }, [roomData, addForm]);
+  }, [roomData, addForm, addBillOpen]);
 
   React.useEffect(() => {
-    if (editBill && roomData) {
+    if (editBill && roomData && !!editBill) {
       // Calculate reverse usage from fees if possible
       const electricityUsage = roomData?.elecPrice
         ? editBill.electricityFee / roomData.elecPrice

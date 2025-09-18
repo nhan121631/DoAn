@@ -1,6 +1,5 @@
 package com.ants.ktc.ants_ktc.dtos.LandlordTask;
 
-
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -11,6 +10,7 @@ public class LandlordTaskResponseDto {
     private UUID id;
     private String title;
     private String description;
+    private LocalDateTime startDate;
     private LocalDateTime dueDate;
     private String status;
     private String priority;
