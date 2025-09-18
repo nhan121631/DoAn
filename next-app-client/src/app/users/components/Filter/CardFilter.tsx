@@ -4,9 +4,12 @@
 
 import { useFilterStore } from "@/stores/FilterStore";
 import { useRouter } from "next/navigation";
+import FilterLoadingOverlay from "./FilterLoadingOverlay";
 
 export default function CardFilter() {
-  const { item, applyFilters } = useFilterStore((state) => state);
+  const { item, isLoading, applyFilters, setLoading } = useFilterStore(
+    (state) => state
+  );
   const router = useRouter();
 
   // Helper: convert filter object to query params
@@ -50,135 +53,173 @@ export default function CardFilter() {
     { label: "Above 90m²", min: 90, max: undefined },
   ];
   return (
-    <div className="bg-gradient-to-br from-white via-blue-50/30 to-indigo-50/40 backdrop-blur-lg border border-blue-100/50 rounded-2xl p-6 flex flex-col gap-6 w-[320px] transition-all duration-300 hover:shadow-3xl hover:scale-[1.02]">
-      {/* Header with gradient */}
-      <div className="text-center pb-2 border-b border-gradient-to-r from-transparent via-blue-200/50 to-transparent">
-        <h2 className="text-lg font-bold bg-gradient-to-r from-blue-700 via-indigo-700 to-purple-700 bg-clip-text text-transparent tracking-wide">
-          Advanced Filters
-        </h2>
-        <p className="text-sm text-gray-500 mt-1">Refine your search results</p>
+    <FilterLoadingOverlay isVisible={isLoading}>
+      <div className="bg-gradient-to-br from-white via-blue-50/30 to-indigo-50/40 backdrop-blur-lg border border-blue-100/50 rounded-2xl p-6 flex flex-col gap-6 w-[320px] transition-all duration-300 hover:shadow-3xl hover:scale-[1.02]">
+        {/* Header with gradient */}
+        <div className="text-center pb-2 border-b border-gradient-to-r from-transparent via-blue-200/50 to-transparent">
+          <h2 className="text-lg font-bold bg-gradient-to-r from-blue-700 via-indigo-700 to-purple-700 bg-clip-text text-transparent tracking-wide">
+            Advanced Filters
+          </h2>
+          <p className="text-sm text-gray-500 mt-1">
+            Refine your search results
+          </p>
+        </div>
+
+        {/* Price Range Section */}
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 bg-gradient-to-r from-orange-500 to-red-500 rounded-full"></div>
+            <h3 className="font-bold text-base text-gray-800 tracking-wide">
+              Price Range
+            </h3>
+          </div>
+          <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+            {priceRanges.map((range) => {
+              const isActive =
+                item.minPrice === range.min && item.maxPrice === range.max;
+              return (
+                <button
+                  key={range.label}
+                  className={`group relative overflow-hidden px-3 py-2.5 text-sm font-medium rounded-xl border-2 transition-all duration-300 hover:scale-105 active:scale-95 ${
+                    isActive
+                      ? "bg-gradient-to-r from-orange-500 to-red-500 text-white border-orange-400 shadow-lg shadow-orange-500/25"
+                      : "bg-white/70 text-gray-700 border-gray-200/50 hover:border-orange-300 hover:bg-gradient-to-r hover:from-orange-50 hover:to-red-50 hover:text-orange-700"
+                  }`}
+                  onClick={async (e) => {
+                    e.preventDefault();
+
+                    // Set loading state
+                    setLoading(true);
+
+                    try {
+                      let filter;
+                      if (isActive) {
+                        filter = {
+                          ...item,
+                          minPrice: undefined,
+                          maxPrice: undefined,
+                        };
+                      } else {
+                        filter = {
+                          ...item,
+                          minPrice: range.min,
+                          maxPrice: range.max,
+                        };
+                      }
+
+                      applyFilters(filter);
+                      const queryObj = filterToQuery(filter);
+                      const queryString = new URLSearchParams(
+                        queryObj
+                      ).toString();
+
+                      // Simulate network delay for better UX
+                      await new Promise((resolve) => setTimeout(resolve, 500));
+
+                      router.push(
+                        `/users${queryString ? "?" + queryString : ""}`
+                      );
+                    } finally {
+                      setLoading(false);
+                    }
+                  }}
+                >
+                  {/* Shine effect */}
+                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                    <div className="absolute top-0 -left-full w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12 group-hover:left-full transition-all duration-700"></div>
+                  </div>
+
+                  <span className="relative flex items-center gap-1 text-left w-full">
+                    {!isActive && (
+                      <span className="text-orange-500 text-xs">₫</span>
+                    )}
+                    {range.label}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Area Section */}
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 bg-gradient-to-r from-orange-500 to-red-500 rounded-full"></div>
+            <h3 className="font-bold text-base text-gray-800 tracking-wide">
+              Area Range
+            </h3>
+          </div>
+          <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+            {areaRanges.map((range) => {
+              const isActive =
+                item.minArea === range.min && item.maxArea === range.max;
+              return (
+                <button
+                  key={range.label}
+                  className={`group relative overflow-hidden px-3 py-2.5 text-sm font-medium rounded-xl border-2 transition-all duration-300 hover:scale-105 active:scale-95 ${
+                    isActive
+                      ? "bg-gradient-to-r from-orange-500 to-red-500 text-white border-orange-400 shadow-lg shadow-orange-500/25"
+                      : "bg-white/70 text-gray-700 border-gray-200/50 hover:border-orange-300 hover:bg-gradient-to-r hover:from-orange-50 hover:to-red-50 hover:text-orange-700"
+                  }`}
+                  onClick={async (e) => {
+                    e.preventDefault();
+
+                    // Set loading state
+                    setLoading(true);
+
+                    try {
+                      let filter;
+                      if (isActive) {
+                        filter = {
+                          ...item,
+                          minArea: undefined,
+                          maxArea: undefined,
+                        };
+                      } else {
+                        filter = {
+                          ...item,
+                          minArea: range.min,
+                          maxArea: range.max,
+                        };
+                      }
+
+                      applyFilters(filter);
+                      const queryObj = filterToQuery(filter);
+                      const queryString = new URLSearchParams(
+                        queryObj
+                      ).toString();
+
+                      // Simulate network delay for better UX
+                      await new Promise((resolve) => setTimeout(resolve, 500));
+
+                      router.push(
+                        `/users${queryString ? "?" + queryString : ""}`
+                      );
+                    } finally {
+                      setLoading(false);
+                    }
+                  }}
+                >
+                  {/* Shine effect */}
+                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                    <div className="absolute top-0 -left-full w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12 group-hover:left-full transition-all duration-700"></div>
+                  </div>
+
+                  <span className="relative flex items-center gap-1 text-left w-full">
+                    {!isActive && (
+                      <span className="text-orange-500 text-xs">◘</span>
+                    )}
+                    {range.label}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Footer gradient line */}
+        <div className="h-1 bg-gradient-to-r from-orange-500 via-red-500 to-orange-600 rounded-full opacity-20"></div>
       </div>
-
-      {/* Price Range Section */}
-      <div className="space-y-3">
-        <div className="flex items-center gap-2">
-          <div className="w-2 h-2 bg-gradient-to-r from-orange-500 to-red-500 rounded-full"></div>
-          <h3 className="font-bold text-base text-gray-800 tracking-wide">
-            Price Range
-          </h3>
-        </div>
-        <div className="grid grid-cols-2 gap-x-4 gap-y-2">
-          {priceRanges.map((range) => {
-            const isActive =
-              item.minPrice === range.min && item.maxPrice === range.max;
-            return (
-              <button
-                key={range.label}
-                className={`group relative overflow-hidden px-3 py-2.5 text-sm font-medium rounded-xl border-2 transition-all duration-300 hover:scale-105 active:scale-95 ${
-                  isActive
-                    ? "bg-gradient-to-r from-orange-500 to-red-500 text-white border-orange-400 shadow-lg shadow-orange-500/25"
-                    : "bg-white/70 text-gray-700 border-gray-200/50 hover:border-orange-300 hover:bg-gradient-to-r hover:from-orange-50 hover:to-red-50 hover:text-orange-700"
-                }`}
-                onClick={(e) => {
-                  e.preventDefault();
-                  let filter;
-                  if (isActive) {
-                    filter = {
-                      ...item,
-                      minPrice: undefined,
-                      maxPrice: undefined,
-                    };
-                  } else {
-                    filter = {
-                      ...item,
-                      minPrice: range.min,
-                      maxPrice: range.max,
-                    };
-                  }
-                  applyFilters(filter);
-                  const queryObj = filterToQuery(filter);
-                  const queryString = new URLSearchParams(queryObj).toString();
-                  router.push(`/users${queryString ? "?" + queryString : ""}`);
-                }}
-              >
-                {/* Shine effect */}
-                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                  <div className="absolute top-0 -left-full w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12 group-hover:left-full transition-all duration-700"></div>
-                </div>
-
-                <span className="relative flex items-center gap-1 text-left w-full">
-                  {!isActive && (
-                    <span className="text-orange-500 text-xs">₫</span>
-                  )}
-                  {range.label}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Area Section */}
-      <div className="space-y-3">
-        <div className="flex items-center gap-2">
-          <div className="w-2 h-2 bg-gradient-to-r from-orange-500 to-red-500 rounded-full"></div>
-          <h3 className="font-bold text-base text-gray-800 tracking-wide">
-            Area Range
-          </h3>
-        </div>
-        <div className="grid grid-cols-2 gap-x-4 gap-y-2">
-          {areaRanges.map((range) => {
-            const isActive =
-              item.minArea === range.min && item.maxArea === range.max;
-            return (
-              <button
-                key={range.label}
-                className={`group relative overflow-hidden px-3 py-2.5 text-sm font-medium rounded-xl border-2 transition-all duration-300 hover:scale-105 active:scale-95 ${
-                  isActive
-                    ? "bg-gradient-to-r from-orange-500 to-red-500 text-white border-orange-400 shadow-lg shadow-orange-500/25"
-                    : "bg-white/70 text-gray-700 border-gray-200/50 hover:border-orange-300 hover:bg-gradient-to-r hover:from-orange-50 hover:to-red-50 hover:text-orange-700"
-                }`}
-                onClick={(e) => {
-                  e.preventDefault();
-                  let filter;
-                  if (isActive) {
-                    filter = {
-                      ...item,
-                      minArea: undefined,
-                      maxArea: undefined,
-                    };
-                  } else {
-                    filter = {
-                      ...item,
-                      minArea: range.min,
-                      maxArea: range.max,
-                    };
-                  }
-                  applyFilters(filter);
-                  const queryObj = filterToQuery(filter);
-                  const queryString = new URLSearchParams(queryObj).toString();
-                  router.push(`/users${queryString ? "?" + queryString : ""}`);
-                }}
-              >
-                {/* Shine effect */}
-                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                  <div className="absolute top-0 -left-full w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12 group-hover:left-full transition-all duration-700"></div>
-                </div>
-
-                <span className="relative flex items-center gap-1 text-left w-full">
-                  {!isActive && (
-                    <span className="text-orange-500 text-xs">◘</span>
-                  )}
-                  {range.label}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Footer gradient line */}
-      <div className="h-1 bg-gradient-to-r from-orange-500 via-red-500 to-orange-600 rounded-full opacity-20"></div>
-    </div>
+    </FilterLoadingOverlay>
   );
 }

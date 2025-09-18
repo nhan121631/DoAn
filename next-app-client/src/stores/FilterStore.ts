@@ -14,7 +14,9 @@ export interface FilterRequest {
 
 interface FilterStore {
   item: FilterRequest;
+  isLoading: boolean;
   applyFilters: (item: FilterRequest) => void;
+  setLoading: (loading: boolean) => void;
   resetFilters: () => void;
 }
 
@@ -32,7 +34,9 @@ export const useFilterStore = create<FilterStore>()(
           wardId: undefined,
           listConvenientIds: [],
         },
+        isLoading: false,
         applyFilters: (item) => set((state) => ({ item: { ...state.item, ...item } })),
+        setLoading: (loading) => set({ isLoading: loading }),
         resetFilters: () =>
           set({
             item: {
@@ -45,6 +49,7 @@ export const useFilterStore = create<FilterStore>()(
               wardId: undefined,
               listConvenientIds: [],
             },
+            isLoading: false,
           }),
       }),
       { name: 'filter-store' }
