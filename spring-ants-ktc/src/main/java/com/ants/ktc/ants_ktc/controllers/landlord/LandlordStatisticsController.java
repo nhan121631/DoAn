@@ -12,9 +12,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.ants.ktc.ants_ktc.dtos.bill.BillStatisticResponseDto;
 import com.ants.ktc.ants_ktc.dtos.manage_maintain.MaintainStatisticDto;
 import com.ants.ktc.ants_ktc.dtos.transaction.TransactionStatisticsDto;
-import com.ants.ktc.ants_ktc.entities.Transaction;
 import com.ants.ktc.ants_ktc.services.LandLordStatisticsService;
 
 @RestController
@@ -51,10 +51,14 @@ public class LandlordStatisticsController {
             @RequestParam(required = false, name = "endDate") String endDate) {
 
         if (startDate == null || endDate == null) {
-            startDate = LocalDate.now().withDayOfMonth(1).toString(); // First day of current month
-            endDate = LocalDate.now().toString(); // Current date
+            LocalDate now = LocalDate.now();
+            LocalDate start = now.minusMonths(11).withDayOfMonth(1); // đầu tháng của 12 tháng trước
+            LocalDate end = now.withDayOfMonth(now.lengthOfMonth()); // cuối tháng hiện tại
+            startDate = start.toString();
+            endDate = end.toString();
         }
 
+        // Trả về thống kê theo tháng-năm (month)
         return landLordStatisticsService.getMaintenanceStatisticsByLandlordIdAndDateRange(landlordId,
                 Date.valueOf(startDate), Date.valueOf(endDate));
     }
@@ -66,11 +70,34 @@ public class LandlordStatisticsController {
             @RequestParam(required = false, name = "endDate") String endDate) {
 
         if (startDate == null || endDate == null) {
-            startDate = LocalDate.now().withDayOfMonth(1).toString(); // First day of current month
-            endDate = LocalDate.now().toString(); // Current date
+            LocalDate now = LocalDate.now();
+            LocalDate start = now.minusMonths(11).withDayOfMonth(1); // đầu tháng của 12 tháng trước
+            LocalDate end = now.withDayOfMonth(now.lengthOfMonth()); // cuối tháng hiện tại
+            startDate = start.toString();
+            endDate = end.toString();
         }
 
+        // Trả về thống kê theo tháng-năm (month)
         return landLordStatisticsService.getTransactionStatisticsByLandlordIdAndDateRange(landlordId,
+                Date.valueOf(startDate), Date.valueOf(endDate));
+    }
+
+    @GetMapping("/revenue-statistics/{landlordId}")
+    public List<BillStatisticResponseDto> getRevenues(
+            @PathVariable("landlordId") UUID landlordId,
+            @RequestParam(required = false, name = "startDate") String startDate,
+            @RequestParam(required = false, name = "endDate") String endDate) {
+
+        if (startDate == null || endDate == null) {
+            LocalDate now = LocalDate.now();
+            LocalDate start = now.minusMonths(11).withDayOfMonth(1); // đầu tháng của 12 tháng trước
+            LocalDate end = now.withDayOfMonth(now.lengthOfMonth()); // cuối tháng hiện tại
+            startDate = start.toString();
+            endDate = end.toString();
+        }
+
+        // Trả về thống kê theo tháng-năm (month)
+        return landLordStatisticsService.getRevenueBills(landlordId,
                 Date.valueOf(startDate), Date.valueOf(endDate));
     }
 }

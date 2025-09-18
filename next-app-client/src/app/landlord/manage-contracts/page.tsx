@@ -13,23 +13,23 @@ export default function ManageContractsPage() {
   const [error, setError] = useState<string | null>(null);
   const { data: session } = useSession();
   const landLordId = session?.user.id as string;
+
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      if (!landLordId) return;
+      const data = await ContractService.getByLandlord(landLordId, 0, 10);
+      setContracts(data.content);
+    } catch (error) {
+      setError("Failed to load contracts");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const loadData = async () => {
-      try {
-        setLoading(true);
-        if (!landLordId) return;
-        const data = await ContractService.getByLandlord(landLordId, 0, 10);
-        setContracts(data.content);
-      } catch {
-        setError("Failed to load contracts");
-      } finally {
-        setLoading(false);
-      }
-    };
     loadData();
   }, [landLordId]);
-
-
 
   return (
     <div className="flex flex-col flex-1 min-h-screen w-full bg-white dark:bg-[#001529] text-gray-900 dark:text-white p-8 transition-colors duration-300">
@@ -41,7 +41,7 @@ export default function ManageContractsPage() {
       ) : error ? (
         <div className="text-center text-red-500 dark:text-red-400">{error}</div>
       ) : (
-        <LandlordContracts contracts={contracts} />
+        <LandlordContracts contracts={contracts} onContractDeleted={loadData} />
       )}
     </div>
   );

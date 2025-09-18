@@ -49,3 +49,14 @@ export const getLandlordFeePostRoomStatistics = async (startDate?: string, endDa
     }
     return response.json();
 }
+
+export const getLandlordRevenueStatistics = async (startDate?: string, endDate?: string) => {
+    const queryParams = new URLSearchParams();
+    if (startDate) queryParams.append('startDate', startDate);
+    if (endDate) queryParams.append('endDate', endDate);
+    const response = await fetch(`/api/landlord/statistics/revenue-room?${queryParams.toString()}`, { cache: 'no-store' });
+    if (!response.ok) {
+        throw new Error('Failed to fetch revenue statistics');
+    }
+    return response.json();
+}

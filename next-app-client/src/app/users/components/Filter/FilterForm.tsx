@@ -10,7 +10,10 @@ import { getConvenients } from "@/services/Convenients";
 import { FilterRequest, useFilterStore } from "@/stores/FilterStore";
 import { Convenient, District, Province, Ward } from "@/types/types";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
+import FilterLoadingOverlay from "./FilterLoadingOverlay";
+import LoadingSpinner from "./LoadingSpinner";
+import { useDebounce } from "@/hooks/useDebounce";
 
 type SelectOption = {
   label: string;
@@ -223,7 +226,9 @@ export default function FilterForm() {
     ward: "",
   });
 
-  const { applyFilters, item } = useFilterStore((state) => state);
+  const { applyFilters, item, isLoading, setLoading } = useFilterStore(
+    (state) => state
+  );
   const router = useRouter();
 
   useEffect(() => {
@@ -289,46 +294,74 @@ export default function FilterForm() {
   }, []);
 
   // Trigger filter and update URL param without reload
-  const triggerFilter = (
+  const triggerFilterImmediate = async (
     updatedFormData?: any,
     updatedConvenients?: string[]
   ) => {
-    const currentFormData = updatedFormData || formData;
-    const currentConvenients =
-      updatedConvenients !== undefined
-        ? updatedConvenients
-        : selectedConvenients;
+    setLoading(true);
 
-    const payload: FilterRequest = {
-      provinceId: currentFormData.province
-        ? Number(currentFormData.province)
-        : undefined,
-      districtId: currentFormData.district
-        ? Number(currentFormData.district)
-        : undefined,
-      wardId: currentFormData.ward ? Number(currentFormData.ward) : undefined,
-      listConvenientIds:
-        currentConvenients.length > 0
-          ? currentConvenients.map(Number)
+    try {
+      const currentFormData = updatedFormData || formData;
+      const currentConvenients =
+        updatedConvenients !== undefined
+          ? updatedConvenients
+          : selectedConvenients;
+
+      const payload: FilterRequest = {
+        // Preserve existing price and area filters
+        minPrice: item.minPrice,
+        maxPrice: item.maxPrice,
+        minArea: item.minArea,
+        maxArea: item.maxArea,
+        // Update address filters
+        provinceId: currentFormData.province
+          ? Number(currentFormData.province)
           : undefined,
-    };
+        districtId: currentFormData.district
+          ? Number(currentFormData.district)
+          : undefined,
+        wardId: currentFormData.ward ? Number(currentFormData.ward) : undefined,
+        listConvenientIds:
+          currentConvenients.length > 0
+            ? currentConvenients.map(Number)
+            : undefined,
+      };
 
-    applyFilters(payload);
+      applyFilters(payload);
 
-    // Build query string
-    const query: Record<string, string> = {};
-    if (payload.provinceId !== undefined)
-      query.provinceId = String(payload.provinceId);
-    if (payload.districtId !== undefined)
-      query.districtId = String(payload.districtId);
-    if (payload.wardId !== undefined) query.wardId = String(payload.wardId);
-    if (payload.listConvenientIds && payload.listConvenientIds.length > 0)
-      query.listConvenientIds = payload.listConvenientIds.join(",");
-    const queryString = new URLSearchParams(query).toString();
-    router.replace(`/users${queryString ? "?" + queryString : ""}`, {
-      scroll: false,
-    });
+      // Build query string
+      const query: Record<string, string> = {};
+      if (payload.minPrice !== undefined && payload.minPrice !== 0)
+        query.minPrice = String(payload.minPrice);
+      if (payload.maxPrice !== undefined && payload.maxPrice !== 0)
+        query.maxPrice = String(payload.maxPrice);
+      if (payload.minArea !== undefined && payload.minArea !== 0)
+        query.minArea = String(payload.minArea);
+      if (payload.maxArea !== undefined && payload.maxArea !== 0)
+        query.maxArea = String(payload.maxArea);
+      if (payload.provinceId !== undefined && payload.provinceId !== 0)
+        query.provinceId = String(payload.provinceId);
+      if (payload.districtId !== undefined && payload.districtId !== 0)
+        query.districtId = String(payload.districtId);
+      if (payload.wardId !== undefined && payload.wardId !== 0)
+        query.wardId = String(payload.wardId);
+      if (payload.listConvenientIds && payload.listConvenientIds.length > 0)
+        query.listConvenientIds = payload.listConvenientIds.join(",");
+
+      // Simulate network delay for better UX
+      await new Promise((resolve) => setTimeout(resolve, 300));
+
+      const queryString = new URLSearchParams(query).toString();
+      router.replace(`/users${queryString ? "?" + queryString : ""}`, {
+        scroll: false,
+      });
+    } finally {
+      setLoading(false);
+    }
   };
+
+  // Debounced version for convenients
+  const triggerFilter = useDebounce(triggerFilterImmediate, 300);
 
   const handleProvinceChange = async (provinceId: string | undefined) => {
     const updatedFormData = {
@@ -356,7 +389,7 @@ export default function FilterForm() {
         setLoadingDistricts(false);
       }
     }
-    triggerFilter(updatedFormData);
+    triggerFilterImmediate(updatedFormData);
   };
 
   const handleDistrictChange = async (districtId: string | undefined) => {
@@ -383,35 +416,37 @@ export default function FilterForm() {
         setLoadingWards(false);
       }
     }
-    triggerFilter(updatedFormData);
+    triggerFilterImmediate(updatedFormData);
   };
 
   const handleWardChange = (wardId: string | undefined) => {
     const updatedFormData = { ...formData, ward: wardId || "" };
     setFormData(updatedFormData);
-    triggerFilter(updatedFormData);
+    triggerFilterImmediate(updatedFormData);
   };
 
-  const handleConvenientToggle = (convenientId: string) => {
+  const handleConvenientToggle = async (convenientId: string) => {
     const updated = selectedConvenients.includes(convenientId)
       ? selectedConvenients.filter((id) => id !== convenientId)
       : [...selectedConvenients, convenientId];
 
     setSelectedConvenients(updated);
+    // Use debounced version for convenients to avoid too many rapid calls
     triggerFilter(undefined, updated);
   };
 
   return (
-    <div className="w-[320px] bg-gradient-to-br from-white via-slate-50/50 to-blue-50/30 backdrop-blur-lg border border-blue-100/50 rounded-3xl p-6 flex flex-col gap-6">
-      {/* Header with gradient */}
-      <div className="text-center pb-4 border-b  border-gradient-to-r from-transparent via-blue-200/50 to-transparent">
-        <h2 className="text-xl font-bold bg-gradient-to-r from-blue-700 via-indigo-700 to-purple-700 bg-clip-text text-transparent tracking-wide">
-          Advanced Filters
-        </h2>
-        <p className="text-sm text-gray-500 mt-1">Find your perfect room</p>
-      </div>
+    <FilterLoadingOverlay isVisible={isLoading}>
+      <div className="w-[320px] bg-gradient-to-br from-white via-slate-50/50 to-blue-50/30 backdrop-blur-lg border border-blue-100/50 rounded-3xl p-6 flex flex-col gap-6">
+        {/* Header with gradient */}
+        <div className="text-center pb-4 border-b  border-gradient-to-r from-transparent via-blue-200/50 to-transparent">
+          <h2 className="text-xl font-bold bg-gradient-to-r from-blue-700 via-indigo-700 to-purple-700 bg-clip-text text-transparent tracking-wide">
+            Advanced Filters
+          </h2>
+          <p className="text-sm text-gray-500 mt-1">Find your perfect room</p>
+        </div>
 
-      {/*
+        {/*
       Address Section
       <div className="space-y-4">
         <div className="flex items-center gap-3">
@@ -483,100 +518,107 @@ export default function FilterForm() {
       </div>
       */}
 
-      {/* Convenients Section */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-6 h-6 bg-gradient-to-br from-violet-500 to-purple-600 rounded-lg flex items-center justify-center shadow-md">
-              <svg
-                className="w-3 h-3 text-white"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"
-                />
-              </svg>
+        {/* Convenients Section */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-6 h-6 bg-gradient-to-br from-violet-500 to-purple-600 rounded-lg flex items-center justify-center shadow-md">
+                <svg
+                  className="w-3 h-3 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"
+                  />
+                </svg>
+              </div>
+              <h3 className="font-bold text-base text-gray-800">Convenients</h3>
             </div>
-            <h3 className="font-bold text-base text-gray-800">Convenients</h3>
+
+            {selectedConvenients.length > 0 && (
+              <div className="px-2 py-1 bg-gradient-to-r from-violet-100 to-purple-100 text-violet-700 text-xs font-semibold rounded-full border border-violet-200">
+                {selectedConvenients.length}
+              </div>
+            )}
+          </div>
+
+          <div className="space-y-2 max-h-64 overflow-y-auto pr-2 custom-scrollbar">
+            {convenients.map((convenient) => {
+              const isSelected = selectedConvenients.includes(
+                String(convenient.id)
+              );
+              return (
+                <button
+                  key={convenient.id}
+                  type="button"
+                  onClick={() => handleConvenientToggle(String(convenient.id))}
+                  disabled={isLoading}
+                  className={`group w-full p-3 text-left rounded-xl border-2 transition-all duration-300 hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 ${
+                    isSelected
+                      ? "bg-gradient-to-r from-violet-500 to-purple-600 text-white border-violet-400 shadow-lg shadow-violet-500/25"
+                      : "bg-white/80 text-gray-700 border-gray-200/60 hover:border-violet-300 hover:bg-gradient-to-r hover:from-violet-50 hover:to-purple-50 hover:text-violet-700 hover:shadow-md"
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium capitalize">
+                      {convenient.name.replace(/_/g, " ")}
+                    </span>
+                    <div
+                      className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all duration-200 ${
+                        isSelected
+                          ? "bg-white/20 border-white/40"
+                          : "border-gray-300 group-hover:border-violet-300"
+                      }`}
+                    >
+                      {isSelected && (
+                        <svg
+                          className="w-3 h-3 text-white"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                      )}
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
           </div>
 
           {selectedConvenients.length > 0 && (
-            <div className="px-2 py-1 bg-gradient-to-r from-violet-100 to-purple-100 text-violet-700 text-xs font-semibold rounded-full border border-violet-200">
-              {selectedConvenients.length}
-            </div>
+            <button
+              type="button"
+              onClick={async () => {
+                setSelectedConvenients([]);
+                await triggerFilterImmediate(undefined, []);
+              }}
+              className="w-full text-xs text-violet-600 hover:text-violet-700 font-medium transition-colors duration-200 hover:bg-violet-50 px-3 py-2 rounded-lg border border-violet-200/50 flex items-center justify-center gap-2"
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <LoadingSpinner size="sm" text="Clearing..." />
+              ) : (
+                "Clear all selections"
+              )}
+            </button>
           )}
         </div>
 
-        <div className="space-y-2 max-h-64 overflow-y-auto pr-2 custom-scrollbar">
-          {convenients.map((convenient) => {
-            const isSelected = selectedConvenients.includes(
-              String(convenient.id)
-            );
-            return (
-              <button
-                key={convenient.id}
-                type="button"
-                onClick={() => handleConvenientToggle(String(convenient.id))}
-                className={`group w-full p-3 text-left rounded-xl border-2 transition-all duration-300 hover:scale-[1.02] active:scale-95 ${
-                  isSelected
-                    ? "bg-gradient-to-r from-violet-500 to-purple-600 text-white border-violet-400 shadow-lg shadow-violet-500/25"
-                    : "bg-white/80 text-gray-700 border-gray-200/60 hover:border-violet-300 hover:bg-gradient-to-r hover:from-violet-50 hover:to-purple-50 hover:text-violet-700 hover:shadow-md"
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium capitalize">
-                    {convenient.name.replace(/_/g, " ")}
-                  </span>
-                  <div
-                    className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all duration-200 ${
-                      isSelected
-                        ? "bg-white/20 border-white/40"
-                        : "border-gray-300 group-hover:border-violet-300"
-                    }`}
-                  >
-                    {isSelected && (
-                      <svg
-                        className="w-3 h-3 text-white"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                    )}
-                  </div>
-                </div>
-              </button>
-            );
-          })}
-        </div>
+        {/* Footer gradient line */}
+        <div className="h-1 bg-gradient-to-r from-emerald-500 via-indigo-500 to-purple-500 rounded-full opacity-30"></div>
 
-        {selectedConvenients.length > 0 && (
-          <button
-            type="button"
-            onClick={() => {
-              setSelectedConvenients([]);
-              triggerFilter(undefined, []);
-            }}
-            className="w-full text-xs text-violet-600 hover:text-violet-700 font-medium transition-colors duration-200 hover:bg-violet-50 px-3 py-2 rounded-lg border border-violet-200/50"
-          >
-            Clear all selections
-          </button>
-        )}
+        {/* styles moved to filterform.module.css */}
       </div>
-
-      {/* Footer gradient line */}
-      <div className="h-1 bg-gradient-to-r from-emerald-500 via-indigo-500 to-purple-500 rounded-full opacity-30"></div>
-
-      {/* styles moved to filterform.module.css */}
-    </div>
+    </FilterLoadingOverlay>
   );
 }

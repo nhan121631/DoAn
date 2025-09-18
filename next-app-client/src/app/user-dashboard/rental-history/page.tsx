@@ -8,7 +8,7 @@ import React from "react";
 import { IoMdAddCircleOutline } from "react-icons/io";
 import { userFetchBookings } from "@/services/BookingService";
 import { RequirementRequestRoomDto } from "@/types/types";
-import { createRequest } from "@/services/Requirements";
+import { createRequest, uploadRequirementImage  } from "@/services/Requirements";
 import { AlignCenter } from "lucide-react";
 import { createRequestNotification } from "@/services/NotificationService";
 import { useSession } from "next-auth/react";
@@ -120,33 +120,53 @@ function RentalHistory() {
   };
 
   const handleFinish = async (request: RequirementRequestRoomDto) => {
-    try {
-      console.log("Submitting request:", request);
-      await createRequest(request);
-
+  try {
+    console.log("Submitting request:", request);
+    
+    const result = await createRequest(request);
+    
+    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const selectedFile = fileInput?.files?.[0];
+    
+    if (selectedFile && result.idRequirement) {
+      try {
+        await uploadRequirementImage(result.idRequirement, selectedFile);
+        messageApi.success({
+          content: "Request submitted successfully with image!",
+          duration: 2,
+        });
+      } catch (uploadError) {
+        console.error("Failed to upload image:", uploadError);
+        messageApi.warning({
+          content: "Request created successfully, but failed to upload image",
+          duration: 3,
+        });
+      }
+    } else {
       messageApi.success({
         content: "Request submitted successfully",
         duration: 2,
       });
-      setOpen(false);
-      setFieldValue(null);
-      form.resetFields();
-    } catch (error: any) {
-      let errorMsg = "Failed to submit request";
-      // Nếu dùng fetch, error có thể là object trả về từ response.json()
-      if (error?.message) {
-        if (Array.isArray(error.message)) {
-          errorMsg = error.message[0];
-        } else {
-          errorMsg = error.message;
-        }
-      }
-      messageApi.error({
-        content: errorMsg,
-        duration: 3,
-      });
     }
-  };
+    
+    setOpen(false);
+    setFieldValue(null);
+    form.resetFields();
+  } catch (error: any) {
+    let errorMsg = "Failed to submit request";
+    if (error?.message) {
+      if (Array.isArray(error.message)) {
+        errorMsg = error.message[0];
+      } else {
+        errorMsg = error.message;
+      }
+    }
+    messageApi.error({
+      content: errorMsg,
+      duration: 3,
+    });
+  }
+};
 
   const handleAccept = (key: string) => {
     modal.setSelectedKey(key);
@@ -295,7 +315,7 @@ function RentalHistory() {
                 modal.setSelectedKey(record.key);
                 modal.setSelectedIdRoom(record.idRoom);
                 setOpen(true);
-                await createRequestNotification(record.idRoom, session?.user.id);
+                await createRequestNotification(record.idRoom, session?.user.id, "You have a new request from a tenant!");
               }
             }}
             title="Add Request"
@@ -305,19 +325,6 @@ function RentalHistory() {
           >
             <IoMdAddCircleOutline size={18} /> Sent new request
           </Button>
-          {/* <Button
-            type="text"
-            icon={<AiOutlineEdit size={18} />}
-            onClick={() => {
-              if (record.status === 4) {
-                setFieldValue(record);
-                setModalType("edit");
-                setOpen(true);
-              }
-            }}
-            title="Edit Request"
-            disabled={record.status !== 4}
-          /> */}
         </Space>
       ),
     },

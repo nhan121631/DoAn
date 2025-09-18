@@ -10,7 +10,7 @@ export const createBookingNotification = async (
     const landlordId = await getLandlordByRoomId(roomId as string);
   try {
     await addDoc(collection(db, "notifications"), {
-      receiverId: landlordId,     // landlord sẽ nhận
+      receiverId: landlordId.id,     // landlord sẽ nhận
       senderId: tenantId,         // user tạo booking
       type: "booking_success",
       message: "You have a new booking from a tenant!",
@@ -25,6 +25,7 @@ export const createBookingNotification = async (
 export const createRequestNotification = async (
   roomId: number | string | undefined,
   tenantId: number | string | undefined,
+  message: string,
 ) => {
   const landlordId = await getLandlordByRoomId(roomId as string);
   try {
@@ -32,7 +33,26 @@ export const createRequestNotification = async (
       receiverId: landlordId.id,     // landlord sẽ nhận
       senderId: tenantId,         // user tạo booking
       type: "request_success",
-      message: "You have a new request from a tenant!",
+      message: message,
+      isRead: false,
+      createdAt: serverTimestamp()
+    });
+  } catch (error) {
+    console.error("Lỗi khi tạo notification:", error);
+  }
+};
+
+export const requestProcessedNotification = async (
+  landlordId: number | string | undefined,
+  tenantId: number | string | undefined,
+  message: string,
+) => {
+  try {
+    await addDoc(collection(db, "notifications"), {
+      receiverId: tenantId,     // landlord sẽ nhận
+      senderId: landlordId,         // user tạo booking
+      type: "request_success",
+      message: message,
       isRead: false,
       createdAt: serverTimestamp()
     });

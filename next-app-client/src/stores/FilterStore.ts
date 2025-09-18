@@ -14,7 +14,9 @@ export interface FilterRequest {
 
 interface FilterStore {
   item: FilterRequest;
+  isLoading: boolean;
   applyFilters: (item: FilterRequest) => void;
+  setLoading: (loading: boolean) => void;
   resetFilters: () => void;
 }
 
@@ -23,28 +25,31 @@ export const useFilterStore = create<FilterStore>()(
     persist(
       (set) => ({
         item: {
-          minPrice: 0,
-          maxPrice: 0,
-          minArea: 0,
-          maxArea: 0,
-          provinceId: 0,
-          districtId: 0,
-          wardId: 0,
+          minPrice: undefined,
+          maxPrice: undefined,
+          minArea: undefined,
+          maxArea: undefined,
+          provinceId: undefined,
+          districtId: undefined,
+          wardId: undefined,
           listConvenientIds: [],
         },
+        isLoading: false,
         applyFilters: (item) => set((state) => ({ item: { ...state.item, ...item } })),
+        setLoading: (loading) => set({ isLoading: loading }),
         resetFilters: () =>
           set({
             item: {
-              minPrice: 0,
-              maxPrice: 0,
-              minArea: 0,
-              maxArea: 0,
-              provinceId: 0,
-              districtId: 0,
-              wardId: 0,
+              minPrice: undefined,
+              maxPrice: undefined,
+              minArea: undefined,
+              maxArea: undefined,
+              provinceId: undefined,
+              districtId: undefined,
+              wardId: undefined,
               listConvenientIds: [],
             },
+            isLoading: false,
           }),
       }),
       { name: 'filter-store' }

@@ -57,5 +57,15 @@ export const ContractService = {
 		const res = await fetch(`/api/contracts/${contractId}/bills/export?fromMonth=${fromMonth}&toMonth=${toMonth}`);
 		if (!res.ok) throw new Error("Failed to export bills");
 		return res.blob();
+	},
+
+	async deleteContract(contractId: string): Promise<void> {
+		const res = await fetch(`${BASE_URL}/${contractId}`, {
+			method: "DELETE",
+		});
+		if (!res.ok) {
+			const errorMessage = await res.text();
+			throw new Error(errorMessage || "Failed to delete contract");
+		}
 	}
 };

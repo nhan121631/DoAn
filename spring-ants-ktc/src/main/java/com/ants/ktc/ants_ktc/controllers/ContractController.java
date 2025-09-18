@@ -79,5 +79,10 @@ public class ContractController {
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .body(data);
     }
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteContract(@PathVariable("id") UUID id) {
+        contractService.deleteContract(id);
+        return ResponseEntity.noContent().build();
+    }
 
 }

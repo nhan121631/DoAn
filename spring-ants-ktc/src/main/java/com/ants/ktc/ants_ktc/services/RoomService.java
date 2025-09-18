@@ -7,8 +7,11 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -65,6 +68,7 @@ import com.ants.ktc.ants_ktc.repositories.RoomJpaRepository;
 import com.ants.ktc.ants_ktc.repositories.TransactionsJpaRepository;
 import com.ants.ktc.ants_ktc.repositories.UserJpaRepository;
 import com.ants.ktc.ants_ktc.repositories.address.WardJpaRepository;
+import com.ants.ktc.ants_ktc.repositories.projection.FilterBasicProjection;
 import com.ants.ktc.ants_ktc.repositories.projection.RoomApprovalProjection;
 import com.ants.ktc.ants_ktc.repositories.projection.RoomByAdminPagingProjection;
 import com.ants.ktc.ants_ktc.repositories.projection.RoomByLandlordPagingProjection;
@@ -1326,7 +1330,7 @@ public class RoomService {
                         FilterRoomRequestDto filterDto) {
                 Pageable pageable = PageRequest.of(pageNumber, pageSize);
 
-                Page<Room> roomPage;
+                Page<FilterBasicProjection> roomPage;
 
                 // Kiểm tra có convenient filter không
                 if (filterDto.getListConvenientIds() == null || filterDto.getListConvenientIds().isEmpty()) {
@@ -1384,30 +1388,74 @@ public class RoomService {
                         }
                 }
 
-                // Convert to response DTO
+                // Tối ưu: Load tất cả images một lần thay vì từng room
+                List<UUID> roomIds = roomPage.getContent().stream()
+                                .map(room -> {
+                                        try {
+                                                return UUID.fromString(formatHexToUuid(room.getId()));
+                                        } catch (Exception e) {
+                                                return null;
+                                        }
+                                })
+                                .filter(id -> id != null)
+                                .collect(Collectors.toList());
+
+                // Load tất cả images cho các rooms
+                Map<UUID, List<ImageResponseDto>> roomImagesMap = new HashMap<>();
+                if (!roomIds.isEmpty()) {
+                        List<Image> allImages = imageJpaRepository.findByRoomIdIn(roomIds);
+                        roomImagesMap = allImages.stream()
+                                        .collect(Collectors.groupingBy(
+                                                        img -> img.getRoom().getId(),
+                                                        Collectors.mapping(
+                                                                        img -> ImageResponseDto.builder()
+                                                                                        .id(img.getId())
+                                                                                        .url(img.getUrl())
+                                                                                        .build(),
+                                                                        Collectors.toList())));
+                }
+
+                // Convert FilterBasicProjection to response DTO (now using flat fields)
+                final Map<UUID, List<ImageResponseDto>> finalRoomImagesMap = roomImagesMap;
                 List<RoomInUserResponseDto> rooms = roomPage.getContent().stream()
                                 .map(room -> {
-                                        // Ensure no null name in convenients
-                                        List<Convenient> convenients = room.getConvenients();
-                                        if (convenients != null) {
-                                                convenients.forEach(c -> {
-                                                        if (c.getName() == null)
-                                                                c.setName("");
-                                                });
+                                        // Lấy images từ map đã load sẵn
+                                        List<ImageResponseDto> images = null;
+                                        try {
+                                                UUID roomId = UUID.fromString(formatHexToUuid(room.getId()));
+                                                images = finalRoomImagesMap.get(roomId);
+                                        } catch (Exception e) {
+                                                System.err.println("Error getting images for room " + room.getId()
+                                                                + ": " + e.getMessage());
                                         }
-                                        return RoomInUserResponseDto.builder()
-                                                        .id(room.getId())
-                                                        .title(room.getTitle())
-                                                        .description(room.getDescription())
-                                                        .priceMonth(room.getPrice_month())
-                                                        .area(room.getArea())
-                                                        .maxPeople(room.getMaxPeople())
-                                                        .postStartDate(room.getPost_start_date())
-                                                        .address(convertAddress(room.getAddress()))
-                                                        .images(convertImages(room.getImages()))
-                                                        .conveniences(convertConveniences(room.getConvenients()))
-                                                        .landlord(convertLandlord(room.getUser()))
-                                                        .build();
+
+                                        // Parse conveniences from convenienceString (format: "id1:name1|id2:name2")
+                                        List<ConvenientResponseDto> conveniences = null;
+                                        if (room.getConvenienceString() != null
+                                                        && !room.getConvenienceString().isEmpty()) {
+                                                conveniences = Arrays.stream(room.getConvenienceString().split("\\|"))
+                                                                .filter(s -> s != null && !s.isEmpty())
+                                                                .map(s -> {
+                                                                        String[] parts = s.split(":");
+                                                                        if (parts.length == 2) {
+                                                                                try {
+                                                                                        return ConvenientResponseDto
+                                                                                                        .builder()
+                                                                                                        .id(Long.valueOf(
+                                                                                                                        parts[0]))
+                                                                                                        .name(parts[1])
+                                                                                                        .build();
+                                                                                } catch (NumberFormatException e) {
+                                                                                        return null;
+                                                                                }
+                                                                        }
+                                                                        return null;
+                                                                })
+                                                                .filter(c -> c != null)
+                                                                .collect(Collectors.toList());
+                                        }
+
+                                        return convertFilterProjectionToDto(room, images, conveniences);
                                 })
                                 .collect(Collectors.toList());
 
@@ -1427,6 +1475,68 @@ public class RoomService {
                 return hex.replaceFirst(
                                 "(\\w{8})(\\w{4})(\\w{4})(\\w{4})(\\w{12})",
                                 "$1-$2-$3-$4-$5");
+        }
+
+        // Helper method to convert FilterBasicProjection to RoomInUserResponseDto
+        private RoomInUserResponseDto convertFilterProjectionToDto(FilterBasicProjection room,
+                        List<ImageResponseDto> images, List<ConvenientResponseDto> conveniences) {
+                return RoomInUserResponseDto.builder()
+                                .id(room.getId() != null ? UUID.fromString(formatHexToUuid(room.getId())) : null)
+                                .title(room.getTitle())
+                                .description(room.getDescription())
+                                .priceMonth(room.getPriceMonth())
+                                .area(room.getArea())
+                                .maxPeople(room.getMaxPeople())
+                                .postStartDate(room.getPostStartDate())
+                                .address(buildAddressFromProjection(room))
+                                .images(images)
+                                .conveniences(conveniences)
+                                .landlord(buildLandlordFromProjection(room))
+                                .favoriteCount(room.getFavoriteCount() != null ? room.getFavoriteCount() : 0)
+                                .viewCount(room.getViewCount() != null ? room.getViewCount() : 0)
+                                .build();
+        }
+
+        // Helper method to build AddressResponseDto from FilterBasicProjection
+        private AddressResponseDto buildAddressFromProjection(FilterBasicProjection room) {
+                return AddressResponseDto.builder()
+                                .id(room.getAddressId() != null ? UUID.fromString(formatHexToUuid(room.getAddressId()))
+                                                : null)
+                                .street(room.getStreet())
+                                .ward(WardResponseDto.builder()
+                                                .id(room.getWardId() != null ? room.getWardId().longValue() : null)
+                                                .name(room.getWardName())
+                                                .district(DistrictResponseDto.builder()
+                                                                .id(room.getDistrictId() != null
+                                                                                ? room.getDistrictId().longValue()
+                                                                                : null)
+                                                                .name(room.getDistrictName())
+                                                                .province(ProvinceResponseDto.builder()
+                                                                                .id(room.getProvinceId() != null ? room
+                                                                                                .getProvinceId()
+                                                                                                .longValue() : null)
+                                                                                .name(room.getProvinceName())
+                                                                                .build())
+                                                                .build())
+                                                .build())
+                                .build();
+        }
+
+        // Helper method to build LandlordResponseDto from FilterBasicProjection
+        private LandlordResponseDto buildLandlordFromProjection(FilterBasicProjection room) {
+                return LandlordResponseDto.builder()
+                                .id(room.getLandlordId() != null
+                                                ? UUID.fromString(formatHexToUuid(room.getLandlordId()))
+                                                : null)
+                                .landlordProfile(LandlordProfileResponseDto.builder()
+                                                .id(room.getLandlordProfileId() != null ? UUID.fromString(
+                                                                formatHexToUuid(room.getLandlordProfileId())) : null)
+                                                .fullName(room.getFullName())
+                                                .email(room.getEmail())
+                                                .phoneNumber(room.getPhoneNumber())
+                                                .avatar(room.getAvatar())
+                                                .build())
+                                .build();
         }
 
         public List<RoomRecentResponseDto> findRecentRooms() {

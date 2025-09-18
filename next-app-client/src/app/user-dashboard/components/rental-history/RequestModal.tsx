@@ -1,7 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useEffect } from "react";
-import { Modal, Form, Input, Button } from "antd";
+import React, { useEffect, useState } from "react";
+import { Modal, Form, Input, Button, Upload, message } from "antd";
+import { UploadOutlined } from "@ant-design/icons";
 import { useSession } from "next-auth/react";
+import type { UploadProps, UploadFile } from 'antd';
 
 interface RequestModalProps {
   open: boolean;
@@ -24,6 +26,8 @@ const RequestModal: React.FC<RequestModalProps> = ({
 }) => {
   const { data: session } = useSession();
   const userId = session?.user.id;
+  const [fileList, setFileList] = useState<UploadFile[]>([]);
+  const [messageApi, contextHolder] = message.useMessage();
 
   useEffect(() => {
     if (open && fieldValue) {
@@ -39,18 +43,49 @@ const RequestModal: React.FC<RequestModalProps> = ({
       roomId: id,
       description: values.requestDescription,
     };
+    
+    // Gọi onFinish để tạo requirement trước
     onFinish(request);
+  };
+
+  const uploadProps: UploadProps = {
+    beforeUpload: (file) => {
+      const isImage = file.type.startsWith('image/');
+      if (!isImage) {
+        messageApi.error('You can only upload image files!');
+        return false;
+      }
+      const isLt10M = file.size / 1024 / 1024 < 10;
+      if (!isLt10M) {
+        messageApi.error('Image must be smaller than 10MB!');
+        return false;
+      }
+      return false; // Prevent auto upload
+    },
+    onChange: (info) => {
+      setFileList(info.fileList);
+    },
+    fileList,
+    maxCount: 1,
+    accept: 'image/*',
+  };
+
+  const handleCancel = () => {
+    setFileList([]);
+    form.resetFields();
+    onCancel();
   };
 
   return (
     <Modal
       title={modalType === "edit" ? "Edit Request" : "Add New Request"}
       open={open}
-      onCancel={onCancel}
+      onCancel={handleCancel}
       footer={null}
       destroyOnHidden={true}
       width={600}
     >
+      {contextHolder}
       <Form form={form} layout="vertical" onFinish={handleFinish}>
         <div className="max-h-[400px] overflow-y-auto pr-4">
           <Form.Item
@@ -66,24 +101,49 @@ const RequestModal: React.FC<RequestModalProps> = ({
             name="requestDescription"
             rules={[
               { required: true, message: "Please enter request description!" },
+              { min: 5, message: "Description must be at least 5 characters long!" },
+              { max: 500, message: "Description must not exceed 500 characters!" },
             ]}
           >
             <Input.TextArea
               rows={4}
               placeholder="e.g., Yêu cầu sửa chữa điện nước"
+              showCount
+              maxLength={500}
             />
+          </Form.Item>
+
+          <Form.Item
+            label="Upload Image (Optional)"
+            name="image"
+          >
+            <>  
+            <Upload {...uploadProps}>
+              <Button icon={<UploadOutlined />}>Select Image</Button>
+            </Upload>
+            <div className="mt-1 text-sm text-gray-500">
+              Upload an image to help describe your request (Max: 10MB)
+            </div>
+            </>
           </Form.Item>
         </div>
 
         <Form.Item>
           <div className="flex justify-end gap-2 mt-4">
-            <Button onClick={onCancel}>Cancel</Button>
+            <Button onClick={handleCancel}>Cancel</Button>
             <Button type="primary" htmlType="submit">
               {modalType === "edit" ? "Update Request" : "Add Request"}
             </Button>
           </div>
         </Form.Item>
       </Form>
+
+      {/* Hidden input to store selected file for later upload */}
+      <input 
+        type="hidden" 
+        id="selectedFile" 
+        value={fileList.length > 0 ? fileList[0].name : ''} 
+      />
     </Modal>
   );
 };

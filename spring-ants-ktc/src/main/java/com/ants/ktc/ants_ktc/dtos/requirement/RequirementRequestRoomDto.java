@@ -15,6 +15,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class RequirementRequestRoomDto {
+
+    private UUID idRequirement;
+
     @NotNull(message = "User ID must not be null")
     private UUID userId;
 

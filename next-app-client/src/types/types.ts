@@ -182,6 +182,7 @@ export type LandlordProfile = {
 };
 
 export type RequirementRequestRoomDto = {
+  idRequirement: string;
   userId: string;
   roomId: string;
   description: string;
@@ -211,8 +212,13 @@ export type Requirement = {
   id: string;
   userId: string;
   roomId: string;
+  roomTitle: string;  
+  userName: string;      
+  email: string; 
   description: string;
   status: 0 | 1 | 2; // 0 = pending, 1 = approved, 2 = rejected
+  imageUrl?: string;
+  createdDate: string;
 };
 
 export type RequirementDetail = {
@@ -222,6 +228,8 @@ export type RequirementDetail = {
   email: string;
   description: string;
   status: 0 | 1 | 2;
+  imageUrl?: string;
+  createdDate: string;
 };
 
 export type Reply = {
@@ -380,6 +388,11 @@ export type MaintainStatisticDto = {
 // statistic fee post room
 export type TransactionStatisticsDto = {
   cost: number; // Chi phí trong ngày
+  date: string; // Ngày ở định dạng 'YYYY-MM-DD'
+}
+
+export type RevenueStatisticsDto = {
+  revenue: number; // Doanh thu trong ngày
   date: string; // Ngày ở định dạng 'YYYY-MM-DD'
 }
 export interface LandlordTaskCreateDto {

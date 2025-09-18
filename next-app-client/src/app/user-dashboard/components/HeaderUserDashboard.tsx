@@ -107,7 +107,7 @@ export default function HeaderUserDashboard({
       if (type === "booking_success") {
         router.push(`/user-dashboard/rental-history`);
       } else if (type === "request_success") {
-        router.push(`/user-dashboard/rental-history`);
+        router.push(`/user-dashboard/request-status`);
       } else if (type === "resident_success") {
         router.push(`/user-dashboard/rental-history`);
       }

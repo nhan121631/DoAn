@@ -130,6 +130,16 @@ public class ContractService {
         return contractJpaRepository.findByStatus(status)
                 .stream().map(this::toResponseDto).collect(Collectors.toList());
     }
+    public void deleteContract(UUID contractId) {
+        Contract contract = contractJpaRepository.findById(contractId)
+                .orElseThrow(() -> new IllegalArgumentException("Contract not found with id: " + contractId));
+
+        if (contract.getStatus() == 1) { // Assuming 1 is ACTIVE status
+            throw new RuntimeException("Cannot delete active contract");
+        }
+
+        contractJpaRepository.delete(contract);
+    }
     private ContractResponseDto toResponseDto(Contract contract) {
         ContractResponseDto dto = new ContractResponseDto();
         dto.setContractName(contract.getContractName());
