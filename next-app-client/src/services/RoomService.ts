@@ -223,38 +223,38 @@ export async function getRoomNormalWithLocation(
 }
 
 // Smart function - automatically chooses the right API based on user session and location
-// export async function getRoomsSmartLocation(
-//   page: number,
-//   size: number,
-//   roomType: "VIP" | "NORMAL" = "VIP",
-//   userId?: string,
-//   latitude?: number,
-//   longitude?: number
-// ) {
-//   try {
-//     // If user is logged in, use userId-based API
-//     if (userId) {
-//       return roomType === "VIP"
-//         ? await getRoomVipUser(page, size, userId)
-//         : await getRoomNormalUser(page, size, userId);
-//     }
+export async function getRoomsSmartLocation(
+  page: number,
+  size: number,
+  roomType: "VIP" | "NORMAL" = "VIP",
+  userId?: string,
+  latitude?: number,
+  longitude?: number
+) {
+  try {
+    // If user is logged in, use userId-based API
+    if (userId) {
+      return roomType === "VIP"
+        ? await getRoomVipUser(page, size, userId)
+        : await getRoomNormalUser(page, size, userId);
+    }
 
-//     // If user not logged in but has location, use location-based API
-//     if (latitude !== undefined && longitude !== undefined) {
-//       return roomType === "VIP"
-//         ? await getRoomVipWithLocation(page, size, latitude, longitude)
-//         : await getRoomNormalWithLocation(page, size, latitude, longitude);
-//     }
+    // If user not logged in but has location, use location-based API
+    if (latitude !== undefined && longitude !== undefined) {
+      return roomType === "VIP"
+        ? await getRoomVipWithLocation(page, size, latitude, longitude)
+        : await getRoomNormalWithLocation(page, size, latitude, longitude);
+    }
 
-//     // Fallback to basic API without any location sorting
-//     return roomType === "VIP"
-//       ? await getRoomVipUser(page, size)
-//       : await getRoomNormalUser(page, size);
-//   } catch (error) {
-//     console.error("Error in smart room fetching:", error);
-//     return null;
-//   }
-// }
+    // Fallback to basic API without any location sorting
+    return roomType === "VIP"
+      ? await getRoomVipUser(page, size)
+      : await getRoomNormalUser(page, size);
+  } catch (error) {
+    console.error("Error in smart room fetching:", error);
+    return null;
+  }
+}
 
 //------filter rooms------//
 

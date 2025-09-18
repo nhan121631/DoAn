@@ -228,6 +228,7 @@ export default async function RentalRooms({
             initialFavoriteIds={initialFavoriteIds}
             page={page}
             isEmptyFilter={isEmptyFilter}
+            userId={userId}
           />
         </div>
 
@@ -259,6 +260,7 @@ export default async function RentalRooms({
         initialFavoriteIds={initialFavoriteIds}
         currentPage={page_normal}
         isEmptyFilter={isEmptyFilter}
+        userId={userId}
       />
     </>
   );

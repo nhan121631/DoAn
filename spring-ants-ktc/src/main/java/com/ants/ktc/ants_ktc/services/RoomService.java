@@ -1171,6 +1171,7 @@ public class RoomService {
         public PaginationRoomInUserResponseDto getAllRoomInUser(int pageNumber, int pageSize, String code) {
                 Pageable pageable = PageRequest.of(pageNumber, pageSize);
                 Page<Room> roomPage = roomJpaRepository.findAllRoomInUser(code, pageable);
+                System.out.println("🌍 Fallback getAllRoomInUser called - no userId provided");
 
                 List<RoomInUserResponseDto> rooms = roomPage.getContent().stream()
                                 .map(room -> RoomInUserResponseDto.builder()
@@ -1213,6 +1214,7 @@ public class RoomService {
                                                         .getUserProfileEntity(userId);
                                         userLat = userProfile.getSearchLatitude();
                                         userLng = userProfile.getSearchLongitude();
+                                System.out.println("userLat: " + userLat + ", userLng: " + userLng);
                                 } catch (Exception e) {
                                         System.err.println("Could not get user coordinates for distance sorting: "
                                                         + e.getMessage());

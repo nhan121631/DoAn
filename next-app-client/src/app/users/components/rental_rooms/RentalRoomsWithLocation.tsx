@@ -16,11 +16,7 @@ interface RentalRoomsWithLocationProps {
   initialFavoriteIds: string[];
   page?: number;
   isEmptyFilter: boolean;
-  userLocationData?: {
-    hasLocationPreference: boolean;
-    coordinates: { lat: number; lng: number } | null;
-    address: string | null;
-  } | null;
+  userId?: string;
 }
 
 export default function RentalRoomsWithLocation({
@@ -29,8 +25,11 @@ export default function RentalRoomsWithLocation({
   initialFavoriteIds,
   page,
   isEmptyFilter,
-  userLocationData,
+  userId,
 }: RentalRoomsWithLocationProps) {
+  // Debug log to check userId
+  console.log("🔧 RentalRoomsWithLocation - userId prop:", userId);
+
   const router = useRouter();
   const { data: session } = useSession();
   const [isLoadingPage, setIsLoadingPage] = useState(false);
@@ -47,31 +46,29 @@ export default function RentalRoomsWithLocation({
     setLocation,
   } = useLocationContext();
 
-  // Debug logging
-  console.log("🏠 RentalRoomsWithLocation Debug:");
-  console.log("- Session user ID:", session?.user?.userProfile?.id);
-  console.log("- Location from context:", location);
-  console.log("- Guest rooms from context:", guestRooms);
-  console.log("- User rooms from context:", userRooms);
-  console.log("- isSearching:", isSearching);
-  console.log("- User location data from server:", userLocationData);
+  // Component state tracking
 
-  const isGuestUser = !session?.user?.userProfile?.id;
-  const hasGuestData = guestRooms && location; // Context data from guest search
-  const hasUserData = userRooms && location; // Context data from user search
-  const hasUserLocationData =
-    userLocationData?.hasLocationPreference && userLocationData.coordinates; // Server data for logged-in user
+  const isGuestUser = !userId;
 
-  // When using location context data, pagination is handled differently
-  const isUsingLocationData = hasGuestData || hasUserData;
+  // Simplified: only use location data when we have context location (from search)
+  const isUsingLocationData = !!location;
+
+  // Get coordinates for API calls - only from context location
+  const getLocationCoordinates = () => {
+    if (location) {
+      // Use context location (from search)
+      return { lat: location.lat, lng: location.lng, source: "context" };
+    }
+    return null;
+  };
+
+  // Location state
 
   // Reset URL pagination when switching to location-based data
   useEffect(() => {
     if (isUsingLocationData && page !== undefined && page !== 0) {
       // Reset URL to page 0 when location data is available but URL shows different page
-      const currentParams = new URLSearchParams(window.location.search);
-      currentParams.set("page", "0");
-      router.push(`?${currentParams.toString()}`, { scroll: false });
+      router.push("?page=0", { scroll: false });
     }
   }, [isUsingLocationData, page, router]);
 
@@ -81,10 +78,10 @@ export default function RentalRoomsWithLocation({
   const vipRooms =
     paginatedVipRooms ||
     (isGuestUser
-      ? hasGuestData
+      ? guestRooms && location
         ? guestRooms.vipRooms
         : initialVipRooms
-      : hasUserData
+      : userRooms && location
       ? userRooms.vipRooms
       : initialVipRooms);
 
@@ -95,23 +92,16 @@ export default function RentalRoomsWithLocation({
   const displayPage = optimisticPage !== null ? optimisticPage : effectivePage;
 
   const normalRooms = isGuestUser
-    ? hasGuestData
+    ? guestRooms && location
       ? guestRooms.normalRooms
       : initialNormalRooms
-    : hasUserData
+    : userRooms && location
     ? userRooms.normalRooms
     : initialNormalRooms;
 
-  console.log("- Using guest data:", hasGuestData);
-  console.log("- Using user data:", hasUserData);
-  console.log("- isUsingLocationData:", isUsingLocationData);
-  console.log("- page from URL:", page);
-  console.log("- displayPage:", displayPage);
-  console.log("- effectivePage:", effectivePage);
-  console.log("- optimisticPage:", optimisticPage);
-  console.log("- User has saved location:", hasUserLocationData);
-  console.log("- VIP rooms count:", vipRooms?.data?.length || 0);
-  console.log("- Normal rooms count:", normalRooms?.data?.length || 0);
+  // Room counts for debugging if needed
+  // console.log("- VIP rooms count:", vipRooms?.data?.length || 0);
+  // console.log("- Normal rooms count:", normalRooms?.data?.length || 0);
 
   // Reset paginated data when context changes
   useEffect(() => {
@@ -121,12 +111,13 @@ export default function RentalRoomsWithLocation({
 
   // Handle pagination for location-based data
   const handleVipPagination = async (newPage: number) => {
+    const coords = getLocationCoordinates();
+
     console.log("🔄 VIP Pagination triggered:", {
       newPage,
-      hasGuestData,
-      hasUserData,
-      location: !!location,
-      userId: session?.user?.userProfile?.id,
+      isUsingLocationData,
+      coords,
+      userId: userId,
     });
 
     // Immediately set optimistic page and loading state
@@ -139,34 +130,56 @@ export default function RentalRoomsWithLocation({
     router.push(`?${currentParams.toString()}`, { scroll: false });
 
     try {
-      const userId = session?.user?.userProfile?.id;
       let newVipRooms: PaginatedResponse<RoomInUser> | null = null;
 
-      if ((hasGuestData || hasUserData) && location) {
+      if (isUsingLocationData && coords) {
         // For location-based data, fetch new data with coordinates
-        console.log(
-          "🌍 Using location-based API with coords:",
-          location.lat,
-          location.lng
-        );
+        console.log("🌍 Calling location-based VIP API:", {
+          page: newPage,
+          size: 4,
+          lat: coords.lat,
+          lng: coords.lng,
+          source: coords.source,
+          apiURL: `/rooms/allroom-vip-location?page=${newPage}&size=4&lat=${coords.lat}&lng=${coords.lng}`,
+        });
+
         newVipRooms = await getRoomVipWithLocation(
           newPage,
           4,
-          location.lat,
-          location.lng
+          coords.lat,
+          coords.lng
         );
       } else {
-        // For non-location data, fetch regular VIP rooms with userId
-        console.log("👤 Using regular API with userId:", userId);
+        // For non-location data, fetch regular VIP rooms
+        console.log("👤 Calling regular VIP API:", {
+          page: newPage,
+          size: 4,
+          userId,
+          apiURL: `/rooms/allroom-vip?page=${newPage}&size=4${
+            userId ? `&userId=${userId}` : ""
+          }`,
+        });
+
         newVipRooms = await getRoomVipUser(newPage, 4, userId);
       }
+
+      console.log("📦 VIP API Response:", {
+        success: !!newVipRooms,
+        totalRecords: newVipRooms?.totalRecords,
+        totalPages: newVipRooms?.totalPages,
+        page: newVipRooms?.page,
+        dataLength: newVipRooms?.data?.length,
+        firstRoomId: newVipRooms?.data?.[0]?.id,
+        firstRoomTitle: newVipRooms?.data?.[0]?.title?.substring(0, 50),
+        isLocationSorted: !!coords,
+      });
 
       if (newVipRooms) {
         // Store paginated data in local state
         setPaginatedVipRooms(newVipRooms);
       }
     } catch (error) {
-      console.error("Error fetching VIP rooms:", error);
+      console.error("❌ Error fetching VIP rooms:", error);
       // Reset optimistic page on error
       setOptimisticPage(null);
     } finally {
@@ -224,7 +237,7 @@ export default function RentalRoomsWithLocation({
   return (
     <div className="flex flex-col items-center w-full gap-4 px-2 sm:px-4 my-8 bg-white max-w-7xl lg:px-0 lg:w-auto">
       {/* Location-based Search Result Banner for Guest Users */}
-      {hasGuestData && (
+      {guestRooms && location && (
         <div className="w-full mb-6">
           <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl p-6 shadow-sm">
             <div className="flex items-center justify-between">
@@ -243,7 +256,7 @@ export default function RentalRoomsWithLocation({
                     rooms sorted by distance from:
                   </p>
                   <p className="text-sm font-semibold text-blue-800 bg-white/70 px-3 py-1 rounded-full inline-block mt-2">
-                    {location.address}
+                    {location?.address}
                   </p>
                 </div>
               </div>
@@ -253,20 +266,7 @@ export default function RentalRoomsWithLocation({
                 onClick={() => {
                   setGuestRooms(null);
                   setLocation(null);
-                  // Reset pagination state when clearing location
-                  setPaginatedVipRooms(null);
-                  setOptimisticPage(null);
-                  // Reset URL to page 0
-                  const currentParams = new URLSearchParams(
-                    window.location.search
-                  );
-                  currentParams.set("page", "0");
-                  router.push(`?${currentParams.toString()}`, {
-                    scroll: false,
-                  });
-                  console.log(
-                    "🧹 Cleared location data - returning to default view with page reset"
-                  );
+                  // console.log("🧹 Cleared location data - returning to default view");
                 }}
                 className="px-4 py-2 text-sm bg-white border border-blue-300 text-blue-700 rounded-xl hover:bg-blue-50 transition-colors duration-200"
                 title="Clear location search and return to default view"
@@ -289,14 +289,14 @@ export default function RentalRoomsWithLocation({
                   <h3 className="text-3xl font-bold bg-gradient-to-r from-yellow-500 to-orange-500 bg-clip-text text-transparent">
                     Premium Listings
                   </h3>
-                  {hasGuestData && location && (
+                  {((guestRooms && location) || (userRooms && location)) && (
                     <div className="text-sm text-blue-600 mt-2 flex items-center justify-center gap-2">
                       <span className="bg-blue-100 px-3 py-1 rounded-full font-medium">
-                        📍 Sorted by distance from: {location.address}
+                        📍 Sorted by distance from: {location?.address}
                       </span>
                     </div>
                   )}
-                  {isGuestUser && !hasGuestData && (
+                  {isGuestUser && !(guestRooms && location) && (
                     <div className="text-sm text-gray-500 mt-2">
                       📍 Select a location above to see rooms sorted by distance
                     </div>
@@ -305,8 +305,8 @@ export default function RentalRoomsWithLocation({
                 <HiSparkles className="text-yellow-500 text-2xl" />
               </div>
               <p className="text-gray-600">
-                {hasGuestData
-                  ? "Premium rooms sorted by proximity to your selected location"
+                {isUsingLocationData
+                  ? "Premium rooms sorted by proximity to your location"
                   : "Hand-picked premium rooms for the discerning renter"}
               </p>
             </div>

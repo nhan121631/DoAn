@@ -17,6 +17,7 @@ interface LocationAwareNormalRoomsProps {
   initialFavoriteIds: string[];
   currentPage: number;
   isEmptyFilter: boolean;
+  userId?: string;
 }
 
 export default function LocationAwareNormalRooms({
@@ -24,7 +25,11 @@ export default function LocationAwareNormalRooms({
   initialFavoriteIds,
   currentPage,
   isEmptyFilter,
+  userId,
 }: LocationAwareNormalRoomsProps) {
+  // Debug log to check userId
+  console.log("🔧 LocationAwareNormalRooms - userId prop:", userId);
+
   const router = useRouter();
   const { data: session } = useSession();
   const [isLoadingPage, setIsLoadingPage] = useState(false);
@@ -33,7 +38,7 @@ export default function LocationAwareNormalRooms({
     useState<PaginatedResponse<RoomInUser> | null>(null);
   const { location, guestRooms, userRooms } = useLocationContext();
 
-  const isGuestUser = !session?.user?.userProfile?.id;
+  const isGuestUser = !userId;
   const hasGuestData = !!(guestRooms && location); // Context data from guest search
   const hasUserData = !!(userRooms && location); // Context data from user search
 
@@ -54,7 +59,7 @@ export default function LocationAwareNormalRooms({
       hasGuestData,
       hasUserData,
       location: !!location,
-      userId: session?.user?.userProfile?.id,
+      userId: userId,
     });
 
     // Immediately set optimistic page and loading state
@@ -67,7 +72,6 @@ export default function LocationAwareNormalRooms({
     router.push(`?${currentParams.toString()}`, { scroll: false });
 
     try {
-      const userId = session?.user?.userProfile?.id;
       let newNormalRooms: PaginatedResponse<RoomInUser> | null = null;
 
       if ((hasGuestData || hasUserData) && location) {
@@ -135,18 +139,18 @@ export default function LocationAwareNormalRooms({
     return null;
   }
 
-  // Debug log for pagination visibility
-  console.log("🔧 LocationAwareNormalRooms Debug:");
-  console.log("- hasGuestData:", hasGuestData);
-  console.log("- hasUserData:", hasUserData);
-  console.log("- currentPage from URL:", currentPage);
-  console.log("- effectiveCurrentPage:", effectiveCurrentPage);
-  console.log("- displayPage:", displayPage);
-  console.log("- optimisticPage:", optimisticPage);
-  console.log("- normalRooms.totalPages:", normalRooms?.totalPages);
-  console.log("- normalRooms.totalRecords:", normalRooms?.totalRecords);
-  console.log("- normalRooms.data.length:", normalRooms?.data?.length);
-  console.log("- Should show pagination:", normalRooms?.totalPages > 1);
+  // Debug logs (commented out for production)
+  // console.log("🔧 LocationAwareNormalRooms Debug:");
+  // console.log("- hasGuestData:", hasGuestData);
+  // console.log("- hasUserData:", hasUserData);
+  // console.log("- currentPage from URL:", currentPage);
+  // console.log("- effectiveCurrentPage:", effectiveCurrentPage);
+  // console.log("- displayPage:", displayPage);
+  // console.log("- optimisticPage:", optimisticPage);
+  // console.log("- normalRooms.totalPages:", normalRooms?.totalPages);
+  // console.log("- normalRooms.totalRecords:", normalRooms?.totalRecords);
+  // console.log("- normalRooms.data.length:", normalRooms?.data?.length);
+  // console.log("- Should show pagination:", normalRooms?.totalPages > 1);
 
   return (
     <div className="flex flex-col items-center justify-center w-full gap-4 px-2 sm:px-4 my-6 max-w-7xl">
