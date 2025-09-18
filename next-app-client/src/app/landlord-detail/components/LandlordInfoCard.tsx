@@ -1,21 +1,37 @@
 "use client";
-import Image from 'next/image';
-import Link from 'next/link';
-import { LandlordDetail } from '@/app/landlord/types';
-import { MdVerified, MdPhone } from 'react-icons/md';
-import { BiShield } from 'react-icons/bi';
-import { IoChatbubbleEllipsesOutline } from 'react-icons/io5';
-import { useSession } from 'next-auth/react';
-import { redirect } from 'next/navigation';
+import Image from "next/image";
+import Link from "next/link";
+import { LandlordDetail } from "@/app/landlord/types";
+import { MdVerified, MdPhone } from "react-icons/md";
+import { BiShield } from "react-icons/bi";
+import { IoChatbubbleEllipsesOutline } from "react-icons/io5";
+import { useSession } from "next-auth/react";
+import { redirect } from "next/navigation";
+
+// Mask functions for privacy protection
+function maskPhone(phone: string) {
+  if (!phone) return "";
+  if (phone.length < 4) return phone;
+  return phone.slice(0, 2) + "******" + phone.slice(-2);
+}
+
+function maskEmail(email: string) {
+  if (!email) return "";
+  const [name, domain] = email.split("@");
+  if (name.length <= 2) {
+    return name[0] + "****@" + domain;
+  }
+  return name[0] + "****" + name.slice(-1) + "@" + domain;
+}
 
 const getAvatarSrc = (avatar?: string) => {
-  if (!avatar || avatar.trim() === '' || avatar === 'null') {
+  if (!avatar || avatar.trim() === "" || avatar === "null") {
     return "/images/default/avatar.jpg";
   }
-  if (avatar.startsWith('/dmvvs0ags/')) {
+  if (avatar.startsWith("/dmvvs0ags/")) {
     return `https://res.cloudinary.com${avatar}`;
   }
-  if (avatar.startsWith('http')) {
+  if (avatar.startsWith("http")) {
     return avatar;
   }
   return "/images/default/avatar.jpg";
@@ -26,7 +42,10 @@ interface LandlordInfoCardProps {
   onStartChat: () => void;
 }
 
-export default function LandlordInfoCard({ landlord, onStartChat }: LandlordInfoCardProps) {
+export default function LandlordInfoCard({
+  landlord,
+  onStartChat,
+}: LandlordInfoCardProps) {
   const { data: session } = useSession();
 
   const handleChatClick = () => {
@@ -78,16 +97,15 @@ export default function LandlordInfoCard({ landlord, onStartChat }: LandlordInfo
             {/* Email - directly below name, no box */}
             {landlord.email && (
               <p className="text-sm text-white/80 mb-3 truncate max-w-[200px]">
-                {landlord.email}
+                {/* {session?.user?.id ? maskEmail(landlord.email) : landlord.email} */}
+                {maskEmail(landlord.email)}
               </p>
             )}
 
             {/* Online Status */}
             <div className="flex items-center justify-center gap-2 px-3 py-1 border rounded-full backdrop-blur-sm bg-green-400/20 border-green-300/30">
               <div className="w-2 h-2 bg-green-300 rounded-full animate-pulse"></div>
-              <p className="text-xs font-medium text-green-100">
-                Online
-              </p>
+              <p className="text-xs font-medium text-green-100">Online</p>
             </div>
           </div>
         </div>
@@ -146,7 +164,10 @@ export default function LandlordInfoCard({ landlord, onStartChat }: LandlordInfo
               <div className="relative flex items-center gap-3">
                 <MdPhone className="w-5 h-5" />
                 <span className="font-semibold">
-                  {landlord.phoneNumber}
+                  {/* {session?.user?.id
+                    ? maskPhone(landlord.phoneNumber)
+                    : landlord.phoneNumber} */}
+                   {maskPhone(landlord.phoneNumber)}
                 </span>
               </div>
             </Link>

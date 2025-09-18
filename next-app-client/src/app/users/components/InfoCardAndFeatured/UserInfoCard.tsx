@@ -29,6 +29,22 @@ import { AiFillHeart, AiOutlineHeart } from "react-icons/ai";
 import { addFavorite, removeFavorite } from "@/services/FavoriteService";
 import { useFavoriteStore } from "@/stores/FavoriteStore";
 
+// Mask functions for privacy protection
+function maskPhone(phone: string) {
+  if (!phone) return "";
+  if (phone.length < 4) return phone;
+  return phone.slice(0, 2) + "******" + phone.slice(-2);
+}
+
+function maskEmail(email: string) {
+  if (!email) return "";
+  const [name, domain] = email.split("@");
+  if (name.length <= 2) {
+    return name[0] + "****@" + domain;
+  }
+  return name[0] + "****" + name.slice(-1) + "@" + domain;
+}
+
 export default function UserInfoCard({ id }: { id: string }) {
   const [isSaved, setIsSaved] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
@@ -42,7 +58,7 @@ export default function UserInfoCard({ id }: { id: string }) {
   const [showChat, setShowChat] = useState(false);
   const [isSticky, setIsSticky] = useState(false);
   const { data: session } = useSession();
-  
+
   const [favoriteCount, setFavoriteCount] = useState(0);
   const { favoriteRoomIds } = useFavoriteStore();
   const isFavorited = favoriteRoomIds.has(id);
@@ -133,8 +149,7 @@ export default function UserInfoCard({ id }: { id: string }) {
     fetchData();
   }, [id]);
 
-
-    useEffect(() => {
+  useEffect(() => {
     async function fetchFavoriteCount() {
       if (id) {
         const countRes = await fetch(`/api/favorites/rooms/${id}/count`);
@@ -157,7 +172,7 @@ export default function UserInfoCard({ id }: { id: string }) {
       } else {
         await addFavorite(id);
       }
-      
+
       // Refresh favorite count
       const countRes = await fetch(`/api/favorites/rooms/${id}/count`);
       const newCount = await countRes.json();
@@ -378,7 +393,12 @@ export default function UserInfoCard({ id }: { id: string }) {
                   <MdEmail className="w-5 h-5" />
                 )}
                 <span className="font-semibold">
-                  {landlord.phone || landlord.email}
+                  {/* {session?.user?.id
+                    ? landlord.phone
+                      ? maskPhone(landlord.phone)
+                      : maskEmail(landlord.email || "")
+                    : landlord.phone || landlord.email} */}
+                    {landlord.phone ? maskPhone(landlord.phone) : maskEmail(landlord.email || "")}
                 </span>
               </div>
             </Link>
@@ -406,32 +426,33 @@ export default function UserInfoCard({ id }: { id: string }) {
       {/* Action Cards */}
       <div className="p-4 bg-white border border-gray-100 shadow-lg rounded-2xl">
         <div className="grid grid-cols-3 gap-2">
-          
           <button
-  onClick={handleFavorite}
-  className={`group flex flex-col items-center gap-2 p-4 rounded-xl transition-all duration-300 ${
-    isFavorited
-      ? "bg-gradient-to-br from-red-50 to-pink-50 text-red-700 shadow-md border border-red-200/50"
-      : "text-slate-600 hover:text-red-700 hover:bg-gradient-to-br hover:from-red-50 hover:to-pink-50 hover:shadow-md hover:border hover:border-red-200/50"
-  }`}
->
-  <div
-    className={`p-2 rounded-lg transition-colors ${
-      isFavorited ? "bg-red-100" : "bg-gray-100 group-hover:bg-red-100"
-    }`}
-  >
-    {isFavorited ? (
-      <AiFillHeart className="w-4 h-4" />
-    ) : (
-      <AiOutlineHeart className="w-4 h-4" />
-    )}
-  </div>
-  
-  {/* Like và số gộp chung */}
-  <span className="text-xs font-semibold">
-    {isFavorited ? "Favorites" : "Favorite"} {favoriteCount}
-  </span>
-</button>
+            onClick={handleFavorite}
+            className={`group flex flex-col items-center gap-2 p-4 rounded-xl transition-all duration-300 ${
+              isFavorited
+                ? "bg-gradient-to-br from-red-50 to-pink-50 text-red-700 shadow-md border border-red-200/50"
+                : "text-slate-600 hover:text-red-700 hover:bg-gradient-to-br hover:from-red-50 hover:to-pink-50 hover:shadow-md hover:border hover:border-red-200/50"
+            }`}
+          >
+            <div
+              className={`p-2 rounded-lg transition-colors ${
+                isFavorited
+                  ? "bg-red-100"
+                  : "bg-gray-100 group-hover:bg-red-100"
+              }`}
+            >
+              {isFavorited ? (
+                <AiFillHeart className="w-4 h-4" />
+              ) : (
+                <AiOutlineHeart className="w-4 h-4" />
+              )}
+            </div>
+
+            {/* Like và số gộp chung */}
+            <span className="text-xs font-semibold">
+              {isFavorited ? "Favorites" : "Favorite"} {favoriteCount}
+            </span>
+          </button>
 
           <button
             onClick={() => setShowShareModal(true)}
