@@ -44,6 +44,7 @@ public class SecurityConfig {
                                 .authorizeHttpRequests(auth -> auth
                                                 .requestMatchers("/api/auth/change-password").authenticated()
                                                 .requestMatchers("/api/auth/**").permitAll()
+                                                // .requestMatchers("/api/approval-queue/**").hasRole("Administrators")
                                                 // Cho phép GET /api/post-types/** cho cả Landlords và Administrators
                                                 // admin
                                                 .requestMatchers("/api/admin/**").hasRole("Administrators")
