@@ -43,6 +43,7 @@ public class LandlordTaskService {
         LandlordTask task = new LandlordTask();
         task.setTitle(dto.getTitle());
         task.setDescription(dto.getDescription());
+        task.setStartDate(dto.getStartDate());
         task.setDueDate(dto.getDueDate());
         task.setStatus(dto.getStatus());
         task.setPriority(dto.getPriority());
@@ -82,6 +83,8 @@ public class LandlordTaskService {
             task.setTitle(dto.getTitle());
         if (dto.getDescription() != null)
             task.setDescription(dto.getDescription());
+        if (dto.getStartDate() != null)
+            task.setStartDate(dto.getStartDate());
         if (dto.getDueDate() != null)
             task.setDueDate(dto.getDueDate());
         if (dto.getStatus() != null)
@@ -99,6 +102,7 @@ public class LandlordTaskService {
         dto.setId(task.getId());
         dto.setTitle(task.getTitle());
         dto.setDescription(task.getDescription());
+        dto.setStartDate(task.getStartDate());
         dto.setDueDate(task.getDueDate());
         dto.setStatus(task.getStatus());
         dto.setPriority(task.getPriority());
