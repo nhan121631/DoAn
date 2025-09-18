@@ -300,6 +300,12 @@ export default function FilterForm() {
         : selectedConvenients;
 
     const payload: FilterRequest = {
+      // Preserve existing price and area filters
+      minPrice: item.minPrice,
+      maxPrice: item.maxPrice,
+      minArea: item.minArea,
+      maxArea: item.maxArea,
+      // Update address filters
       provinceId: currentFormData.province
         ? Number(currentFormData.province)
         : undefined,
@@ -317,11 +323,20 @@ export default function FilterForm() {
 
     // Build query string
     const query: Record<string, string> = {};
-    if (payload.provinceId !== undefined)
+    if (payload.minPrice !== undefined && payload.minPrice !== 0)
+      query.minPrice = String(payload.minPrice);
+    if (payload.maxPrice !== undefined && payload.maxPrice !== 0)
+      query.maxPrice = String(payload.maxPrice);
+    if (payload.minArea !== undefined && payload.minArea !== 0)
+      query.minArea = String(payload.minArea);
+    if (payload.maxArea !== undefined && payload.maxArea !== 0)
+      query.maxArea = String(payload.maxArea);
+    if (payload.provinceId !== undefined && payload.provinceId !== 0)
       query.provinceId = String(payload.provinceId);
-    if (payload.districtId !== undefined)
+    if (payload.districtId !== undefined && payload.districtId !== 0)
       query.districtId = String(payload.districtId);
-    if (payload.wardId !== undefined) query.wardId = String(payload.wardId);
+    if (payload.wardId !== undefined && payload.wardId !== 0)
+      query.wardId = String(payload.wardId);
     if (payload.listConvenientIds && payload.listConvenientIds.length > 0)
       query.listConvenientIds = payload.listConvenientIds.join(",");
     const queryString = new URLSearchParams(query).toString();

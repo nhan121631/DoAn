@@ -20,7 +20,7 @@ public class TestController {
     public ResponseEntity<String> testSendSuggestions() {
         try {
             roomSuggestionService.sendRoomSuggestionsToAllUsers();
-            return ResponseEntity.ok("Room suggestions sent to all users successfully");
+            return ResponseEntity.ok("Room suggestions feature temporarily disabled");
         } catch (Exception e) {
             return ResponseEntity.badRequest()
                     .body("Error sending suggestions: " + e.getMessage());
@@ -31,7 +31,7 @@ public class TestController {
     public ResponseEntity<String> testSendSuggestionsToSingleUser(@RequestParam(value = "username") String username) {
         try {
             roomSuggestionService.testSuggestionForUser(username);
-            return ResponseEntity.ok("Room suggestions processing completed for user: " + username);
+            return ResponseEntity.ok("Room suggestions feature temporarily disabled for user: " + username);
         } catch (Exception e) {
             return ResponseEntity.badRequest()
                     .body("Error sending suggestions: " + e.getMessage());

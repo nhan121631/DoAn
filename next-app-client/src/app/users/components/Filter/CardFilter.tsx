@@ -12,13 +12,20 @@ export default function CardFilter() {
   // Helper: convert filter object to query params
   const filterToQuery = (filter: any) => {
     const query: Record<string, string> = {};
-    if (filter.minPrice !== undefined) query.minPrice = String(filter.minPrice);
-    if (filter.maxPrice !== undefined) query.maxPrice = String(filter.maxPrice);
-    if (filter.minArea !== undefined) query.minArea = String(filter.minArea);
-    if (filter.maxArea !== undefined) query.maxArea = String(filter.maxArea);
-    if (filter.provinceId) query.provinceId = String(filter.provinceId);
-    if (filter.districtId) query.districtId = String(filter.districtId);
-    if (filter.wardId) query.wardId = String(filter.wardId);
+    if (filter.minPrice !== undefined && filter.minPrice !== 0)
+      query.minPrice = String(filter.minPrice);
+    if (filter.maxPrice !== undefined && filter.maxPrice !== 0)
+      query.maxPrice = String(filter.maxPrice);
+    if (filter.minArea !== undefined && filter.minArea !== 0)
+      query.minArea = String(filter.minArea);
+    if (filter.maxArea !== undefined && filter.maxArea !== 0)
+      query.maxArea = String(filter.maxArea);
+    if (filter.provinceId && filter.provinceId !== 0)
+      query.provinceId = String(filter.provinceId);
+    if (filter.districtId && filter.districtId !== 0)
+      query.districtId = String(filter.districtId);
+    if (filter.wardId && filter.wardId !== 0)
+      query.wardId = String(filter.wardId);
     if (filter.listConvenientIds && filter.listConvenientIds.length > 0)
       query.listConvenientIds = filter.listConvenientIds.join(",");
     return query;

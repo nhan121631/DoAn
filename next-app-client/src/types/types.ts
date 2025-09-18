@@ -390,6 +390,11 @@ export type TransactionStatisticsDto = {
   cost: number; // Chi phí trong ngày
   date: string; // Ngày ở định dạng 'YYYY-MM-DD'
 }
+
+export type RevenueStatisticsDto = {
+  revenue: number; // Doanh thu trong ngày
+  date: string; // Ngày ở định dạng 'YYYY-MM-DD'
+}
 export interface LandlordTaskCreateDto {
   title: string;
   description?: string;

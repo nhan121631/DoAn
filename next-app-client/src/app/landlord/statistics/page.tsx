@@ -8,77 +8,35 @@ import {
   getLandlordMaintainceStatistics,
   getLandlordPostedRoomCount,
   getLandlordRentedRoomCount,
+  getLandlordRevenueStatistics,
   getLandlordViewedRoomCount,
 } from "@/services/LandLordStatisticsService";
-import { MaintainStatisticDto, TransactionStatisticsDto } from "@/types/types";
+import {
+  MaintainStatisticDto,
+  RevenueStatisticsDto,
+  TransactionStatisticsDto,
+} from "@/types/types";
 import { Button, Card, DatePicker, Select } from "antd";
 import { Dayjs } from "dayjs";
 import { motion } from "framer-motion";
 import { Download, PieChart as PieChartIcon } from "lucide-react";
 import React, { useEffect, useMemo, useState } from "react";
 import {
-  Area,
-  AreaChart,
   Bar,
   BarChart,
   CartesianGrid,
-  Cell,
   Legend,
-  Line,
-  LineChart,
-  Pie,
-  PieChart,
-  PolarAngleAxis,
-  PolarGrid,
-  PolarRadiusAxis,
-  Radar,
-  RadarChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
+  Line,
+  LineChart,
 } from "recharts";
 import CardStatistics from "../components/statistics/Card";
 
 // ----------- Types -----------
-export type KPI = {
-  date: string; // YYYY-MM-DD
-  users: number;
-  revenue: number; // USD
-  orders: number;
-  conversion: number; // 0..1
-};
-
-// ----------- Mock Data Generator -----------
-const makeData = (days = 30): KPI[] => {
-  const out: KPI[] = [];
-  const base = new Date();
-  for (let i = days - 1; i >= 0; i--) {
-    const d = new Date(base);
-    d.setDate(base.getDate() - i);
-    const users = 200 + Math.round(Math.random() * 300);
-    const orders = 50 + Math.round(users * (0.15 + Math.random() * 0.1));
-    const revenue = orders * (15 + Math.random() * 25);
-    const conversion = orders / users;
-    out.push({
-      date: d.toISOString().slice(0, 10),
-      users,
-      orders,
-      revenue: Math.round(revenue * 100) / 100,
-      conversion: Math.round(conversion * 1000) / 1000,
-    });
-  }
-  return out;
-};
-
-const COLORS = [
-  "#0ea5e9",
-  "#22c55e",
-  "#f59e0b",
-  "#ef4444",
-  "#8b5cf6",
-  "#14b8a6",
-]; // tailwind palette
+// ...existing code...
 
 // ----------- Reusable UI -----------
 function ChartCard({
@@ -126,6 +84,16 @@ export default function ChartsTemplate() {
   const [dataPostedRooms, setDataPostedRooms] = useState<
     TransactionStatisticsDto[]
   >([]);
+  const [dataRevenueRooms, setDataRevenueRooms] = useState<
+    RevenueStatisticsDto[]
+  >([]);
+
+  // Sort revenue data by date ascending for chart
+  const sortedRevenueRooms = useMemo(() => {
+    return [...dataRevenueRooms].sort(
+      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+    );
+  }, [dataRevenueRooms]);
 
   // Combine maintenance and posting data for chart
   const combinedChartData = useMemo(() => {
@@ -164,8 +132,7 @@ export default function ChartsTemplate() {
     );
   }, [dataMaintainedRooms, dataPostedRooms]);
 
-  const days = range === "7d" ? 7 : range === "14d" ? 14 : 30;
-  const data = useMemo(() => makeData(days), [days]);
+  // ...existing code...
   // statistics maintenance rooms
   useEffect(() => {
     const fetchDataWithValidation = async () => {
@@ -173,67 +140,48 @@ export default function ChartsTemplate() {
 
       if (startDate && endDate) {
         if (endDate.isBefore(startDate)) {
-          setDateError("The end date must be greater than the start date.");
-          // Vẫn gọi API mặc định khi có lỗi validation
-          try {
-            const res = await getLandlordMaintainceStatistics();
-            setDataMaintainedRooms(res);
-            const resPost = await getLandlordFeePostRoomStatistics();
-            setDataPostedRooms(resPost);
-          } catch (error) {
-            console.error("Error fetching default data:", error);
-          }
-        } else {
-          const diffDays = endDate.diff(startDate, "day");
-          if (diffDays > 31) {
-            setDateError("The period must not exceed 31 days.");
-            // Vẫn gọi API mặc định khi có lỗi validation
-            try {
-              const res = await getLandlordMaintainceStatistics();
-              setDataMaintainedRooms(res);
-              const resPost = await getLandlordFeePostRoomStatistics();
-              setDataPostedRooms(resPost);
-            } catch (error) {
-              console.error("Error fetching default data:", error);
-            }
-          } else {
-            try {
-              console.log(
-                "Fetching data with dates:",
-                startDate.format("YYYY-MM-DD"),
-                endDate.format("YYYY-MM-DD")
-              );
-              const res = await getLandlordMaintainceStatistics(
-                startDate.format("YYYY-MM-DD"),
-                endDate.format("YYYY-MM-DD")
-              );
-              console.log("API response:", res);
-              setDataMaintainedRooms(res);
-              setDateError("");
-
-              const resPost = await getLandlordFeePostRoomStatistics(
-                startDate.format("YYYY-MM-DD"),
-                endDate.format("YYYY-MM-DD")
-              );
-              console.log("API response:", resPost);
-              setDataPostedRooms(resPost);
-            } catch (error) {
-              console.error("Error fetching maintenance statistics:", error);
-              setDateError("Error loading statistics data.");
-            }
-          }
+          setDateError("End date must be after start date.");
+          return;
+        }
+        // Tính số tháng giữa 2 mốc
+        const monthDiff = endDate.diff(startDate, "month") + 1;
+        if (monthDiff > 12) {
+          setDateError("You can only select up to 12 months.");
+          return;
+        }
+        try {
+          const startMonth = startDate.format("YYYY-MM-01");
+          const endMonth = endDate.endOf("month").format("YYYY-MM-DD");
+          const res = await getLandlordMaintainceStatistics(
+            startMonth,
+            endMonth
+          );
+          setDataMaintainedRooms(res);
+          setDateError("");
+          const resPost = await getLandlordFeePostRoomStatistics(
+            startMonth,
+            endMonth
+          );
+          setDataPostedRooms(resPost);
+          const resRevenue = await getLandlordRevenueStatistics(
+            startMonth,
+            endMonth
+          );
+          setDataRevenueRooms(resRevenue);
+        } catch (error) {
+          console.error("Error fetching maintenance statistics:", error);
+          setDateError("Error loading statistics data.");
         }
       } else {
-        // Nếu không có startDate/endDate, gọi API mặc định
+        // Nếu không có startDate/endDate, gọi API mặc định (12 tháng gần nhất)
         try {
-          console.log("Fetching default maintenance data");
           const res = await getLandlordMaintainceStatistics();
-          console.log("Default API response:", res);
           setDataMaintainedRooms(res);
           setDateError("");
           const resPost = await getLandlordFeePostRoomStatistics();
-          console.log("Default API response:", resPost);
           setDataPostedRooms(resPost);
+          const restRevenue = await getLandlordRevenueStatistics();
+          setDataRevenueRooms(restRevenue);
         } catch (error) {
           console.error(
             "Error fetching default maintenance statistics:",
@@ -278,23 +226,7 @@ export default function ChartsTemplate() {
     fetchFavoritedRooms();
   }, [setTotalFavoritedRooms]);
 
-  // Đã di chuyển logic fetch maintenance vào useEffect validation ở trên
-  const pieData = [
-    { name: "A", value: 400 },
-    { name: "B", value: 300 },
-    { name: "C", value: 300 },
-    { name: "D", value: 200 },
-  ];
-
-  const radarData = [
-    { metric: "Quality", value: 120 },
-    { metric: "Speed", value: 98 },
-    { metric: "UX", value: 86 },
-    { metric: "Stability", value: 99 },
-    { metric: "Features", value: 85 },
-  ];
-
-  const filtered = search ? data.filter((d) => d.date.includes(search)) : data;
+  // ...existing code...
 
   return (
     <div className="min-h-screen w-full bg-slate-50 p-6 dark:bg-[#001529] transition-colors duration-300">
@@ -313,36 +245,23 @@ export default function ChartsTemplate() {
             <p className="text-slate-500">Overview of key metrics and trends</p>
           </div>
           <div className="flex items-center gap-2">
-            <Select
-              value={range}
-              style={{ width: 140 }}
-              onChange={(v) => setRange(v as typeof range)}
-              options={[
-                { value: "7d", label: "7 day" },
-                { value: "14d", label: "14 day" },
-                { value: "30d", label: "30 day" },
-              ]}
-            />
             {/* Form startDate và endDate antd */}
             <div className="flex items-center gap-2">
               <DatePicker
-                placeholder="Ngày bắt đầu"
+                picker="month"
+                placeholder="Month start"
                 value={startDate}
                 onChange={(date) => setStartDate(date)}
                 style={{ width: 140 }}
               />
               <DatePicker
-                placeholder="Ngày kết thúc"
+                picker="month"
+                placeholder="Month end"
                 value={endDate}
                 onChange={(date) => setEndDate(date)}
                 style={{ width: 140 }}
               />
             </div>
-
-            <Button type="default" className="gap-2">
-              <Download className="h-4 w-4" />
-              Export CSV
-            </Button>
           </div>
         </div>
         {dateError && (
@@ -417,12 +336,12 @@ export default function ChartsTemplate() {
           </ChartCard>
 
           <ChartCard
-            title="Revenue theo ngày (Bar)"
+            title="Revenue"
             icon={<PieChartIcon className="h-5 w-5 text-amber-500" />}
           >
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
-                data={filtered}
+                data={sortedRevenueRooms}
                 margin={{ top: 10, right: 20, left: 0, bottom: 0 }}
               >
                 <CartesianGrid strokeDasharray="3 3" />
@@ -444,7 +363,7 @@ export default function ChartsTemplate() {
             </ResponsiveContainer>
           </ChartCard>
 
-          <ChartCard
+          {/* <ChartCard
             title="Tỉ lệ chuyển đổi (Area)"
             icon={<PieChartIcon className="h-5 w-5 text-emerald-500" />}
           >
@@ -526,13 +445,8 @@ export default function ChartsTemplate() {
                 <Legend />
               </RadarChart>
             </ResponsiveContainer>
-          </ChartCard>
+          </ChartCard> */}
         </div>
-
-        <p className="mt-8 text-center text-xs text-slate-400">
-          Tip: thay mock data bằng API, hoặc Server Actions rồi truyền props vào
-          các chart.
-        </p>
       </motion.div>
     </div>
   );
