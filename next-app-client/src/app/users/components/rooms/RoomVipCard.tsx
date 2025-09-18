@@ -122,44 +122,7 @@ export default function RoomVipCard({
     return room.images?.findIndex((img) => img?.url && isVideo(img.url)) ?? -1;
   }, [room.images]);
 
-  useEffect(() => {
-    const mainIndex = firstVideoIndex !== -1 ? firstVideoIndex : 0;
-    const hoveredIndex =
-      hoveredImageIndex !== null ? hoveredImageIndex : mainIndex;
-    if (hoveredImageIndex === null) {
-      if (
-        hoveredIndex === mainIndex &&
-        isVideo(room.images[hoveredIndex]?.url)
-      ) {
-        if (mainVideoRef.current) {
-          mainVideoRef.current.play();
-          setIsPlaying(true);
-          setIsPaused(false);
-        }
-      } else {
-        if (mainVideoRef.current) {
-          mainVideoRef.current.pause();
-          setIsPlaying(false);
-          setIsPaused(false);
-        }
-      }
-    } else {
-      const currentImage = room.images[hoveredImageIndex];
-      if (currentImage?.url && isVideo(currentImage.url)) {
-        if (mainVideoRef.current) {
-          mainVideoRef.current.play();
-          setIsPlaying(true);
-          setIsPaused(false);
-        }
-      } else {
-        if (mainVideoRef.current) {
-          mainVideoRef.current.pause();
-          setIsPlaying(false);
-          setIsPaused(false);
-        }
-      }
-    }
-  }, [hoveredImageIndex, room.images, firstVideoIndex]);
+  // Video should not auto-play - only play when user clicks play button
 
   return (
     <>
@@ -179,6 +142,12 @@ export default function RoomVipCard({
                 onMouseEnter={() => setIsMainHovered(true)}
                 onMouseLeave={() => {
                   setIsMainHovered(false);
+                  // Reset video state when leaving main image area
+                  if (mainVideoRef.current) {
+                    mainVideoRef.current.pause();
+                    setIsPlaying(false);
+                    setIsPaused(false);
+                  }
                 }}
               >
                 {/* Main image switches to hovered thumbnail (if any) with smooth zoom */}
@@ -213,7 +182,6 @@ export default function RoomVipCard({
                           muted
                           loop
                           playsInline
-                          autoPlay={false}
                           preload="metadata"
                           style={{
                             width: "100%",
@@ -223,12 +191,31 @@ export default function RoomVipCard({
                             left: 0,
                           }}
                           onLoadedData={() => {
-                            // Video loaded, but play is handled by useEffect
+                            // Video loaded, ready to play when user clicks
                           }}
                           onPlay={() => setIsPlaying(true)}
                           onPause={() => setIsPaused(true)}
                         />
-                        {/* Play/Pause icon overlay */}
+                        {/* Play overlay - shown when video is hovered and not playing */}
+                        {isMainHovered && !isPlaying && (
+                          <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (mainVideoRef.current) {
+                                  mainVideoRef.current.play();
+                                  setIsPaused(false);
+                                }
+                              }}
+                              className="text-white text-4xl p-4 rounded-full bg-black/50 hover:bg-black/70 transition-colors"
+                              aria-label="Play video"
+                              title="Play video"
+                            >
+                              <FaPlay aria-hidden />
+                            </button>
+                          </div>
+                        )}
+                        {/* Pause overlay - shown when video is playing and hovered */}
                         {isMainHovered && isPlaying && !isPaused && (
                           <div className="absolute inset-0 flex items-center justify-center bg-black/40">
                             <button
@@ -247,6 +234,7 @@ export default function RoomVipCard({
                             </button>
                           </div>
                         )}
+                        {/* Play overlay - shown when video is paused */}
                         {isMainHovered && isPaused && (
                           <div className="absolute inset-0 flex items-center justify-center bg-black/40">
                             <button
@@ -305,18 +293,15 @@ export default function RoomVipCard({
                           key={idx}
                           onMouseEnter={() => {
                             setHoveredImageIndex(1 + idx);
-                            const img = room.images[1 + idx];
-                            if (img?.url && isVideo(img.url)) {
-                              setIsPlaying(true);
-                              setIsPaused(false);
-                            }
+                            // Don't auto-play video on thumbnail hover
                           }}
                           onMouseLeave={() => {
                             setHoveredImageIndex(null);
-                            setIsPlaying(false);
-                            setIsPaused(false);
+                            // Pause video when leaving thumbnail hover
                             if (mainVideoRef.current) {
                               mainVideoRef.current.pause();
+                              setIsPlaying(false);
+                              setIsPaused(false);
                             }
                           }}
                           className="relative flex-shrink-0 w-8 h-8 overflow-hidden transition-colors bg-white border-2 rounded-lg shadow-lg cursor-pointer md:w-10 md:h-10 border-white/90 hover:border-slate-200"
@@ -579,7 +564,8 @@ export default function RoomVipCard({
                         return `${local[0] || ""}***@${domain}`;
                       }
                       const localPrefix = local.slice(0, 1);
-                      const localSuffix = local.length > 6 ? local.slice(-1) : "";
+                      const localSuffix =
+                        local.length > 6 ? local.slice(-1) : "";
                       const maskedLocal = localSuffix
                         ? `${localPrefix}***${localSuffix}`
                         : `${localPrefix}***`;

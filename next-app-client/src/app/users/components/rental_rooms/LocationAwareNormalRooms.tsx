@@ -41,18 +41,30 @@ export default function LocationAwareNormalRooms({
   useEffect(() => {
     if ((hasGuestData || hasUserData) && currentPage !== 0) {
       // Reset URL to page 0 when location data is available but URL shows different page
-      router.push("?pageNormal=0", { scroll: false });
+      const currentParams = new URLSearchParams(window.location.search);
+      currentParams.set("pageNormal", "0");
+      router.push(`?${currentParams.toString()}`, { scroll: false });
     }
   }, [hasGuestData, hasUserData, currentPage, router]);
 
   // Handle pagination for normal rooms
   const handleNormalPagination = async (newPage: number) => {
+    console.log("🔄 Normal Pagination triggered:", {
+      newPage,
+      hasGuestData,
+      hasUserData,
+      location: !!location,
+      userId: session?.user?.userProfile?.id,
+    });
+
     // Immediately set optimistic page and loading state
     setOptimisticPage(newPage);
     setIsLoadingPage(true);
 
     // Update URL immediately for better UX
-    router.push(`?pageNormal=${newPage}`, { scroll: false });
+    const currentParams = new URLSearchParams(window.location.search);
+    currentParams.set("pageNormal", newPage.toString());
+    router.push(`?${currentParams.toString()}`, { scroll: false });
 
     try {
       const userId = session?.user?.userProfile?.id;
@@ -60,6 +72,11 @@ export default function LocationAwareNormalRooms({
 
       if ((hasGuestData || hasUserData) && location) {
         // For location-based data, fetch new data with coordinates
+        console.log(
+          "🌍 Using location-based API with coords:",
+          location.lat,
+          location.lng
+        );
         newNormalRooms = await getRoomNormalWithLocation(
           newPage,
           6,
@@ -68,6 +85,7 @@ export default function LocationAwareNormalRooms({
         );
       } else {
         // For non-location data, fetch regular normal rooms
+        console.log("👤 Using regular API with userId:", userId);
         newNormalRooms = await getRoomNormalUser(newPage, 6, userId);
       }
 
@@ -77,10 +95,12 @@ export default function LocationAwareNormalRooms({
       }
     } catch (error) {
       console.error("Error fetching normal rooms:", error);
-    } finally {
-      // Always reset states when done
+      // Reset optimistic page on error
       setOptimisticPage(null);
+    } finally {
+      // Always reset loading state
       setIsLoadingPage(false);
+      // Keep optimistic page until next navigation
     }
   };
 
@@ -100,6 +120,10 @@ export default function LocationAwareNormalRooms({
   // Calculate effective current page - always 0 when using location data
   const effectiveCurrentPage = hasGuestData || hasUserData ? 0 : currentPage;
 
+  // Use optimistic page if available, otherwise use effective page
+  const displayPage =
+    optimisticPage !== null ? optimisticPage : effectiveCurrentPage;
+
   // Reset paginated data when context changes
   useEffect(() => {
     setPaginatedNormalRooms(null);
@@ -110,6 +134,19 @@ export default function LocationAwareNormalRooms({
   if (!isEmptyFilter || !normalRooms) {
     return null;
   }
+
+  // Debug log for pagination visibility
+  console.log("🔧 LocationAwareNormalRooms Debug:");
+  console.log("- hasGuestData:", hasGuestData);
+  console.log("- hasUserData:", hasUserData);
+  console.log("- currentPage from URL:", currentPage);
+  console.log("- effectiveCurrentPage:", effectiveCurrentPage);
+  console.log("- displayPage:", displayPage);
+  console.log("- optimisticPage:", optimisticPage);
+  console.log("- normalRooms.totalPages:", normalRooms?.totalPages);
+  console.log("- normalRooms.totalRecords:", normalRooms?.totalRecords);
+  console.log("- normalRooms.data.length:", normalRooms?.data?.length);
+  console.log("- Should show pagination:", normalRooms?.totalPages > 1);
 
   return (
     <div className="flex flex-col items-center justify-center w-full gap-4 px-2 sm:px-4 my-6 max-w-7xl">
@@ -173,29 +210,20 @@ export default function LocationAwareNormalRooms({
         </div>
       </div>
 
-      {/* Pagination - Show when more than 1 page */}
-      {normalRooms.totalPages > 1 && (
-        <div className="flex items-center justify-center gap-4 mt-8">
+      <div className="flex flex-col items-center justify-center gap-4 mt-8">
+        <div className="flex items-center justify-center gap-4">
           {/* Previous Button */}
           <button
-            onClick={() =>
-              handleNormalPagination(Math.max(0, effectiveCurrentPage - 1))
-            }
-            disabled={
-              (optimisticPage !== null
-                ? optimisticPage
-                : effectiveCurrentPage) === 0 || isLoadingPage
-            }
+            onClick={() => handleNormalPagination(Math.max(0, displayPage - 1))}
+            disabled={displayPage === 0 || isLoadingPage}
             className={`group flex items-center gap-3 px-6 py-3 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95 ${
-              (optimisticPage !== null
-                ? optimisticPage
-                : effectiveCurrentPage) === 0 || isLoadingPage
+              displayPage === 0 || isLoadingPage
                 ? "bg-gradient-to-r from-gray-200 to-gray-300 text-gray-500 cursor-not-allowed"
                 : "bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-blue-500/30"
             }`}
           >
             {isLoadingPage &&
-            optimisticPage === Math.max(0, effectiveCurrentPage - 1) ? (
+            optimisticPage === Math.max(0, displayPage - 1) ? (
               <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
             ) : (
               <BiChevronLeft
@@ -209,14 +237,11 @@ export default function LocationAwareNormalRooms({
           {/* Page Info */}
           <div className="flex flex-col items-center px-6 py-2 bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/50 shadow-sm">
             <span className="text-lg font-bold bg-gradient-to-r from-blue-600 to-blue-700 bg-clip-text text-transparent">
-              Page{" "}
-              {(optimisticPage !== null
-                ? optimisticPage
-                : effectiveCurrentPage) + 1}{" "}
-              / {normalRooms.totalPages}
+              Page {displayPage + 1} / {normalRooms.totalPages || 1}
             </span>
             <span className="text-xs text-gray-500 font-medium">
-              {normalRooms.totalRecords} featured rooms
+              {normalRooms.totalRecords || normalRooms.data.length} featured
+              rooms
               {(hasGuestData || hasUserData) && " (location-sorted)"}
               {isLoadingPage && " (loading...)"}
             </span>
@@ -226,22 +251,14 @@ export default function LocationAwareNormalRooms({
           <button
             onClick={() =>
               handleNormalPagination(
-                Math.min(normalRooms.totalPages - 1, effectiveCurrentPage + 1)
+                Math.min((normalRooms.totalPages || 1) - 1, displayPage + 1)
               )
             }
             disabled={
-              (optimisticPage !== null
-                ? optimisticPage
-                : effectiveCurrentPage) +
-                1 >=
-                normalRooms.totalPages || isLoadingPage
+              displayPage + 1 >= (normalRooms.totalPages || 1) || isLoadingPage
             }
             className={`group flex items-center gap-3 px-6 py-3 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95 ${
-              (optimisticPage !== null
-                ? optimisticPage
-                : effectiveCurrentPage) +
-                1 >=
-                normalRooms.totalPages || isLoadingPage
+              displayPage + 1 >= (normalRooms.totalPages || 1) || isLoadingPage
                 ? "bg-gradient-to-r from-gray-200 to-gray-300 text-gray-500 cursor-not-allowed"
                 : "bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-blue-500/30"
             }`}
@@ -249,7 +266,7 @@ export default function LocationAwareNormalRooms({
             <span className="hidden sm:inline font-medium">Next</span>
             {isLoadingPage &&
             optimisticPage ===
-              Math.min(normalRooms.totalPages - 1, effectiveCurrentPage + 1) ? (
+              Math.min((normalRooms.totalPages || 1) - 1, displayPage + 1) ? (
               <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
             ) : (
               <BiChevronRight
@@ -259,7 +276,7 @@ export default function LocationAwareNormalRooms({
             )}
           </button>
         </div>
-      )}
+      </div>
     </div>
   );
 }

@@ -1,11 +1,16 @@
 "use client";
 
 import Image from "next/image";
-import React, {useRef, useEffect, useState } from "react";
+import React, { useRef, useEffect, useState } from "react";
 // framer-motion import removed
-import { URL_IMAGE, API_URL  } from "@/services/Constant";
+import { URL_IMAGE, API_URL } from "@/services/Constant";
 import { RoomInUser } from "@/types/types";
-import { FaMapMarkerAlt, FaRegCheckCircle, FaPause, FaPlay } from "react-icons/fa";
+import {
+  FaMapMarkerAlt,
+  FaRegCheckCircle,
+  FaPause,
+  FaPlay,
+} from "react-icons/fa";
 import { PiRuler } from "react-icons/pi";
 import { IoIosAddCircleOutline } from "react-icons/io";
 import { useRouter } from "next/navigation";
@@ -14,7 +19,6 @@ import { message } from "antd";
 import RoomCardActions from "./RoomCardActions";
 // import { useRef, useState } from "react";
 // import { FaEye } from "react-icons/fa";
-
 
 export interface RoomCardProps {
   room: RoomInUser;
@@ -46,14 +50,7 @@ const RoomCard: React.FC<RoomCardProps> = ({
     setIsCompared(items.some((item) => item.room.id === room.id));
   }, [items, room.id]);
 
-  // Try to play video when component mounts
-  useEffect(() => {
-    if (mainVideoRef.current) {
-      mainVideoRef.current.play().catch((error) => {
-        console.log('Video play failed:', error);
-      });
-    }
-  }, []);
+  // Video should not auto-play on mount - only play when user hovers and clicks
 
   const handleViewRoom = () => {
     router.push(`/detail/${room.id}`);
@@ -78,70 +75,81 @@ const RoomCard: React.FC<RoomCardProps> = ({
   const [viewCount, setViewCount] = useState(room.viewCount ?? 0);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const [hasIncreasedView, setHasIncreasedView] = useState(false);
-const handleMouseEnter = () => {
-  if (hasIncreasedView) return; // Nếu đã tăng view thì không tăng nữa
-  timerRef.current = setTimeout(() => {
-    setViewCount((prev) => prev + 1);
-    setHasIncreasedView(true); // Đánh dấu đã tăng view
-    fetch(`${API_URL}/rooms/${room.id}/view`, { method: "POST" }).then(() => {
-      fetch(`${API_URL}/rooms/${room.id}`)
-        .then(res => res.json())
-        .then(data => setViewCount(data.viewCount ?? 0));
-    });
-  }, 5000);
-  setIsMainHovered(true);
-};
+  const handleMouseEnter = () => {
+    if (hasIncreasedView) return; // Nếu đã tăng view thì không tăng nữa
+    timerRef.current = setTimeout(() => {
+      setViewCount((prev) => prev + 1);
+      setHasIncreasedView(true); // Đánh dấu đã tăng view
+      fetch(`${API_URL}/rooms/${room.id}/view`, { method: "POST" }).then(() => {
+        fetch(`${API_URL}/rooms/${room.id}`)
+          .then((res) => res.json())
+          .then((data) => setViewCount(data.viewCount ?? 0));
+      });
+    }, 5000);
+    setIsMainHovered(true);
+  };
 
-const handleMouseLeave = () => {
-  if (timerRef.current) clearTimeout(timerRef.current);
-  setHasIncreasedView(false); // Cho phép tăng lại nếu rời chuột và hover lại
-  setIsMainHovered(false);
-};
+  const handleMouseLeave = () => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+    setHasIncreasedView(false); // Cho phép tăng lại nếu rời chuột và hover lại
+    setIsMainHovered(false);
+    // Reset video state when leaving card
+    if (mainVideoRef.current) {
+      mainVideoRef.current.pause();
+      setIsPlaying(false);
+      setIsPaused(false);
+    }
+  };
 
-const isVideo = (url: string): boolean => {
-  const videoExtensions = [
-    ".mp4",
-    ".webm",
-    ".ogg",
-    ".avi",
-    ".mov",
-    ".wmv",
-    ".flv",
-  ];
-  return videoExtensions.some((ext) => url.toLowerCase().includes(ext));
-};
+  const isVideo = (url: string): boolean => {
+    const videoExtensions = [
+      ".mp4",
+      ".webm",
+      ".ogg",
+      ".avi",
+      ".mov",
+      ".wmv",
+      ".flv",
+    ];
+    return videoExtensions.some((ext) => url.toLowerCase().includes(ext));
+  };
 
-const handlePlay = () => {
-  if (mainVideoRef.current) {
-    mainVideoRef.current.play();
-    setIsPlaying(true);
-    setIsPaused(false);
-  }
-};
+  const handlePlay = () => {
+    if (mainVideoRef.current) {
+      mainVideoRef.current.play();
+      setIsPlaying(true);
+      setIsPaused(false);
+    }
+  };
 
-const handlePause = () => {
-  if (mainVideoRef.current) {
-    mainVideoRef.current.pause();
-    setIsPlaying(false);
-    setIsPaused(true);
-  }
-};
+  const handlePause = () => {
+    if (mainVideoRef.current) {
+      mainVideoRef.current.pause();
+      setIsPlaying(false);
+      setIsPaused(true);
+    }
+  };
 
   return (
     <>
       {contextHolder}
       <div
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-       className="group relative w-full max-w-sm mx-auto bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 hover:scale-[1.02] border border-gray-100/50 backdrop-blur-sm">
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        className="group relative w-full max-w-sm mx-auto bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 hover:scale-[1.02] border border-gray-100/50 backdrop-blur-sm"
+      >
         {/* Image Container */}
         <div className="relative w-full h-64 overflow-hidden">
           {(() => {
             // Find the first video in the images list, or fallback to first image
-            const firstVideoIndex = room.images?.findIndex(img => img?.url && isVideo(img.url)) ?? -1;
+            const firstVideoIndex =
+              room.images?.findIndex((img) => img?.url && isVideo(img.url)) ??
+              -1;
             const mainIndex = firstVideoIndex !== -1 ? firstVideoIndex : 0;
             const currentImage = room.images?.[mainIndex];
-            const mainImageSrc = currentImage?.url ? URL_IMAGE + currentImage.url : "/placeholder.jpg";
+            const mainImageSrc = currentImage?.url
+              ? URL_IMAGE + currentImage.url
+              : "/placeholder.jpg";
             const isVid = currentImage?.url ? isVideo(currentImage.url) : false;
 
             if (isVid) {
@@ -154,27 +162,51 @@ const handlePause = () => {
                     muted
                     loop
                     playsInline
-                    autoPlay
                     preload="metadata"
-                    style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0 }}
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                    }}
                     onPlay={() => setIsPlaying(true)}
                     onPause={() => setIsPaused(true)}
                   />
-                  {/* Pause overlay */}
-                  {isMainHovered && !isPaused && (
+                  {/* Play overlay - shown when video is hovered and not playing */}
+                  {isMainHovered && !isPlaying && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/40 z-40">
+                      <button
+                        onClick={() => {
+                          if (mainVideoRef.current) {
+                            mainVideoRef.current.play();
+                            setIsPaused(false);
+                          }
+                        }}
+                        className="text-white text-6xl p-4 rounded-full bg-black/50 hover:bg-black/70 transition-colors cursor-pointer"
+                      >
+                        <FaPlay />
+                      </button>
+                    </div>
+                  )}
+                  {/* Pause overlay - shown when video is playing and hovered */}
+                  {isMainHovered && isPlaying && !isPaused && (
                     <div className="absolute inset-0 flex items-center justify-center bg-black/40 z-40">
                       <button
                         onClick={() => {
                           if (mainVideoRef.current) {
                             if (mainVideoRef.current.paused) {
                               // If video is not playing, try to play it first
-                              mainVideoRef.current.play().then(() => {
-                                mainVideoRef.current?.pause();
-                                setIsPaused(true);
-                              }).catch(() => {
-                                // If play fails, just set paused
-                                setIsPaused(true);
-                              });
+                              mainVideoRef.current
+                                .play()
+                                .then(() => {
+                                  mainVideoRef.current?.pause();
+                                  setIsPaused(true);
+                                })
+                                .catch(() => {
+                                  // If play fails, just set paused
+                                  setIsPaused(true);
+                                });
                             } else {
                               mainVideoRef.current.pause();
                               setIsPaused(true);
@@ -234,7 +266,6 @@ const handlePause = () => {
       <FaEye className="mr-1" /> {viewCount}
     </span> */}
           </div>
-          
 
           {/* Status Badges - Top Left */}
           <div className="absolute z-30 flex gap-2 top-4 left-4">

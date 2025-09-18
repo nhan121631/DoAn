@@ -20,7 +20,7 @@ export default function ManageContractsPage() {
         if (!landLordId) return;
         const data = await ContractService.getByLandlord(landLordId, 0, 10);
         setContracts(data.content);
-      } catch (error) {
+      } catch {
         setError("Failed to load contracts");
       } finally {
         setLoading(false);

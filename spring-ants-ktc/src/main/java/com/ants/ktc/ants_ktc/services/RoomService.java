@@ -480,7 +480,6 @@ public class RoomService {
         }
 
         // update room
-        // update room
         @Transactional
         public RoomResponseDto updateRoom(UUID id, List<MultipartFile> images, RoomRequestUpdateDto request)
                         throws Exception {

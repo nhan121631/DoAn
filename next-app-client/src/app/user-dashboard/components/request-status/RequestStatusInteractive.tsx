@@ -10,7 +10,7 @@ import {
 import { Button, Form, Input, message, Modal, Space, Table, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { useSession } from "next-auth/react";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { AiOutlineEdit } from "react-icons/ai";
 
 //trường trong bảng
@@ -19,6 +19,7 @@ export type RequestFormValues = {
   requestDescription: string;
 };
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface RequestStatusInteractiveProps {
   // Remove initialRequests prop since we'll fetch data inside component
 }
@@ -119,29 +120,32 @@ const RequestStatusInteractive: React.FC<
     useState<RequirementDetail | null>(null);
   const [messageApi, contextHolder] = message.useMessage();
 
-  const fetchData = async (page = 0, size = 5) => {
-    if (!session) return;
+  const fetchData = useCallback(
+    async (page = 0, size = 5) => {
+      if (!session) return;
 
-    setLoading(true);
-    try {
-      const res = await getRequestsByUser(session, page, size);
-      setRequests(res?.data || []);
-      setData(res);
-      console.log("User Requests Paging:", {
-        page: res.page,
-        size: res.size,
-        totalRecords: res.totalRecords,
-        totalPages: res.totalPages,
-      });
-    } catch (error: any) {
-      messageApi.error({
-        content: error.message,
-        duration: 2,
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+      setLoading(true);
+      try {
+        const res = await getRequestsByUser(session, page, size);
+        setRequests(res?.data || []);
+        setData(res);
+        console.log("User Requests Paging:", {
+          page: res.page,
+          size: res.size,
+          totalRecords: res.totalRecords,
+          totalPages: res.totalPages,
+        });
+      } catch (error: any) {
+        messageApi.error({
+          content: error.message,
+          duration: 2,
+        });
+      } finally {
+        setLoading(false);
+      }
+    },
+    [session, messageApi]
+  );
 
   const handleTableChange = (pagination: any) => {
     const page = pagination.current - 1 || 0; // Convert AntD 1-based to backend 0-based
@@ -153,7 +157,7 @@ const RequestStatusInteractive: React.FC<
     if (!session?.user) return;
     // Initial load: page 0, size 5
     fetchData(0, 5);
-  }, [session?.user]);
+  }, [session?.user, fetchData]);
 
   const getStatusDisplay = (status: 0 | 1 | 2) => {
     switch (status) {

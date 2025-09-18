@@ -52,6 +52,7 @@ export default function RentalRoomsWithLocation({
   console.log("- Session user ID:", session?.user?.userProfile?.id);
   console.log("- Location from context:", location);
   console.log("- Guest rooms from context:", guestRooms);
+  console.log("- User rooms from context:", userRooms);
   console.log("- isSearching:", isSearching);
   console.log("- User location data from server:", userLocationData);
 
@@ -68,7 +69,9 @@ export default function RentalRoomsWithLocation({
   useEffect(() => {
     if (isUsingLocationData && page !== undefined && page !== 0) {
       // Reset URL to page 0 when location data is available but URL shows different page
-      router.push("?page=0", { scroll: false });
+      const currentParams = new URLSearchParams(window.location.search);
+      currentParams.set("page", "0");
+      router.push(`?${currentParams.toString()}`, { scroll: false });
     }
   }, [isUsingLocationData, page, router]);
 
@@ -88,6 +91,9 @@ export default function RentalRoomsWithLocation({
   // Calculate effective current page - always 0 when using location data
   const effectivePage = isUsingLocationData ? 0 : page || 0;
 
+  // Use optimistic page if available, otherwise use effective page
+  const displayPage = optimisticPage !== null ? optimisticPage : effectivePage;
+
   const normalRooms = isGuestUser
     ? hasGuestData
       ? guestRooms.normalRooms
@@ -98,6 +104,11 @@ export default function RentalRoomsWithLocation({
 
   console.log("- Using guest data:", hasGuestData);
   console.log("- Using user data:", hasUserData);
+  console.log("- isUsingLocationData:", isUsingLocationData);
+  console.log("- page from URL:", page);
+  console.log("- displayPage:", displayPage);
+  console.log("- effectivePage:", effectivePage);
+  console.log("- optimisticPage:", optimisticPage);
   console.log("- User has saved location:", hasUserLocationData);
   console.log("- VIP rooms count:", vipRooms?.data?.length || 0);
   console.log("- Normal rooms count:", normalRooms?.data?.length || 0);
@@ -110,19 +121,34 @@ export default function RentalRoomsWithLocation({
 
   // Handle pagination for location-based data
   const handleVipPagination = async (newPage: number) => {
+    console.log("🔄 VIP Pagination triggered:", {
+      newPage,
+      hasGuestData,
+      hasUserData,
+      location: !!location,
+      userId: session?.user?.userProfile?.id,
+    });
+
     // Immediately set optimistic page and loading state
     setOptimisticPage(newPage);
     setIsLoadingPage(true);
 
     // Update URL immediately for better UX
-    router.push(`?page=${newPage}`, { scroll: false });
+    const currentParams = new URLSearchParams(window.location.search);
+    currentParams.set("page", newPage.toString());
+    router.push(`?${currentParams.toString()}`, { scroll: false });
 
     try {
       const userId = session?.user?.userProfile?.id;
       let newVipRooms: PaginatedResponse<RoomInUser> | null = null;
 
-      if (isUsingLocationData && location) {
+      if ((hasGuestData || hasUserData) && location) {
         // For location-based data, fetch new data with coordinates
+        console.log(
+          "🌍 Using location-based API with coords:",
+          location.lat,
+          location.lng
+        );
         newVipRooms = await getRoomVipWithLocation(
           newPage,
           4,
@@ -130,7 +156,8 @@ export default function RentalRoomsWithLocation({
           location.lng
         );
       } else {
-        // For non-location data, fetch regular VIP rooms
+        // For non-location data, fetch regular VIP rooms with userId
+        console.log("👤 Using regular API with userId:", userId);
         newVipRooms = await getRoomVipUser(newPage, 4, userId);
       }
 
@@ -140,10 +167,12 @@ export default function RentalRoomsWithLocation({
       }
     } catch (error) {
       console.error("Error fetching VIP rooms:", error);
-    } finally {
-      // Always reset states when done
+      // Reset optimistic page on error
       setOptimisticPage(null);
+    } finally {
+      // Always reset loading state
       setIsLoadingPage(false);
+      // Keep optimistic page until next navigation
     }
   };
 
@@ -224,8 +253,19 @@ export default function RentalRoomsWithLocation({
                 onClick={() => {
                   setGuestRooms(null);
                   setLocation(null);
+                  // Reset pagination state when clearing location
+                  setPaginatedVipRooms(null);
+                  setOptimisticPage(null);
+                  // Reset URL to page 0
+                  const currentParams = new URLSearchParams(
+                    window.location.search
+                  );
+                  currentParams.set("page", "0");
+                  router.push(`?${currentParams.toString()}`, {
+                    scroll: false,
+                  });
                   console.log(
-                    "🧹 Cleared location data - returning to default view"
+                    "🧹 Cleared location data - returning to default view with page reset"
                   );
                 }}
                 className="px-4 py-2 text-sm bg-white border border-blue-300 text-blue-700 rounded-xl hover:bg-blue-50 transition-colors duration-200"
@@ -316,28 +356,22 @@ export default function RentalRoomsWithLocation({
                   ))}
               </div>
 
-              {/* VIP Pagination */}
-              {vipRooms && page !== undefined && vipRooms.totalPages > 1 && (
+              {/* VIP Pagination - Always show when we have more than 1 page */}
+              {vipRooms && vipRooms.totalPages > 1 && (
                 <div className="flex flex-wrap items-center justify-center gap-4 mt-8">
                   <button
                     onClick={() =>
-                      handleVipPagination(Math.max(0, effectivePage - 1))
+                      handleVipPagination(Math.max(0, displayPage - 1))
                     }
-                    disabled={
-                      (optimisticPage !== null
-                        ? optimisticPage
-                        : effectivePage) === 0 || isLoadingPage
-                    }
+                    disabled={displayPage === 0 || isLoadingPage}
                     className={`group flex items-center gap-3 px-6 py-3 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95 ${
-                      (optimisticPage !== null
-                        ? optimisticPage
-                        : effectivePage) === 0 || isLoadingPage
+                      displayPage === 0 || isLoadingPage
                         ? "bg-gradient-to-r from-gray-200 to-gray-300 text-gray-500 cursor-not-allowed"
                         : "bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-blue-500/30"
                     }`}
                   >
                     {isLoadingPage &&
-                    optimisticPage === Math.max(0, effectivePage - 1) ? (
+                    optimisticPage === Math.max(0, displayPage - 1) ? (
                       <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                     ) : (
                       <BiChevronLeft
@@ -350,11 +384,7 @@ export default function RentalRoomsWithLocation({
 
                   <div className="flex flex-col items-center px-6 py-2 bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/50 shadow-sm">
                     <span className="text-lg font-bold bg-gradient-to-r from-yellow-500 to-orange-500 bg-clip-text text-transparent">
-                      Page{" "}
-                      {(optimisticPage !== null
-                        ? optimisticPage
-                        : effectivePage) + 1}{" "}
-                      / {vipRooms.totalPages}
+                      Page {displayPage + 1} / {vipRooms.totalPages}
                     </span>
                     <span className="text-xs text-gray-500 font-medium">
                       {vipRooms.totalRecords} premium rooms
@@ -366,22 +396,14 @@ export default function RentalRoomsWithLocation({
                   <button
                     onClick={() =>
                       handleVipPagination(
-                        Math.min(vipRooms.totalPages - 1, effectivePage + 1)
+                        Math.min(vipRooms.totalPages - 1, displayPage + 1)
                       )
                     }
                     disabled={
-                      (optimisticPage !== null
-                        ? optimisticPage
-                        : effectivePage) +
-                        1 >=
-                        vipRooms.totalPages || isLoadingPage
+                      displayPage + 1 >= vipRooms.totalPages || isLoadingPage
                     }
                     className={`group flex items-center gap-3 px-6 py-3 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95 ${
-                      (optimisticPage !== null
-                        ? optimisticPage
-                        : effectivePage) +
-                        1 >=
-                        vipRooms.totalPages || isLoadingPage
+                      displayPage + 1 >= vipRooms.totalPages || isLoadingPage
                         ? "bg-gradient-to-r from-gray-200 to-gray-300 text-gray-500 cursor-not-allowed"
                         : "bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-blue-500/30"
                     }`}
@@ -389,7 +411,7 @@ export default function RentalRoomsWithLocation({
                     <span className="hidden sm:inline">Next</span>
                     {isLoadingPage &&
                     optimisticPage ===
-                      Math.min(vipRooms.totalPages - 1, effectivePage + 1) ? (
+                      Math.min(vipRooms.totalPages - 1, displayPage + 1) ? (
                       <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                     ) : (
                       <BiChevronRight
