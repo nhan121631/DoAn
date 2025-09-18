@@ -664,6 +664,7 @@ function SuggestAddressBar({
         setLoadingPreferences(true);
         const preferences = await getUserPreferences();
         setUserPreferences(preferences);
+        console.log("Loaded user preferences:", preferences);
         if (preferences?.searchAddress) {
           setCurrentPreferences(preferences.searchAddress);
         } else {
@@ -1265,28 +1266,8 @@ function SuggestAddressBar({
                   <div className="text-sm text-gray-700">
                     <h4 className="font-semibold mb-2">Current Search Area</h4>
                     <p className="mb-2">
-                      <strong>Province:</strong>{" "}
-                      {userPreferences?.province || "Not set"}
-                    </p>
-                    <p className="mb-2">
-                      <strong>District:</strong>{" "}
-                      {userPreferences?.district || "Not set"}
-                    </p>
-                    <p className="mb-2">
-                      <strong>Ward:</strong>{" "}
-                      {userPreferences?.ward || "Not set"}
-                    </p>
-                    <p className="mb-2">
-                      <strong>Price Range:</strong>{" "}
-                      {userPreferences?.priceRange || "Not set"}
-                    </p>
-                    <p className="mb-2">
-                      <strong>Room Type:</strong>{" "}
-                      {userPreferences?.roomType || "Not set"}
-                    </p>
-                    <p className="mb-2">
-                      <strong>Area:</strong>{" "}
-                      {userPreferences?.area || "Not set"}
+                      <strong>Your Search Address:</strong>{" "}
+                      {userPreferences?.searchAddress || "Not set"}
                     </p>
                   </div>
                 </div>
