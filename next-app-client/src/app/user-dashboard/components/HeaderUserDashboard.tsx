@@ -1,7 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { Avatar, Dropdown, Badge, Popover, List, Typography, message } from "antd";
+import {
+  Avatar,
+  Dropdown,
+  Badge,
+  Popover,
+  List,
+  Typography,
+  message,
+} from "antd";
 import { signOut, useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
@@ -58,7 +66,9 @@ export default function HeaderUserDashboard({
   const [currentAvatarUrl, setCurrentAvatarUrl] = useState("");
   const [notificationOpen, setNotificationOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [displayedNotifications, setDisplayedNotifications] = useState<Notification[]>([]);
+  const [displayedNotifications, setDisplayedNotifications] = useState<
+    Notification[]
+  >([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [messageApi, contextHolder] = message.useMessage();
@@ -86,7 +96,7 @@ export default function HeaderUserDashboard({
             ...docSnap.data(),
           } as Notification)
       );
-      
+
       // Chỉ hiển thị popup cho notification thực sự mới (không phải lần đầu load)
       if (!isInitialLoad) {
         // Chỉ hiển thị popup nếu có document mới được thêm VÀ không phải từ cache
@@ -102,7 +112,7 @@ export default function HeaderUserDashboard({
         console.log("Initial load, skipping notification popup");
         setIsInitialLoad(false);
       }
-      
+
       setNotifications(data);
       // Reset pagination when new notifications come
       setCurrentPage(1);
@@ -126,7 +136,11 @@ export default function HeaderUserDashboard({
     }
   };
 
-  const handleNotificationClick = async (id: string, type: string, contractId: number | string | undefined) => {
+  const handleNotificationClick = async (
+    id: string,
+    type: string,
+    contractId: number | string | undefined
+  ) => {
     try {
       await updateDoc(doc(db, "notifications", id), { isRead: true });
       if (type === "booking_success") {
@@ -145,12 +159,16 @@ export default function HeaderUserDashboard({
   };
 
   const loadMoreNotifications = () => {
-    if (isLoadingMore || displayedNotifications.length >= notifications.length) return;
-    
+    if (isLoadingMore || displayedNotifications.length >= notifications.length)
+      return;
+
     setIsLoadingMore(true);
     setTimeout(() => {
       const nextPage = currentPage + 1;
-      const newDisplayedNotifications = notifications.slice(0, nextPage * notificationsPerPage);
+      const newDisplayedNotifications = notifications.slice(
+        0,
+        nextPage * notificationsPerPage
+      );
       setDisplayedNotifications(newDisplayedNotifications);
       setCurrentPage(nextPage);
       setIsLoadingMore(false);
@@ -174,7 +192,10 @@ export default function HeaderUserDashboard({
           Mark all as read
         </Typography.Link>
       </div>
-      <div className="max-h-80 overflow-y-auto" onScroll={handleNotificationScroll}>
+      <div
+        className="max-h-80 overflow-y-auto"
+        onScroll={handleNotificationScroll}
+      >
         <List
           dataSource={displayedNotifications}
           renderItem={(item) => (
@@ -183,7 +204,9 @@ export default function HeaderUserDashboard({
               className={`cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 ${
                 !item.isRead ? "bg-blue-50 dark:bg-blue-900/20" : ""
               }`}
-              onClick={() => handleNotificationClick(item.id, item.type, item.contractId)}
+              onClick={() =>
+                handleNotificationClick(item.id, item.type, item.contractId)
+              }
             >
               <List.Item.Meta
                 title={
@@ -222,18 +245,23 @@ export default function HeaderUserDashboard({
           </div>
         )}
       </div>
-      {displayedNotifications.length < notifications.length && !isLoadingMore && (
-        <div className="text-center p-3 border-t">
-          <Typography.Link onClick={loadMoreNotifications}>
-            Load more notifications ({notifications.length - displayedNotifications.length} remaining)
-          </Typography.Link>
-        </div>
-      )}
-      {displayedNotifications.length >= notifications.length && notifications.length > notificationsPerPage && (
-        <div className="text-center p-3 border-t">
-          <span className="text-sm text-gray-500">All notifications loaded</span>
-        </div>
-      )}
+      {displayedNotifications.length < notifications.length &&
+        !isLoadingMore && (
+          <div className="text-center p-3 border-t">
+            <Typography.Link onClick={loadMoreNotifications}>
+              Load more notifications (
+              {notifications.length - displayedNotifications.length} remaining)
+            </Typography.Link>
+          </div>
+        )}
+      {displayedNotifications.length >= notifications.length &&
+        notifications.length > notificationsPerPage && (
+          <div className="text-center p-3 border-t">
+            <span className="text-sm text-gray-500">
+              All notifications loaded
+            </span>
+          </div>
+        )}
     </div>
   );
 
@@ -534,7 +562,7 @@ export default function HeaderUserDashboard({
                 </Link>
 
                 <Link
-                  href="/users/register"
+                  href="/auth/register"
                   className="relative flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 text-white font-medium rounded-lg shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-110 group overflow-hidden"
                 >
                   {/* Animated background */}
