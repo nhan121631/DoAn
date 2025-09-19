@@ -285,89 +285,122 @@ export default function UserInfoCard({ id }: { id: string }) {
   const handleSubmitReport = async () => {
     // Validate required fields
     if (!reportReason) {
-      messageApi.error("Vui lòng chọn lý do phản ánh.");
+      messageApi.error("Please select a reason for reporting.");
       return;
     }
 
     const nameTrim = contactName.trim();
     if (!nameTrim) {
-      messageApi.error("Vui lòng nhập Họ tên liên hệ.");
+      messageApi.error("Please enter your full name.");
       return;
     }
-    if (nameTrim.length > 100) {
-      messageApi.error("Họ tên phải dưới 100 ký tự.");
+
+    // Name validation: no special characters and under 100 characters
+    if (nameTrim.length >= 100) {
+      messageApi.error("Name must be under 100 characters.");
+      return;
+    }
+    // Check for special characters in name (allow only letters, numbers, and spaces)
+    const nameRegex = /^[a-zA-ZÀ-ỹ0-9\s]+$/;
+    if (!nameRegex.test(nameTrim)) {
+      messageApi.error("Name cannot contain special characters.");
       return;
     }
 
     const phoneTrim = contactPhone.trim();
     if (!phoneTrim) {
-      messageApi.error("Vui lòng nhập Số điện thoại liên hệ.");
+      messageApi.error("Please enter your phone number.");
       return;
     }
-    // Basic phone validation: allow digits, +, spaces, - and common punctuation, length 7-15
-    const phoneRegex = /^\+?[0-9\s\-().]{7,15}$/;
+
+    // Phone validation: must be exactly 10 digits, no special characters
+    const phoneRegex = /^[0-9]{10}$/;
     if (!phoneRegex.test(phoneTrim)) {
-      messageApi.error("Số điện thoại không hợp lệ. Vui lòng kiểm tra lại.");
-      return;
-    }
-
-    if (!SITE_KEY) {
-      console.error(
-        "Missing reCAPTCHA site key (NEXT_PUBLIC_RECAPTCHA_SITE_KEY / NEXT_PUBLIC_SITE_KEY)"
+      messageApi.error(
+        "Phone number must be exactly 10 digits and contain no special characters."
       );
-      messageApi.error("reCAPTCHA chưa cấu hình. Vui lòng thử lại sau.");
       return;
     }
 
-    // Require explicit verification step before allowing submission
-    const TOKEN_TTL_MS = 2 * 60 * 1000; // 2 minutes
-    const now = Date.now();
-    if (
-      !isVerifiedHuman ||
-      !lastRecaptchaToken ||
-      !lastRecaptchaVerifiedAt ||
-      now - (lastRecaptchaVerifiedAt || 0) > TOKEN_TTL_MS
-    ) {
-      setReportStatus("Vui lòng xác thực reCAPTCHA trước khi gửi phản ánh.");
-      return;
+    // Validate description if "Other reasons" is selected
+    if (reportReason === "Other reasons") {
+      const descriptionTrim = reportDescription.trim();
+      if (!descriptionTrim) {
+        messageApi.error("Please provide details when selecting 'Other reasons'.");
+        return;
+      }
     }
-
-    // Use the stored token from prior verification when submitting
-    const tokenToSend = lastRecaptchaToken;
 
     setReportSubmitting(true);
-    setReportStatus("Đang gửi phản ánh...");
+    setReportStatus("Submitting report...");
     try {
-      // Submit the report payload to your reporting endpoint (implement server-side)
-      console.log("Gửi báo xấu:", {
+      // Prepare payload
+      const payload: any = {
         reason: reportReason,
-        description: reportDescription,
-        contactName: contactName,
-        contactPhone: contactPhone,
+        contactName: nameTrim,
+        contactPhone: phoneTrim,
         postUrl: currentPostUrl,
-        recaptcha: { token: tokenToSend, score: lastRecaptchaScore },
+      };
+
+      // Add description if "Other reasons" is selected (already validated as required)
+      if (reportReason === "Other reasons") {
+        payload.description = reportDescription.trim();
+      }
+
+      console.log("[UserInfoCard] 📤 Sending report payload:", payload);
+
+      // Submit the report to our Next.js API route which forwards to Spring Boot
+      const response = await fetch("/api/reports", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
       });
 
-      // TODO: replace with real report submission endpoint
-      // await fetch('/api/reports', { method: 'POST', ... })
+      console.log("[UserInfoCard] 📥 Response status:", response.status);
+      console.log(
+        "[UserInfoCard] 📥 Response headers:",
+        Object.fromEntries(response.headers.entries())
+      );
 
-      setReportStatus("Phản ánh đã được gửi. Cảm ơn bạn!");
-      // small delay so user sees status, then close
-      setTimeout(() => {
-        setShowReportModal(false);
+      const data = await response.json();
+      console.log("[UserInfoCard] 📥 Response data:", data);
+
+      if (data.success) {
+        messageApi.success("Report submitted successfully!");
+        setReportStatus("Report submitted. Thank you!");
+
+        // Reset form
         setReportReason("");
-        setReportDescription("");
+        setReportDescription(""); // Always reset, no harm
         setContactName("");
         setContactPhone("");
-        setReportStatus(null);
-        setIsVerifiedHuman(false);
+        setIsVerifiedHuman(false); // Reset reCAPTCHA verification
         setLastRecaptchaToken(null);
         setLastRecaptchaVerifiedAt(null);
-        setLastRecaptchaScore(null);
-      }, 900);
+
+        // Close modal after delay
+        setTimeout(() => {
+          setShowReportModal(false);
+          setReportStatus(null);
+        }, 1500);
+      } else {
+        messageApi.error(data.message || "An error occurred while submitting the report.");
+        setReportStatus(
+          "Error submitting report: " + (data.message || "Please try again.")
+        );
+      }
     } catch (err) {
-      console.error("Error submitting report", err);
-      setReportStatus("Lỗi khi gửi phản ánh. Vui lòng thử lại.");
+      console.error("[UserInfoCard] ❌ Error submitting report:", err);
+      console.error("[UserInfoCard] ❌ Error details:", {
+        message: err instanceof Error ? err.message : "Unknown error",
+        stack: err instanceof Error ? err.stack : undefined,
+        type: typeof err,
+        error: err,
+      });
+      messageApi.error("Connection error. Please try again later.");
+      setReportStatus("Error submitting report. Please try again.");
     } finally {
       setReportSubmitting(false);
     }
@@ -376,12 +409,12 @@ export default function UserInfoCard({ id }: { id: string }) {
   // Explicit verification action invoked by user before submitting report
   const handleVerifyRecaptcha = async (): Promise<boolean> => {
     if (!SITE_KEY) {
-      setReportStatus("reCAPTCHA chưa được cấu hình.");
+      setReportStatus("reCAPTCHA not configured.");
       return false;
     }
 
     setVerifySubmitting(true);
-    setReportStatus("Đang xác thực reCAPTCHA...");
+    // setReportStatus("Đang xác thực reCAPTCHA...");
     setLastRecaptchaScore(null);
     try {
       await loadGrecaptcha();
@@ -402,7 +435,7 @@ export default function UserInfoCard({ id }: { id: string }) {
           w.grecaptcha
         );
         setReportStatus(
-          "Lỗi reCAPTCHA: không thể thực hiện xác thực. Vui lòng thử lại sau."
+          "reCAPTCHA error: unable to perform verification. Please try again later."
         );
         setIsVerifiedHuman(false);
         setVerifySubmitting(false);
@@ -426,7 +459,7 @@ export default function UserInfoCard({ id }: { id: string }) {
       if (!verifyRes.ok) {
         const text = await verifyRes.text();
         console.error("reCAPTCHA verify endpoint returned error", text);
-        setReportStatus("Lỗi khi xác thực reCAPTCHA: server trả về lỗi.");
+        setReportStatus("Error verifying reCAPTCHA: server returned error.");
         setIsVerifiedHuman(false);
         setVerifySubmitting(false);
         return false;
@@ -440,7 +473,7 @@ export default function UserInfoCard({ id }: { id: string }) {
       console.debug("reCAPTCHA verify response:", verifyData);
 
       if (!success || score < 0.5) {
-        setReportStatus("Xác thực không đạt — vui lòng thử lại.");
+        setReportStatus("Verification failed — please try again.");
         setIsVerifiedHuman(false);
         setVerifySubmitting(false);
         return false;
@@ -454,7 +487,7 @@ export default function UserInfoCard({ id }: { id: string }) {
       return true;
     } catch (err) {
       console.error("Error during reCAPTCHA verification", err);
-      setReportStatus("Lỗi khi xác thực reCAPTCHA. Vui lòng thử lại.");
+      setReportStatus("Error verifying reCAPTCHA. Please try again.");
       setIsVerifiedHuman(false);
       return false;
     } finally {
@@ -890,7 +923,7 @@ export default function UserInfoCard({ id }: { id: string }) {
               {reportReason === "Other reasons" && (
                 <div>
                   <h3 className="mb-3 text-sm font-semibold text-gray-800">
-                    Additional details
+                    Additional details <span className="text-red-500">*</span>
                   </h3>
                   <Input.TextArea
                     value={reportDescription}
@@ -901,89 +934,82 @@ export default function UserInfoCard({ id }: { id: string }) {
                 </div>
               )}
 
-              {/* reCAPTCHA v3 is used (invisible). Token is requested when the user submits the report. */}
-              {/* <div className="mb-2 text-xs text-gray-500 flex items-center justify-between"> */}
-              {/* <div>
-                  reCAPTCHA v3:{" "}
-                  {SITE_KEY
-                    ? 'enabled — nhấn "Verify reCAPTCHA" để kích hoạt nút gửi'
-                    : "NOT CONFIGURED"}
-                </div> */}
-              {/* <div className="text-right text-xs text-gray-400">
-                  <a
-                    href="https://policies.google.com/privacy"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="underline"
-                  >
-                    Privacy
-                  </a>
-                  <span className="mx-1">·</span>
-                  <a
-                    href="https://policies.google.com/terms"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="underline"
-                  >
-                    Terms
-                  </a>
-                </div>
-              </div> */}
-
-              {/* Small visual badge to increase trust */}
-              {/* <div className="flex items-center gap-2 mb-3 text-xs text-gray-500">
-                <div className="px-2 py-1 bg-gray-50 border border-gray-200 rounded-md">
-                  Protected by reCAPTCHA
-                </div>
-                <div className="text-xs">
-                  {SITE_KEY ? maskSiteKey(SITE_KEY) : ""}
-                </div>
-                {lastRecaptchaScore !== null && (
-                  <div className="ml-auto text-xs text-gray-600">
-                    Score: {lastRecaptchaScore}
+              {/* reCAPTCHA verification checkbox */}
+              {SITE_KEY && (
+                <div className="mb-3 p-4 border border-gray-300 rounded-lg bg-gray-50">
+                  <div className="flex items-center gap-3">
+                    <div className="relative">
+                      <input
+                        type="checkbox"
+                        id="recaptcha-checkbox"
+                        checked={isVerifiedHuman}
+                        onChange={async (e) => {
+                          if (e.target.checked && !isVerifiedHuman) {
+                            await handleVerifyRecaptcha();
+                          } else if (!e.target.checked) {
+                            setIsVerifiedHuman(false);
+                            setLastRecaptchaToken(null);
+                            setLastRecaptchaVerifiedAt(null);
+                            setReportStatus(null);
+                          }
+                        }}
+                        disabled={verifySubmitting}
+                        className="w-6 h-6 text-blue-600 border-2 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                      />
+                      {verifySubmitting && (
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                        </div>
+                      )}
+                    </div>
+                    <label
+                      htmlFor="recaptcha-checkbox"
+                      className={`text-sm font-medium cursor-pointer ${
+                        verifySubmitting ? "text-gray-500" : "text-gray-700"
+                      }`}
+                    >
+                      I'm not a robot
+                    </label>
+                    <div className="ml-auto">
+                      <div className="text-xs text-gray-500 flex flex-col items-end">
+                        <span>reCAPTCHA</span>
+                        <div className="flex gap-1 text-xs">
+                          <a
+                            href="https://policies.google.com/privacy"
+                            target="_blank"
+                            rel="noreferrer"
+                            className="underline"
+                          >
+                            Privacy
+                          </a>
+                          <span>-</span>
+                          <a
+                            href="https://policies.google.com/terms"
+                            target="_blank"
+                            rel="noreferrer"
+                            className="underline"
+                          >
+                            Terms
+                          </a>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                )}
-              </div> */}
-
-              <div className="flex items-center gap-3 mb-3">
-                <button
-                  onClick={handleVerifyRecaptcha}
-                  disabled={verifySubmitting}
-                  className={`px-3 py-2 text-xs rounded-lg border ${
-                    isVerifiedHuman
-                      ? "bg-green-50 border-green-300 text-green-700"
-                      : "bg-white border-gray-200 text-gray-700"
-                  } ${
-                    verifySubmitting ? "opacity-60 pointer-events-none" : ""
-                  }`}
-                >
-                  {isVerifiedHuman
-                    ? "Verified ✓"
-                    : verifySubmitting
-                    ? "Verifying..."
-                    : "Verify reCAPTCHA"}
-                </button>
-                <div className="text-xs text-gray-500">
-                  Vui lòng xác thực reCAPTCHA trước khi gửi phản ánh.
+                  {/* {lastRecaptchaScore !== null && (
+                    <div className="mt-2 text-xs text-gray-600">
+                      Score: {lastRecaptchaScore}
+                    </div>
+                  )} */}
                 </div>
-              </div>
+              )}
 
               {reportStatus && (
-                <div className="mb-3 text-sm text-gray-700">
-                  {reportStatus}
-                  {lastRecaptchaScore !== null && (
-                    <span className="ml-2 text-xs text-gray-500">
-                      (score: {lastRecaptchaScore})
-                    </span>
-                  )}
-                </div>
+                <div className="mb-3 text-sm text-gray-700">{reportStatus}</div>
               )}
 
               <button
                 onClick={handleSubmitReport}
-                disabled={
-                  reportSubmitting || verifySubmitting || !isVerifiedHuman
-                }
+                disabled={reportSubmitting || !isVerifiedHuman}
                 className={`w-full ${
                   reportSubmitting || !isVerifiedHuman
                     ? "opacity-60 pointer-events-none"
