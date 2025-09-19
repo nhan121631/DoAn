@@ -13,6 +13,8 @@ import {
   FaChartBar,
   FaRunning,
   FaBuilding,
+  FaChevronDown,
+  FaChevronUp,
 } from "react-icons/fa";
 import { useEffect, useState } from "react";
 
@@ -28,12 +30,29 @@ interface Coordinates {
   lng: number;
 }
 
-export default function MapSection({ address }: { address: string }) {
+export default function MapSection({
+  address,
+  isNearby = true,
+}: {
+  address: string;
+  isNearby?: boolean;
+}) {
   const [nearbyPlaces, setNearbyPlaces] = useState<NearbyPlace[]>([]);
   const [loading, setLoading] = useState(false);
   const [coordinates, setCoordinates] = useState<Coordinates | null>(null);
+  const [expandedCategories, setExpandedCategories] = useState<
+    Record<string, boolean>
+  >({});
 
   const encodedAddress = encodeURIComponent(address);
+
+  // Toggle expand/collapse category
+  const toggleCategory = (type: string) => {
+    setExpandedCategories((prev) => ({
+      ...prev,
+      [type]: !prev[type],
+    }));
+  };
 
   // Tính khoảng cách giữa 2 điểm (Haversine formula)
   const calculateDistance = (
@@ -53,6 +72,19 @@ export default function MapSection({ address }: { address: string }) {
         Math.sin(dLng / 2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     const distance = R * c;
+
+    // Debug: Test với một số tọa độ cụ thể
+    if (lat1 === 16.0471 && lng1 === 108.2068) {
+      console.log(
+        `🧮 Calculating distance from ${lat1},${lng1} to ${lat2},${lng2}`
+      );
+      console.log(`   dLat: ${dLat}, dLng: ${dLng}`);
+      console.log(`   a: ${a}, c: ${c}`);
+      console.log(
+        `   Distance: ${distance}km = ${Math.round(distance * 1000)}m`
+      );
+    }
+
     return Math.round(distance * 1000); // Trả về mét
   };
 
@@ -101,17 +133,22 @@ export default function MapSection({ address }: { address: string }) {
 
       if (response.ok) {
         const data = await response.json();
+        console.log("📍 Geocoding result for:", address);
+        console.log("   Response data:", data);
+
         if (data.results && data.results.length > 0) {
           const location = data.results[0].geometry.location;
           const coords = {
             lat: location.lat,
             lng: location.lng,
           };
+          console.log("✅ Final coordinates:", coords);
+          console.log("   Address found:", data.results[0].formatted_address);
           return coords;
         }
       }
     } catch (error) {
-      // Handle error silently
+      console.error("❌ Geocoding error:", error);
     }
     return null;
   };
@@ -123,13 +160,13 @@ export default function MapSection({ address }: { address: string }) {
     radius: number = 5000
   ): Promise<NearbyPlace[]> => {
     const placeTypes = [
-      { query: "school", type: "school", vietnamese: "trường học" },
-      { query: "market", type: "market", vietnamese: "chợ" },
-      { query: "supermarket", type: "supermarket", vietnamese: "siêu thị" },
-      { query: "hospital", type: "hospital", vietnamese: "bệnh viện" },
-      { query: "bank", type: "bank", vietnamese: "ngân hàng" },
-      { query: "restaurant", type: "restaurant", vietnamese: "nhà hàng" },
-      { query: "park", type: "park", vietnamese: "công viên" },
+      { query: "school", type: "school", vietnamese: "school" },
+      { query: "market", type: "market", vietnamese: "market" },
+      { query: "supermarket", type: "supermarket", vietnamese: "supermarket" },
+      { query: "hospital", type: "hospital", vietnamese: "hospital" },
+      { query: "bank", type: "bank", vietnamese: "bank" },
+      { query: "restaurant", type: "restaurant", vietnamese: "restaurant" },
+      { query: "park", type: "park", vietnamese: "park" },
     ];
 
     const allPlaces: NearbyPlace[] = [];
@@ -206,7 +243,7 @@ export default function MapSection({ address }: { address: string }) {
                       return {
                         name:
                           prediction.description ||
-                          `${placeType.vietnamese} gần đây`,
+                          `${placeType.vietnamese} nearby`,
                         type: placeType.type,
                         distance: randomDistance,
                         address: prediction.description,
@@ -223,7 +260,7 @@ export default function MapSection({ address }: { address: string }) {
                     return {
                       name:
                         prediction.description ||
-                        `${placeType.vietnamese} gần đây`,
+                        `${placeType.vietnamese} nearby`,
                       type: placeType.type,
                       distance: distance,
                       address: prediction.description,
@@ -246,94 +283,127 @@ export default function MapSection({ address }: { address: string }) {
         await new Promise((resolve) => setTimeout(resolve, 300));
       }
 
-      // Nếu không tìm thấy từ API, thêm mock data
+      // If no places found from API, add mock data
       if (
         allPlaces.length === 0 ||
         allPlaces.every((place) => place.distance === 0)
       ) {
-        const mockPlaces: NearbyPlace[] = [
-          // Trường học
+        // Mock places với tọa độ thực tế của Đà Nẵng
+        const mockPlacesData = [
+          // Schools
           {
             name: "Trường THPT Nguyễn Hiền",
             type: "school",
-            distance: 450,
+            lat: 16.0765,
+            lng: 108.1478,
             address: "36 Tôn Đản, Hòa Khánh Bắc, Liên Chiểu, Đà Nẵng",
           },
           {
             name: "Trường Đại học Duy Tân",
             type: "school",
-            distance: 1200,
+            lat: 16.0598,
+            lng: 108.2094,
             address: "254 Nguyễn Văn Linh, Thạc Gián, Thanh Khê, Đà Nẵng",
           },
           {
             name: "Trường THCS Ngũ Hành Sơn",
             type: "school",
-            distance: 2100,
+            lat: 16.0024,
+            lng: 108.2644,
             address: "Khu vực Ngũ Hành Sơn, Đà Nẵng",
           },
 
-          // Siêu thị & chợ
+          // Supermarkets & Markets
           {
             name: "Siêu thị BigC Đà Nẵng",
             type: "supermarket",
-            distance: 850,
+            lat: 16.0659,
+            lng: 108.2131,
             address: "255-257 Hùng Vương, Vĩnh Trung, Thanh Khê, Đà Nẵng",
           },
           {
             name: "Chợ Cồn",
             type: "market",
-            distance: 1800,
+            lat: 16.0703,
+            lng: 108.2134,
             address: "290 Hùng Vương, Vĩnh Trung, Thanh Khê, Đà Nẵng",
           },
           {
             name: "Lotte Mart Đà Nẵng",
             type: "supermarket",
-            distance: 2400,
+            lat: 16.0544,
+            lng: 108.2019,
             address: "06 Nại Nam, Hòa Cường Bắc, Hải Châu, Đà Nẵng",
           },
 
-          // Bệnh viện
+          // Hospitals
           {
             name: "Bệnh viện Đà Nẵng",
             type: "hospital",
-            distance: 1650,
+            lat: 16.0717,
+            lng: 108.2124,
             address: "124 Hai Phòng, Thạch Thang, Hải Châu, Đà Nẵng",
           },
           {
             name: "Bệnh viện Phụ sản nhi Đà Nẵng",
             type: "hospital",
-            distance: 2800,
+            lat: 16.0123,
+            lng: 108.2456,
             address: "402 Lê Văn Hiến, Khuê Mỹ, Ngũ Hành Sơn, Đà Nẵng",
           },
 
-          // Ngân hàng
+          // Banks
           {
             name: "Vietcombank - CN Đà Nẵng",
             type: "bank",
-            distance: 620,
+            lat: 16.0678,
+            lng: 108.212,
             address: "140 Lê Lợi, Hải Châu 1, Hải Châu, Đà Nẵng",
           },
           {
             name: "BIDV - CN Đà Nẵng",
             type: "bank",
-            distance: 890,
+            lat: 16.0731,
+            lng: 108.2147,
             address: "38 Bạch Đằng, Thạch Thang, Hải Châu, Đà Nẵng",
           },
 
-          // Nhà hàng
+          // Restaurants
           {
             name: "Nhà hàng Madame Lân",
             type: "restaurant",
-            distance: 1450,
+            lat: 16.0723,
+            lng: 108.2142,
             address: "4 Bạch Đằng, Thạch Thang, Hải Châu, Đà Nẵng",
           },
           {
             name: "Quán Bún Chả Cá 199",
             type: "restaurant",
-            distance: 950,
+            lat: 16.0689,
+            lng: 108.2089,
             address: "199 Trần Phú, Thạch Thang, Hải Châu, Đà Nẵng",
           },
         ];
+
+        // Tính toán khoảng cách thực tế cho mock data
+        const mockPlaces: NearbyPlace[] = mockPlacesData.map((place) => {
+          const distance = calculateDistance(
+            centerLat,
+            centerLng,
+            place.lat,
+            place.lng
+          );
+          console.log(
+            `🧮 Mock place "${place.name}": ${distance}m from ${centerLat},${centerLng} to ${place.lat},${place.lng}`
+          );
+
+          return {
+            name: place.name,
+            type: place.type,
+            distance: distance,
+            address: place.address,
+          };
+        });
 
         // Replace or add mock data
         if (allPlaces.length === 0) {
@@ -377,12 +447,23 @@ export default function MapSection({ address }: { address: string }) {
         if (coords) {
           setCoordinates(coords);
 
+          // Test thuật toán với tọa độ cụ thể (từ trung tâm Đà Nẵng đến BigC)
+          const testDistance = calculateDistance(
+            16.0471,
+            108.2068, // Trung tâm Đà Nẵng (Cầu Rồng)
+            16.0659,
+            108.2131 // BigC Đà Nẵng
+          );
+          console.log(
+            `🧪 Test: Distance from Dragon Bridge to BigC = ${testDistance}m (should be ~2-3km)`
+          );
+
           // Tìm địa điểm gần đó
           const places = await searchNearbyPlaces(coords.lat, coords.lng);
           setNearbyPlaces(places);
         }
       } catch (error) {
-        // Handle error silently
+        console.error("❌ Error loading places:", error);
       } finally {
         setLoading(false);
       }
@@ -408,7 +489,6 @@ export default function MapSection({ address }: { address: string }) {
       >
         View larger map
       </a>
-
       {/* Map */}
       <div className="w-full h-[350px] mb-6">
         <iframe
@@ -425,142 +505,131 @@ export default function MapSection({ address }: { address: string }) {
       </div>
 
       {/* Nearby Places Section */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
-        <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center">
-          <FaMapMarkerAlt className="mr-2 text-red-500" />
-          Các địa điểm gần đây
-        </h3>
+      {isNearby && (
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-3">
+          <h3 className="text-base font-medium text-gray-800 dark:text-white mb-3 flex items-center">
+            <FaMapMarkerAlt className="mr-2 text-red-500 w-4 h-4" />
+            Nearby Places
+          </h3>
 
-        {loading ? (
-          <div className="flex items-center justify-center py-8">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
-            <span className="ml-3 text-gray-600 dark:text-gray-400">
-              Đang tìm các địa điểm...
-            </span>
-          </div>
-        ) : nearbyPlaces.length > 0 ? (
-          <div className="space-y-4">
-            {/* Group by type for better organization */}
-            {Object.entries(
-              nearbyPlaces.reduce((acc, place) => {
-                if (!acc[place.type]) acc[place.type] = [];
-                acc[place.type].push(place);
-                return acc;
-              }, {} as Record<string, NearbyPlace[]>)
-            ).map(([type, places]) => (
-              <div
-                key={type}
-                className="border-b border-gray-200 dark:border-gray-600 pb-4 last:border-b-0 last:pb-0"
-              >
-                <h4 className="text-md font-semibold text-gray-800 dark:text-white mb-3 flex items-center">
-                  {getPlaceIcon(type)}
-                  <span className="ml-2">
-                    {type === "school" && "Trường học"}
-                    {(type === "market" || type === "supermarket") && "Mua sắm"}
-                    {type === "hospital" && "Y tế"}
-                    {type === "bank" && "Ngân hàng"}
-                    {type === "restaurant" && "Ăn uống"}
-                    {type === "park" && "Giải trí"}
-                  </span>
-                  <span className="ml-2 text-xs bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-1 rounded-full">
-                    {places.length} địa điểm
-                  </span>
-                </h4>
+          {loading ? (
+            <div className="flex items-center justify-center py-8">
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
+              <span className="ml-3 text-gray-600 dark:text-gray-400">
+                Searching for places...
+              </span>
+            </div>
+          ) : nearbyPlaces.length > 0 ? (
+            <div className="space-y-2">
+              {/* Group by type for better organization */}
+              {Object.entries(
+                nearbyPlaces.reduce((acc, place) => {
+                  if (!acc[place.type]) acc[place.type] = [];
+                  acc[place.type].push(place);
+                  return acc;
+                }, {} as Record<string, NearbyPlace[]>)
+              ).map(([type, places]) => (
+                <div
+                  key={type}
+                  className="border-b border-gray-200 dark:border-gray-600 pb-2 last:border-b-0 last:pb-0"
+                >
+                  <h4 className="text-sm font-medium text-gray-800 dark:text-white mb-2 flex items-center justify-between">
+                    <div className="flex items-center">
+                      {getPlaceIcon(type)}
+                      <span className="ml-1.5 text-sm">
+                        {type === "school" && "Schools"}
+                        {(type === "market" || type === "supermarket") &&
+                          "Shopping"}
+                        {type === "hospital" && "Healthcare"}
+                        {type === "bank" && "Banks"}
+                        {type === "restaurant" && "Dining"}
+                        {type === "park" && "Recreation"}
+                      </span>
+                      <span className="ml-1.5 text-xs text-gray-500 dark:text-gray-400">
+                        ({places.length})
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => toggleCategory(type)}
+                      className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors p-1"
+                    >
+                      {expandedCategories[type] ? (
+                        <FaChevronUp className="w-3 h-3" />
+                      ) : (
+                        <FaChevronDown className="w-3 h-3" />
+                      )}
+                    </button>
+                  </h4>
 
-                <div className="grid grid-cols-1 gap-3">
-                  {places
-                    .sort((a, b) => a.distance - b.distance)
-                    .map((place, index) => (
-                      <div
-                        key={`${type}-${index}`}
-                        className="flex items-start justify-between p-4 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-800 rounded-xl border border-gray-200 dark:border-gray-600 hover:shadow-md transition-all duration-200 hover:scale-[1.02]"
-                      >
-                        <div className="flex items-start space-x-4 flex-1">
-                          <div className="p-2 bg-white dark:bg-gray-600 rounded-lg shadow-sm">
-                            {getPlaceIcon(place.type)}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="text-base font-semibold text-gray-900 dark:text-white mb-1 line-clamp-1">
-                              {place.name}
-                            </div>
-                            {place.address && (
-                              <div className="text-sm text-gray-600 dark:text-gray-300 mb-2 line-clamp-2 flex items-start">
-                                <FaMapMarkerAlt className="w-3 h-3 mt-1 mr-1 text-gray-400 flex-shrink-0" />
-                                <span>{place.address}</span>
+                  <div className="space-y-1.5">
+                    {places
+                      .sort((a, b) => a.distance - b.distance)
+                      .slice(0, expandedCategories[type] ? places.length : 1)
+                      .map((place, index) => (
+                        <div
+                          key={`${type}-${index}`}
+                          className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-700 rounded-md hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+                        >
+                          <div className="flex items-center space-x-2 flex-1 min-w-0">
+                            <div className="flex-1 min-w-0">
+                              <div className="text-xs font-medium text-gray-900 dark:text-white line-clamp-1">
+                                {place.name}
                               </div>
-                            )}
-                            <div className="flex items-center space-x-3">
-                              <span className="text-xs bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 px-2 py-1 rounded-full font-medium">
-                                {place.distance < 300
-                                  ? "🚶 Đi bộ 2-3 phút"
-                                  : place.distance < 500
-                                  ? "🚶 Đi bộ 5 phút"
-                                  : place.distance < 1000
-                                  ? "🚲 Xe đạp 5-8 phút"
-                                  : place.distance < 3000
-                                  ? "🛵 Xe máy 5-10 phút"
-                                  : "🚗 Xe máy 10-15 phút"}
-                              </span>
-                              <span className="text-xs text-gray-500 dark:text-gray-400">
-                                {place.distance < 500
-                                  ? "Rất gần"
-                                  : place.distance < 1000
-                                  ? "Gần"
-                                  : place.distance < 2000
-                                  ? "Khá gần"
-                                  : "Xa một chút"}
-                              </span>
+                              {expandedCategories[type] && place.address && (
+                                <div className="text-xs text-gray-500 dark:text-gray-400 line-clamp-1">
+                                  {place.address.length > 30
+                                    ? `${place.address.substring(0, 30)}...`
+                                    : place.address}
+                                </div>
+                              )}
                             </div>
                           </div>
-                        </div>
 
-                        <div className="text-right ml-4 flex-shrink-0">
-                          <div className="text-2xl font-bold text-blue-600 dark:text-blue-400 mb-1">
+                          <div className="text-xs font-medium text-blue-600 dark:text-blue-400 flex-shrink-0">
                             {formatDistance(place.distance)}
                           </div>
-                          <div className="text-xs text-gray-500 dark:text-gray-400">
-                            khoảng cách
-                          </div>
                         </div>
-                      </div>
-                    ))}
-                </div>
-              </div>
-            ))}
+                      ))}
 
-            {/* Summary */}
-            <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/30 rounded-lg border border-blue-200 dark:border-blue-800">
-              <div className="flex items-center justify-between text-sm">
-                <div className="flex items-center space-x-4">
-                  <span className="font-semibold text-blue-800 dark:text-blue-200 flex items-center">
-                    <FaChartBar className="w-4 h-4 mr-1" />
-                    Tổng cộng: {nearbyPlaces.length} địa điểm
+                    {!expandedCategories[type] && places.length > 1 && (
+                      <button
+                        onClick={() => toggleCategory(type)}
+                        className="w-full text-center py-1.5 text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
+                      >
+                        +{places.length - 1} more
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+
+              {/* Summary */}
+              <div className="mt-3 p-2 bg-blue-50 dark:bg-blue-900/20 rounded text-center">
+                <div className="text-xs text-blue-700 dark:text-blue-300">
+                  <span className="font-medium">
+                    {nearbyPlaces.length} places
                   </span>
-                  <span className="text-blue-600 dark:text-blue-300 flex items-center">
-                    <FaRunning className="w-4 h-4 mr-1" />
-                    Gần nhất:{" "}
+                  <span className="mx-2">•</span>
+                  <span>
+                    Nearest:{" "}
                     {formatDistance(
                       Math.min(...nearbyPlaces.map((p) => p.distance))
                     )}
                   </span>
                 </div>
-                <div className="text-blue-600 dark:text-blue-300 flex items-center">
-                  <FaBuilding className="w-4 h-4 mr-1" />
-                  Tiện ích xung quanh rất đầy đủ
-                </div>
               </div>
             </div>
-          </div>
-        ) : (
-          <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-            <FaSearch className="text-4xl mb-4 mx-auto text-gray-300" />
-            <p>Không tìm thấy địa điểm gần đây</p>
-            <p className="text-sm mt-1">
-              Có thể do địa chỉ không chính xác hoặc khu vực chưa có dữ liệu
-            </p>
-          </div>
-        )}
-      </div>
+          ) : (
+            <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+              <FaSearch className="text-4xl mb-4 mx-auto text-gray-300" />
+              <p>No nearby places found</p>
+              <p className="text-sm mt-1">
+                Address may be inaccurate or area data unavailable
+              </p>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
