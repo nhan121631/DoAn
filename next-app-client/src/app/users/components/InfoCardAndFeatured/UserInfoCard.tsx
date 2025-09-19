@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -965,7 +967,7 @@ export default function UserInfoCard({ id }: { id: string }) {
                         verifySubmitting ? "text-gray-500" : "text-gray-700"
                       }`}
                     >
-                      I'm not a robot
+                      I&#39;m not a robot
                     </label>
                     <div className="ml-auto">
                       <div className="text-xs text-gray-500 flex flex-col items-end">
