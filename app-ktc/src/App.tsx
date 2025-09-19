@@ -4,6 +4,9 @@ import StatisticPage from "./admin/pages/StatisticPage";
 import ManageAccountPage from "./admin/pages/ManageAccountPage";
 import ManageRoom from "./admin/pages/ManageRoomPage";
 import ManagePostTypePage from "./admin/pages/ManagePostTypePage";
+import ManageBlogPage from "./admin/pages/ManageBlogPage";
+import CreateBlogPage from "./admin/pages/CreateBlogPage";
+import EditBlogPage from "./admin/pages/EditBlogPage";
 import LoginPage from "./admin/pages/LoginPage";
 import { useAuthStore } from "./admin/stores/useAuthorStore";
 import NotFound from "./admin/pages/NotFound";
@@ -29,6 +32,9 @@ function App() {
               <Route path="manage-accounts" element={<ManageAccountPage />} />
               <Route path="manage-rooms" element={<ManageRoom />} />
               <Route path="manage-post-type" element={<ManagePostTypePage />} />
+              <Route path="manage-blogs" element={<ManageBlogPage />} />
+              <Route path="manage-blogs/create" element={<CreateBlogPage />} />
+              <Route path="manage-blogs/edit/:slug" element={<EditBlogPage />} />
             </Route>
           )}
         <Route path="*" element={<NotFound />} />

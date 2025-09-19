@@ -48,6 +48,57 @@ export interface UserResponseDto {
   roles: string[];
 }
 
+// Blog Enums as Union Types
+export type BlogCategory = 'ANNOUNCEMENT' | 'GUIDE' | 'NEWS';
+export type BlogStatus = 'DRAFT' | 'PUBLISHED';
+
+// Blog Types
+export interface BlogResponse {
+  id: string;
+  title: string;
+  slug: string;
+  content: string;
+  category: BlogCategory;
+  thumbnailUrl: string | null;
+  authorId: string;
+  createdAt: string;
+  updatedAt: string;
+  status: BlogStatus;
+}
+
+export interface BlogCreateRequest {
+  title: string;
+  slug: string;
+  content: string;
+  category: BlogCategory;
+}
+
+export interface BlogUpdateRequest {
+  title?: string;
+  slug?: string;
+  content?: string;
+  category?: BlogCategory;
+  status?: BlogStatus;
+}
+
+export interface BlogPageResponse {
+  content: BlogResponse[];
+  totalElements: number;
+  totalPages: number;
+  size: number;
+  number: number;
+}
+
+// Cloudinary Types
+export interface CloudinaryUploadResponse {
+  url: string;
+  publicId?: string;
+}
+
+export interface TinyMCEUploadResponse {
+  location: string;
+}
+
 export interface UserPageResponseDto {
   data: UserResponseDto[];
   pageNumber: number;

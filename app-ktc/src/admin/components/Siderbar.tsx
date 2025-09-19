@@ -6,6 +6,7 @@ import { Link, useLocation } from "react-router";
 import { FaChartLine } from "react-icons/fa";
 import { MdSupervisorAccount } from "react-icons/md";
 import { RiHotelLine } from "react-icons/ri";
+import { MdArticle } from "react-icons/md";
 
 const { Sider } = Layout;
 
@@ -20,6 +21,7 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
     "/admin/manage-accounts": "2",
     "/admin/manage-rooms": "3",
     "/admin/manage-post-type": "4",
+    "/admin/manage-blogs": "5",
   };
   const location = useLocation();
   const selectedKey = pathToKey[location.pathname] || "1";
@@ -66,6 +68,11 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
             key: "4",
             icon: <RiHotelLine />,
             label: <Link to="/admin/manage-post-type">Manage Post Type</Link>,
+          },
+          {
+            key: "5",
+            icon: <MdArticle />,
+            label: <Link to="/admin/manage-blogs">Blog Management</Link>,
           },
         ]}
       />
