@@ -44,7 +44,10 @@ export default function ContactPage() {
                   Our Location
                 </h3>
                 <div className="rounded-xl overflow-hidden">
-                  <MapSection address="90 Nguyen Thuc Tu, Hoa Hai, Ngu Hanh Son, Da Nang" />
+                  <MapSection
+                    address="90 Nguyen Thuc Tu, Hoa Hai, Ngu Hanh Son, Da Nang"
+                    isNearby={false}
+                  />
                 </div>
               </div>
             </div>
