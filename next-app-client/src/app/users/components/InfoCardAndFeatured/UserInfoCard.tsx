@@ -28,6 +28,8 @@ import { redirect } from "next/navigation";
 import { AiFillHeart, AiOutlineHeart } from "react-icons/ai";
 import { addFavorite, removeFavorite } from "@/services/FavoriteService";
 import { useFavoriteStore } from "@/stores/FavoriteStore";
+import { Input, Radio, message } from "antd";
+import type { RadioChangeEvent } from "antd";
 
 // Mask functions for privacy protection
 function maskPhone(phone: string) {
@@ -49,15 +51,44 @@ export default function UserInfoCard({ id }: { id: string }) {
   const [isSaved, setIsSaved] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
+  // antd message API
+  const [messageApi, contextHolder] = message.useMessage();
   const [reportReason, setReportReason] = useState("");
   const [reportDescription, setReportDescription] = useState("");
-  const [isRobot, setIsRobot] = useState(false);
+  // predefined reasons list
+  const REPORT_REASONS = [
+    "Information has expired/no longer valid",
+    "Duplicate content",
+    "Unable to contact the listing owner",
+    "Information in the listing is inaccurate (price, area, images...)",
+    "Other reasons",
+  ];
+  // v3 flow: we'll set verified flag after server verification
+  const [isVerifiedHuman, setIsVerifiedHuman] = useState(false);
+  const [lastRecaptchaToken, setLastRecaptchaToken] = useState<string | null>(
+    null
+  );
+  const [lastRecaptchaVerifiedAt, setLastRecaptchaVerifiedAt] = useState<
+    number | null
+  >(null);
+  // UI/debug states for report submission and reCAPTCHA verification
+  const [reportSubmitting, setReportSubmitting] = useState(false);
+  const [reportStatus, setReportStatus] = useState<string | null>(null);
+  const [lastRecaptchaScore, setLastRecaptchaScore] = useState<number | null>(
+    null
+  );
+  const [verifySubmitting, setVerifySubmitting] = useState(false);
   const [contactName, setContactName] = useState("");
   const [contactPhone, setContactPhone] = useState("");
   const [landlord, setLandlord] = useState<LandlordDetailByRoom | null>(null);
   const [showChat, setShowChat] = useState(false);
   const [isSticky, setIsSticky] = useState(false);
   const { data: session } = useSession();
+  // reCAPTCHA site key (v3). Ensure NEXT_PUBLIC_RECAPTCHA_SITE_KEY or NEXT_PUBLIC_SITE_KEY is set in .env
+  const SITE_KEY =
+    process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY ||
+    process.env.NEXT_PUBLIC_SITE_KEY ||
+    "";
 
   const [favoriteCount, setFavoriteCount] = useState(0);
   const { favoriteRoomIds } = useFavoriteStore();
@@ -182,6 +213,263 @@ export default function UserInfoCard({ id }: { id: string }) {
     }
   };
 
+  // Load grecaptcha script if not already present
+  const loadGrecaptcha = (): Promise<void> => {
+    if (!SITE_KEY)
+      return Promise.reject(new Error("Missing reCAPTCHA site key"));
+    if (typeof window === "undefined")
+      return Promise.reject(new Error("No window object"));
+    const w = window as any;
+    // If grecaptcha is already initialized and ready, we're done
+    if (w.grecaptcha && typeof w.grecaptcha.ready === "function")
+      return Promise.resolve();
+
+    return new Promise((resolve, reject) => {
+      const existingScript = document.querySelector(
+        `script[src*="recaptcha/api.js"]`
+      );
+      if (existingScript) {
+        // wait for grecaptcha.ready to become available
+        const start = Date.now();
+        const waitForReady = () => {
+          if (w.grecaptcha && typeof w.grecaptcha.ready === "function") {
+            w.grecaptcha.ready(() => resolve());
+            return;
+          }
+          if (Date.now() - start > 10000) {
+            reject(new Error("grecaptcha.ready not available after waiting"));
+            return;
+          }
+          setTimeout(waitForReady, 50);
+        };
+        waitForReady();
+        return;
+      }
+
+      const script = document.createElement("script");
+      script.src = `https://www.google.com/recaptcha/api.js?render=${SITE_KEY}`;
+      script.async = true;
+      script.defer = true;
+      script.onload = () => {
+        // wait for grecaptcha.ready to be available or time out
+        const start = Date.now();
+        const wait = () => {
+          if (w.grecaptcha && typeof w.grecaptcha.ready === "function") {
+            w.grecaptcha.ready(() => resolve());
+          } else if (Date.now() - start > 10000) {
+            reject(new Error("grecaptcha.ready not available after load"));
+          } else {
+            setTimeout(wait, 50);
+          }
+        };
+        wait();
+      };
+      script.onerror = () =>
+        reject(new Error("Failed to load grecaptcha script"));
+      document.head.appendChild(script);
+    });
+  };
+
+  // Helper to mask the public site key so we don't expose the full value in the UI
+  const maskSiteKey = (key: string) => {
+    if (!key) return "NOT CONFIGURED";
+    try {
+      if (key.length <= 6)
+        return key.slice(0, Math.max(1, key.length - 1)) + "...";
+      return `${key.slice(0, 6)}...`;
+    } catch (e) {
+      return "configured";
+    }
+  };
+
+  const handleSubmitReport = async () => {
+    // Validate required fields
+    if (!reportReason) {
+      messageApi.error("Vui lòng chọn lý do phản ánh.");
+      return;
+    }
+
+    const nameTrim = contactName.trim();
+    if (!nameTrim) {
+      messageApi.error("Vui lòng nhập Họ tên liên hệ.");
+      return;
+    }
+    if (nameTrim.length > 100) {
+      messageApi.error("Họ tên phải dưới 100 ký tự.");
+      return;
+    }
+
+    const phoneTrim = contactPhone.trim();
+    if (!phoneTrim) {
+      messageApi.error("Vui lòng nhập Số điện thoại liên hệ.");
+      return;
+    }
+    // Basic phone validation: allow digits, +, spaces, - and common punctuation, length 7-15
+    const phoneRegex = /^\+?[0-9\s\-().]{7,15}$/;
+    if (!phoneRegex.test(phoneTrim)) {
+      messageApi.error("Số điện thoại không hợp lệ. Vui lòng kiểm tra lại.");
+      return;
+    }
+
+    if (!SITE_KEY) {
+      console.error(
+        "Missing reCAPTCHA site key (NEXT_PUBLIC_RECAPTCHA_SITE_KEY / NEXT_PUBLIC_SITE_KEY)"
+      );
+      messageApi.error("reCAPTCHA chưa cấu hình. Vui lòng thử lại sau.");
+      return;
+    }
+
+    // Require explicit verification step before allowing submission
+    const TOKEN_TTL_MS = 2 * 60 * 1000; // 2 minutes
+    const now = Date.now();
+    if (
+      !isVerifiedHuman ||
+      !lastRecaptchaToken ||
+      !lastRecaptchaVerifiedAt ||
+      now - (lastRecaptchaVerifiedAt || 0) > TOKEN_TTL_MS
+    ) {
+      setReportStatus("Vui lòng xác thực reCAPTCHA trước khi gửi phản ánh.");
+      return;
+    }
+
+    // Use the stored token from prior verification when submitting
+    const tokenToSend = lastRecaptchaToken;
+
+    setReportSubmitting(true);
+    setReportStatus("Đang gửi phản ánh...");
+    try {
+      // Submit the report payload to your reporting endpoint (implement server-side)
+      console.log("Gửi báo xấu:", {
+        reason: reportReason,
+        description: reportDescription,
+        contactName: contactName,
+        contactPhone: contactPhone,
+        postUrl: currentPostUrl,
+        recaptcha: { token: tokenToSend, score: lastRecaptchaScore },
+      });
+
+      // TODO: replace with real report submission endpoint
+      // await fetch('/api/reports', { method: 'POST', ... })
+
+      setReportStatus("Phản ánh đã được gửi. Cảm ơn bạn!");
+      // small delay so user sees status, then close
+      setTimeout(() => {
+        setShowReportModal(false);
+        setReportReason("");
+        setReportDescription("");
+        setContactName("");
+        setContactPhone("");
+        setReportStatus(null);
+        setIsVerifiedHuman(false);
+        setLastRecaptchaToken(null);
+        setLastRecaptchaVerifiedAt(null);
+        setLastRecaptchaScore(null);
+      }, 900);
+    } catch (err) {
+      console.error("Error submitting report", err);
+      setReportStatus("Lỗi khi gửi phản ánh. Vui lòng thử lại.");
+    } finally {
+      setReportSubmitting(false);
+    }
+  };
+
+  // Explicit verification action invoked by user before submitting report
+  const handleVerifyRecaptcha = async (): Promise<boolean> => {
+    if (!SITE_KEY) {
+      setReportStatus("reCAPTCHA chưa được cấu hình.");
+      return false;
+    }
+
+    setVerifySubmitting(true);
+    setReportStatus("Đang xác thực reCAPTCHA...");
+    setLastRecaptchaScore(null);
+    try {
+      await loadGrecaptcha();
+      const w = window as any;
+      if (!w.grecaptcha) throw new Error("grecaptcha not available after load");
+
+      // Ensure grecaptcha is ready before calling execute to avoid 'execute is not a function'
+      if (typeof w.grecaptcha.ready === "function") {
+        await new Promise<void>((res) => w.grecaptcha.ready(res));
+      } else {
+        // small delay fallback
+        await new Promise((r) => setTimeout(r, 200));
+      }
+
+      if (typeof w.grecaptcha.execute !== "function") {
+        console.error(
+          "grecaptcha.execute is not a function at call time",
+          w.grecaptcha
+        );
+        setReportStatus(
+          "Lỗi reCAPTCHA: không thể thực hiện xác thực. Vui lòng thử lại sau."
+        );
+        setIsVerifiedHuman(false);
+        setVerifySubmitting(false);
+        return false;
+      }
+
+      const token: string = await w.grecaptcha.execute(SITE_KEY, {
+        action: "report",
+      });
+      console.debug(
+        "reCAPTCHA token received (truncated):",
+        token?.slice ? token.slice(0, 10) + "..." : token
+      );
+
+      const verifyRes = await fetch("/api/recaptcha/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token, action: "report" }),
+      });
+
+      if (!verifyRes.ok) {
+        const text = await verifyRes.text();
+        console.error("reCAPTCHA verify endpoint returned error", text);
+        setReportStatus("Lỗi khi xác thực reCAPTCHA: server trả về lỗi.");
+        setIsVerifiedHuman(false);
+        setVerifySubmitting(false);
+        return false;
+      }
+
+      const verifyData = await verifyRes.json();
+      const score = verifyData?.score ?? 0;
+      const success = verifyData?.success ?? false;
+      setLastRecaptchaScore(score);
+      // setReportStatus(`reCAPTCHA score: ${score}`);
+      console.debug("reCAPTCHA verify response:", verifyData);
+
+      if (!success || score < 0.5) {
+        setReportStatus("Xác thực không đạt — vui lòng thử lại.");
+        setIsVerifiedHuman(false);
+        setVerifySubmitting(false);
+        return false;
+      }
+
+      // verification succeeded — store token + timestamp and mark verified
+      setIsVerifiedHuman(true);
+      setLastRecaptchaToken(token);
+      setLastRecaptchaVerifiedAt(Date.now());
+      // setReportStatus("Xác thực thành công. Bạn có thể gửi phản ánh.");
+      return true;
+    } catch (err) {
+      console.error("Error during reCAPTCHA verification", err);
+      setReportStatus("Lỗi khi xác thực reCAPTCHA. Vui lòng thử lại.");
+      setIsVerifiedHuman(false);
+      return false;
+    } finally {
+      setVerifySubmitting(false);
+    }
+  };
+
+  // Restore overlay click handler so clicking backdrop closes modals
+  const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (e.target === e.currentTarget) {
+      setShowShareModal(false);
+      setShowReportModal(false);
+    }
+  };
+
   if (!landlord) {
     return (
       <div className="flex flex-col items-center justify-center p-8 text-center bg-white border border-gray-200 shadow-lg rounded-2xl min-h-96 animate-pulse">
@@ -214,45 +502,6 @@ export default function UserInfoCard({ id }: { id: string }) {
       .catch((err) => {
         console.error("Không thể sao chép URL: ", err);
       });
-  };
-
-  const handleSubmitReport = () => {
-    if (!reportReason) {
-      alert("Vui lòng chọn lý do phản ánh.");
-      return;
-    }
-    if (!isRobot) {
-      alert("Vui lòng xác nhận bạn không phải là người máy.");
-      return;
-    }
-    if (!contactName.trim() || !contactPhone.trim()) {
-      alert("Vui lòng nhập Họ tên và Số điện thoại liên hệ.");
-      return;
-    }
-
-    console.log("Gửi báo xấu:", {
-      reason: reportReason,
-      description: reportDescription,
-      contactName: contactName,
-      contactPhone: contactPhone,
-      isRobot: isRobot,
-      postUrl: currentPostUrl,
-    });
-
-    alert("Cảm ơn bạn đã gửi phản ánh!");
-    setShowReportModal(false);
-    setReportReason("");
-    setReportDescription("");
-    setContactName("");
-    setContactPhone("");
-    setIsRobot(false);
-  };
-
-  const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (e.target === e.currentTarget) {
-      setShowShareModal(false);
-      setShowReportModal(false);
-    }
   };
 
   const isOnline = onlineUsers.includes(landlord.id);
@@ -393,12 +642,11 @@ export default function UserInfoCard({ id }: { id: string }) {
                   <MdEmail className="w-5 h-5" />
                 )}
                 <span className="font-semibold">
-                  {/* {session?.user?.id
+                  {session?.user?.id
                     ? landlord.phone
                       ? maskPhone(landlord.phone)
                       : maskEmail(landlord.email || "")
-                    : landlord.phone || landlord.email} */}
-                    {landlord.phone ? maskPhone(landlord.phone) : maskEmail(landlord.email || "")}
+                    : landlord.phone || landlord.email}
                 </span>
               </div>
             </Link>
@@ -567,13 +815,15 @@ export default function UserInfoCard({ id }: { id: string }) {
       {/* Report Modal */}
       {showReportModal && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/30 backdrop-blur-sm"
+          className="fixed mt-[5%] inset-0 z-55 flex items-center justify-center p-4 bg-black/30 backdrop-blur-sm"
           onMouseDown={handleOverlayClick}
         >
           <div
-            className="bg-white rounded-2xl p-6 shadow-2xl w-full max-w-lg max-h-[85vh] relative overflow-y-auto"
+            className="bg-white rounded-2xl p-6 shadow-2xl w-full max-w-lg max-h-[85vh] relative overflow-y-auto z-[10000]"
             onMouseDown={(e) => e.stopPropagation()}
           >
+            {/* antd message context holder */}
+            {contextHolder}
             <button
               onClick={() => setShowReportModal(false)}
               className="absolute z-10 flex items-center justify-center w-8 h-8 text-gray-400 transition-colors rounded-full top-4 right-4 hover:text-gray-600 hover:bg-gray-100"
@@ -596,88 +846,151 @@ export default function UserInfoCard({ id }: { id: string }) {
             <div className="space-y-6">
               <div>
                 <h3 className="mb-3 text-sm font-semibold text-gray-800">
-                  Contact Information
+                  Contact Information <span className="text-red-500">*</span>
                 </h3>
-                <div className="space-y-3">
-                  <input
-                    type="text"
+                <div className="space-y-3 flex flex-col gap-3">
+                  <Input
                     value={contactName}
                     onChange={(e) => setContactName(e.target.value)}
-                    className="w-full p-4 text-gray-800 placeholder-gray-400 transition-all border border-gray-200 outline-none rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
                     placeholder="Your full name"
+                    maxLength={100}
+                    aria-required
                   />
-                  <input
-                    type="tel"
+                  <Input
                     value={contactPhone}
                     onChange={(e) => setContactPhone(e.target.value)}
-                    className="w-full p-4 text-gray-800 placeholder-gray-400 transition-all border border-gray-200 outline-none rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
                     placeholder="Your phone number"
+                    maxLength={20}
+                    aria-required
                   />
                 </div>
               </div>
 
               <div>
                 <h3 className="mb-3 text-sm font-semibold text-gray-800">
-                  Reason for reporting
+                  Reason for reporting <span className="text-red-500">*</span>
                 </h3>
                 <div className="space-y-2">
-                  {[
-                    "Information has expired/no longer valid",
-                    "Duplicate content",
-                    "Unable to contact the listing owner",
-                    "Information in the listing is inaccurate (price, area, images...)",
-                    "Other reasons",
-                  ].map((reason) => (
-                    <label
-                      key={reason}
-                      className="flex items-start gap-3 p-3 transition-all border border-transparent cursor-pointer rounded-xl hover:bg-gray-50 hover:border-gray-200"
-                    >
-                      <input
-                        type="radio"
-                        name="reportReason"
-                        value={reason}
-                        checked={reportReason === reason}
-                        onChange={(e) => setReportReason(e.target.value)}
-                        className="mt-0.5 w-4 h-4 text-blue-600 focus:ring-blue-500"
-                      />
-                      <span className="text-sm font-medium text-gray-700">
-                        {reason}
-                      </span>
-                    </label>
-                  ))}
+                  <Radio.Group
+                    onChange={(e: RadioChangeEvent) =>
+                      setReportReason(e.target.value)
+                    }
+                    value={reportReason}
+                  >
+                    {REPORT_REASONS.map((reason) => (
+                      <div key={reason} className="p-2">
+                        <Radio value={reason}>{reason}</Radio>
+                      </div>
+                    ))}
+                  </Radio.Group>
                 </div>
               </div>
 
-              <div>
-                <h3 className="mb-3 text-sm font-semibold text-gray-800">
-                  Additional details
-                </h3>
-                <textarea
-                  value={reportDescription}
-                  onChange={(e) => setReportDescription(e.target.value)}
-                  className="w-full p-4 text-gray-800 placeholder-gray-400 transition-all border border-gray-200 outline-none resize-none rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
-                  rows={4}
-                  placeholder="Provide more details about the issue..."
-                />
+              {/* Additional details only visible when 'Other reasons' is selected */}
+              {reportReason === "Other reasons" && (
+                <div>
+                  <h3 className="mb-3 text-sm font-semibold text-gray-800">
+                    Additional details
+                  </h3>
+                  <Input.TextArea
+                    value={reportDescription}
+                    onChange={(e) => setReportDescription(e.target.value)}
+                    rows={4}
+                    placeholder="Provide more details about the issue..."
+                  />
+                </div>
+              )}
+
+              {/* reCAPTCHA v3 is used (invisible). Token is requested when the user submits the report. */}
+              {/* <div className="mb-2 text-xs text-gray-500 flex items-center justify-between"> */}
+              {/* <div>
+                  reCAPTCHA v3:{" "}
+                  {SITE_KEY
+                    ? 'enabled — nhấn "Verify reCAPTCHA" để kích hoạt nút gửi'
+                    : "NOT CONFIGURED"}
+                </div> */}
+              {/* <div className="text-right text-xs text-gray-400">
+                  <a
+                    href="https://policies.google.com/privacy"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="underline"
+                  >
+                    Privacy
+                  </a>
+                  <span className="mx-1">·</span>
+                  <a
+                    href="https://policies.google.com/terms"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="underline"
+                  >
+                    Terms
+                  </a>
+                </div>
+              </div> */}
+
+              {/* Small visual badge to increase trust */}
+              {/* <div className="flex items-center gap-2 mb-3 text-xs text-gray-500">
+                <div className="px-2 py-1 bg-gray-50 border border-gray-200 rounded-md">
+                  Protected by reCAPTCHA
+                </div>
+                <div className="text-xs">
+                  {SITE_KEY ? maskSiteKey(SITE_KEY) : ""}
+                </div>
+                {lastRecaptchaScore !== null && (
+                  <div className="ml-auto text-xs text-gray-600">
+                    Score: {lastRecaptchaScore}
+                  </div>
+                )}
+              </div> */}
+
+              <div className="flex items-center gap-3 mb-3">
+                <button
+                  onClick={handleVerifyRecaptcha}
+                  disabled={verifySubmitting}
+                  className={`px-3 py-2 text-xs rounded-lg border ${
+                    isVerifiedHuman
+                      ? "bg-green-50 border-green-300 text-green-700"
+                      : "bg-white border-gray-200 text-gray-700"
+                  } ${
+                    verifySubmitting ? "opacity-60 pointer-events-none" : ""
+                  }`}
+                >
+                  {isVerifiedHuman
+                    ? "Verified ✓"
+                    : verifySubmitting
+                    ? "Verifying..."
+                    : "Verify reCAPTCHA"}
+                </button>
+                <div className="text-xs text-gray-500">
+                  Vui lòng xác thực reCAPTCHA trước khi gửi phản ánh.
+                </div>
               </div>
 
-              <label className="flex items-start gap-3 p-3 border border-gray-200 cursor-pointer rounded-xl hover:bg-gray-50">
-                <input
-                  type="checkbox"
-                  checked={isRobot}
-                  onChange={(e) => setIsRobot(e.target.checked)}
-                  className="mt-0.5 w-4 h-4 text-blue-600 focus:ring-blue-500"
-                />
-                <span className="text-sm font-medium text-gray-700">
-                  I confirm that I am not a robot
-                </span>
-              </label>
+              {reportStatus && (
+                <div className="mb-3 text-sm text-gray-700">
+                  {reportStatus}
+                  {lastRecaptchaScore !== null && (
+                    <span className="ml-2 text-xs text-gray-500">
+                      (score: {lastRecaptchaScore})
+                    </span>
+                  )}
+                </div>
+              )}
 
               <button
                 onClick={handleSubmitReport}
-                className="w-full bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white font-semibold py-4 rounded-xl transition-all duration-300 transform hover:scale-[1.02] shadow-lg hover:shadow-xl"
+                disabled={
+                  reportSubmitting || verifySubmitting || !isVerifiedHuman
+                }
+                className={`w-full ${
+                  reportSubmitting || !isVerifiedHuman
+                    ? "opacity-60 pointer-events-none"
+                    : ""
+                } cursor-pointer bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white font-semibold py-4 rounded-xl transition-all duration-300 transform hover:scale-[1.02] shadow-lg hover:shadow-xl`}
               >
-                Submit Report
+                {reportSubmitting ? "Đang xử lý..." : "Submit Report"}
               </button>
             </div>
           </div>
