@@ -64,6 +64,7 @@ export default function HeaderUserDashboard({
   const [messageApi, contextHolder] = message.useMessage();
   const router = useRouter();
   const notificationsPerPage = 5;
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   const userId = session?.user?.id || "";
 
@@ -85,6 +86,23 @@ export default function HeaderUserDashboard({
             ...docSnap.data(),
           } as Notification)
       );
+      
+      // Chỉ hiển thị popup cho notification thực sự mới (không phải lần đầu load)
+      if (!isInitialLoad) {
+        // Chỉ hiển thị popup nếu có document mới được thêm VÀ không phải từ cache
+        snapshot.docChanges().forEach((change) => {
+          if (change.type === "added" && !change.doc.metadata.fromCache) {
+            messageApi.success({
+              content: "Notification: " + change.doc.data().message,
+              duration: 3,
+            });
+          }
+        });
+      } else {
+        console.log("Initial load, skipping notification popup");
+        setIsInitialLoad(false);
+      }
+      
       setNotifications(data);
       // Reset pagination when new notifications come
       setCurrentPage(1);
@@ -92,7 +110,7 @@ export default function HeaderUserDashboard({
     });
 
     return () => unsub();
-  }, [userId]);
+  }, [userId, messageApi, isInitialLoad]);
 
   const unreadCount = notifications.filter((n) => !n.isRead).length;
 

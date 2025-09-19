@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useContext, useEffect, useState } from "react";
 import {
   MenuUnfoldOutlined,
@@ -51,6 +52,7 @@ function AppHeader({ collapsed, toggleCollapsed }: AppHeaderProps) {
   dayjs.extend(relativeTime);
   dayjs.locale("en");
   const router = useRouter();
+  const [messageApi, contextHolder] = message.useMessage()
   const { data: session } = useSession();
   const { isDark, setIsDark } = useContext(ThemeContext);
   const [notificationOpen, setNotificationOpen] = useState(false);
@@ -59,6 +61,7 @@ function AppHeader({ collapsed, toggleCollapsed }: AppHeaderProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const notificationsPerPage = 5;
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   const handleClick = () => {
     setIsDark(!isDark);
@@ -86,6 +89,23 @@ function AppHeader({ collapsed, toggleCollapsed }: AppHeaderProps) {
             ...docSnap.data(),
           } as Notification)
       );
+      
+      // Chỉ hiển thị popup cho notification thực sự mới (không phải lần đầu load)
+      if (!isInitialLoad) {
+        // Chỉ hiển thị popup nếu có document mới được thêm VÀ không phải từ cache
+        snapshot.docChanges().forEach((change) => {
+          if (change.type === "added" && !change.doc.metadata.fromCache) {
+            messageApi.success({
+              content: "Notification: " + change.doc.data().message,
+              duration: 3,
+            });
+          }
+        });
+      } else {
+        console.log("Initial load, skipping notification popup");
+        setIsInitialLoad(false);
+      }
+      
       setNotifications(data);
       // Reset pagination when new notifications come
       setCurrentPage(1);
@@ -93,7 +113,7 @@ function AppHeader({ collapsed, toggleCollapsed }: AppHeaderProps) {
     });
 
     return () => unsub();
-  }, [landlordId]);
+  }, [landlordId, messageApi, isInitialLoad]);
 
   const unreadCount = notifications.filter((n) => !n.isRead).length;
 
@@ -101,9 +121,9 @@ function AppHeader({ collapsed, toggleCollapsed }: AppHeaderProps) {
     try {
       const unread = notifications.filter((n) => !n.isRead);
       for (const n of unread) {
-        await updateDoc(doc(db, "notifications", n.id), { read: true });
+        await updateDoc(doc(db, "notifications", n.id), { isRead: true });
       }
-      message.success("Đã đánh dấu tất cả thông báo là đã đọc");
+      messageApi.success("Marked all notifications as read");
     } catch (err) {
       console.error("Error mark all as read:", err);
     }
@@ -242,6 +262,8 @@ function AppHeader({ collapsed, toggleCollapsed }: AppHeaderProps) {
   ];
 
   return (
+    <>
+      {contextHolder}
     <header className="w-full flex justify-between items-center px-4 py-0 bg-slate-50 dark:bg-[#001529] border-[1px] border-gray-200 dark:border-gray-600">
       <button
         onClick={toggleCollapsed}
@@ -249,7 +271,6 @@ function AppHeader({ collapsed, toggleCollapsed }: AppHeaderProps) {
       >
         {collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
       </button>
-
       <div className="flex items-center gap-4">
         <button
           id="theme-toggle"
@@ -287,6 +308,7 @@ function AppHeader({ collapsed, toggleCollapsed }: AppHeaderProps) {
         </Dropdown>
       </div>
     </header>
+  </>
   );
 }
 

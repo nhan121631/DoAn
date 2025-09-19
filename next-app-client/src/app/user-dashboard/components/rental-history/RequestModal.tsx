@@ -4,6 +4,7 @@ import { Modal, Form, Input, Button, Upload, message } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import { useSession } from "next-auth/react";
 import type { UploadProps, UploadFile } from 'antd';
+import { createRequestNotification } from "@/services/NotificationService";
 
 interface RequestModalProps {
   open: boolean;
@@ -38,14 +39,27 @@ const RequestModal: React.FC<RequestModalProps> = ({
   }, [open, fieldValue, form]);
 
   const handleFinish = async (values: any) => {
-    const request = {
-      userId,
-      roomId: id,
-      description: values.requestDescription,
-    };
-    
-    // Gọi onFinish để tạo requirement trước
-    onFinish(request);
+    try {
+      if (!id) {
+        messageApi.error("Room ID is required");
+        return;
+      }
+
+      const request = {
+        userId,
+        roomId: id,
+        description: values.requestDescription,
+      };
+      
+      // Tạo notification cho landlord
+      await createRequestNotification(id, session?.user.id, "You have a new request from a tenant: " + values.requestDescription);
+      
+      // Gọi onFinish để tạo requirement trước
+      onFinish(request);
+    } catch (error) {
+      console.error("Error creating request:", error);
+      messageApi.error("Failed to create request. Please try again.");
+    }
   };
 
   const uploadProps: UploadProps = {

@@ -47,8 +47,19 @@ export const createRequestNotification = async (
   tenantId: number | string | undefined,
   message: string,
 ) => {
-  const landlordId = await getLandlordByRoomId(roomId as string);
   try {
+    if (!roomId) {
+      console.error("roomId is required for createRequestNotification");
+      return;
+    }
+    
+    const landlordId = await getLandlordByRoomId(roomId as string);
+    
+    if (!landlordId || !landlordId.id) {
+      console.error("Could not find landlord for roomId:", roomId);
+      return;
+    }
+    
     await addDoc(collection(db, "notifications"), {
       receiverId: landlordId.id,     // landlord sẽ nhận
       senderId: tenantId,         // user tạo booking
@@ -57,8 +68,11 @@ export const createRequestNotification = async (
       isRead: false,
       createdAt: serverTimestamp()
     });
+    
+    console.log("Request notification created successfully for landlord:", landlordId.id);
   } catch (error) {
     console.error("Lỗi khi tạo notification:", error);
+    throw error; // Re-throw để caller có thể handle
   }
 };
 
