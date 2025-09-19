@@ -5,8 +5,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { MdPhone, MdEmail, MdVerified, MdLocationOn } from "react-icons/md";
 import {
-  FaRegBookmark,
-  FaBookmark,
   FaTimes,
   FaStar,
   FaUserCheck,
@@ -18,7 +16,6 @@ import {
   IoChatbubbleEllipsesOutline,
 } from "react-icons/io5";
 import { BiShield } from "react-icons/bi";
-import { HiOutlineBadgeCheck } from "react-icons/hi";
 import { getLandlordByRoomId } from "@/services/RoomService";
 import { LandlordDetailByRoom } from "@/types/types";
 import { API_URL, URL_IMAGE } from "@/services/Constant";
