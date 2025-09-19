@@ -319,7 +319,7 @@ function RentalHistory() {
                 modal.setSelectedKey(record.key);
                 modal.setSelectedIdRoom(record.idRoom);
                 setOpen(true);
-                await createRequestNotification(record.idRoom, session?.user.id, "You have a new request from a tenant!");
+                // await createRequestNotification(record.idRoom, session?.user.id, "You have a new request from a tenant!");
               }
             }}
             title="Add Request"
