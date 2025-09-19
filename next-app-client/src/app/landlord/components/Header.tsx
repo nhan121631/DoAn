@@ -41,7 +41,7 @@ type Notification = {
   id: string;
   landlordId: string;
   type: string;
-  createdAt: Date;
+  createdAt: any;
   contractId?: number | string | undefined;
   message: string;
   isRead: boolean;
@@ -55,6 +55,10 @@ function AppHeader({ collapsed, toggleCollapsed }: AppHeaderProps) {
   const { isDark, setIsDark } = useContext(ThemeContext);
   const [notificationOpen, setNotificationOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [displayedNotifications, setDisplayedNotifications] = useState<Notification[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const notificationsPerPage = 5;
 
   const handleClick = () => {
     setIsDark(!isDark);
@@ -83,6 +87,9 @@ function AppHeader({ collapsed, toggleCollapsed }: AppHeaderProps) {
           } as Notification)
       );
       setNotifications(data);
+      // Reset pagination when new notifications come
+      setCurrentPage(1);
+      setDisplayedNotifications(data.slice(0, notificationsPerPage));
     });
 
     return () => unsub();
@@ -120,6 +127,26 @@ function AppHeader({ collapsed, toggleCollapsed }: AppHeaderProps) {
     }
   };
 
+  const loadMoreNotifications = () => {
+    if (isLoadingMore || displayedNotifications.length >= notifications.length) return;
+    
+    setIsLoadingMore(true);
+    setTimeout(() => {
+      const nextPage = currentPage + 1;
+      const newDisplayedNotifications = notifications.slice(0, nextPage * notificationsPerPage);
+      setDisplayedNotifications(newDisplayedNotifications);
+      setCurrentPage(nextPage);
+      setIsLoadingMore(false);
+    }, 500); // Simulate loading delay
+  };
+
+  const handleNotificationScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
+    if (scrollTop + clientHeight >= scrollHeight - 5) {
+      loadMoreNotifications();
+    }
+  };
+
   const notificationContent = (
     <div className="w-80">
       <div className="flex justify-between items-center p-3 border-b">
@@ -130,9 +157,9 @@ function AppHeader({ collapsed, toggleCollapsed }: AppHeaderProps) {
           Mark all as read
         </Typography.Link>
       </div>
-      <div className="max-h-80 overflow-y-auto">
+      <div className="max-h-80 overflow-y-auto" onScroll={handleNotificationScroll}>
         <List
-          dataSource={notifications.slice(0, 5)}
+          dataSource={displayedNotifications}
           renderItem={(item) => (
           <List.Item
             key={item.id}
@@ -168,9 +195,9 @@ function AppHeader({ collapsed, toggleCollapsed }: AppHeaderProps) {
                     {item.message}
                   </div>
                   <div className="text-xs text-gray-400">
-                    {item.createdAt
-                      ? dayjs(item.createdAt).fromNow()
-                      : ""}
+                    {item.createdAt?.toDate
+                                            ? dayjs(item.createdAt.toDate()).fromNow()
+                                            : ""}
                   </div>
                 </div>
               }
@@ -178,12 +205,23 @@ function AppHeader({ collapsed, toggleCollapsed }: AppHeaderProps) {
           </List.Item>
         )}
       />
+      {isLoadingMore && (
+        <div className="text-center p-3">
+          <div className="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+          <span className="ml-2 text-sm text-gray-500">Loading more...</span>
+        </div>
+      )}
       </div>
-      {notifications.length > 5 && (
+      {displayedNotifications.length < notifications.length && !isLoadingMore && (
         <div className="text-center p-3 border-t">
-          <Typography.Link onClick={() => console.log("Xem tất cả thông báo")}>
-            Xem tất cả thông báo ({notifications.length})
+          <Typography.Link onClick={loadMoreNotifications}>
+            Load more notifications ({notifications.length - displayedNotifications.length} remaining)
           </Typography.Link>
+        </div>
+      )}
+      {displayedNotifications.length >= notifications.length && notifications.length > notificationsPerPage && (
+        <div className="text-center p-3 border-t">
+          <span className="text-sm text-gray-500">All notifications loaded</span>
         </div>
       )}
     </div>

@@ -58,8 +58,12 @@ export default function HeaderUserDashboard({
   const [currentAvatarUrl, setCurrentAvatarUrl] = useState("");
   const [notificationOpen, setNotificationOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [displayedNotifications, setDisplayedNotifications] = useState<Notification[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [messageApi, contextHolder] = message.useMessage();
   const router = useRouter();
+  const notificationsPerPage = 5;
 
   const userId = session?.user?.id || "";
 
@@ -82,6 +86,9 @@ export default function HeaderUserDashboard({
           } as Notification)
       );
       setNotifications(data);
+      // Reset pagination when new notifications come
+      setCurrentPage(1);
+      setDisplayedNotifications(data.slice(0, notificationsPerPage));
     });
 
     return () => unsub();
@@ -119,6 +126,26 @@ export default function HeaderUserDashboard({
     }
   };
 
+  const loadMoreNotifications = () => {
+    if (isLoadingMore || displayedNotifications.length >= notifications.length) return;
+    
+    setIsLoadingMore(true);
+    setTimeout(() => {
+      const nextPage = currentPage + 1;
+      const newDisplayedNotifications = notifications.slice(0, nextPage * notificationsPerPage);
+      setDisplayedNotifications(newDisplayedNotifications);
+      setCurrentPage(nextPage);
+      setIsLoadingMore(false);
+    }, 500); // Simulate loading delay
+  };
+
+  const handleNotificationScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
+    if (scrollTop + clientHeight >= scrollHeight - 5) {
+      loadMoreNotifications();
+    }
+  };
+
   const notificationContent = (
     <div className="w-80">
       <div className="flex justify-between items-center p-3 border-b">
@@ -129,9 +156,9 @@ export default function HeaderUserDashboard({
           Mark all as read
         </Typography.Link>
       </div>
-      <div className="max-h-80 overflow-y-auto">
+      <div className="max-h-80 overflow-y-auto" onScroll={handleNotificationScroll}>
         <List
-          dataSource={notifications.slice(0, 5)}
+          dataSource={displayedNotifications}
           renderItem={(item) => (
             <List.Item
               key={item.id}
@@ -170,12 +197,23 @@ export default function HeaderUserDashboard({
             </List.Item>
           )}
         />
+        {isLoadingMore && (
+          <div className="text-center p-3">
+            <div className="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+            <span className="ml-2 text-sm text-gray-500">Loading more...</span>
+          </div>
+        )}
       </div>
-      {notifications.length > 5 && (
+      {displayedNotifications.length < notifications.length && !isLoadingMore && (
         <div className="text-center p-3 border-t">
-          <Typography.Link onClick={() => console.log("View all notifications")}>
-            View all notifications ({notifications.length})
+          <Typography.Link onClick={loadMoreNotifications}>
+            Load more notifications ({notifications.length - displayedNotifications.length} remaining)
           </Typography.Link>
+        </div>
+      )}
+      {displayedNotifications.length >= notifications.length && notifications.length > notificationsPerPage && (
+        <div className="text-center p-3 border-t">
+          <span className="text-sm text-gray-500">All notifications loaded</span>
         </div>
       )}
     </div>
