@@ -37,7 +37,7 @@ public class ApprovalLogController {
 
     @PostMapping("/send-to-slack")
     public ResponseEntity<Map<String, Object>> sendCsvToSlack(
-            @RequestParam(value = "channel", defaultValue = "C09CM2NAF1P") String channelId,
+            @RequestParam(value = "channel", defaultValue = "   ") String channelId,
             @RequestParam(value = "message", defaultValue = "Room Approval Log Report") String message) {
 
         Map<String, Object> response = new HashMap<>();
