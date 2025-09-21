@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -5,8 +7,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { MdPhone, MdEmail, MdVerified, MdLocationOn } from "react-icons/md";
 import {
-  FaRegBookmark,
-  FaBookmark,
   FaTimes,
   FaStar,
   FaUserCheck,
@@ -18,7 +18,6 @@ import {
   IoChatbubbleEllipsesOutline,
 } from "react-icons/io5";
 import { BiShield } from "react-icons/bi";
-import { HiOutlineBadgeCheck } from "react-icons/hi";
 import { getLandlordByRoomId } from "@/services/RoomService";
 import { LandlordDetailByRoom } from "@/types/types";
 import { API_URL, URL_IMAGE } from "@/services/Constant";
@@ -285,36 +284,56 @@ export default function UserInfoCard({ id }: { id: string }) {
   const handleSubmitReport = async () => {
     // Validate required fields
     if (!reportReason) {
-      messageApi.error("Vui lòng chọn lý do phản ánh.");
+      messageApi.error("Please select a reason for reporting.");
       return;
     }
 
     const nameTrim = contactName.trim();
     if (!nameTrim) {
-      messageApi.error("Vui lòng nhập Họ tên liên hệ.");
+      messageApi.error("Please enter your full name.");
       return;
     }
-    if (nameTrim.length > 100) {
-      messageApi.error("Họ tên phải dưới 100 ký tự.");
+
+    // Name validation: no special characters and under 100 characters
+    if (nameTrim.length >= 100) {
+      messageApi.error("Name must be under 100 characters.");
+      return;
+    }
+    // Check for special characters in name (allow only letters, numbers, and spaces)
+    const nameRegex = /^[a-zA-ZÀ-ỹ0-9\s]+$/;
+    if (!nameRegex.test(nameTrim)) {
+      messageApi.error("Name cannot contain special characters.");
       return;
     }
 
     const phoneTrim = contactPhone.trim();
     if (!phoneTrim) {
-      messageApi.error("Vui lòng nhập Số điện thoại liên hệ.");
-      return;
-    }
-    // Basic phone validation: allow digits, +, spaces, - and common punctuation, length 7-15
-    const phoneRegex = /^\+?[0-9\s\-().]{7,15}$/;
-    if (!phoneRegex.test(phoneTrim)) {
-      messageApi.error("Số điện thoại không hợp lệ. Vui lòng kiểm tra lại.");
+      messageApi.error("Please enter your phone number.");
       return;
     }
 
+    // Phone validation: must be exactly 10 digits, no special characters
+    const phoneRegex = /^[0-9]{10}$/;
+    if (!phoneRegex.test(phoneTrim)) {
+      messageApi.error(
+        "Phone number must be exactly 10 digits and contain no special characters."
+      );
+      return;
+    }
+
+    // Validate description if "Other reasons" is selected
+    if (reportReason === "Other reasons") {
+      const descriptionTrim = reportDescription.trim();
+      if (!descriptionTrim) {
+        messageApi.error("Please provide details when selecting 'Other reasons'.");
+        return;
+      }
+    }
+
     setReportSubmitting(true);
-    setReportStatus("Đang gửi phản ánh...");
+    setReportStatus("Submitting report...");
     try {
-      // Prepare payload - only include description if "Other reasons" is selected
+      // Prepare payload
       const payload: any = {
         reason: reportReason,
         contactName: nameTrim,
@@ -322,8 +341,8 @@ export default function UserInfoCard({ id }: { id: string }) {
         postUrl: currentPostUrl,
       };
 
-      // Only add description if "Other reasons" is selected
-      if (reportReason === "Other reasons" && reportDescription.trim()) {
+      // Add description if "Other reasons" is selected (already validated as required)
+      if (reportReason === "Other reasons") {
         payload.description = reportDescription.trim();
       }
 
@@ -348,8 +367,8 @@ export default function UserInfoCard({ id }: { id: string }) {
       console.log("[UserInfoCard] 📥 Response data:", data);
 
       if (data.success) {
-        messageApi.success("Phản ánh đã được gửi thành công!");
-        setReportStatus("Phản ánh đã được gửi. Cảm ơn bạn!");
+        messageApi.success("Report submitted successfully!");
+        setReportStatus("Report submitted. Thank you!");
 
         // Reset form
         setReportReason("");
@@ -366,9 +385,9 @@ export default function UserInfoCard({ id }: { id: string }) {
           setReportStatus(null);
         }, 1500);
       } else {
-        messageApi.error(data.message || "Có lỗi xảy ra khi gửi phản ánh.");
+        messageApi.error(data.message || "An error occurred while submitting the report.");
         setReportStatus(
-          "Lỗi khi gửi phản ánh: " + (data.message || "Vui lòng thử lại.")
+          "Error submitting report: " + (data.message || "Please try again.")
         );
       }
     } catch (err) {
@@ -379,8 +398,8 @@ export default function UserInfoCard({ id }: { id: string }) {
         type: typeof err,
         error: err,
       });
-      messageApi.error("Lỗi kết nối. Vui lòng thử lại sau.");
-      setReportStatus("Lỗi khi gửi phản ánh. Vui lòng thử lại.");
+      messageApi.error("Connection error. Please try again later.");
+      setReportStatus("Error submitting report. Please try again.");
     } finally {
       setReportSubmitting(false);
     }
@@ -389,7 +408,7 @@ export default function UserInfoCard({ id }: { id: string }) {
   // Explicit verification action invoked by user before submitting report
   const handleVerifyRecaptcha = async (): Promise<boolean> => {
     if (!SITE_KEY) {
-      setReportStatus("reCAPTCHA chưa được cấu hình.");
+      setReportStatus("reCAPTCHA not configured.");
       return false;
     }
 
@@ -415,7 +434,7 @@ export default function UserInfoCard({ id }: { id: string }) {
           w.grecaptcha
         );
         setReportStatus(
-          "Lỗi reCAPTCHA: không thể thực hiện xác thực. Vui lòng thử lại sau."
+          "reCAPTCHA error: unable to perform verification. Please try again later."
         );
         setIsVerifiedHuman(false);
         setVerifySubmitting(false);
@@ -439,7 +458,7 @@ export default function UserInfoCard({ id }: { id: string }) {
       if (!verifyRes.ok) {
         const text = await verifyRes.text();
         console.error("reCAPTCHA verify endpoint returned error", text);
-        setReportStatus("Lỗi khi xác thực reCAPTCHA: server trả về lỗi.");
+        setReportStatus("Error verifying reCAPTCHA: server returned error.");
         setIsVerifiedHuman(false);
         setVerifySubmitting(false);
         return false;
@@ -453,7 +472,7 @@ export default function UserInfoCard({ id }: { id: string }) {
       console.debug("reCAPTCHA verify response:", verifyData);
 
       if (!success || score < 0.5) {
-        setReportStatus("Xác thực không đạt — vui lòng thử lại.");
+        setReportStatus("Verification failed — please try again.");
         setIsVerifiedHuman(false);
         setVerifySubmitting(false);
         return false;
@@ -467,7 +486,7 @@ export default function UserInfoCard({ id }: { id: string }) {
       return true;
     } catch (err) {
       console.error("Error during reCAPTCHA verification", err);
-      setReportStatus("Lỗi khi xác thực reCAPTCHA. Vui lòng thử lại.");
+      setReportStatus("Error verifying reCAPTCHA. Please try again.");
       setIsVerifiedHuman(false);
       return false;
     } finally {
@@ -903,7 +922,7 @@ export default function UserInfoCard({ id }: { id: string }) {
               {reportReason === "Other reasons" && (
                 <div>
                   <h3 className="mb-3 text-sm font-semibold text-gray-800">
-                    Additional details
+                    Additional details <span className="text-red-500">*</span>
                   </h3>
                   <Input.TextArea
                     value={reportDescription}
@@ -948,7 +967,7 @@ export default function UserInfoCard({ id }: { id: string }) {
                         verifySubmitting ? "text-gray-500" : "text-gray-700"
                       }`}
                     >
-                      I'm not a robot
+                      I&#39;m not a robot
                     </label>
                     <div className="ml-auto">
                       <div className="text-xs text-gray-500 flex flex-col items-end">
@@ -996,7 +1015,7 @@ export default function UserInfoCard({ id }: { id: string }) {
                     : ""
                 } cursor-pointer bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white font-semibold py-4 rounded-xl transition-all duration-300 transform hover:scale-[1.02] shadow-lg hover:shadow-xl`}
               >
-                {reportSubmitting ? "Đang xử lý..." : "Submit Report"}
+                {reportSubmitting ? "Processing..." : "Submit Report"}
               </button>
             </div>
           </div>
