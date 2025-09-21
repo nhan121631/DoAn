@@ -71,7 +71,7 @@
 }
 
 /* List styles */
-.blog-content ul, 
+.blog-content ul,
 .blog-content ol {
   margin-bottom: 1rem !important;
   padding-left: 1.5rem !important;
@@ -139,4 +139,42 @@
   padding-left: 1rem !important;
   color: #666 !important;
   font-style: italic;
+}
+
+/* Dark theme styles for blog content */
+.dark .blog-content {
+  color: #e5e7eb !important;
+}
+
+.dark .blog-content h1,
+.dark .blog-content h2,
+.dark .blog-content h3,
+.dark .blog-content h4,
+.dark .blog-content h5,
+.dark .blog-content h6 {
+  color: #f9fafb !important;
+}
+
+.dark .blog-content code {
+  background-color: #374151 !important;
+  color: #e5e7eb !important;
+}
+
+.dark .blog-content pre {
+  background-color: #374151 !important;
+  color: #e5e7eb !important;
+}
+
+.dark .blog-content th {
+  background-color: #4b5563 !important;
+  color: #f9fafb !important;
+}
+
+.dark .blog-content th,
+.dark .blog-content td {
+  border-color: #6b7280 !important;
+}
+
+.dark .blog-content blockquote {
+  color: #9ca3af !important;
 }

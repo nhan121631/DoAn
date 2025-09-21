@@ -25,14 +25,14 @@ public class BlogController {
     // Create (admin)
     @PostMapping
     public ResponseEntity<BlogResponse> createBlog(@Valid @RequestBody BlogCreateRequest request,
-                                                   @RequestParam UUID authorId) {
+            @RequestParam("authorId") UUID authorId) {
         return ResponseEntity.ok(blogService.createBlog(request, authorId));
     }
 
     // Update (admin)
     @PutMapping("/{id}")
     public ResponseEntity<BlogResponse> updateBlog(@PathVariable("id") UUID id,
-                                                   @Valid @RequestBody BlogUpdateRequest request) {
+            @Valid @RequestBody BlogUpdateRequest request) {
         return ResponseEntity.ok(blogService.updateBlog(id, request));
     }
 
@@ -52,10 +52,9 @@ public class BlogController {
     // List blogs (public)
     @GetMapping
     public ResponseEntity<Page<BlogResponse>> listBlogs(
-            @RequestParam(required = false) Status status,
-            @RequestParam(required = false) Category category,
-            Pageable pageable
-    ) {
+            @RequestParam(value = "status", required = false) Status status,
+            @RequestParam(value = "category", required = false) Category category,
+            Pageable pageable) {
         return ResponseEntity.ok(blogService.listBlogs(status, category, pageable));
     }
 }

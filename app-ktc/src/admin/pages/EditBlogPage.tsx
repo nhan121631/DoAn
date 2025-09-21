@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router";
 import {
   Form,
   Input,
@@ -11,14 +12,21 @@ import {
   Row,
   Col,
   Spin,
-} from 'antd';
-import { SaveOutlined, EyeOutlined } from '@ant-design/icons';
-import { useQuery } from '@tanstack/react-query';
-import { getBlogBySlugQueryOptions, useUpdateBlog } from '../service/ReactQueryBlog';
-import type { BlogUpdateRequest, BlogCategory, BlogStatus } from '../types/type';
-import TinyMCEEditor from '../components/TinyMCEEditor';
-import { processHtmlForDisplay } from '../utils/html-processor';
-import '../styles/blog-content.css';
+} from "antd";
+import { SaveOutlined, EyeOutlined } from "@ant-design/icons";
+import { useQuery } from "@tanstack/react-query";
+import {
+  getBlogBySlugQueryOptions,
+  useUpdateBlog,
+} from "../service/ReactQueryBlog";
+import type {
+  BlogUpdateRequest,
+  BlogCategory,
+  BlogStatus,
+} from "../types/type";
+import TinyMCEEditor from "../components/TinyMCEEditor";
+import { processHtmlForDisplay } from "../utils/html-processor";
+import "../styles/blog-content.css";
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -35,7 +43,7 @@ const EditBlogPage = () => {
   const navigate = useNavigate();
   const { slug } = useParams<{ slug: string }>();
   const [form] = Form.useForm<BlogFormData>();
-  const [previewContent, setPreviewContent] = useState('');
+  const [previewContent, setPreviewContent] = useState("");
   const [showPreview, setShowPreview] = useState(false);
 
   // Query to get blog data
@@ -49,22 +57,22 @@ const EditBlogPage = () => {
   const updateBlogMutation = useUpdateBlog({
     mutationConfig: {
       onSuccess: () => {
-        message.success('Blog updated successfully!');
-        navigate('/admin/manage-blogs');
+        message.success("Blog updated successfully!");
+        navigate("/admin/manage-blogs");
       },
       onError: (error: any) => {
-        console.error('Update blog error:', error);
-        
-        let errorMessage = 'Failed to update blog';
-        
+        console.error("Update blog error:", error);
+
+        let errorMessage = "Failed to update blog";
+
         if (error?.response?.data) {
           const serverError = error.response.data;
-          
+
           if (serverError.message) {
             errorMessage = serverError.message;
           } else if (serverError.error) {
             errorMessage = serverError.error;
-          } else if (typeof serverError === 'string') {
+          } else if (typeof serverError === "string") {
             errorMessage = serverError;
           } else {
             errorMessage = `Server error (${error.response.status})`;
@@ -72,7 +80,7 @@ const EditBlogPage = () => {
         } else if (error?.message) {
           errorMessage = error.message;
         }
-        
+
         message.error(`Failed to update blog: ${errorMessage}`);
       },
     },
@@ -95,9 +103,9 @@ const EditBlogPage = () => {
   const generateSlug = (title: string) => {
     return title
       .toLowerCase()
-      .replace(/[^a-z0-9\s-]/g, '') // Remove special characters
-      .replace(/\s+/g, '-') // Replace spaces with hyphens
-      .replace(/-+/g, '-') // Replace multiple hyphens with single
+      .replace(/[^a-z0-9\s-]/g, "") // Remove special characters
+      .replace(/\s+/g, "-") // Replace spaces with hyphens
+      .replace(/-+/g, "-") // Replace multiple hyphens with single
       .trim();
   };
 
@@ -109,17 +117,19 @@ const EditBlogPage = () => {
 
   const handleSubmit = (values: BlogFormData) => {
     if (!blog?.id) {
-      message.error('Blog ID not found!');
+      message.error("Blog ID not found!");
       return;
     }
 
-    console.log('📝 Form values:', values);
-    console.log('📋 Blog ID:', blog.id);
+    console.log("📝 Form values:", values);
+    console.log("📋 Blog ID:", blog.id);
 
     // Validate slug format
     const slugRegex = /^[a-z0-9-]+$/;
     if (!slugRegex.test(values.slug)) {
-      message.error('Slug can only contain lowercase letters, numbers, and hyphens!');
+      message.error(
+        "Slug can only contain lowercase letters, numbers, and hyphens!"
+      );
       return;
     }
 
@@ -131,7 +141,7 @@ const EditBlogPage = () => {
       status: values.status,
     };
 
-    console.log('🚀 Updating blog with request:', request);
+    console.log("🚀 Updating blog with request:", request);
 
     updateBlogMutation.mutate({
       id: blog.id,
@@ -140,14 +150,14 @@ const EditBlogPage = () => {
   };
 
   const handlePreview = () => {
-    const content = form.getFieldValue('content') || '';
+    const content = form.getFieldValue("content") || "";
     setPreviewContent(content);
     setShowPreview(true);
   };
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center h-96">
+      <div className="flex justify-center items-center h-96 bg-gray-50 dark:bg-gray-900">
         <Spin size="large" />
       </div>
     );
@@ -155,12 +165,20 @@ const EditBlogPage = () => {
 
   if (error || !blog) {
     return (
-      <div className="p-6">
-        <Card>
+      <div className="p-6 bg-gray-50 dark:bg-gray-900 min-h-screen">
+        <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
           <div className="text-center">
-            <Title level={3}>Blog not found</Title>
-            <p>The blog you're looking for doesn't exist or has been deleted.</p>
-            <Button type="primary" onClick={() => navigate('/admin/manage-blogs')}>
+            <Title level={3} className="text-gray-900 dark:text-gray-100">
+              Blog not found
+            </Title>
+            <p className="text-gray-600 dark:text-gray-400">
+              The blog you're looking for doesn't exist or has been deleted.
+            </p>
+            <Button
+              type="primary"
+              onClick={() => navigate("/admin/manage-blogs")}
+              className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
+            >
               Back to Blog List
             </Button>
           </div>
@@ -170,15 +188,24 @@ const EditBlogPage = () => {
   }
 
   return (
-    <div className="p-6">
-      <Card>
+    <div className="p-6 bg-gray-50 dark:bg-gray-900 min-h-screen">
+      <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
         <div className="flex justify-between items-center mb-6">
-          <Title level={2}>Edit Blog</Title>
+          <Title level={2} className="text-gray-900 dark:!text-gray-100">
+            Edit Blog
+          </Title>
           <div className="space-x-2">
-            <Button onClick={handlePreview} icon={<EyeOutlined />}>
+            <Button
+              onClick={handlePreview}
+              icon={<EyeOutlined />}
+              className="bg-gray-100 dark:bg-gray-600 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-500"
+            >
               Preview
             </Button>
-            <Button onClick={() => navigate('/admin/manage-blogs')}>
+            <Button
+              onClick={() => navigate("/admin/manage-blogs")}
+              className="bg-gray-100 dark:bg-gray-600 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-500"
+            >
               Cancel
             </Button>
           </div>
@@ -188,46 +215,59 @@ const EditBlogPage = () => {
           <Row gutter={24}>
             <Col span={16}>
               <Form.Item
-                label="Title"
+                label={
+                  <span className="text-gray-900 dark:text-gray-100">
+                    Title
+                  </span>
+                }
                 name="title"
                 rules={[
-                  { required: true, message: 'Please enter title!' },
-                  { max: 255, message: 'Title cannot exceed 255 characters!' },
+                  { required: true, message: "Please enter title!" },
+                  { max: 255, message: "Title cannot exceed 255 characters!" },
                 ]}
               >
-                <Input 
-                  placeholder="Enter blog title..." 
+                <Input
+                  placeholder="Enter blog title..."
                   size="large"
                   onChange={handleTitleChange}
+                  className="bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100"
                 />
               </Form.Item>
 
               <Form.Item
-                label="Slug"
+                label={
+                  <span className="text-gray-900 dark:text-gray-100">Slug</span>
+                }
                 name="slug"
                 rules={[
-                  { required: true, message: 'Please enter slug!' },
-                  { max: 255, message: 'Slug cannot exceed 255 characters!' },
-                  { 
+                  { required: true, message: "Please enter slug!" },
+                  { max: 255, message: "Slug cannot exceed 255 characters!" },
+                  {
                     pattern: /^[a-z0-9-]+$/,
-                    message: 'Slug can only contain lowercase letters, numbers, and hyphens!'
+                    message:
+                      "Slug can only contain lowercase letters, numbers, and hyphens!",
                   },
                 ]}
               >
-                <Input 
-                  placeholder="blog-slug-example" 
+                <Input
+                  placeholder="blog-slug-example"
                   size="large"
+                  className="bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100"
                 />
               </Form.Item>
 
               <Form.Item
-                label="Content"
+                label={
+                  <span className="text-gray-900 dark:text-gray-100">
+                    Content
+                  </span>
+                }
                 name="content"
-                rules={[{ required: true, message: 'Please enter content!' }]}
+                rules={[{ required: true, message: "Please enter content!" }]}
               >
                 <TinyMCEEditor
-                  value={form.getFieldValue('content') || ''}
-                  onChange={(content) => form.setFieldValue('content', content)}
+                  value={form.getFieldValue("content") || ""}
+                  onChange={(content) => form.setFieldValue("content", content)}
                   placeholder="Enter your blog content here..."
                 />
               </Form.Item>
@@ -237,7 +277,7 @@ const EditBlogPage = () => {
               <Form.Item
                 label="Category"
                 name="category"
-                rules={[{ required: true, message: 'Please select category!' }]}
+                rules={[{ required: true, message: "Please select category!" }]}
               >
                 <Select size="large">
                   <Option value="ANNOUNCEMENT">Announcement</Option>
@@ -249,7 +289,7 @@ const EditBlogPage = () => {
               <Form.Item
                 label="Status"
                 name="status"
-                rules={[{ required: true, message: 'Please select status!' }]}
+                rules={[{ required: true, message: "Please select status!" }]}
               >
                 <Select size="large">
                   <Option value="DRAFT">Draft</Option>
@@ -259,23 +299,34 @@ const EditBlogPage = () => {
 
               {/* Display current thumbnail if exists */}
               {blog.thumbnailUrl && (
-                <Form.Item label="Current Thumbnail">
-                  <div className="border rounded-lg p-4">
+                <Form.Item
+                  label={
+                    <span className="text-gray-900 dark:text-gray-100">
+                      Current Thumbnail
+                    </span>
+                  }
+                >
+                  <div className="border border-gray-200 dark:border-gray-600 rounded-lg p-4 bg-white dark:bg-gray-700">
                     <img
                       src={blog.thumbnailUrl}
                       alt="Current thumbnail"
-                      className="w-full h-32 object-cover rounded"
+                      className="w-full h-32 object-cover rounded border border-gray-200 dark:border-gray-600"
                     />
-                    <p className="text-sm text-gray-500 mt-2">
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
                       Thumbnail is managed by backend
                     </p>
                   </div>
                 </Form.Item>
               )}
 
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
-                <Title level={5} className="text-green-700 mb-2">✏️ Editing Tips</Title>
-                <ul className="text-sm text-green-600 space-y-1">
+              <div className="bg-green-50 dark:bg-gray-700 border border-green-200 dark:border-gray-600 rounded-lg p-4 mb-4">
+                <Title
+                  level={5}
+                  className="text-green-700 dark:!text-green-400 mb-2"
+                >
+                  ✏️ Editing Tips
+                </Title>
+                <ul className="text-sm text-green-600 dark:text-green-300 space-y-1">
                   <li>• Changes are saved immediately</li>
                   <li>• Images uploaded remain in content</li>
                   <li>• Preview changes before saving</li>
@@ -292,6 +343,7 @@ const EditBlogPage = () => {
                   block
                   icon={<SaveOutlined />}
                   loading={updateBlogMutation.isPending}
+                  className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
                 >
                   Update Blog
                 </Button>
@@ -311,7 +363,9 @@ const EditBlogPage = () => {
             </div>
             <div
               className="prose max-w-none blog-content"
-              dangerouslySetInnerHTML={{ __html: processHtmlForDisplay(previewContent) }}
+              dangerouslySetInnerHTML={{
+                __html: processHtmlForDisplay(previewContent),
+              }}
             />
           </div>
         </div>
