@@ -21,35 +21,35 @@ transition: slide-left
 # enable MDC Syntax: https://sli.dev/features/mdc
 mdc: true
 ---
-
-# Welcome to Slidev
-
-Presentation slides for developers
-
-<div @click="$slidev.nav.next" class="mt-12 py-1" hover:bg="white op-10">
-  Press Space for next page <carbon:arrow-right />
-</div>
-
-<div class="abs-br m-6 text-xl">
-  <button @click="$slidev.nav.openInEditor()" title="Open in Editor" class="slidev-icon-btn">
-    <carbon:edit />
-  </button>
-  <a href="https://github.com/slidevjs/slidev" target="_blank" class="slidev-icon-btn">
-    <carbon:logo-github />
-  </a>
-</div>
-
-<!--
-The last comment block of each slide will be treated as slide notes. It will be visible and editable in Presenter Mode along with the slide. [Read more in the docs](https://sli.dev/guide/syntax.html#notes)
--->
-
+src: ./pages/page1.md
 ---
-transition: fade-out
+src: ./pages/page2.md
 ---
-
-# What is Slidev?
-
-Slidev is a slides maker and presenter designed for developers, consist of the following features
+src: ./pages/page3.md
+---
+src: ./pages/page4.md
+---
+src: ./pages/page5.md
+---
+src: ./pages/page6.md
+---
+src: ./pages/page7.md
+---
+src: ./pages/page8.md
+---
+src: ./pages/page9.md
+---
+src: ./pages/page10.md
+---
+src: ./pages/page11.md
+---
+src: ./pages/page12.md
+---
+src: ./pages/page13.md
+---
+src: ./pages/page14.md
+---
+src: ./pages/page15.md
 
 - 📝 **Text-based** - focus on the content with Markdown, and then style them later
 - 🎨 **Themable** - themes can be shared and re-used as npm packages
