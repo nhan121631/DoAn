@@ -1,4 +1,5 @@
 "use client";
+import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { LandlordDetail } from "@/app/landlord/types";
@@ -47,6 +48,15 @@ export default function LandlordInfoCard({
   onStartChat,
 }: LandlordInfoCardProps) {
   const { data: session } = useSession();
+  // Local state for the report modal (minimal, used by the injected modal markup)
+  const [showReportModal, setShowReportModal] = useState(false);
+
+  // Overlay click handler to close modals when clicking outside
+  const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (e.target === e.currentTarget) {
+      setShowReportModal(false);
+    }
+  };
 
   const handleChatClick = () => {
     if (!session?.user?.id) {
@@ -167,7 +177,7 @@ export default function LandlordInfoCard({
                   {/* {session?.user?.id
                     ? maskPhone(landlord.phoneNumber)
                     : landlord.phoneNumber} */}
-                   {maskPhone(landlord.phoneNumber)}
+                  {maskPhone(landlord.phoneNumber)}
                 </span>
               </div>
             </Link>
@@ -186,6 +196,21 @@ export default function LandlordInfoCard({
           </button>
         </div>
       </div>
+
+      {/* Report Modal */}
+      {showReportModal && (
+        <div
+          className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/30 backdrop-blur-sm"
+          onMouseDown={handleOverlayClick}
+        >
+          <div
+            className="bg-white rounded-2xl p-6 shadow-2xl w-full max-w-lg max-h-[85vh] relative overflow-y-auto z-[10000]"
+            onMouseDown={(e) => e.stopPropagation()}
+          >
+            {/* ...existing code... */}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
