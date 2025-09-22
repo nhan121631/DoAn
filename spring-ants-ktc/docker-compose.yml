@@ -15,9 +15,9 @@ services:
       SPRING_REDIS_HOST: 165.22.245.241
       SPRING_REDIS_PORT: 6379
       SPRING_REDIS_PASSWORD: redis_password
-    depends_on:
-      db:
-        condition: service_healthy
+    # depends_on:
+    #   db:
+    #     condition: service_healthy
   # db:
   #   image: mysql:latest
   #   restart: always
