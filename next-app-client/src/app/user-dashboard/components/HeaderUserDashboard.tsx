@@ -22,6 +22,7 @@ import {
   HiOutlineOfficeBuilding,
   HiOutlinePhone,
   HiOutlineUsers,
+  HiOutlineDocumentText,
 } from "react-icons/hi";
 import { IoIosLogOut } from "react-icons/io";
 import { IoClose, IoLogInOutline } from "react-icons/io5";
@@ -324,8 +325,14 @@ export default function HeaderUserDashboard({
   const handleNavigateToSection = (
     e: React.MouseEvent<HTMLAnchorElement>,
     targetId: string,
-    targetPage?: string
+    targetPage?: string,
+    isExternal?: boolean
   ) => {
+    if (isExternal) {
+      // For external pages like blogs, don't prevent default navigation
+      return;
+    }
+
     e.preventDefault();
     setActiveItem(targetId);
 
@@ -364,6 +371,13 @@ export default function HeaderUserDashboard({
       label: "Landlords",
       icon: HiOutlineUsers,
       id: "landlords",
+    },
+    {
+      href: "/blogs",
+      label: "Blogs",
+      icon: HiOutlineDocumentText,
+      id: "blogs",
+      isExternal: true,
     },
     {
       href: "/users#contact",
@@ -439,7 +453,7 @@ export default function HeaderUserDashboard({
                     <Link
                       href={item.href}
                       onClick={(e) =>
-                        handleNavigateToSection(e, item.id, "/users")
+                        handleNavigateToSection(e, item.id, "/users", item.isExternal)
                       }
                       className={`flex items-center gap-2 px-4 py-3 font-medium transition-all duration-300 rounded-xl group relative overflow-hidden border border-transparent hover:border-blue-200/50 ${
                         isActive
@@ -643,7 +657,7 @@ export default function HeaderUserDashboard({
                     href={item.href}
                     className="flex items-center gap-3 p-4 rounded-xl hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 hover:text-blue-600 transition-all duration-300 text-gray-700 font-medium group hover:scale-105 hover:shadow-md border border-transparent hover:border-blue-200/30"
                     onClick={(e) => {
-                      handleNavigateToSection(e, item.id, "/users");
+                      handleNavigateToSection(e, item.id, "/users", item.isExternal);
                       toggleMobileMenu();
                     }}
                   >

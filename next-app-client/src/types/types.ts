@@ -446,4 +446,42 @@ export interface LandlordTaskResponseDto {
     title: string;
   };
 }
+
+// Blog types
+export enum BlogCategory {
+  ANNOUNCEMENT = 'ANNOUNCEMENT',
+  GUIDE = 'GUIDE',
+  NEWS = 'NEWS'
+}
+
+export enum BlogStatus {
+  DRAFT = 'DRAFT',
+  PUBLISHED = 'PUBLISHED'
+}
+
+export interface BlogResponse {
+  id: string;
+  title: string;
+  slug: string;
+  content: string;
+  thumbnailUrl?: string;
+  category: BlogCategory;
+  status: BlogStatus;
+  createdAt: string;
+  updatedAt: string;
+  author?: {
+    id: string;
+    name: string;
+  };
+}
+
+export interface BlogPageResponse {
+  content: BlogResponse[];
+  totalElements: number;
+  totalPages: number;
+  size: number;
+  number: number;
+  first: boolean;
+  last: boolean;
+}
  
