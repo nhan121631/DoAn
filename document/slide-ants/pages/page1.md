@@ -1,12 +1,14 @@
-# Welcome to Slidev
+# 🚀 Welcome to ANTS Project
 
-Presentation slides for developers
+**ANTS Team**  
+**Project: Web Platform for Renting and Listing Rooms**  
+class:bg-[url('/assets/images/bg.png')] class:bg-cover class:bg-center
 
-<div @click="$slidev.nav.next" class="mt-12 py-1" hover:bg="white op-10">
-  Press Space for next page <carbon:arrow-right />
+<div @click="$slidev.nav.next" class="mt-12 py-2 px-4 rounded bg-green-500 text-white hover:bg-green-600 cursor-pointer">
+  Press Space or Click to continue <carbon:arrow-right />
 </div>
 
-<div class="abs-br m-6 text-xl">
+<div class="abs-br m-6 text-xl flex gap-2">
   <button @click="$slidev.nav.openInEditor()" title="Open in Editor" class="slidev-icon-btn">
     <carbon:edit />
   </button>
@@ -14,7 +16,3 @@ Presentation slides for developers
     <carbon:logo-github />
   </a>
 </div>
-
-<!--
-The last comment block of each slide will be treated as slide notes. It will be visible and editable in Presenter Mode along with the slide. [Read more in the docs](https://sli.dev/guide/syntax.html#notes)
--->

@@ -10,6 +10,7 @@ import EditBlogPage from "./admin/pages/EditBlogPage";
 import LoginPage from "./admin/pages/LoginPage";
 import { useAuthStore } from "./admin/stores/useAuthorStore";
 import NotFound from "./admin/pages/NotFound";
+import AdvertisingPage from "./admin/pages/AdvertisingPage";
 
 function App() {
   const { loggedInUser } = useAuthStore((state) => state);
@@ -35,6 +36,7 @@ function App() {
               <Route path="manage-blogs" element={<ManageBlogPage />} />
               <Route path="manage-blogs/create" element={<CreateBlogPage />} />
               <Route path="manage-blogs/edit/:slug" element={<EditBlogPage />} />
+              <Route path="manage-advertisement" element={<AdvertisingPage />} />
             </Route>
           )}
         <Route path="*" element={<NotFound />} />

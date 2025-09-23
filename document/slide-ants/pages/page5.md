@@ -1,52 +1,39 @@
 ---
-layout: image-right
-image: https://cover.sli.dev
+# layout: two-cols
+layoutClass: gap-16
 ---
 
-# Code
+# System Analysis and Design
 
-Use code snippets and get the highlighting directly, and even types hover!
+### 1. Functional Requirements
 
-```ts [filename-example.ts] {all|4|6|6-7|9|all} twoslash
-// TwoSlash enables TypeScript hover information
-// and errors in markdown code blocks
-// More at https://shiki.style/packages/twoslash
-import { computed, ref } from 'vue'
-
-const count = ref(0)
-const doubled = computed(() => count.value * 2)
-
-doubled.value = 2
-```
-
-<arrow v-click="[4, 5]" x1="350" y1="310" x2="195" y2="342" color="#953" width="2" arrowSize="1" />
-
-<!-- This allow you to embed external code blocks -->
-<<< @/snippets/external.ts#snippet
-
-<!-- Footer -->
-
-[Learn more](https://sli.dev/features/line-highlighting)
-
-<!-- Inline style -->
-<style>
-.footnotes-sep {
-  @apply mt-5 opacity-10;
-}
-.footnotes {
-  @apply text-sm opacity-75;
-}
-.footnote-backref {
-  display: none;
-}
-</style>
-
-<!--
-Notes can also sync with clicks
-
-[click] This will be highlighted after the first click
-
-[click] Highlighted with `count = ref(0)`
-
-[click:3] Last click (skip two clicks)
--->
+#### The platform connects landlords and tenants via a modern, user-friendly website. It solves traditional rental issues such as searching, verifying, managing contracts, payments, and maintenance.
+<br />
+<div className="flex justify-center gap-4">
+<div className="flex flex-col">
+	<div className="font-bold mb-2">For Tenants:</div>
+	<ul className="list-none pl-0">
+		<li>Search rooms by price, location, size, amenities</li>
+		<li>Book online & track booking status</li>
+		<li>Review, comment, and save favorite rooms</li>
+	</ul>
+</div>
+<div className="flex flex-col">
+	<div className="font-bold mb-2">For Landlords:</div>
+	<ul className="list-none pl-0">
+		<li>Post rental ads, manage room list & availability</li>
+		<li>Manage tenant info & booking requests</li>
+		<li>Track revenue, transactions & financial reports</li>
+		<li>Handle maintenance requests</li>
+	</ul>
+</div>
+<div className="flex flex-col">
+	<div className="font-bold mb-2">For Admins:</div>
+	<ul className="list-none pl-0">
+		<li>Manage the entire system</li>
+		<li>Manage user accounts & roles</li>
+		<li>Manage blogs and advertisement banners</li>
+		<li>Approve and monitor room rental posts</li>
+	</ul>
+</div>  
+</div>

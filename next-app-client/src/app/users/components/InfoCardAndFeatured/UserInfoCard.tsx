@@ -1015,7 +1015,7 @@ export default function UserInfoCard({ id }: { id: string }) {
                     : ""
                 } cursor-pointer bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white font-semibold py-4 rounded-xl transition-all duration-300 transform hover:scale-[1.02] shadow-lg hover:shadow-xl`}
               >
-                {reportSubmitting ? "Đang xử lý..." : "Submit Report"}
+                {reportSubmitting ? "Processing..." : "Submit Report"}
               </button>
             </div>
           </div>
