@@ -1,34 +1,34 @@
-# Clicks Animations
+---
+transition: fade
+layout: default
+class: text-left
+---
 
-You can add `v-click` to elements to add a click animation.
-
-<div v-click>
-
-This shows up when you click the slide:
-
-```html
-<div v-click>This shows up when you click the slide.</div>
-```
-
+<!-- Slide -->
+<div style="display:flex; align-items:center; justify-content:center; height:100px; position: fixed; top: 25px; left: 50%; transform: translateX(-50%); z-index: 10;">
+  <h1 style="margin:0; font-size:2rem;">🛠️ Results Achieved & Future Development</h1>
 </div>
 
-<br>
+<div style="display: flex; justify-content: space-between; margin-top: 100px;">
+  <div style="width: 45%;">
+    <h2>Results Achieved by the Product</h2>
+    <div v-motion="fade">
+      <div><strong>Functionality:</strong></div>
+      <div>- Delivered an efficient rental and booking management system with core features fully integrated.</div>
+      <div>- Enhanced the application of modern web development technologies, ensuring stable system operation.</div>
+      <div><strong>Performance:</strong></div>
+      <div>- Improved requirement analysis, smooth operation, and effective error handling.</div>
+      <div>- Met user needs with a user-friendly interface and clear management processes.</div>
+    </div>
+  </div>
 
-<v-click>
-
-The <span v-mark.red="3"><code>v-mark</code> directive</span>
-also allows you to add
-<span v-mark.circle.orange="4">inline marks</span>
-, powered by [Rough Notation](https://roughnotation.com/):
-
-```html
-<span v-mark.underline.orange>inline markers</span>
-```
-
-</v-click>
-
-<div mt-20 v-click>
-
-[Learn more](https://sli.dev/guide/animations#click-animation)
-
+  <div style="width: 45%;">
+    <h2>Future Development</h2>
+    <div v-motion="fade">
+      <div>- <strong>Mobile App:</strong> Develop iOS and Android apps for seamless room rental management.</div>
+      <div>- <strong>Online Payment:</strong> Integrate online payment for deposits and rent.</div>
+      <div>- <strong>Feedback System:</strong> Enhance detailed tenant reviews for rooms and services.</div>
+      <div>- <strong>UI/UX Improvement:</strong> Refine interface and user experience for better usability.</div>
+    </div>
+  </div>
 </div>
