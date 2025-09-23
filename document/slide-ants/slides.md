@@ -24,7 +24,7 @@ mdc: true
 
 # Welcome to Ants Project
 
-Project: Web Platform for Renting and Listing Rooms
+## Project: Web Platform for Renting and Listing Rooms
 
 <!-- <div @click="$slidev.nav.next" class="mt-12 py-1" hover:bg="white op-10">
   Next page <carbon:arrow-right />
@@ -65,25 +65,6 @@ src: ./pages/page9.md
 src: ./pages/page10.md
 ---
 
----
-src: ./pages/page11.md
----
-
----
-src: ./pages/page12.md
----
-
----
-src: ./pages/page13.md
----
-
----
-src: ./pages/page14.md
----
-
----
-src: ./pages/page15.md
----
 
 ---
 # Features
