@@ -1,7 +1,7 @@
 ---
 foo: bar
 dragPos:
-  square: 691,32,167,_,-16
+  square: 56,194,345,345
 ---
 
 # Draggable Elements
