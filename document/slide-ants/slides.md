@@ -24,65 +24,65 @@ mdc: true
 
 # Welcome to Ants Project
 
-Presentation slides for developers
+Project: Web Platform for Renting and Listing Rooms
 
 <div @click="$slidev.nav.next" class="mt-12 py-1" hover:bg="white op-10">
-  Press Space for next page <carbon:arrow-right />
+  Next page <carbon:arrow-right />
 </div>
 ---
-src: ./pages/slide02.md
+src: ./pages/page2.md
 ---
 
 ---
-src: ./pages/slide03.md
+src: ./pages/page3.md
 ---
 
 ---
-src: ./pages/slide04.md
+src: ./pages/page4.md
 ---
 
 ---
-src: ./pages/slide05.md
+src: ./pages/page5.md
 ---
 
 ---
-src: ./pages/slide06.md
+src: ./pages/page6.md
 ---
 
 ---
-src: ./pages/slide07.md
+src: ./pages/page7.md
 ---
 
 ---
-src: ./pages/slide08.md
+src: ./pages/page8.md
 ---
 
 ---
-src: ./pages/slide09.md
+src: ./pages/page9.md
 ---
 
 ---
-src: ./pages/slide10.md
+src: ./pages/page10.md
 ---
 
 ---
-src: ./pages/slide11.md
+src: ./pages/page11.md
 ---
 
 ---
-src: ./pages/slide12.md
+src: ./pages/page12.md
 ---
 
 ---
-src: ./pages/slide13.md
+src: ./pages/page13.md
 ---
 
 ---
-src: ./pages/slide14.md
+src: ./pages/page14.md
 ---
 
 ---
-src: ./pages/slide15.md
+src: ./pages/page15.md
 ---
 
 ---
