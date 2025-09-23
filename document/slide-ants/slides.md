@@ -26,9 +26,9 @@ mdc: true
 
 Project: Web Platform for Renting and Listing Rooms
 
-<div @click="$slidev.nav.next" class="mt-12 py-1" hover:bg="white op-10">
+<!-- <div @click="$slidev.nav.next" class="mt-12 py-1" hover:bg="white op-10">
   Next page <carbon:arrow-right />
-</div>
+</div> -->
 ---
 src: ./pages/page2.md
 ---
