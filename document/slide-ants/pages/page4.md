@@ -1,18 +1,18 @@
 ---
-layout: two-cols
+# layout: two-cols
 layoutClass: gap-16
 ---
 
-# Table of contents
+# Overview of the Project Introduction
 
-You can use the `Toc` component to generate a table of contents for your slides:
+### 1. Reason for Choosing the Topic
+- Rising demand for online room rental & booking.
+- Traditional management (paper/Excel) is inefficient.
+- Need for a platform to post ads, search, and manage rentals.
+- Improve efficiency, save time & cost, enhance customer experience.
 
-```html
-<Toc minDepth="1" maxDepth="1" />
-```
-
-The title will be inferred from your slide content, or you can override it with `title` and `level` in your frontmatter.
-
-::right::
-
-<Toc text-sm minDepth="1" maxDepth="2" />
+### 2. Objectives of the Project
+- Build a website for room rental and booking management.
+- Support posting rental ads and searching rooms easily.
+- Provide convenient online booking for tenants.
+- Help landlords manage information, revenue, and tenants effectively.
