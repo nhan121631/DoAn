@@ -23,7 +23,8 @@ import {
   CalendarOutlined, 
   UserOutlined, 
   EyeOutlined,
-  FileTextOutlined 
+  FileTextOutlined,
+  HomeOutlined
 } from '@ant-design/icons';
 import Link from 'next/link';
 import dayjs from 'dayjs';
@@ -130,6 +131,26 @@ export default function BlogsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Fixed Home Button - Top Left Corner */}
+      <Link href="/">
+        <Button
+          type="primary"
+          icon={<HomeOutlined />}
+          size="large"
+          className="fixed top-6 left-6 z-[9999] bg-blue-600 hover:bg-blue-700 border-0 shadow-2xl hover:shadow-3xl transition-all duration-300 h-12 px-5 rounded-full font-semibold backdrop-blur-sm"
+          style={{
+            fontSize: '15px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            backgroundColor: 'rgba(37, 99, 235, 0.95)',
+            backdropFilter: 'blur(8px)'
+          }}
+        >
+          Home
+        </Button>
+      </Link>
+
       {/* Hero Section with Background Image */}
       <div 
         className="relative h-96 bg-cover bg-center bg-no-repeat"
@@ -312,7 +333,7 @@ export default function BlogsPage() {
         )}
 
         {/* Pagination */}
-        {total > pageSize && (
+        { (
           <div className="flex justify-center mt-16">
             <Pagination
               current={currentPage}
