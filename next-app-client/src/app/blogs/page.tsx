@@ -131,26 +131,6 @@ export default function BlogsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Fixed Home Button - Top Left Corner */}
-      <Link href="/">
-        <Button
-          type="primary"
-          icon={<HomeOutlined />}
-          size="large"
-          className="fixed top-6 left-6 z-[9999] bg-blue-600 hover:bg-blue-700 border-0 shadow-2xl hover:shadow-3xl transition-all duration-300 h-12 px-5 rounded-full font-semibold backdrop-blur-sm"
-          style={{
-            fontSize: '15px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            backgroundColor: 'rgba(37, 99, 235, 0.95)',
-            backdropFilter: 'blur(8px)'
-          }}
-        >
-          Home
-        </Button>
-      </Link>
-
       {/* Hero Section with Background Image */}
       <div 
         className="relative h-96 bg-cover bg-center bg-no-repeat"
@@ -172,6 +152,14 @@ export default function BlogsPage() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 py-8">
+        {/* Breadcrumb */}
+        <div className="mb-6">
+          <Link href="/" className="inline-flex items-center text-gray-600 hover:text-blue-600 transition-colors duration-200">
+            <HomeOutlined className="mr-2 text-base" />
+            <Text className="text-base font-medium">Home</Text>
+          </Link>
+        </div>
+
         {/* Search & Filter Section */}
         <Card className="mb-8 shadow-lg rounded-2xl border-0">
           <Row gutter={[16, 16]} align="middle">
