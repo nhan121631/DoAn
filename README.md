@@ -45,6 +45,7 @@
 ### 🔹 Đức
 
 - **Chat socket Firebase**
+- **Notification for user and landlord**
 
 ✅ Tiến độ: **API đã hoàn thành ~90–95%**
 
@@ -65,7 +66,7 @@
 - **Khôi**: Trang **Rooms Manage**, **Deposit (nạp tiền)**, **Transaction History**
 - **Trung**: Trang **Manage Request**, **Manage Maintain**
 - **Nam**: Trang **Feedback Manage**, **Contract Manage**
-- **Đức**: Trang **Chat**
+- **Đức**: Trang **Chat**, **UI Notification**
 
 ### 👤 User Panel
 
@@ -92,6 +93,7 @@
   - Component **Feedback**
 - **Đức**:
   - Trang **UI Chat real-time**
+  - **UI Notification**
   <!-- - Trang **Khai báo tạm trú** -->
 - **Tất cả thành viên**:
   - Với **UserDashboard**, ai phụ trách API nào thì **tự làm UI cho API đó**
@@ -108,8 +110,8 @@
 - **Nhân** thiên về **Auth/Profile/Map & User UI**
 - **Khôi** mạnh về **Transaction/Room & Admin/Landlord UI**
 - **Trung** lo **Accounts/Favorite/Maintain + UI phụ trợ**
-- **Nam** tập trung **Contract/Bill/Resident + Blog & Feedback**
-- **Đức** phụ trách **Chat real-time (socket Firebase)**
+- **Nam** tập trung **Contract/Bill & Feedback**
+- **Đức** phụ trách **Chat real-time (socket Firebase) + Notification**
 
 ---
 
