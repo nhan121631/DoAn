@@ -58,6 +58,10 @@ src: ./pages/page7.md
 ---
 
 ---
+src: ./pages/page7.1.md
+---
+
+---
 src: ./pages/page8.md
 ---
 
