@@ -58,7 +58,7 @@
 ### 👨‍💻 Admin Panel
 
 - **Trung**: Quản lý **Accounts**
-- **Khôi**: Quản lý **Rooms**
+- **Khôi**: Quản lý **Rooms**, **Statistics**, **Advertisements**
 - **Nhân**: Quản lý **PostType**
 - **Nam**: Quản lý **Blog**
 
