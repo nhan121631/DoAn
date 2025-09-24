@@ -21,7 +21,7 @@ class: text-center
   </div>
   
   <div style="margin-top: 10px; font-size: 0.9rem; color: var(--slidev-theme-accents-lighter); text-align: center;">
-    💡 Click vào diagram để xem chi tiết
+    💡 Click diagram to see detail
   </div>
 </div>
 
