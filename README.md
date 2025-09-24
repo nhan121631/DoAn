@@ -58,7 +58,7 @@
 ### 👨‍💻 Admin Panel
 
 - **Trung**: Quản lý **Accounts**
-- **Khôi**: Quản lý **Rooms**
+- **Khôi**: Quản lý **Rooms**, **Statistics**, **Advertisements**
 - **Nhân**: Quản lý **PostType**
 - **Nam**: Quản lý **Blog**
 
@@ -104,6 +104,3 @@
 
 - Giao diện sẽ được **update liên tục**
 - Các thành phần nhỏ, tinh chỉnh UI/UX: **mọi thành viên cùng tham gia**
-
----
-
