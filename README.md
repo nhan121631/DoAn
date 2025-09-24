@@ -6,9 +6,12 @@
 
 - Xử lý **PostType**, **Convenients**, **Address**, **Auth**
 - Quản lý **Room/User**
+- Thêm Room với **Chunk Upload Video**
 - API **Request khi đã thuê phòng**
 - Tích hợp **Gemini Chatbot**
+- Quản lí thống kê bên Landlord
 - Quản lý **Profile**
+- Tích hợp **API Gemini** để tự động duyệt phòng và send thông tin về slack
 - Xử lý **Modified Transaction** (payment backend)
 - Tính năng **Map**: hiển thị phòng theo vị trí, gợi ý phòng quanh khu vực click trên bản đồ
 
@@ -70,7 +73,7 @@
   - **Quảng cáo (Ads)**
 - **Trung**:
   - **Footer**
-  - Trang **So sánh**
+  - Trang **So sánh Room**
   - Trang **NewPost** (hiển thị phòng mới đăng)
   - **Card thông tin Landlord** trong trang chi tiết
 - **Nam**:
@@ -104,6 +107,5 @@
 
 - **Trung**: Viết api fetch **Landlord**, thêm giao diện **Landlord Card** trong trang chi tiết phòng (**Done**)
 - **Khôi**: Bổ sung check box receive email, xử lý thêm chổ booking (**Done**)
-- **Nhân**: Nghiên cứu thêm về **api Gemini** để tự động duyệt phòng và send thông tin về slack (**Done**)
 - **Nam**: Viết api contract, bill, và hoàn thiện giao diện contract manage (**Done**)
 - **Đức**: Viết api khai báo tạm trú và hoàn thiện giao diện (**Done**)
