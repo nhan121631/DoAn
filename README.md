@@ -107,10 +107,3 @@
 
 ---
 
-📌 Nhìn chung:
-
-- **Nhân** thiên về **Auth/Profile/Map & User UI**
-- **Khôi** mạnh về **Transaction/Room & Admin/Landlord UI**
-- **Trung** lo **Accounts/Favorite/Maintain + UI phụ trợ**
-- **Nam** tập trung **Contract/Bill & Feedback**
-- **Đức** phụ trách **Chat real-time (socket Firebase) + Notification**
