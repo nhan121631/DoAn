@@ -34,6 +34,10 @@ src: ./pages/page2.md
 ---
 
 ---
+src: ./pages/page2_1.md
+---
+
+---
 src: ./pages/page3.md
 ---
 
@@ -51,6 +55,10 @@ src: ./pages/page6.md
 
 ---
 src: ./pages/page7.md
+---
+
+---
+src: ./pages/page7.1.md
 ---
 
 ---
