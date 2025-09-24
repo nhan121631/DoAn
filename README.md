@@ -27,7 +27,7 @@
 - **Manage Accounts**
 - **Favorite**
 - **Maintain**
-- **Landlord & Landlord Card**
+- Quản lý **Landlord & Landlord Card**
 - **Increase views for posts**
 
 ### 🔹 Nam
@@ -94,20 +94,6 @@
 
 ---
 
-📌 Nhìn chung:
-
-- **Nhân** thiên về **Auth/Profile/Map & User UI**
-- **Khôi** mạnh về **Transaction/Room & Admin/Landlord UI**
-- **Trung** lo **Accounts/Favorite/Maintain + UI phụ trợ**
-- **Nam** tập trung **Contract/Bill & Feedback**
-- **Đức** phụ trách **Chat real-time (socket Firebase)**
-
----
-
-## Đang cập nhật tiếp
 
 
-- **Khôi**: Bổ sung check box receive email, xử lý thêm chổ booking (**Done**)
-- **Nhân**: Nghiên cứu thêm về **api Gemini** để tự động duyệt phòng và send thông tin về slack (**Done**)
-- **Nam**: Viết api contract, bill, và hoàn thiện giao diện contract manage (**Done**)
-- **Đức**: Viết api khai báo tạm trú và hoàn thiện giao diện (**Done**)
+
