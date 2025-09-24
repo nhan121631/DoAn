@@ -3,9 +3,9 @@
 layoutClass: gap-16
 ---
 
-# Overview of the Project Introduction
+# System Analysis and Design
 
-### 3. Scope of Use
+### 1. Functional Requirements
 
 #### The platform connects landlords and tenants via a modern, user-friendly website. It solves traditional rental issues such as searching, verifying, managing contracts, payments, and maintenance.
 <br />
@@ -37,5 +37,3 @@ layoutClass: gap-16
 	</ul>
 </div>  
 </div>
-
-

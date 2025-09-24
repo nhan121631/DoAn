@@ -23,12 +23,12 @@ export default function UsersLayout({ children }: UsersLayoutProps) {
         <div className="flex flex-row w-full max-w-full justify-center relative">
           {/* Sticky AdsBanner left */}
           <div className="hidden xl:block sticky top-[90px] self-start z-30 h-[calc(100vh-120px)]">
-            <AdsBanner position="left" />
+            <AdsBanner position="LEFT" />
           </div>
           <main className="flex-1 mt-5 max-w-6xl mx-auto">{children}</main>
           {/* Sticky AdsBanner right */}
           <div className="hidden xl:block sticky top-[90px] self-start z-30 h-[calc(100vh-120px)]">
-            <AdsBanner position="right" />
+            <AdsBanner position="RIGHT" />
           </div>
         </div>
         <div id="why-choose-us" className="w-full max-w-full">
