@@ -104,13 +104,3 @@
 
 - Giao diện sẽ được **update liên tục**
 - Các thành phần nhỏ, tinh chỉnh UI/UX: **mọi thành viên cùng tham gia**
-
----
-
-📌 Nhìn chung:
-
-- **Nhân** thiên về **Auth/Profile/Map & User UI**
-- **Khôi** mạnh về **Transaction/Room & Admin/Landlord UI**
-- **Trung** lo **Accounts/Favorite/Maintain + UI phụ trợ**
-- **Nam** tập trung **Contract/Bill & Feedback**
-- **Đức** phụ trách **Chat real-time (socket Firebase) + Notification**
