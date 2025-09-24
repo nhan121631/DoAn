@@ -198,13 +198,13 @@ const EditBlogPage = () => {
             <Button
               onClick={handlePreview}
               icon={<EyeOutlined />}
-              className="bg-gray-100 dark:bg-gray-600 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-500"
+              className="bg-gray-100 dark:bg-gray-600 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-500 hover:bg-gray-200 dark:hover:bg-gray-500"
             >
               Preview
             </Button>
             <Button
               onClick={() => navigate("/admin/manage-blogs")}
-              className="bg-gray-100 dark:bg-gray-600 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-500"
+              className="bg-gray-100 dark:bg-gray-600 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-500 hover:bg-gray-200 dark:hover:bg-gray-500"
             >
               Cancel
             </Button>
@@ -230,7 +230,7 @@ const EditBlogPage = () => {
                   placeholder="Enter blog title..."
                   size="large"
                   onChange={handleTitleChange}
-                  className="bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100"
+                  className="bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 [&_.ant-input]:bg-white [&_.ant-input]:dark:bg-gray-700 [&_.ant-input]:text-gray-900 [&_.ant-input]:dark:text-gray-100 [&_.ant-input]:placeholder:text-gray-500 [&_.ant-input]:dark:placeholder:text-gray-400"
                 />
               </Form.Item>
 
@@ -252,7 +252,7 @@ const EditBlogPage = () => {
                 <Input
                   placeholder="blog-slug-example"
                   size="large"
-                  className="bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100"
+                  className="bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 [&_.ant-input]:bg-white [&_.ant-input]:dark:bg-gray-700 [&_.ant-input]:text-gray-900 [&_.ant-input]:dark:text-gray-100 [&_.ant-input]:placeholder:text-gray-500 [&_.ant-input]:dark:placeholder:text-gray-400"
                 />
               </Form.Item>
 
@@ -275,11 +275,19 @@ const EditBlogPage = () => {
 
             <Col span={8}>
               <Form.Item
-                label="Category"
+                label={
+                  <span className="text-gray-900 dark:text-gray-100">
+                    Category
+                  </span>
+                }
                 name="category"
                 rules={[{ required: true, message: "Please select category!" }]}
               >
-                <Select size="large">
+                <Select 
+                  size="large"
+                  className="[&_.ant-select-selector]:bg-white [&_.ant-select-selector]:dark:bg-gray-700 [&_.ant-select-selector]:border-gray-300 [&_.ant-select-selector]:dark:border-gray-600 [&_.ant-select-selection-item]:text-gray-900 [&_.ant-select-selection-item]:dark:text-gray-100"
+                  dropdownClassName="bg-white dark:bg-gray-800 [&_.ant-select-item]:text-gray-900 [&_.ant-select-item]:dark:text-gray-100 [&_.ant-select-item-option-selected]:bg-blue-50 [&_.ant-select-item-option-selected]:dark:bg-gray-600"
+                >
                   <Option value="ANNOUNCEMENT">Announcement</Option>
                   <Option value="GUIDE">Guide</Option>
                   <Option value="NEWS">News</Option>
@@ -287,11 +295,19 @@ const EditBlogPage = () => {
               </Form.Item>
 
               <Form.Item
-                label="Status"
+                label={
+                  <span className="text-gray-900 dark:text-gray-100">
+                    Status
+                  </span>
+                }
                 name="status"
                 rules={[{ required: true, message: "Please select status!" }]}
               >
-                <Select size="large">
+                <Select 
+                  size="large"
+                  className="[&_.ant-select-selector]:bg-white [&_.ant-select-selector]:dark:bg-gray-700 [&_.ant-select-selector]:border-gray-300 [&_.ant-select-selector]:dark:border-gray-600 [&_.ant-select-selection-item]:text-gray-900 [&_.ant-select-selection-item]:dark:text-gray-100"
+                  dropdownClassName="bg-white dark:bg-gray-800 [&_.ant-select-item]:text-gray-900 [&_.ant-select-item]:dark:text-gray-100 [&_.ant-select-item-option-selected]:bg-blue-50 [&_.ant-select-item-option-selected]:dark:bg-gray-600"
+                >
                   <Option value="DRAFT">Draft</Option>
                   <Option value="PUBLISHED">Published</Option>
                 </Select>
@@ -355,18 +371,53 @@ const EditBlogPage = () => {
 
       {/* Preview Modal */}
       {showPreview && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg w-3/4 h-3/4 overflow-auto p-6">
-            <div className="flex justify-between items-center mb-4">
-              <Title level={3}>Content Preview</Title>
-              <Button onClick={() => setShowPreview(false)}>Close</Button>
+        <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-black dark:bg-opacity-70 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg w-full max-w-5xl h-5/6 flex flex-col shadow-2xl">
+            {/* Modal Header */}
+            <div className="flex justify-between items-center p-6 border-b border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 rounded-t-lg">
+              <Title level={3} className="text-gray-900 dark:!text-gray-100 m-0">
+                Content Preview
+              </Title>
+              <Button 
+                onClick={() => setShowPreview(false)}
+                className="bg-gray-100 dark:bg-gray-600 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-500 hover:bg-gray-200 dark:hover:bg-gray-500"
+              >
+                Close
+              </Button>
             </div>
-            <div
-              className="prose prose-invert max-w-none blog-content"
-              dangerouslySetInnerHTML={{
-                __html: processHtmlForDisplay(previewContent),
-              }}
-            />
+            
+            {/* Modal Content */}
+            <div className="flex-1 overflow-auto p-6 bg-white dark:bg-gray-800">
+              <div
+                className="prose prose-lg max-w-none blog-content
+                  [&_h1]:text-gray-900 [&_h1]:dark:text-gray-100 [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:mb-4
+                  [&_h2]:text-gray-900 [&_h2]:dark:text-gray-100 [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:mb-3
+                  [&_h3]:text-gray-900 [&_h3]:dark:text-gray-100 [&_h3]:text-lg [&_h3]:font-medium [&_h3]:mb-2
+                  [&_h4]:text-gray-900 [&_h4]:dark:text-gray-100 [&_h4]:font-medium [&_h4]:mb-2
+                  [&_h5]:text-gray-900 [&_h5]:dark:text-gray-100 [&_h5]:font-medium [&_h5]:mb-1
+                  [&_h6]:text-gray-900 [&_h6]:dark:text-gray-100 [&_h6]:font-medium [&_h6]:mb-1
+                  [&_p]:text-gray-800 [&_p]:dark:text-gray-200 [&_p]:mb-4 [&_p]:leading-relaxed
+                  [&_a]:text-blue-600 [&_a]:dark:text-blue-400 [&_a]:underline [&_a]:hover:text-blue-800 [&_a]:dark:hover:text-blue-300
+                  [&_strong]:text-gray-900 [&_strong]:dark:text-gray-100 [&_strong]:font-semibold
+                  [&_em]:text-gray-800 [&_em]:dark:text-gray-200 [&_em]:italic
+                  [&_code]:bg-gray-100 [&_code]:dark:bg-gray-700 [&_code]:text-gray-800 [&_code]:dark:text-gray-200 [&_code]:px-1 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-sm [&_code]:font-mono
+                  [&_pre]:bg-gray-100 [&_pre]:dark:bg-gray-700 [&_pre]:text-gray-800 [&_pre]:dark:text-gray-200 [&_pre]:p-4 [&_pre]:rounded-lg [&_pre]:overflow-x-auto [&_pre]:mb-4
+                  [&_pre_code]:bg-transparent [&_pre_code]:text-inherit [&_pre_code]:p-0
+                  [&_blockquote]:border-l-4 [&_blockquote]:border-gray-300 [&_blockquote]:dark:border-gray-600 [&_blockquote]:bg-gray-50 [&_blockquote]:dark:bg-gray-700 [&_blockquote]:pl-4 [&_blockquote]:py-2 [&_blockquote]:my-4 [&_blockquote]:text-gray-700 [&_blockquote]:dark:text-gray-300
+                  [&_ul]:text-gray-800 [&_ul]:dark:text-gray-200 [&_ul]:mb-4 [&_ul]:pl-6
+                  [&_ol]:text-gray-800 [&_ol]:dark:text-gray-200 [&_ol]:mb-4 [&_ol]:pl-6
+                  [&_li]:mb-2 [&_li]:leading-relaxed
+                  [&_table]:border-collapse [&_table]:border [&_table]:border-gray-200 [&_table]:dark:border-gray-600 [&_table]:w-full [&_table]:mb-4
+                  [&_th]:bg-gray-100 [&_th]:dark:bg-gray-700 [&_th]:text-gray-900 [&_th]:dark:text-gray-100 [&_th]:p-3 [&_th]:text-left [&_th]:font-semibold [&_th]:border [&_th]:border-gray-200 [&_th]:dark:border-gray-600
+                  [&_td]:text-gray-800 [&_td]:dark:text-gray-200 [&_td]:p-3 [&_td]:border [&_td]:border-gray-200 [&_td]:dark:border-gray-600
+                  [&_img]:max-w-full [&_img]:h-auto [&_img]:rounded-lg [&_img]:shadow-md [&_img]:mb-4 [&_img]:mx-auto [&_img]:block
+                  [&_hr]:border-gray-300 [&_hr]:dark:border-gray-600 [&_hr]:my-6
+                "
+                dangerouslySetInnerHTML={{
+                  __html: processHtmlForDisplay(previewContent),
+                }}
+              />
+            </div>
           </div>
         </div>
       )}

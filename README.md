@@ -37,11 +37,11 @@
 
 ### 🔹 Nam
 
-- **Contract**
-- **Bill**
-- **Resident**
-- **Blog**
-- **Feedback**
+- Quản lý **Contract** giữa landlord và tenant
+- Quản lý **Bill** của từng contract
+- Quản lý **Resident** của từng contract
+- Quản lý **Blog** cho admin, hiển thị bên tenant
+- Quản lý **Feedback** của landlord, add and view cho tenant
 
 
 ### 🔹 Đức
