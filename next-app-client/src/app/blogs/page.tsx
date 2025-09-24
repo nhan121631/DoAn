@@ -23,7 +23,8 @@ import {
   CalendarOutlined, 
   UserOutlined, 
   EyeOutlined,
-  FileTextOutlined 
+  FileTextOutlined,
+  HomeOutlined
 } from '@ant-design/icons';
 import Link from 'next/link';
 import dayjs from 'dayjs';
@@ -151,6 +152,14 @@ export default function BlogsPage() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 py-8">
+        {/* Breadcrumb */}
+        <div className="mb-6">
+          <Link href="/" className="inline-flex items-center text-gray-600 hover:text-blue-600 transition-colors duration-200">
+            <HomeOutlined className="mr-2 text-base" />
+            <Text className="text-base font-medium">Home</Text>
+          </Link>
+        </div>
+
         {/* Search & Filter Section */}
         <Card className="mb-8 shadow-lg rounded-2xl border-0">
           <Row gutter={[16, 16]} align="middle">
@@ -312,7 +321,7 @@ export default function BlogsPage() {
         )}
 
         {/* Pagination */}
-        {total > pageSize && (
+        { (
           <div className="flex justify-center mt-16">
             <Pagination
               current={currentPage}

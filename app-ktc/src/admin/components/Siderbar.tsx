@@ -5,7 +5,7 @@ import { ThemeContext } from "../context/ThemeContext";
 import { Link, useLocation } from "react-router";
 import { FaChartLine } from "react-icons/fa";
 import { MdSupervisorAccount } from "react-icons/md";
-import { RiHotelLine } from "react-icons/ri";
+import { RiAdvertisementLine, RiHotelLine } from "react-icons/ri";
 import { MdArticle } from "react-icons/md";
 import { BsFillFilePostFill } from "react-icons/bs";
 
@@ -23,6 +23,7 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
     "/admin/manage-rooms": "3",
     "/admin/manage-post-type": "4",
     "/admin/manage-blogs": "5",
+    "/admin/manage-advertisement": "6",
   };
   const location = useLocation();
   const selectedKey = pathToKey[location.pathname] || "1";
@@ -74,6 +75,11 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
             key: "5",
             icon: <MdArticle />,
             label: <Link to="/admin/manage-blogs">Blog Management</Link>,
+          },
+          {
+            key: "6",
+            icon: <RiAdvertisementLine />,
+            label: <Link to="/admin/manage-advertisement">Manage Advertisement</Link>,
           },
         ]}
       />
