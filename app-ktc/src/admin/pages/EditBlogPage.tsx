@@ -362,7 +362,7 @@ const EditBlogPage = () => {
               <Button onClick={() => setShowPreview(false)}>Close</Button>
             </div>
             <div
-              className="prose max-w-none blog-content"
+              className="prose prose-invert max-w-none blog-content"
               dangerouslySetInnerHTML={{
                 __html: processHtmlForDisplay(previewContent),
               }}
