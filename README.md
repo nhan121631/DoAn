@@ -81,12 +81,12 @@
   - **RoomVipCard**, **RoomNormalCard**
   - **Quảng cáo (Ads)**
 - **Trung**:
-  - **Footer**
   - Trang **So sánh Room**
   - Trang **NewPost** (hiển thị phòng mới đăng)
   - Trang **Favorited-rooms**
   - **Card thông tin Landlord** trong trang chi tiết
   - Sử dụng **IntersectionObserver + timer để tăng view tự động**
+  - **Footer**
 - **Nam**:
   - Trang **Contract**
   - Trang **Bill**
