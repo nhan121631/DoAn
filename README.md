@@ -24,6 +24,8 @@
 - **Bookings**
 - Quản lý **Preferences Address** (ưu tiên hiển thị phòng theo khu vực)
 - Xây dựng **Matching & gợi ý phòng qua email**
+- Statistics bên admin
+- Thêm quản lý **Advertisement (Ads)**
 
 ### 🔹 Trung
 
