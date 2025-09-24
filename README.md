@@ -30,6 +30,8 @@
 - **Manage Accounts**
 - **Favorite**
 - **Maintain**
+- **Landlord & Landlord Card**
+- **Increase views for posts**
 
 ### 🔹 Nam
 
@@ -79,7 +81,9 @@
   - **Footer**
   - Trang **So sánh Room**
   - Trang **NewPost** (hiển thị phòng mới đăng)
+  - Trang **Favorited-rooms**
   - **Card thông tin Landlord** trong trang chi tiết
+  - Sử dụng **IntersectionObserver + timer để tăng view tự động**
 - **Nam**:
   - Trang **Contract**
   - Trang **Bill**
@@ -111,7 +115,7 @@
 
 ## Đang cập nhật tiếp
 
-- **Trung**: Viết api fetch **Landlord**, thêm giao diện **Landlord Card** trong trang chi tiết phòng (**Done**)
+
 - **Khôi**: Bổ sung check box receive email, xử lý thêm chổ booking (**Done**)
 - **Nhân**: Nghiên cứu thêm về **api Gemini** để tự động duyệt phòng và send thông tin về slack (**Done**)
 - **Nam**: Viết api contract, bill, Resident và Blog và haon (**Done**)
