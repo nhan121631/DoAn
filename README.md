@@ -31,8 +31,11 @@
 ### 🔹 Nam
 
 - **Contract**
-- **Feedback**
 - **Bill**
+- **Resident**
+- **Blog**
+- **Feedback**
+
 
 ### 🔹 Đức
 
@@ -49,6 +52,7 @@
 - **Trung**: Quản lý **Accounts**
 - **Khôi**: Quản lý **Rooms**
 - **Nhân**: Quản lý **PostType**
+- **Nam**: Quản lý **Blog**
 
 ### 🏠 Landlord Panel
 
@@ -76,6 +80,8 @@
 - **Nam**:
   - Trang **Contract**
   - Trang **Bill**
+  - Trang **Resident**
+  - Trang **Blog**
   - Component **Feedback**
 - **Đức**:
   - Trang **UI Chat real-time**
@@ -95,7 +101,7 @@
 - **Nhân** thiên về **Auth/Profile/Map & User UI**
 - **Khôi** mạnh về **Transaction/Room & Admin/Landlord UI**
 - **Trung** lo **Accounts/Favorite/Maintain + UI phụ trợ**
-- **Nam** tập trung **Contract/Bill & Feedback**
+- **Nam** tập trung **Contract/Bill/Resident + Blog & Feedback**
 - **Đức** phụ trách **Chat real-time (socket Firebase)**
 
 ---
@@ -105,5 +111,5 @@
 - **Trung**: Viết api fetch **Landlord**, thêm giao diện **Landlord Card** trong trang chi tiết phòng (**Done**)
 - **Khôi**: Bổ sung check box receive email, xử lý thêm chổ booking (**Done**)
 - **Nhân**: Nghiên cứu thêm về **api Gemini** để tự động duyệt phòng và send thông tin về slack (**Done**)
-- **Nam**: Viết api contract, bill, và hoàn thiện giao diện contract manage (**Done**)
+- **Nam**: Viết api contract, bill, Resident và Blog và haon (**Done**)
 - **Đức**: Viết api khai báo tạm trú và hoàn thiện giao diện (**Done**)
