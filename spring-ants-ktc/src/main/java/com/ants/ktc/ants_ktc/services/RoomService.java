@@ -762,19 +762,15 @@ public class RoomService {
                 transaction.setWallet(user.getWallet());
                 transactionsJpaRepository.save(transaction);
 
-                // Convert LocalDate back to Date with local timezone (start of day) to fix
-                // timezone issue
-                Date startDateWithLocalTime = Date.from(reqStartDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
-                Date endDateWithLocalTime = Date.from(reqEndDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
-
-                room.setPost_start_date(startDateWithLocalTime);
-                room.setPost_end_date(endDateWithLocalTime);
+                // Sử dụng trực tiếp ngày từ request để giữ nguyên thời gian (giờ, phút, giây)
+                room.setPost_start_date(newStartDate);
+                room.setPost_end_date(newEndDate);
                 roomJpaRepository.save(room);
 
-                // Trả về DTO
+                // Trả về DTO với ngày gốc từ request
                 return RoomUpdateExpireDateResponseDto.builder()
-                                .postStartDate(startDateWithLocalTime)
-                                .postEndDate(endDateWithLocalTime)
+                                .postStartDate(newStartDate)
+                                .postEndDate(newEndDate)
                                 .message("Room post updated successfully").build();
         }
 
@@ -845,15 +841,16 @@ public class RoomService {
 
                         // // Fallback 1: Find by wallet, type and room title (good accuracy)
                         // if (lastTransaction == null) {
-                        //         lastTransaction = transactionsJpaRepository
-                        //                         .findLatestTransactionByWalletTypeAndDescription(
-                        //                                         user.getWallet(), 0, roomProj.getTitle());
+                        // lastTransaction = transactionsJpaRepository
+                        // .findLatestTransactionByWalletTypeAndDescription(
+                        // user.getWallet(), 0, roomProj.getTitle());
                         // }
 
-                        // // Fallback 2: Find by wallet and type only (lowest accuracy, use with caution)
+                        // // Fallback 2: Find by wallet and type only (lowest accuracy, use with
+                        // caution)
                         // if (lastTransaction == null) {
-                        //         lastTransaction = transactionsJpaRepository
-                        //                         .findLatestTransactionByWalletAndType(user.getWallet(), 0);
+                        // lastTransaction = transactionsJpaRepository
+                        // .findLatestTransactionByWalletAndType(user.getWallet(), 0);
                         // }
 
                         if (lastTransaction != null) {

@@ -333,6 +333,8 @@ function TableManageRoom() {
                     postEndDate,
                     selectedTypePostId as string
                   );
+                  console.log("postEndDate", postEndDate);
+                  console.log("postStartDate", postStartDate);
                   messageApi.success({
                     content: `Extend until ${extendDates[record.id]} for "${
                       record.title
