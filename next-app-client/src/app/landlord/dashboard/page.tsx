@@ -171,16 +171,24 @@ export default function LandlordDashboardPage() {
   const applyFilters = () => {
     let filtered = tasks;
 
+    // Handle status filtering
+    if (!statusFilter || statusFilter === "") {
+      // By default, hide completed tasks
+      filtered = filtered.filter((task) => task.status !== "COMPLETED");
+    } else if (statusFilter === "ALL") {
+      // Show all tasks including completed ones
+      // No filtering needed, keep all tasks
+    } else {
+      // Filter by specific status
+      filtered = filtered.filter((task) => task.status === statusFilter);
+    }
+
     if (searchText) {
       filtered = filtered.filter(
         (task) =>
           task.title.toLowerCase().includes(searchText.toLowerCase()) ||
           task.description?.toLowerCase().includes(searchText.toLowerCase())
       );
-    }
-
-    if (statusFilter) {
-      filtered = filtered.filter((task) => task.status === statusFilter);
     }
 
     if (priorityFilter) {
@@ -779,6 +787,9 @@ export default function LandlordDashboardPage() {
               className="!mb-0 !text-gray-900 dark:!text-white flex items-center"
             >
               📝 Task Management
+              <span className="text-sm font-normal text-gray-500 dark:text-gray-400 ml-2">
+                (Completed tasks hidden by default)
+              </span>
             </Title>
             <Button
               type="primary"
@@ -804,13 +815,18 @@ export default function LandlordDashboardPage() {
           />
 
           <Select
-            placeholder="All Status"
+            placeholder="Active Tasks Only"
             value={statusFilter || undefined}
             onChange={(value) => setStatusFilter(value || "")}
-            style={{ width: 180 }}
+            style={{ width: 200 }}
             allowClear
             className="bg-white"
           >
+            <Option key="ALL" value="ALL">
+              <span className="flex items-center gap-2">
+                <span className="text-gray-900">All Tasks</span>
+              </span>
+            </Option>
             {Object.entries(statusConfig).map(([key, config]) => (
               <Option key={key} value={key}>
                 <span className="flex items-center gap-2">
