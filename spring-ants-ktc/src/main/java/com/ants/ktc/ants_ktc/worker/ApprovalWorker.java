@@ -222,33 +222,8 @@ public class ApprovalWorker {
                 System.out.println(("[ApprovalWorker] Room " + roomId + " REJECTED: " + result.getContent()));
                 room.setApproval(2);
                 // transaction
-                RoomApprovalProjection roomProj = roomJpaRepository.findApprovalProjectionById(roomId)
-                        .orElseThrow(() -> new IllegalArgumentException("Room not found"));
-                User user = roomProj.getUser();
-                Transaction lastTransaction = transactionsJpaRepository
-                        .findLatestTransactionByWalletAndType(user.getWallet(), 0);
-                if (lastTransaction != null) {
-                    Double refundAmount = lastTransaction.getAmount();
-                    Double balance = user.getWallet().getBalance();
-                    user.getWallet().setBalance(balance + refundAmount);
-                    userJpaRepository.save(user);
-
-                    Transaction refundTransaction = new Transaction();
-                    refundTransaction.setAmount(refundAmount);
-                    refundTransaction.setDescription(
-                            "Refund for rejected room post: " + roomProj.getTitle());
-                    refundTransaction.setTransactionDate(new Date());
-
-                    // Generate unique 8-digit transaction code
-                    String transactionCode = generateUniqueTransactionCode("REFUND", user.getId());
-
-                    refundTransaction.setTransactionCode(transactionCode);
-                    refundTransaction.setBankTransactionName("Ants Wallet");
-                    refundTransaction.setStatus(1);
-                    refundTransaction.setWallet(user.getWallet());
-                    refundTransaction.setTransactionType(3);// type 3: hoàn tiền
-                    transactionsJpaRepository.save(refundTransaction);
-                }
+                
+               // =================== Refund deposit to user
                 try {
                     MailUserProjection mailuser = roomJpaRepository.findMailUsersByRoomId(roomId).stream()
                             .findFirst()
