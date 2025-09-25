@@ -5,6 +5,8 @@ import { UploadOutlined } from "@ant-design/icons";
 import { useSession } from "next-auth/react";
 import type { UploadProps, UploadFile } from 'antd';
 import { createRequestNotification } from "@/services/NotificationService";
+import { createRequest, uploadRequirementImage } from "@/services/Requirements";
+
 
 interface RequestModalProps {
   open: boolean;
@@ -29,6 +31,7 @@ const RequestModal: React.FC<RequestModalProps> = ({
   const userId = session?.user.id;
   const [fileList, setFileList] = useState<UploadFile[]>([]);
   const [messageApi, contextHolder] = message.useMessage();
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (open && fieldValue) {
@@ -44,6 +47,12 @@ const RequestModal: React.FC<RequestModalProps> = ({
         messageApi.error("Room ID is required");
         return;
       }
+      if (!userId) {
+        messageApi.error("User ID is required");
+        return;
+      }
+
+      setLoading(true);
 
       const request = {
         userId,
@@ -51,16 +60,34 @@ const RequestModal: React.FC<RequestModalProps> = ({
         description: values.requestDescription,
       };
       
-      // Tạo notification cho landlord
-      await createRequestNotification(id, session?.user.id, "You have a new request from a tenant: " + values.requestDescription);
+      const result = await createRequest(request);
+
+      if (fileList.length > 0) {
+        const imageFile = fileList[0].originFileObj;
+        if (imageFile && result.idRequirement) {
+          await uploadRequirementImage(result.idRequirement, imageFile);
+        }
+      }
+       await createRequestNotification(
+        id,
+        userId,
+        "You have a new request from a tenant: " + values.requestDescription
+      );
       
       // Gọi onFinish để tạo requirement trước
       onFinish(request);
+      messageApi.success("Request created successfully!");
+      handleCancel();
     } catch (error) {
       console.error("Error creating request:", error);
       messageApi.error("Failed to create request. Please try again.");
+    }finally {
+      setLoading(false);
     }
   };
+
+  
+  
 
   const uploadProps: UploadProps = {
     beforeUpload: (file) => {
@@ -126,40 +153,37 @@ const RequestModal: React.FC<RequestModalProps> = ({
               maxLength={500}
             />
           </Form.Item>
-
-          <Form.Item
-            label="Upload Image (Optional)"
-            name="image"
-          >
-            <>  
-            <Upload {...uploadProps}>
-              <Button icon={<UploadOutlined />}>Select Image</Button>
-            </Upload>
-            <div className="mt-1 text-sm text-gray-500">
-              Upload an image to help describe your request (Max: 10MB)
-            </div>
-            </>
-          </Form.Item>
-        </div>
+        <Form.Item
+  label="Upload Image (Optional)"
+  name="image"
+>
+  <Upload {...uploadProps}>
+    <Button icon={<UploadOutlined />}>Select Image</Button>
+  </Upload>
+</Form.Item>
+<div className="mt-1 text-sm text-gray-500">
+  Upload an image to help describe your request (Max: 10MB)
+</div>
+</div>
 
         <Form.Item>
           <div className="flex justify-end gap-2 mt-4">
             <Button onClick={handleCancel}>Cancel</Button>
-            <Button type="primary" htmlType="submit">
+            <Button type="primary" htmlType="submit" loading={loading}>
               {modalType === "edit" ? "Update Request" : "Add Request"}
             </Button>
           </div>
         </Form.Item>
       </Form>
 
-      {/* Hidden input to store selected file for later upload */}
-      <input 
-        type="hidden" 
-        id="selectedFile" 
-        value={fileList.length > 0 ? fileList[0].name : ''} 
-      />
+      
     </Modal>
   );
 };
 
 export default RequestModal;
+
+
+
+
+

@@ -98,7 +98,7 @@ const RequestEditModalContent: React.FC<{
             <Upload
               beforeUpload={(file) => {
                 handleUpload(file);
-                return false; // Ngăn auto upload
+                return false; 
               }}
               fileList={fileList}
               onChange={({ fileList }) => setFileList(fileList)}
@@ -352,6 +352,7 @@ const RequestStatusInteractive: React.FC = () => {
       <h2 className="mb-6 text-2xl font-bold text-gray-800 dark:text-white">
         Request Management
       </h2>
+
 
       <Table
         columns={columns}
