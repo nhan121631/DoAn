@@ -1,5 +1,6 @@
 package com.ants.ktc.ants_ktc.controllers;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -108,5 +109,27 @@ public class ApprovalQueueController {
                     "message", "Failed to start approval process: " + e.getMessage(),
                     "error", e.getClass().getSimpleName()));
         }
+    }
+
+    @GetMapping("/debug/room-ids")
+    public ResponseEntity<Map<String, Object>> getCurrentQueueRoomIds() {
+        List<UUID> roomIds = approvalQueueService.getCurrentQueueRoomIds();
+
+        return ResponseEntity.ok(Map.of(
+                "success", true,
+                "roomIds", roomIds,
+                "count", roomIds.size(),
+                "message", "Current room IDs in approval queue"));
+    }
+
+    @GetMapping("/debug/room/{roomId}/count")
+    public ResponseEntity<Map<String, Object>> countRoomInQueue(@PathVariable UUID roomId) {
+        int count = approvalQueueService.countRoomInQueue(roomId);
+
+        return ResponseEntity.ok(Map.of(
+                "success", true,
+                "roomId", roomId,
+                "count", count,
+                "message", count > 0 ? "Room is in queue " + count + " time(s)" : "Room is not in queue"));
     }
 }

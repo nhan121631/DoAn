@@ -174,7 +174,9 @@ function RentalHistory() {
     modal.setSelectedKey(key);
     modal.setVisible(true);
     const landlordId = await getLandlordByRoomId(idRoom as string);
-    await bookingConfirmationNotification(session?.user.id, landlordId.id, "Your booking deposit is confirmed and waiting for landlord's confirmation.");
+    const getNameLandlord = tableData.find(item => item.key === key)?.name_landlord || "the landlord";
+    const nameRoom = tableData.find(item => item.key === key)?.room || '';
+    await bookingConfirmationNotification(session?.user.id, landlordId.id, "Your booking deposit is confirmed and waiting for landlord's:" + getNameLandlord + " confirmation at room " + nameRoom + ".");
   };
 
   const handleConfirm = async () => {

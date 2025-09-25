@@ -108,7 +108,8 @@ export default function RentalsPage() {
       });
       // Refresh data after update
       await fetchTableData(pagination.current, pagination.pageSize);
-      await bookingConfirmationNotification(session?.user.id, userId, `Your booking has been ${actionName} by the landlord.`);
+      const nameRoom = data.find(item => item.key === bookingId)?.room || '';
+      await bookingConfirmationNotification(session?.user.id, userId, `Your booking has been ${actionName} by the landlord at room ${nameRoom}.`);
     } catch (error) {
       console.error("Failed to update booking status:", error);
       messageApi.error({

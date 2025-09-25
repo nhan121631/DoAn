@@ -37,11 +37,11 @@
 
 ### 🔹 Nam
 
-- **Contract**
-- **Bill**
-- **Resident**
-- **Blog**
-- **Feedback**
+- Quản lý **Contract** giữa landlord và tenant
+- Quản lý **Bill** của từng contract
+- Quản lý **Resident** của từng contract
+- Quản lý **Blog** cho admin, hiển thị bên tenant
+- Quản lý **Feedback** của landlord, add and view cho tenant
 
 
 ### 🔹 Đức
@@ -58,7 +58,7 @@
 ### 👨‍💻 Admin Panel
 
 - **Trung**: Quản lý **Accounts**
-- **Khôi**: Quản lý **Rooms**
+- **Khôi**: Quản lý **Rooms**, **Statistics**, **Advertisements**
 - **Nhân**: Quản lý **PostType**
 - **Nam**: Quản lý **Blog**
 
@@ -104,13 +104,3 @@
 
 - Giao diện sẽ được **update liên tục**
 - Các thành phần nhỏ, tinh chỉnh UI/UX: **mọi thành viên cùng tham gia**
-
----
-
-📌 Nhìn chung:
-
-- **Nhân** thiên về **Auth/Profile/Map & User UI**
-- **Khôi** mạnh về **Transaction/Room & Admin/Landlord UI**
-- **Trung** lo **Accounts/Favorite/Maintain + UI phụ trợ**
-- **Nam** tập trung **Contract/Bill & Feedback**
-- **Đức** phụ trách **Chat real-time (socket Firebase) + Notification**

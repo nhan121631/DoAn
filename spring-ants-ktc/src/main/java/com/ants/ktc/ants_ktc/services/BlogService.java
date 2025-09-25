@@ -1,23 +1,24 @@
 package com.ants.ktc.ants_ktc.services;
 
+import java.time.LocalDateTime;
+import java.util.UUID;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+
 import com.ants.ktc.ants_ktc.dtos.blog.BlogCreateRequest;
 import com.ants.ktc.ants_ktc.dtos.blog.BlogResponse;
 import com.ants.ktc.ants_ktc.dtos.blog.BlogUpdateRequest;
 import com.ants.ktc.ants_ktc.entities.Blog;
 import com.ants.ktc.ants_ktc.entities.User;
-import com.ants.ktc.ants_ktc.entities.UserProfile;
 import com.ants.ktc.ants_ktc.enums.Category;
 import com.ants.ktc.ants_ktc.enums.Status;
 import com.ants.ktc.ants_ktc.repositories.BlogJpaRepository;
 import com.ants.ktc.ants_ktc.repositories.UserJpaRepository;
+
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-
-import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -28,7 +29,8 @@ public class BlogService {
 
     // Create blog
     public BlogResponse createBlog(BlogCreateRequest request, UUID authorId) {
-        User author = userRepository.findById(authorId).orElseThrow(() -> new IllegalArgumentException("Author not found"));
+        User author = userRepository.findById(authorId)
+                .orElseThrow(() -> new IllegalArgumentException("Author not found"));
         Blog blog = new Blog();
         blog.setTitle(request.getTitle());
         blog.setSlug(request.getSlug());

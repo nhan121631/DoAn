@@ -1,5 +1,7 @@
 package com.ants.ktc.ants_ktc.services;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -7,9 +9,11 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.ants.ktc.ants_ktc.dtos.LandlordTask.LandlordTaskCreateDto;
 import com.ants.ktc.ants_ktc.dtos.bill.BillResponseDto;
 import com.ants.ktc.ants_ktc.dtos.contract.ContractRequestDto;
 import com.ants.ktc.ants_ktc.dtos.contract.ContractResponseDto;
@@ -31,9 +35,8 @@ public class ContractService {
     private RoomJpaRepository roomJpaRepository;
     @Autowired
     private UserJpaRepository userJpaRepository;
-
-
-
+    @Autowired
+    private LandlordTaskService landlordTaskService;
 
     public ContractResponseDto createContract(ContractRequestDto request) {
         Room room = roomJpaRepository.findById(request.getRoomId())
@@ -56,6 +59,7 @@ public class ContractService {
         Contract saved = contractJpaRepository.save(contract);
         return toResponseDto(saved);
     }
+
     public ContractResponseDto updateContract(ContractUpdateRequestDto request) {
         Contract contract = contractJpaRepository.findById(request.getId())
                 .orElseThrow(() -> new RuntimeException("Contract not found"));
@@ -130,6 +134,7 @@ public class ContractService {
         return contractJpaRepository.findByStatus(status)
                 .stream().map(this::toResponseDto).collect(Collectors.toList());
     }
+
     public void deleteContract(UUID contractId) {
         Contract contract = contractJpaRepository.findById(contractId)
                 .orElseThrow(() -> new IllegalArgumentException("Contract not found with id: " + contractId));
@@ -140,6 +145,7 @@ public class ContractService {
 
         contractJpaRepository.delete(contract);
     }
+
     private ContractResponseDto toResponseDto(Contract contract) {
         ContractResponseDto dto = new ContractResponseDto();
         dto.setContractName(contract.getContractName());
@@ -166,9 +172,11 @@ public class ContractService {
                         Double waterPrice = room.getWaterPrice();
 
                         Double electricityUsage = (elecPrice != null && elecPrice > 0)
-                                ? b.getElectricityFee() / elecPrice : null;
+                                ? b.getElectricityFee() / elecPrice
+                                : null;
                         Double waterUsage = (waterPrice != null && waterPrice > 0)
-                                ? b.getWaterFee() / waterPrice : null;
+                                ? b.getWaterFee() / waterPrice
+                                : null;
                         double damageFee = b.getTotalAmount()
                                 - (b.getElectricityFee() + b.getWaterFee() + b.getServiceFee());
 
@@ -197,10 +205,37 @@ public class ContractService {
                     profile.getBankNumber(),
                     profile.getBinCode(),
                     profile.getAccoutHolderName(),
-                    profile.getPhoneNumber()
-            ));
+                    profile.getPhoneNumber()));
         }
 
         return dto;
     }
+
+    @Scheduled(cron = "0 0 1 * * *") // Chạy vào 1h sáng mỗi ngày
+    public void autoTaskBillsGeneration() {
+        System.out.println("[Auto Task] Start generating tasks for contracts...");
+        List<Contract> activeContracts = contractJpaRepository.findByStatus(0); // 0 is ACTIVE
+        for (Contract contract : activeContracts) {
+            LocalDate startDate = contract.getStartDate().toInstant()
+                    .atZone(java.time.ZoneId.systemDefault())
+                    .toLocalDate();
+            long days = java.time.temporal.ChronoUnit.DAYS.between(startDate, LocalDate.now());
+            System.out.println("[Auto Task] Contract ID: " + contract.getId() + ", Days: " + days);
+            if (days > 0 && days % 30 == 0) {
+                LandlordTaskCreateDto dto = LandlordTaskCreateDto.builder()
+                        .title("Tính tiền trọ tháng " + LocalDate.now().getMonthValue() + "/"
+                                + LocalDate.now().getYear() + " cho phòng " + contract.getRoom().getTitle())
+                        .description("Calculate the monthly rent for room " + contract.getRoom().getTitle())
+                        .startDate(LocalDateTime.now())
+                        .dueDate(LocalDateTime.now().plusDays(7)) // Set due date 7 days later
+                        .status("PENDING")
+                        .priority("MEDIUM")
+                        .landlordId(contract.getLandlord().getId().toString())
+                        .roomId(contract.getRoom().getId().toString())
+                        .build();
+                landlordTaskService.createTask(dto);
+            }
+        }
+    }
+
 }

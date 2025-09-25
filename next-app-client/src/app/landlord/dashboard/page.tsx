@@ -42,15 +42,36 @@ import {
   MoreOutlined,
   EyeOutlined,
   FlagOutlined,
+  HomeOutlined,
+  FileTextOutlined,
+  ToolOutlined,
+  MessageOutlined,
+  BellOutlined,
+  ArrowRightOutlined,
+  DollarOutlined,
 } from "@ant-design/icons";
 import { useSession } from "next-auth/react";
 import dayjs from "dayjs";
+import "dayjs/locale/en";
 import { LandlordTaskService } from "@/services/LandlordTaskService";
 import {
   LandlordTaskCreateDto,
   LandlordTaskResponseDto,
   LandlordTaskUpdateDto,
 } from "@/types/types";
+import { userFetchBookings, landlordFetchBookings } from "@/services/BookingService";
+import { getRequestsByLandlordId } from "@/services/Requirements";
+import { ContractService } from "@/services/ContractService";
+import { BillService } from "@/services/BillService";
+import { listenForConversations, listenForUnreadCount } from "@/services/ChatService";
+import { useRouter } from "next/navigation";
+import { db } from "@/lib/firebase";
+import {
+  collection,
+  query,
+  where,
+  onSnapshot,
+} from "firebase/firestore";
 const { Title, Text } = Typography;
 const { TextArea } = Input;
 const { Option } = Select;
@@ -93,8 +114,16 @@ interface TaskStats {
   overdue: number;
 }
 
+interface NotificationStats {
+  newBookings: number;
+  newRequirements: number;
+  confirmingBills: number;
+  newMessages: number;
+}
+
 export default function LandlordDashboardPage() {
   const { data: session } = useSession();
+  const router = useRouter();
   const [tasks, setTasks] = useState<LandlordTaskResponseDto[]>([]);
   const [filteredTasks, setFilteredTasks] = useState<LandlordTaskResponseDto[]>(
     []
@@ -107,6 +136,14 @@ export default function LandlordDashboardPage() {
     completed: 0,
     overdue: 0,
   });
+  const [notificationStats, setNotificationStats] = useState<NotificationStats>({
+    newBookings: 0,
+    newRequirements: 0,
+    confirmingBills: 0,
+    newMessages: 0,
+  });
+  const [loadingStats, setLoadingStats] = useState(false);
+  const [persistentMessageCount, setPersistentMessageCount] = useState(0);
 
   // Modal states
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -148,6 +185,95 @@ export default function LandlordDashboardPage() {
     }
   };
 
+  // Fetch notification statistics
+  const fetchNotificationStats = async () => {
+    if (!session?.user?.id) return;
+
+    setLoadingStats(true);
+    try {
+      let newBookings = 0;
+      let newRequirements = 0;
+      let confirmingBills = 0;
+
+      // Fetch bookings with status = 0 (pending bookings)
+      try {
+        const bookingsResponse = await landlordFetchBookings(0, 100);
+
+        
+        // Handle different response structures (bookings array could be in bookings or data property)
+        const bookingsArray = bookingsResponse.bookings || bookingsResponse.data || bookingsResponse;
+       
+        
+        // Filter only bookings with status = 0 (pending bookings showing Accept/Reject buttons)
+        const pendingBookings = bookingsArray?.filter((booking: any) => {
+        
+          return booking.status === 0;
+        }) || [];
+        
+        newBookings = pendingBookings.length;
+      
+      } catch (error) {
+        console.error("Error fetching bookings:", error);
+      }
+
+      // Fetch requirements with pending status
+      try {
+        const requirementsResponse = await getRequestsByLandlordId(0, 100);
+        newRequirements = requirementsResponse.data?.filter((req: any) => {
+          return req.status === "PENDING" || req.status === 0 || req.status === false;
+        })?.length || 0;
+      
+      } catch (error) {
+        console.error("Error fetching requirements:", error);
+      }
+
+      // Fetch confirming bills from contracts
+      try {
+        const contractsResponse = await ContractService.getByLandlord(session.user.id, 0, 1000);
+      
+        
+        let totalConfirmingBills = 0;
+        
+        // Only use contract.bills data, no API calls to avoid 500 errors
+        for (const contract of contractsResponse.content || []) {
+          try {
+            if (contract.bills && Array.isArray(contract.bills) && contract.bills.length > 0) {
+              const confirmingBillsForContract = contract.bills.filter((bill: any) => {
+             
+                return bill.status === "CONFIRMING";
+              }).length;
+              totalConfirmingBills += confirmingBillsForContract;
+             
+            } else {
+              console.log(`Contract ${contract.id}: No bills data available`);
+            }
+          } catch (error) {
+            console.error(`Error processing contract ${contract.id}:`, error);
+            // Continue to next contract
+          }
+        }
+        
+        confirmingBills = totalConfirmingBills;
+        
+      } catch (error) {
+        console.error("Error fetching confirming bills:", error);
+        // Set default value if everything fails
+        confirmingBills = 0;
+      }
+
+      setNotificationStats({
+        newBookings,
+        newRequirements,
+        confirmingBills,
+        newMessages: 0, // Will be updated by chat listener
+      });
+    } catch (error) {
+      console.error("Error fetching notification stats:", error);
+    } finally {
+      setLoadingStats(false);
+    }
+  };
+
   // Calculate statistics
   const calculateStats = (taskList: LandlordTaskResponseDto[]) => {
     const now = dayjs();
@@ -171,16 +297,24 @@ export default function LandlordDashboardPage() {
   const applyFilters = () => {
     let filtered = tasks;
 
+    // Handle status filtering
+    if (!statusFilter || statusFilter === "") {
+      // By default, hide completed tasks
+      filtered = filtered.filter((task) => task.status !== "COMPLETED");
+    } else if (statusFilter === "ALL") {
+      // Show all tasks including completed ones
+      // No filtering needed, keep all tasks
+    } else {
+      // Filter by specific status
+      filtered = filtered.filter((task) => task.status === statusFilter);
+    }
+
     if (searchText) {
       filtered = filtered.filter(
         (task) =>
           task.title.toLowerCase().includes(searchText.toLowerCase()) ||
           task.description?.toLowerCase().includes(searchText.toLowerCase())
       );
-    }
-
-    if (statusFilter) {
-      filtered = filtered.filter((task) => task.status === statusFilter);
     }
 
     if (priorityFilter) {
@@ -425,12 +559,55 @@ export default function LandlordDashboardPage() {
   useEffect(() => {
     if (session?.user?.id) {
       fetchTasks();
+      fetchNotificationStats();
+      
+      // Set up interval to refresh notifications every 30 seconds
+      const interval = setInterval(() => {
+        fetchNotificationStats();
+      }, 30000);
+      
+      return () => clearInterval(interval);
     }
   }, [session]);
 
   useEffect(() => {
     applyFilters();
   }, [searchText, statusFilter, priorityFilter, tasks]);
+
+  // Listen for unread message count
+  useEffect(() => {
+    if (!session?.user?.id) return;
+
+    console.log("Dashboard: Starting to listen for unread messages");
+
+    const unsubscribe = listenForUnreadCount(
+      session.user.id,
+      (totalUnreadMessages) => {
+        console.log("Dashboard: Received unread count:", totalUnreadMessages);
+        
+        // Update count based on actual unread messages
+        setPersistentMessageCount(totalUnreadMessages);
+        
+        // Update notification stats with the current count
+        setNotificationStats(prev => ({
+          ...prev,
+          newMessages: totalUnreadMessages
+        }));
+      }
+    );
+
+    return () => {
+      console.log("Dashboard: Cleaning up unread message listener");
+      unsubscribe();
+    };
+  }, [session?.user?.id]);
+
+  // Function to manually reset message count when user visits chat
+  // No longer needed as count will be automatically synced with actual unread messages
+  const resetMessageCount = () => {
+    // Count will be automatically updated by the chat listener
+    console.log("Navigating to chat - count will be updated automatically");
+  };
 
   // Table columns
   const columns = [
@@ -636,85 +813,231 @@ export default function LandlordDashboardPage() {
           level={1}
           className="!text-gray-900 dark:!text-white !mb-4 !text-4xl"
         >
-          Task Management Dashboard
+          Landlord Dashboard
         </Title>
         <Text className="text-xl text-gray-600 dark:text-gray-300 font-medium">
-          Manage and track all your property maintenance tasks efficiently
+          Manage your properties, bookings, and tenant requests efficiently
         </Text>
         <div className="mt-4 h-1 w-24 bg-gradient-to-r from-blue-500 to-green-500 mx-auto rounded-full"></div>
+        
+        <div className="mt-4 flex items-center justify-center gap-4">
+          {loadingStats && (
+            <div>
+              <Spin size="small" />
+              <Text className="ml-2 text-gray-500 dark:text-gray-400">Loading notifications...</Text>
+            </div>
+          )}
+          <Button
+            icon={<BellOutlined />}
+            onClick={() => {
+              fetchNotificationStats();
+              fetchTasks();
+            }}
+            disabled={loadingStats}
+            className="text-gray-600 dark:text-gray-300"
+          >
+            Refresh Notifications
+          </Button>
+        </div>
       </div>
 
-      {/* Statistics Cards */}
+      {/* Management & Notifications Section */}
       <Row gutter={[24, 24]} className="mb-8">
-        <Col xs={24} sm={12} lg={6}>
-          <Card className="shadow-lg bg-white dark:bg-[#22304a] border border-gray-200 dark:border-gray-600">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">
-                  Total Tasks
-                </div>
-                <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">
-                  {taskStats.total}
-                </div>
-              </div>
-              <div className="text-blue-600 dark:text-blue-400">
-                <ClockCircleOutlined style={{ fontSize: "2rem" }} />
-              </div>
+        <Col span={24}>
+          <Card className="shadow-lg bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-700 border-l-4 border-l-blue-500">
+            <div className="flex items-center justify-between mb-6">
+              <Title level={4} className="!text-gray-900 dark:!text-white !mb-0 flex items-center">
+                🏠 Property Management Center
+              </Title>
+              <Text className="text-gray-500 dark:text-gray-400 text-sm">
+                {dayjs().format("dddd, MMMM DD, YYYY")}
+              </Text>
             </div>
+            
+            <Row gutter={[20, 20]}>
+              <Col xs={24} sm={12} lg={6}>
+                <div 
+                  className="bg-white dark:bg-gray-800 rounded-xl p-6 cursor-pointer hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-blue-500"
+                  onClick={() => router.push('/landlord/rentals')}
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="bg-blue-100 dark:bg-blue-900/30 p-3 rounded-full">
+                      <HomeOutlined className="text-2xl text-blue-600 dark:text-blue-400" />
+                    </div>
+                    {notificationStats.newBookings > 0 && (
+                      <div className="bg-red-500 text-white text-xs rounded-full px-2 py-1 font-bold">
+                        {notificationStats.newBookings > 99 ? '99+' : notificationStats.newBookings}
+                      </div>
+                    )}
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                    Rental Management
+                  </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
+                    {notificationStats.newBookings > 0 
+                      ? `${notificationStats.newBookings} pending bookings`
+                      : "No pending bookings"
+                    }
+                  </p>
+                  <div className="flex items-center text-blue-600 dark:text-blue-400 text-sm font-medium">
+                    Manage Bookings <ArrowRightOutlined className="ml-2" />
+                  </div>
+                </div>
+              </Col>
+
+              <Col xs={24} sm={12} lg={6}>
+                <div 
+                  className="bg-white dark:bg-gray-800 rounded-xl p-6 cursor-pointer hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-orange-500"
+                  onClick={() => router.push('/landlord/manage-requests')}
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="bg-orange-100 dark:bg-orange-900/30 p-3 rounded-full">
+                      <FileTextOutlined className="text-2xl text-orange-600 dark:text-orange-400" />
+                    </div>
+                    {notificationStats.newRequirements > 0 && (
+                      <div className="bg-red-500 text-white text-xs rounded-full px-2 py-1 font-bold">
+                        {notificationStats.newRequirements > 99 ? '99+' : notificationStats.newRequirements}
+                      </div>
+                    )}
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                    Request Management
+                  </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
+                    {notificationStats.newRequirements > 0 
+                      ? `${notificationStats.newRequirements} pending requirements`
+                      : "No pending requirements"
+                    }
+                  </p>
+                  <div className="flex items-center text-orange-600 dark:text-orange-400 text-sm font-medium">
+                    View Requests <ArrowRightOutlined className="ml-2" />
+                  </div>
+                </div>
+              </Col>
+
+              <Col xs={24} sm={12} lg={6}>
+                <div 
+                  className="bg-white dark:bg-gray-800 rounded-xl p-6 cursor-pointer hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-green-500"
+                  onClick={() => router.push('/landlord/manage-contracts')}
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="bg-green-100 dark:bg-green-900/30 p-3 rounded-full">
+                      <DollarOutlined className="text-2xl text-green-600 dark:text-green-400" />
+                    </div>
+                    {notificationStats.confirmingBills > 0 && (
+                      <div className="bg-red-500 text-white text-xs rounded-full px-2 py-1 font-bold">
+                        {notificationStats.confirmingBills > 99 ? '99+' : notificationStats.confirmingBills}
+                      </div>
+                    )}
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                    Payment Confirmation
+                  </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
+                    {notificationStats.confirmingBills > 0 
+                      ? `${notificationStats.confirmingBills} bills awaiting confirmation`
+                      : "No bills awaiting confirmation"
+                    }
+                  </p>
+                  <div className="flex items-center text-green-600 dark:text-green-400 text-sm font-medium">
+                    Confirm Payments <ArrowRightOutlined className="ml-2" />
+                  </div>
+                </div>
+              </Col>
+
+              <Col xs={24} sm={12} lg={6}>
+                <div 
+                  className="bg-white dark:bg-gray-800 rounded-xl p-6 cursor-pointer hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-purple-500"
+                  onClick={() => {
+                    resetMessageCount();
+                    router.push('/landlord/manage-chat');
+                  }}
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="bg-purple-100 dark:bg-purple-900/30 p-3 rounded-full">
+                      <MessageOutlined className="text-2xl text-purple-600 dark:text-purple-400" />
+                    </div>
+                    {persistentMessageCount > 0 && (
+                      <div className="bg-red-500 text-white text-xs rounded-full px-2 py-1 font-bold">
+                        {persistentMessageCount > 99 ? '99+' : persistentMessageCount}
+                      </div>
+                    )}
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                    Messages
+                  </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
+                    {persistentMessageCount > 0 
+                      ? `${persistentMessageCount} unread messages`
+                      : "No new messages"
+                    }
+                  </p>
+                  <div className="flex items-center text-purple-600 dark:text-purple-400 text-sm font-medium">
+                    Open Chat <ArrowRightOutlined className="ml-2" />
+                  </div>
+                </div>
+              </Col>
+            </Row>
           </Card>
         </Col>
+      </Row>
 
-        <Col xs={24} sm={12} lg={6}>
-          <Card className="shadow-lg bg-white dark:bg-[#22304a] border border-gray-200 dark:border-gray-600">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">
-                  Pending
+      {/* Task Statistics Cards */}
+      <Row gutter={[24, 24]} className="mb-8">
+        <Col span={24}>
+          <Card className="shadow-lg bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-800 border-l-4 border-l-indigo-500">
+            <Title level={4} className="!text-gray-900 dark:!text-white !mb-6">
+              � Task Overview
+            </Title>
+            <Row gutter={[20, 20]}>
+              <Col xs={24} sm={12} lg={6}>
+                <div className="bg-white dark:bg-gray-800 rounded-lg p-4 text-center border border-gray-200 dark:border-gray-600">
+                  <ClockCircleOutlined className="text-3xl text-blue-600 dark:text-blue-400 mb-2" />
+                  <div className="text-2xl font-bold text-blue-600 dark:text-blue-400 mb-1">
+                    {taskStats.total}
+                  </div>
+                  <div className="text-sm text-gray-600 dark:text-gray-300">
+                    Total Tasks
+                  </div>
                 </div>
-                <div className="text-3xl font-bold text-orange-600 dark:text-orange-400">
-                  {taskStats.pending}
+              </Col>
+              
+              <Col xs={24} sm={12} lg={6}>
+                <div className="bg-white dark:bg-gray-800 rounded-lg p-4 text-center border border-gray-200 dark:border-gray-600">
+                  <ClockCircleOutlined className="text-3xl text-orange-600 dark:text-orange-400 mb-2" />
+                  <div className="text-2xl font-bold text-orange-600 dark:text-orange-400 mb-1">
+                    {taskStats.pending}
+                  </div>
+                  <div className="text-sm text-gray-600 dark:text-gray-300">
+                    Pending
+                  </div>
                 </div>
-              </div>
-              <div className="text-orange-600 dark:text-orange-400">
-                <ClockCircleOutlined style={{ fontSize: "2rem" }} />
-              </div>
-            </div>
-          </Card>
-        </Col>
-
-        <Col xs={24} sm={12} lg={6}>
-          <Card className="shadow-lg bg-white dark:bg-[#22304a] border border-gray-200 dark:border-gray-600">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">
-                  Completed
+              </Col>
+              
+              <Col xs={24} sm={12} lg={6}>
+                <div className="bg-white dark:bg-gray-800 rounded-lg p-4 text-center border border-gray-200 dark:border-gray-600">
+                  <CheckCircleOutlined className="text-3xl text-green-600 dark:text-green-400 mb-2" />
+                  <div className="text-2xl font-bold text-green-600 dark:text-green-400 mb-1">
+                    {taskStats.completed}
+                  </div>
+                  <div className="text-sm text-gray-600 dark:text-gray-300">
+                    Completed
+                  </div>
                 </div>
-                <div className="text-3xl font-bold text-green-600 dark:text-green-400">
-                  {taskStats.completed}
+              </Col>
+              
+              <Col xs={24} sm={12} lg={6}>
+                <div className="bg-white dark:bg-gray-800 rounded-lg p-4 text-center border border-gray-200 dark:border-gray-600">
+                  <ExclamationCircleOutlined className="text-3xl text-red-600 dark:text-red-400 mb-2" />
+                  <div className="text-2xl font-bold text-red-600 dark:text-red-400 mb-1">
+                    {taskStats.overdue}
+                  </div>
+                  <div className="text-sm text-gray-600 dark:text-gray-300">
+                    Overdue
+                  </div>
                 </div>
-              </div>
-              <div className="text-green-600 dark:text-green-400">
-                <CheckCircleOutlined style={{ fontSize: "2rem" }} />
-              </div>
-            </div>
-          </Card>
-        </Col>
-
-        <Col xs={24} sm={12} lg={6}>
-          <Card className="shadow-lg bg-white dark:bg-[#22304a] border border-gray-200 dark:border-gray-600">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">
-                  Overdue
-                </div>
-                <div className="text-3xl font-bold text-red-600 dark:text-red-400">
-                  {taskStats.overdue}
-                </div>
-              </div>
-              <div className="text-red-600 dark:text-red-400">
-                <ExclamationCircleOutlined style={{ fontSize: "2rem" }} />
-              </div>
-            </div>
+              </Col>
+            </Row>
           </Card>
         </Col>
       </Row>
@@ -779,6 +1102,9 @@ export default function LandlordDashboardPage() {
               className="!mb-0 !text-gray-900 dark:!text-white flex items-center"
             >
               📝 Task Management
+              <span className="text-sm font-normal text-gray-500 dark:text-gray-400 ml-2">
+                (Completed tasks hidden by default)
+              </span>
             </Title>
             <Button
               type="primary"
@@ -804,13 +1130,18 @@ export default function LandlordDashboardPage() {
           />
 
           <Select
-            placeholder="All Status"
+            placeholder="Active Tasks Only"
             value={statusFilter || undefined}
             onChange={(value) => setStatusFilter(value || "")}
-            style={{ width: 180 }}
+            style={{ width: 200 }}
             allowClear
             className="bg-white"
           >
+            <Option key="ALL" value="ALL">
+              <span className="flex items-center gap-2">
+                <span className="text-gray-900">All Tasks</span>
+              </span>
+            </Option>
             {Object.entries(statusConfig).map(([key, config]) => (
               <Option key={key} value={key}>
                 <span className="flex items-center gap-2">

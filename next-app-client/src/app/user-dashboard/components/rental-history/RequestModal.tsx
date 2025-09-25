@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { Modal, Form, Input, Button, Upload, message } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import { useSession } from "next-auth/react";
-import type { UploadProps, UploadFile } from 'antd';
+import type { UploadProps, UploadFile } from "antd";
 import { createRequestNotification } from "@/services/NotificationService";
 import { createRequest, uploadRequirementImage } from "@/services/Requirements";
 
@@ -91,14 +91,14 @@ const RequestModal: React.FC<RequestModalProps> = ({
 
   const uploadProps: UploadProps = {
     beforeUpload: (file) => {
-      const isImage = file.type.startsWith('image/');
+      const isImage = file.type.startsWith("image/");
       if (!isImage) {
-        messageApi.error('You can only upload image files!');
+        messageApi.error("You can only upload image files!");
         return false;
       }
       const isLt10M = file.size / 1024 / 1024 < 10;
       if (!isLt10M) {
-        messageApi.error('Image must be smaller than 10MB!');
+        messageApi.error("Image must be smaller than 10MB!");
         return false;
       }
       return false; // Prevent auto upload
@@ -108,7 +108,7 @@ const RequestModal: React.FC<RequestModalProps> = ({
     },
     fileList,
     maxCount: 1,
-    accept: 'image/*',
+    accept: "image/*",
   };
 
   const handleCancel = () => {
@@ -142,8 +142,14 @@ const RequestModal: React.FC<RequestModalProps> = ({
             name="requestDescription"
             rules={[
               { required: true, message: "Please enter request description!" },
-              { min: 5, message: "Description must be at least 5 characters long!" },
-              { max: 500, message: "Description must not exceed 500 characters!" },
+              {
+                min: 5,
+                message: "Description must be at least 5 characters long!",
+              },
+              {
+                max: 500,
+                message: "Description must not exceed 500 characters!",
+              },
             ]}
           >
             <Input.TextArea
@@ -176,7 +182,12 @@ const RequestModal: React.FC<RequestModalProps> = ({
         </Form.Item>
       </Form>
 
-      
+      {/* Hidden input to store selected file for later upload */}
+      <input
+        type="hidden"
+        id="selectedFile"
+        value={fileList.length > 0 ? fileList[0].name : ""}
+      />
     </Modal>
   );
 };

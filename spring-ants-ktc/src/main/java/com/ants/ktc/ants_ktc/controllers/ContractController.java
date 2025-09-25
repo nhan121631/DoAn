@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.UUID;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
 @RequestMapping("/api/contracts")
@@ -79,10 +81,17 @@ public class ContractController {
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .body(data);
     }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteContract(@PathVariable("id") UUID id) {
         contractService.deleteContract(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/test")
+    public String getMethodName() {
+        contractService.autoTaskBillsGeneration();
+        return "Task completed";
     }
 
 }
