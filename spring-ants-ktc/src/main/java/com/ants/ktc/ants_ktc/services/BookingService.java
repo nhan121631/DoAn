@@ -1,5 +1,6 @@
 package com.ants.ktc.ants_ktc.services;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -13,6 +14,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.ants.ktc.ants_ktc.dtos.LandlordTask.LandlordTaskCreateDto;
 import com.ants.ktc.ants_ktc.dtos.address.AddressResponseDto;
 import com.ants.ktc.ants_ktc.dtos.address.DistrictResponseDto;
 import com.ants.ktc.ants_ktc.dtos.address.ProvinceResponseDto;
@@ -55,6 +57,9 @@ public class BookingService {
 
         @Autowired
         private ContractService contractService;
+
+        @Autowired
+        private LandlordTaskService landlordTaskService;
 
         @Transactional
         public BookingRoomByUserResponseDto createBooking(UUID userId, BookingRoomRequestDto request) {
@@ -99,6 +104,20 @@ public class BookingService {
 
                 // room.setAvailable(1);
                 // roomJpaRepository.save(room);
+
+                LandlordTaskCreateDto dto = LandlordTaskCreateDto.builder()
+                                .title("Booking room for " + room.getTitle())
+                                .description("New booking request for room: " + room.getTitle() + " by user: "
+                                                + user.getProfile().getFullName())
+                                .startDate(LocalDateTime.now())
+                                .dueDate(LocalDateTime.now().plusDays(7)) // Set due date 7 days later
+                                .status("PENDING")
+                                .priority("HIGH")
+                                .landlordId(room.getUser().getId().toString())
+                                .roomId(room.getId().toString())
+                                .build();
+                landlordTaskService.createTask(dto);
+
                 Booking savedBooking = bookingJpaRepository.save(booking);
                 return convertToResponseDto(savedBooking);
         }

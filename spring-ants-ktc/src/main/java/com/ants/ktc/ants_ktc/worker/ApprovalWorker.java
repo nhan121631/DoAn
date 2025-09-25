@@ -7,7 +7,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Date;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 
@@ -27,9 +29,14 @@ import org.springframework.web.client.RestTemplate;
 import com.ants.ktc.ants_ktc.dtos.approval.ApprovalRequestDto;
 import com.ants.ktc.ants_ktc.dtos.approval.ApprovalResult;
 import com.ants.ktc.ants_ktc.entities.Room;
+import com.ants.ktc.ants_ktc.entities.Transaction;
+import com.ants.ktc.ants_ktc.entities.User;
 import com.ants.ktc.ants_ktc.models.ApprovalMessage;
 import com.ants.ktc.ants_ktc.repositories.RoomJpaRepository;
+import com.ants.ktc.ants_ktc.repositories.TransactionsJpaRepository;
+import com.ants.ktc.ants_ktc.repositories.UserJpaRepository;
 import com.ants.ktc.ants_ktc.repositories.projection.MailUserProjection;
+import com.ants.ktc.ants_ktc.repositories.projection.RoomApprovalProjection;
 import com.ants.ktc.ants_ktc.services.ApprovalQueueService;
 import com.ants.ktc.ants_ktc.services.ApprovalLogService;
 import com.ants.ktc.ants_ktc.services.MailService;
@@ -50,7 +57,13 @@ public class ApprovalWorker {
     private RoomJpaRepository roomJpaRepository;
 
     @Autowired
+    private UserJpaRepository userJpaRepository;
+
+    @Autowired
     private ApprovalQueueService approvalQueueService;
+
+    @Autowired
+    private TransactionsJpaRepository transactionsJpaRepository;
 
     // Thêm ApprovalLogService
     @Autowired
@@ -167,8 +180,22 @@ public class ApprovalWorker {
         }
     }
 
+    private String generateUniqueTransactionCode(String unusedPrefix, UUID userId) {
+        // Use last 4 digits of timestamp for time uniqueness
+        long timestamp = System.currentTimeMillis();
+        String timestampSuffix = String.valueOf(timestamp).substring(String.valueOf(timestamp).length() - 4);
+
+        // Use 4 digits from user ID hash for user uniqueness
+        int userIdHash = Math.abs(userId.toString().hashCode());
+        String userIdSuffix = String.format("%04d", userIdHash % 10000);
+
+        // Combine to create 8-digit code (no prefix)
+        return timestampSuffix + userIdSuffix;
+
+    }
+
     @Transactional
-    private void updateRoomApprovalStatus(java.util.UUID roomId, ApprovalResult result) {
+    private void updateRoomApprovalStatus(UUID roomId, ApprovalResult result) {
         try {
             Room room = roomJpaRepository.findById(roomId)
                     .orElseThrow(() -> new RuntimeException("Room not found: " + roomId));
@@ -192,9 +219,36 @@ public class ApprovalWorker {
 
                 System.out.println("[ApprovalWorker] ✅ Room " + roomId + " APPROVED");
             } else if (result.getStatus() == 2) {
+                System.out.println(("[ApprovalWorker] Room " + roomId + " REJECTED: " + result.getContent()));
                 room.setApproval(2);
+                // transaction
+                RoomApprovalProjection roomProj = roomJpaRepository.findApprovalProjectionById(roomId)
+                        .orElseThrow(() -> new IllegalArgumentException("Room not found"));
+                User user = roomProj.getUser();
+                Transaction lastTransaction = transactionsJpaRepository
+                        .findLatestTransactionByWalletAndType(user.getWallet(), 0);
+                if (lastTransaction != null) {
+                    Double refundAmount = lastTransaction.getAmount();
+                    Double balance = user.getWallet().getBalance();
+                    user.getWallet().setBalance(balance + refundAmount);
+                    userJpaRepository.save(user);
 
-                // Gửi email thông báo từ chối với validation
+                    Transaction refundTransaction = new Transaction();
+                    refundTransaction.setAmount(refundAmount);
+                    refundTransaction.setDescription(
+                            "Refund for rejected room post: " + roomProj.getTitle());
+                    refundTransaction.setTransactionDate(new Date());
+
+                    // Generate unique 8-digit transaction code
+                    String transactionCode = generateUniqueTransactionCode("REFUND", user.getId());
+
+                    refundTransaction.setTransactionCode(transactionCode);
+                    refundTransaction.setBankTransactionName("Ants Wallet");
+                    refundTransaction.setStatus(1);
+                    refundTransaction.setWallet(user.getWallet());
+                    refundTransaction.setTransactionType(3);// type 3: hoàn tiền
+                    transactionsJpaRepository.save(refundTransaction);
+                }
                 try {
                     MailUserProjection mailuser = roomJpaRepository.findMailUsersByRoomId(roomId).stream()
                             .findFirst()

@@ -1,5 +1,6 @@
 package com.ants.ktc.ants_ktc.services;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -12,6 +13,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.ants.ktc.ants_ktc.dtos.LandlordTask.LandlordTaskCreateDto;
 import com.ants.ktc.ants_ktc.dtos.requirement.RequirementLandlordResponseDto;
 import com.ants.ktc.ants_ktc.dtos.requirement.RequirementPaging;
 import com.ants.ktc.ants_ktc.dtos.requirement.RequirementRequestRoomDto;
@@ -39,6 +41,8 @@ public class RequirementService {
         private UserJpaRepository userJpaRepository;
         @Autowired
         private CloudinaryService cloudinaryService;
+        @Autowired
+        private LandlordTaskService landlordTaskService;
 
         public RequirementRequestRoomDto createRequestRoom(RequirementRequestRoomDto requestRoomDto) {
                 User user = userJpaRepository.findById(requestRoomDto.getUserId())
@@ -49,8 +53,26 @@ public class RequirementService {
                                 .orElseThrow(
                                                 () -> new IllegalArgumentException("Room not found"));
 
+                UUID landlordId = roomJpaRepository.findLandlordByRoomId(requestRoomDto.getRoomId());
+                if (landlordId == null) {
+                        throw new IllegalArgumentException("Landlord not found for the room");
+                }
+
                 int status = 0;
                 Requirement request = new Requirement(requestRoomDto.getDescription(), status, room, user);
+
+                LandlordTaskCreateDto dto = LandlordTaskCreateDto.builder()
+                                .title("Requirement: " + requestRoomDto.getDescription().substring(0,
+                                                Math.min(20, requestRoomDto.getDescription().length())) + "...")
+                                .description(requestRoomDto.getDescription())
+                                .startDate(LocalDateTime.now())
+                                .dueDate(LocalDateTime.now().plusDays(7)) // Set due date 7 days later
+                                .status("PENDING")
+                                .priority("MEDIUM")
+                                .landlordId(landlordId.toString())
+                                .roomId(requestRoomDto.getRoomId().toString())
+                                .build();
+                landlordTaskService.createTask(dto);
 
                 Requirement savedRequirement = requirementJpaRepository.save(request);
 

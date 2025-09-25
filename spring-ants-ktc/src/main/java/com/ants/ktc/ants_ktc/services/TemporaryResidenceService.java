@@ -1,16 +1,22 @@
 package com.ants.ktc.ants_ktc.services;
 
+import com.ants.ktc.ants_ktc.dtos.LandlordTask.LandlordTaskCreateDto;
 import com.ants.ktc.ants_ktc.dtos.temporary_residence.TemporaryResidenceCreateRequest;
 import com.ants.ktc.ants_ktc.dtos.temporary_residence.TemporaryResidenceResponse;
 import com.ants.ktc.ants_ktc.dtos.temporary_residence.TemporaryResidenceUpdateRequest;
 import com.ants.ktc.ants_ktc.entities.Contract;
 import com.ants.ktc.ants_ktc.entities.TemporaryResidence;
 import com.ants.ktc.ants_ktc.repositories.ContractJpaRepository;
+import com.ants.ktc.ants_ktc.repositories.RoomJpaRepository;
 import com.ants.ktc.ants_ktc.repositories.TemporaryResidenceJpaRepository;
+
+import jakarta.transaction.Transactional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -23,11 +29,14 @@ public class TemporaryResidenceService {
     @Autowired
     private ContractJpaRepository contractRepository;
     @Autowired
-    private  CloudinaryService cloudinaryService;
+    private CloudinaryService cloudinaryService;
+    @Autowired
+    private LandlordTaskService landlordTaskService;
 
+    @Transactional
     public TemporaryResidenceResponse create(TemporaryResidenceCreateRequest request,
-                                             MultipartFile frontImage,
-                                             MultipartFile backImage) {
+            MultipartFile frontImage,
+            MultipartFile backImage) {
         Contract contract = contractRepository.findById(request.getContractId())
                 .orElseThrow(() -> new IllegalArgumentException("Contract not found"));
 
@@ -54,14 +63,35 @@ public class TemporaryResidenceService {
             temp.setIdCardBackPublicId(upload.get("publicId"));
         }
 
+        UUID landlordId = temporaryResidenceRepository.findLandlordByTemporaryResidenceId(request.getContractId());
+        if (landlordId == null) {
+            throw new IllegalArgumentException("Landlord not found for the room");
+        }
+        UUID roomId = temporaryResidenceRepository.findRoomIdByTemporaryResidenceId(request.getContractId());
+        if (roomId == null) {
+            throw new IllegalArgumentException("Room not found for the room");
+        }
+        LandlordTaskCreateDto dto = LandlordTaskCreateDto.builder()
+                .title("Temporary Residence: " + request.getNote().substring(0,
+                        Math.min(20, request.getNote().length())) + "...")
+                .description(request.getNote())
+                .startDate(LocalDateTime.now())
+                .dueDate(LocalDateTime.now().plusDays(1))
+                .status("PENDING")
+                .priority("HIGH")
+                .landlordId(landlordId.toString())
+                .roomId(roomId.toString())
+                .build();
+        landlordTaskService.createTask(dto);
+
         TemporaryResidence saved = temporaryResidenceRepository.save(temp);
         return convertToDto(saved);
     }
 
     public TemporaryResidenceResponse update(UUID id,
-                                             TemporaryResidenceUpdateRequest request,
-                                             MultipartFile frontImage,
-                                             MultipartFile backImage) {
+            TemporaryResidenceUpdateRequest request,
+            MultipartFile frontImage,
+            MultipartFile backImage) {
         TemporaryResidence temp = temporaryResidenceRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("TemporaryResidence not found"));
 
@@ -101,6 +131,7 @@ public class TemporaryResidenceService {
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
     }
+
     public void delete(UUID id) {
         TemporaryResidence temp = temporaryResidenceRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("TemporaryResidence not found"));
