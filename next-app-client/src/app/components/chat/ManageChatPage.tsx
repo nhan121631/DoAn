@@ -26,6 +26,7 @@ export default function ManageChatPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string>("");
   const [showSidebar, setShowSidebar] = useState(true);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   // Use a ref for a value that doesn't trigger re-render
   const lastReadTimestamps = useRef(new Map<string, Date>());
@@ -50,7 +51,29 @@ export default function ManageChatPage() {
           );
         }
       });
-      lastReadTimestamps.current = newTimestamps;
+      
+      // Check if timestamps actually changed
+      const oldSize = lastReadTimestamps.current.size;
+      const newSize = newTimestamps.size;
+      let hasChanged = oldSize !== newSize;
+      
+      if (!hasChanged) {
+        // Compare individual timestamps
+        for (const [userId, timestamp] of newTimestamps) {
+          const oldTimestamp = lastReadTimestamps.current.get(userId);
+          if (!oldTimestamp || oldTimestamp.getTime() !== timestamp.getTime()) {
+            hasChanged = true;
+            break;
+          }
+        }
+      }
+      
+      if (hasChanged) {
+        lastReadTimestamps.current = newTimestamps;
+        console.log("Read timestamps updated:", newTimestamps);
+        // Trigger conversation list refresh
+        setRefreshTrigger(prev => prev + 1);
+      }
     });
 
     return () => unsubscribe();
@@ -66,13 +89,27 @@ export default function ManageChatPage() {
       setError
     );
     return () => unsubscribe();
-  }, [landlordId]);
+  }, [landlordId, refreshTrigger]);
 
   // Handle selecting a user
   const handleUserSelect = useCallback(
     async (user: ChatUser) => {
       setSelectedUserId(user.id);
-      await markConversationAsRead(landlordId, user.id);
+      try {
+        await markConversationAsRead(landlordId, user.id);
+        console.log(`ManageChat: Successfully marked conversation with ${user.id} as read`);
+        
+        // Update local unread count immediately for better UX
+        setUserList(prevUsers => 
+          prevUsers.map(u => 
+            u.id === user.id ? { ...u, unreadCount: 0 } : u
+          )
+        );
+        
+      } catch (error) {
+        console.error("ManageChat: Failed to mark conversation as read:", error);
+      }
+      
       // Ẩn sidebar trên mobile khi chọn user
       if (window.innerWidth < 768) {
         setShowSidebar(false);
