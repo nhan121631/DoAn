@@ -6,6 +6,7 @@ import { getLandlordByRoomId } from "./RoomService";
 export const createBookingNotification = async (
   roomId: number | string | undefined,
   tenantId: number | string | undefined,
+  message: string,
 ) => {
     const landlordId = await getLandlordByRoomId(roomId as string);
   try {
@@ -13,7 +14,7 @@ export const createBookingNotification = async (
       receiverId: landlordId.id,     // landlord sẽ nhận
       senderId: tenantId,         // user tạo booking
       type: "booking_success",
-      message: "You have a new booking from a tenant!",
+      message: message,
       isRead: false,
       createdAt: serverTimestamp()
     });
@@ -99,13 +100,14 @@ export const createResidentNotification = async (
   landlordId: number | string | undefined,
   tenantId: number | string | undefined,
   contractId: number | string | undefined,
+  message: string,
 ) => {
   try {
     await addDoc(collection(db, "notifications"), {
       receiverId: landlordId,     // landlord sẽ nhận
       senderId: tenantId,         // user tạo booking
       type: "resident_success",
-      message: "You have a new resident from a tenant!",
+      message: message,
       contractId: contractId,
       isRead: false,
       createdAt: serverTimestamp()

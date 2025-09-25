@@ -112,7 +112,7 @@ export default function BookingForm({
       );
 
       await createBooking(bookingData);
-      await createBookingNotification(roomId, session?.user.id);
+      await createBookingNotification(roomId, session?.user.id, "You have a new booking from a tenant for room: " + roomTitle);
 
       // Hiển thị thông báo thành công
       messageApi.success({
