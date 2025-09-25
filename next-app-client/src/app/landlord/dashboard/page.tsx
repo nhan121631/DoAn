@@ -584,19 +584,14 @@ export default function LandlordDashboardPage() {
         }, 0);
         console.log("Total unread messages:", totalUnreadMessages);
         
-        // Always keep the highest count seen, never decrease
-        setPersistentMessageCount(prevCount => {
-          const newCount = Math.max(prevCount, totalUnreadMessages);
-          console.log(`Previous count: ${prevCount}, New count: ${totalUnreadMessages}, Final count: ${newCount}`);
-          
-          // Update notification stats with the persistent count
-          setNotificationStats(prev => ({
-            ...prev,
-            newMessages: newCount
-          }));
-          
-          return newCount;
-        });
+        // Update message count with current unread messages
+        setPersistentMessageCount(totalUnreadMessages);
+        
+        // Update notification stats
+        setNotificationStats(prev => ({
+          ...prev,
+          newMessages: totalUnreadMessages
+        }));
       },
       () => {}, // setIsLoading - not needed here
       (error) => {
