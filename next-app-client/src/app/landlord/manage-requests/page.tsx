@@ -89,6 +89,9 @@ export default function ManageRequests() {
         content: "Status updated successfully!",
         duration: 2,
       });
+      const userId = requests.find((req) => req.id === id)?.userId;
+      const description = requests.find((req) => req.id === id)?.description;
+      await requestProcessedNotification(session?.user.id, userId, "Request " + description + " has been rejected by landlord.");
     } catch (error: any) {
       messageApi.error({
         content: error.message,
