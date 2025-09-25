@@ -84,11 +84,16 @@ public interface RoomJpaRepository extends JpaRepository<Room, UUID> {
     @Query("SELECT r FROM Room r JOIN FETCH r.user u JOIN FETCH u.wallet w JOIN FETCH r.postType pt WHERE r.id = :roomId")
     Optional<Room> findForExtendById(@Param("roomId") UUID roomId);
 
-    // Projection for room approval status
+    // Projection for room approval status with post dates and type for refund
+    // calculations
     @Query("SELECT r.id AS id, r.approval AS approval, r.title AS title, r.user AS user, " +
             "r.post_start_date AS postStartDate, r.post_end_date AS postEndDate, r.postType AS postType " +
             "FROM Room r WHERE r.id = :roomId")
     Optional<RoomApprovalProjection> findApprovalProjectionById(@Param("roomId") UUID roomId);
+
+    // Fetch room with user and wallet for refund operations
+    @Query("SELECT r FROM Room r JOIN FETCH r.user u JOIN FETCH u.wallet w JOIN FETCH r.postType pt WHERE r.id = :roomId")
+    Optional<Room> findRoomWithUserAndWalletById(@Param("roomId") UUID roomId);
 
     @Modifying
     @Query("UPDATE Room r SET r.approval = :approval WHERE r.id = :roomId")

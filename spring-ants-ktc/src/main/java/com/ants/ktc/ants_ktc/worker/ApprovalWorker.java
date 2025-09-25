@@ -5,8 +5,11 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.Map;
 import java.util.UUID;
@@ -36,7 +39,6 @@ import com.ants.ktc.ants_ktc.repositories.RoomJpaRepository;
 import com.ants.ktc.ants_ktc.repositories.TransactionsJpaRepository;
 import com.ants.ktc.ants_ktc.repositories.UserJpaRepository;
 import com.ants.ktc.ants_ktc.repositories.projection.MailUserProjection;
-import com.ants.ktc.ants_ktc.repositories.projection.RoomApprovalProjection;
 import com.ants.ktc.ants_ktc.services.ApprovalQueueService;
 import com.ants.ktc.ants_ktc.services.ApprovalLogService;
 import com.ants.ktc.ants_ktc.services.MailService;
@@ -222,8 +224,97 @@ public class ApprovalWorker {
                 System.out.println(("[ApprovalWorker] Room " + roomId + " REJECTED: " + result.getContent()));
                 room.setApproval(2);
                 // transaction
-                
-               // =================== Refund deposit to user
+
+                // =================== Refund deposit to user
+                try {
+                    // Get room details for refund calculation with eager loaded user and wallet
+                    Room roomWithUserWallet = roomJpaRepository.findRoomWithUserAndWalletById(roomId)
+                            .orElse(null);
+
+                    if (roomWithUserWallet != null && roomWithUserWallet.getUser() != null) {
+                        User user = roomWithUserWallet.getUser();
+
+                        // Calculate expected transaction amount based on room posting duration and post
+                        // type price
+                        if (roomWithUserWallet.getPost_start_date() != null
+                                && roomWithUserWallet.getPost_end_date() != null
+                                && roomWithUserWallet.getPostType() != null
+                                && roomWithUserWallet.getPostType().getPricePerDay() != null) {
+
+                            LocalDate startDate = roomWithUserWallet.getPost_start_date().toInstant()
+                                    .atZone(ZoneId.systemDefault()).toLocalDate();
+                            LocalDate endDate = roomWithUserWallet.getPost_end_date().toInstant()
+                                    .atZone(ZoneId.systemDefault()).toLocalDate();
+                            long diffDays = ChronoUnit.DAYS.between(startDate, endDate);
+
+                            Double expectedAmount = diffDays * roomWithUserWallet.getPostType().getPricePerDay();
+
+                            // Try to find the transaction using wallet, type, room title, and expected
+                            // amount for highest accuracy
+                            Transaction lastTransaction = null;
+                            if (expectedAmount != null) {
+                                lastTransaction = transactionsJpaRepository
+                                        .findLatestTransactionByWalletTypeDescriptionAndAmount(
+                                                user.getWallet(), 0, roomWithUserWallet.getTitle(), expectedAmount);
+                            }
+
+                            // Fallback 1: Find by wallet, type and room title (good accuracy)
+                            if (lastTransaction == null) {
+                                lastTransaction = transactionsJpaRepository
+                                        .findLatestTransactionByWalletTypeAndDescription(
+                                                user.getWallet(), 0, roomWithUserWallet.getTitle());
+                            }
+
+                            // Fallback 2: Find by wallet and type only (lowest accuracy, use with caution)
+                            if (lastTransaction == null) {
+                                lastTransaction = transactionsJpaRepository
+                                        .findLatestTransactionByWalletAndType(user.getWallet(), 0);
+                            }
+
+                            if (lastTransaction != null) {
+                                Double refundAmount = lastTransaction.getAmount();
+                                Double balance = user.getWallet().getBalance();
+                                user.getWallet().setBalance(balance + refundAmount);
+                                userJpaRepository.save(user);
+
+                                // Create refund transaction
+                                Transaction refundTransaction = new Transaction();
+                                refundTransaction.setAmount(refundAmount);
+                                refundTransaction.setDescription(
+                                        "Refund for rejected room post: " + roomWithUserWallet.getTitle());
+                                refundTransaction.setTransactionDate(new Date());
+
+                                // Generate unique 8-digit transaction code
+                                String transactionCode = generateUniqueTransactionCode("REFUND", user.getId());
+                                refundTransaction.setTransactionCode(transactionCode);
+                                refundTransaction.setBankTransactionName("Ants Wallet");
+                                refundTransaction.setStatus(1);
+                                refundTransaction.setWallet(user.getWallet());
+                                refundTransaction.setTransactionType(3);// type 3: hoàn tiền
+                                transactionsJpaRepository.save(refundTransaction);
+
+                                System.out.println("[ApprovalWorker] ✅ Refunded " + refundAmount
+                                        + " VND to user for rejected room: " + roomWithUserWallet.getTitle());
+                            } else {
+                                System.err.println(
+                                        "[ApprovalWorker] ⚠️ Cannot find original transaction for refund - Room: "
+                                                + roomId);
+                            }
+                        } else {
+                            System.err.println(
+                                    "[ApprovalWorker] ⚠️ Missing post dates or post type info for refund calculation - Room: "
+                                            + roomId);
+                        }
+                    } else {
+                        System.err
+                                .println("[ApprovalWorker] ⚠️ Cannot find room with user and wallet for refund - Room: "
+                                        + roomId);
+                    }
+                } catch (Exception refundError) {
+                    System.err.println("[ApprovalWorker] ❌ Failed to process refund for room " + roomId + ": "
+                            + refundError.getMessage());
+                    refundError.printStackTrace();
+                }
                 try {
                     MailUserProjection mailuser = roomJpaRepository.findMailUsersByRoomId(roomId).stream()
                             .findFirst()
