@@ -29,7 +29,7 @@ class: text-left
       <div>REST API (CRUD)</div>
       <div>JWT Authentication</div>
       <div>OAuth2 (Google OAuth)</div>
-      <div>MySQL / PostgreSQL + JPA</div>
+      <div>MySQL + JPA</div>
       <div>Cache: Redis</div>
     </div>
   </div>
