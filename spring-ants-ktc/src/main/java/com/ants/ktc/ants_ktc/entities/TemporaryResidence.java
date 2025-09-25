@@ -1,6 +1,5 @@
 package com.ants.ktc.ants_ktc.entities;
 
-
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -20,7 +19,7 @@ public class TemporaryResidence extends BaseEntity {
     @Column(name = "full_name", nullable = false)
     private String fullName;
 
-    @Column(name = "id_number", nullable = false, unique = true)
+    @Column(name = "id_number", nullable = false)
     private String idNumber;
 
     @Column(name = "relationship")
