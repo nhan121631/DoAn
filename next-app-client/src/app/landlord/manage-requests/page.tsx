@@ -55,7 +55,7 @@ export default function ManageRequests() {
     fetchData(page, size);
   };
 
-  const handleStatusChange = async (id: string, userId: string) => {
+  const handleStatusChange = async (id: string, userId: string, description: string) => {
     try {
       await updateRequirementStatus(id);
       setRequests((prev) =>
@@ -63,7 +63,7 @@ export default function ManageRequests() {
           item.id === id ? { ...item, status: (item.status = 1) } : item
         )
       );
-        await requestProcessedNotification(session?.user.id, userId,  "Request successfully processed by landlord.");
+      await requestProcessedNotification(session?.user.id, userId,  "Request " + description + " successfully processed by landlord.");
       // Send notification to tenant
       messageApi.success({
         content: "Status updated successfully!",
@@ -89,6 +89,9 @@ export default function ManageRequests() {
         content: "Status updated successfully!",
         duration: 2,
       });
+      const userId = requests.find((req) => req.id === id)?.userId;
+      const description = requests.find((req) => req.id === id)?.description;
+      await requestProcessedNotification(session?.user.id, userId, "Request " + description + " has been rejected by landlord.");
     } catch (error: any) {
       messageApi.error({
         content: error.message,
@@ -182,7 +185,7 @@ export default function ManageRequests() {
         status === 0 ? (
           <Popconfirm
             title="Mark as completed?"
-            onConfirm={() => handleStatusChange(record.id, record.userId)}
+            onConfirm={() => handleStatusChange(record.id, record.userId, record.description)}
             okText="Yes"
             cancelText="No"
           >

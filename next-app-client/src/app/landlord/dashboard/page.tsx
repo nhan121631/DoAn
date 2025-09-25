@@ -63,8 +63,15 @@ import { userFetchBookings, landlordFetchBookings } from "@/services/BookingServ
 import { getRequestsByLandlordId } from "@/services/Requirements";
 import { ContractService } from "@/services/ContractService";
 import { BillService } from "@/services/BillService";
-import { listenForConversations } from "@/services/ChatService";
+import { listenForConversations, listenForUnreadCount } from "@/services/ChatService";
 import { useRouter } from "next/navigation";
+import { db } from "@/lib/firebase";
+import {
+  collection,
+  query,
+  where,
+  onSnapshot,
+} from "firebase/firestore";
 const { Title, Text } = Typography;
 const { TextArea } = Input;
 const { Option } = Select;
@@ -567,54 +574,39 @@ export default function LandlordDashboardPage() {
     applyFilters();
   }, [searchText, statusFilter, priorityFilter, tasks]);
 
-  // Listen for new messages
+  // Listen for unread message count
   useEffect(() => {
     if (!session?.user?.id) return;
 
-    const lastReadTimestamps = { current: new Map<string, Date>() };
+    console.log("Dashboard: Starting to listen for unread messages");
 
-    const unsubscribe = listenForConversations(
+    const unsubscribe = listenForUnreadCount(
       session.user.id,
-      lastReadTimestamps,
-      (users) => {
-        console.log("Chat users received:", users);
-        const totalUnreadMessages = users.reduce((total, user) => {
-          console.log(`User ${user.name}: ${user.unreadCount} unread messages`);
-          return total + (user.unreadCount || 0);
-        }, 0);
-        console.log("Total unread messages:", totalUnreadMessages);
+      (totalUnreadMessages) => {
+        console.log("Dashboard: Received unread count:", totalUnreadMessages);
         
-        // Always keep the highest count seen, never decrease
-        setPersistentMessageCount(prevCount => {
-          const newCount = Math.max(prevCount, totalUnreadMessages);
-          console.log(`Previous count: ${prevCount}, New count: ${totalUnreadMessages}, Final count: ${newCount}`);
-          
-          // Update notification stats with the persistent count
-          setNotificationStats(prev => ({
-            ...prev,
-            newMessages: newCount
-          }));
-          
-          return newCount;
-        });
-      },
-      () => {}, // setIsLoading - not needed here
-      (error) => {
-        console.error("Chat listener error:", error);
-        messageApi.error("Failed to load chat notifications");
+        // Update count based on actual unread messages
+        setPersistentMessageCount(totalUnreadMessages);
+        
+        // Update notification stats with the current count
+        setNotificationStats(prev => ({
+          ...prev,
+          newMessages: totalUnreadMessages
+        }));
       }
     );
 
-    return () => unsubscribe();
+    return () => {
+      console.log("Dashboard: Cleaning up unread message listener");
+      unsubscribe();
+    };
   }, [session?.user?.id]);
 
   // Function to manually reset message count when user visits chat
+  // No longer needed as count will be automatically synced with actual unread messages
   const resetMessageCount = () => {
-    setPersistentMessageCount(0);
-    setNotificationStats(prev => ({
-      ...prev,
-      newMessages: 0
-    }));
+    // Count will be automatically updated by the chat listener
+    console.log("Navigating to chat - count will be updated automatically");
   };
 
   // Table columns
