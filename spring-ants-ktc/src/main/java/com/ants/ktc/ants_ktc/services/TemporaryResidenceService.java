@@ -1,5 +1,15 @@
 package com.ants.ktc.ants_ktc.services;
 
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
 import com.ants.ktc.ants_ktc.dtos.LandlordTask.LandlordTaskCreateDto;
 import com.ants.ktc.ants_ktc.dtos.temporary_residence.TemporaryResidenceCreateRequest;
 import com.ants.ktc.ants_ktc.dtos.temporary_residence.TemporaryResidenceResponse;
@@ -7,20 +17,9 @@ import com.ants.ktc.ants_ktc.dtos.temporary_residence.TemporaryResidenceUpdateRe
 import com.ants.ktc.ants_ktc.entities.Contract;
 import com.ants.ktc.ants_ktc.entities.TemporaryResidence;
 import com.ants.ktc.ants_ktc.repositories.ContractJpaRepository;
-import com.ants.ktc.ants_ktc.repositories.RoomJpaRepository;
 import com.ants.ktc.ants_ktc.repositories.TemporaryResidenceJpaRepository;
 
 import jakarta.transaction.Transactional;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 public class TemporaryResidenceService {
