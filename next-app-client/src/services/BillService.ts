@@ -13,6 +13,20 @@ export const BillService = {
         return response.json();
     },
 
+    async getByContract(contractId: string): Promise<BillData[]> {
+        const response = await fetch(`${BASE_URL}/${contractId}/bills`);
+        if (!response.ok) {
+            const errorText = await response.text().catch(() => 'Unknown error');
+            console.error(`Failed to fetch bills for contract ${contractId}:`, {
+                status: response.status,
+                statusText: response.statusText,
+                error: errorText
+            });
+            throw new Error(`Failed to fetch bills for contract (${response.status}): ${errorText}`);
+        }
+        return response.json();
+    },
+
     async createBill(contractId: string, billData: Partial<BillData>): Promise<BillData> {
         const response = await fetch(`/api/contracts/${contractId}/bills`, {
             method: "POST",
