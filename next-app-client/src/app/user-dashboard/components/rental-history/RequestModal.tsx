@@ -5,7 +5,7 @@ import { UploadOutlined } from "@ant-design/icons";
 import { useSession } from "next-auth/react";
 import type { UploadProps, UploadFile } from "antd";
 import { createRequestNotification } from "@/services/NotificationService";
-import { createRequest, uploadRequirementImage } from "@/services/Requirements";
+import { createRequest } from "@/services/Requirements";
 
 
 interface RequestModalProps {
@@ -53,35 +53,30 @@ const RequestModal: React.FC<RequestModalProps> = ({
       }
 
       setLoading(true);
-
-      const request = {
-        userId,
-        roomId: id,
-        description: values.requestDescription,
-      };
-      
-      const result = await createRequest(request);
-
-      if (fileList.length > 0) {
-        const imageFile = fileList[0].originFileObj;
-        if (imageFile && result.idRequirement) {
-          await uploadRequirementImage(result.idRequirement, imageFile);
-        }
-      }
-       await createRequestNotification(
+      // Lấy file ảnh nếu có
+      const imageFile = fileList[0]?.originFileObj as File | undefined;
+      // Gọi API mới: tạo requirement và upload ảnh cùng lúc
+      const result = await createRequest(
+        {
+          userId,
+          roomId: id,
+          description: values.requestDescription,
+        },
+        imageFile // Truyền file ảnh (có thể undefined nếu không có)
+      );
+      // Tạo notification
+      await createRequestNotification(
         id,
         userId,
         "You have a new request from a tenant: " + values.requestDescription
       );
-      
-      // Gọi onFinish để tạo requirement trước
-      onFinish(request);
+      onFinish(result);
       messageApi.success("Request created successfully!");
       handleCancel();
     } catch (error) {
       console.error("Error creating request:", error);
       messageApi.error("Failed to create request. Please try again.");
-    }finally {
+    } finally {
       setLoading(false);
     }
   };
@@ -193,6 +188,8 @@ const RequestModal: React.FC<RequestModalProps> = ({
 };
 
 export default RequestModal;
+
+
 
 
 

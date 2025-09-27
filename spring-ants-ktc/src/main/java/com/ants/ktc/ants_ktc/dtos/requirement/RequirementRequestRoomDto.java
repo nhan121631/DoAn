@@ -29,4 +29,5 @@ public class RequirementRequestRoomDto {
     @Length(max = 500, message = "Description must not exceed 500 characters")
     private String description;
 
+    private String imageUrl;
 }

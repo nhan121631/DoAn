@@ -44,14 +44,14 @@ public class RequirementService {
         @Autowired
         private LandlordTaskService landlordTaskService;
 
-        public RequirementRequestRoomDto createRequestRoom(RequirementRequestRoomDto requestRoomDto) {
+        @Transactional
+        public RequirementRequestRoomDto createRequestRoomWithImage(RequirementRequestRoomDto requestRoomDto,
+                        MultipartFile image) {
                 User user = userJpaRepository.findById(requestRoomDto.getUserId())
-                                .orElseThrow(
-                                                () -> new IllegalArgumentException("User not found"));
+                                .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
                 Room room = roomJpaRepository.findById(requestRoomDto.getRoomId())
-                                .orElseThrow(
-                                                () -> new IllegalArgumentException("Room not found"));
+                                .orElseThrow(() -> new IllegalArgumentException("Room not found"));
 
                 UUID landlordId = roomJpaRepository.findLandlordByRoomId(requestRoomDto.getRoomId());
                 if (landlordId == null) {
@@ -61,12 +61,19 @@ public class RequirementService {
                 int status = 0;
                 Requirement request = new Requirement(requestRoomDto.getDescription(), status, room, user);
 
+                if (image != null && !image.isEmpty() && isImageFile(image)) {
+                        Map<String, String> uploadResult = cloudinaryService.uploadFile(image);
+                        request.setImageUrl(uploadResult.get("url"));
+                        request.setImagePublicId(uploadResult.get("publicId"));
+                }
+
+                // Tạo task cho landlord
                 LandlordTaskCreateDto dto = LandlordTaskCreateDto.builder()
                                 .title("Requirement: " + requestRoomDto.getDescription().substring(0,
                                                 Math.min(20, requestRoomDto.getDescription().length())) + "...")
                                 .description(requestRoomDto.getDescription())
                                 .startDate(LocalDateTime.now())
-                                .dueDate(LocalDateTime.now().plusDays(7)) // Set due date 7 days later
+                                .dueDate(LocalDateTime.now().plusDays(7))
                                 .status("PENDING")
                                 .priority("MEDIUM")
                                 .landlordId(landlordId.toString())
@@ -76,10 +83,50 @@ public class RequirementService {
 
                 Requirement savedRequirement = requirementJpaRepository.save(request);
 
-                // Set ID vào DTO để trả về
                 requestRoomDto.setIdRequirement(savedRequirement.getId());
+                if (savedRequirement.getImageUrl() != null) {
+                        requestRoomDto.setImageUrl(savedRequirement.getImageUrl());
+                }
 
                 return requestRoomDto;
+        }
+
+        @Transactional
+        public RequirementRequestRoomDto updateRequirementWithImage(UUID idRequirement,
+                        RequirementRequestUpdateDto updateDto, MultipartFile image) {
+                Requirement requirement = requirementJpaRepository.findById(idRequirement)
+                                .orElseThrow(() -> new IllegalArgumentException("Requirement not found"));
+
+                // 1. Update description
+                requirement.setDescription(updateDto.getDescription());
+
+                // 2. Update ảnh nếu có
+                if (image != null && !image.isEmpty() && isImageFile(image)) {
+                        // Xóa ảnh cũ nếu có
+                        if (requirement.getImagePublicId() != null) {
+                                cloudinaryService.deleteFile(requirement.getImagePublicId());
+                        }
+
+                        // Upload ảnh mới
+                        Map<String, String> uploadResult = cloudinaryService.uploadFile(image);
+                        requirement.setImageUrl(uploadResult.get("url"));
+                        requirement.setImagePublicId(uploadResult.get("publicId"));
+                }
+
+                // 3. Save requirement
+                Requirement savedRequirement = requirementJpaRepository.save(requirement);
+
+                // 4. Tạo DTO để trả về
+                RequirementRequestRoomDto result = new RequirementRequestRoomDto();
+                result.setIdRequirement(savedRequirement.getId());
+                result.setUserId(savedRequirement.getUser().getId());
+                result.setRoomId(savedRequirement.getRoom().getId());
+                result.setDescription(savedRequirement.getDescription());
+                if (savedRequirement.getImageUrl() != null) {
+                        result.setImageUrl(savedRequirement.getImageUrl());
+                }
+
+                return result;
         }
 
         // upload image

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { getRequestsByUser, updateRequest, uploadRequirementImage } from "@/services/Requirements";
+import { getRequestsByUser, updateRequest, updateRequirementWithImage, uploadRequirementImage } from "@/services/Requirements";
 import {
   PaginatedResponse,
   RequirementDetail,
@@ -18,41 +18,59 @@ export type RequestFormValues = {
   roomName: string;
   requestDescription: string;
 };
-
 const RequestEditModalContent: React.FC<{
   open: boolean;
   onCancel: () => void;
-  onSubmit: (values: RequestFormValues) => void;
+  onSubmit: (values: RequestFormValues, imageFile?: File) => void; // Thêm imageFile param
   editingRequest: RequirementDetail | null;
   setData: React.Dispatch<React.SetStateAction<PaginatedResponse<RequirementDetail>>>;
 }> = ({ open, onCancel, onSubmit, editingRequest, setData }) => {
   const [form] = Form.useForm();
   const [fileList, setFileList] = useState<any[]>([]);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null); // Lưu file đã chọn
 
   useEffect(() => {
     if (open && editingRequest) {
-      form.setFieldsValue(editingRequest);
+      form.setFieldsValue({
+        roomName: editingRequest.roomTitle,
+        requestDescription: editingRequest.description, // Set đúng field name
+      });
+      setFileList([]);
+      setSelectedFile(null);
     } else if (open && !editingRequest) {
       form.resetFields();
     }
   }, [editingRequest, form, open]);
 
   const handleFinish = (values: RequestFormValues) => {
-    onSubmit(values);
+    // Gửi cả values và file đã chọn
+    onSubmit(values, selectedFile || undefined);
   };
 
-  const handleUpload = async (file: File) => {
-    if (!editingRequest) return;
-    await uploadRequirementImage(editingRequest.id, file);
-    setData((prev) => ({
-      ...prev,
-      data: prev.data.map((item) =>
-        item.id === editingRequest.id
-          ? { ...item, imageUrl: `/dmvvs0ags/image/upload/...${file.name}` }
-          : item
-      ),
-    }));
-    message.success("Image updated!");
+  // Xóa handleUpload, chỉ lưu file vào state
+  const uploadProps = {
+    beforeUpload: (file: File) => {
+      const isImage = file.type.startsWith("image/");
+      if (!isImage) {
+        message.error("You can only upload image files!");
+        return false;
+      }
+      const isLt10M = file.size / 1024 / 1024 < 10;
+      if (!isLt10M) {
+        message.error("Image must be smaller than 10MB!");
+        return false;
+      }
+      
+      // Chỉ lưu file, không upload ngay
+      setSelectedFile(file);
+      return false; // Prevent auto upload
+    },
+    onChange: ({ fileList }: any) => {
+      setFileList(fileList);
+    },
+    fileList,
+    maxCount: 1,
+    accept: "image/*",
   };
 
   return (
@@ -86,34 +104,31 @@ const RequestEditModalContent: React.FC<{
           >
             <Input.TextArea
               rows={4}
-              placeholder={
-                editingRequest
-                  ? editingRequest.description
-                  : "e.g., Request description"
-              }
+              placeholder="Enter request description"
+              showCount
+              maxLength={500}
             />
           </Form.Item>
 
-          <Form.Item label="Update Image">
-            <Upload
-              beforeUpload={(file) => {
-                handleUpload(file);
-                return false; 
-              }}
-              fileList={fileList}
-              onChange={({ fileList }) => setFileList(fileList)}
-              accept="image/*"
-              maxCount={1}
-              showUploadList={true}
-            >
-              <Button icon={<UploadOutlined />}>Select Image</Button>
+          <Form.Item label="Update Image (Optional)">
+            <Upload {...uploadProps}>
+              <Button icon={<UploadOutlined />}>Select New Image</Button>
             </Upload>
-            {editingRequest?.imageUrl && (
-              <img
-                src={`https://res.cloudinary.com${editingRequest.imageUrl}`}
-                alt="Current"
-                style={{ marginTop: 8, maxWidth: 120, borderRadius: 8 }}
-              />
+            {editingRequest?.imageUrl && !selectedFile && (
+              <div style={{ marginTop: 8 }}>
+                <p style={{ fontSize: 12, color: '#666' }}>Current image:</p>
+                <img
+                  src={`https://res.cloudinary.com${editingRequest.imageUrl}`}
+                  alt="Current"
+                  style={{ maxWidth: 120, borderRadius: 8 }}
+                />
+              </div>
+            )}
+            {selectedFile && (
+              <div style={{ marginTop: 8 }}>
+                <p style={{ fontSize: 12, color: '#666' }}>New image selected:</p>
+                <p style={{ fontSize: 12, color: '#1890ff' }}>{selectedFile.name}</p>
+              </div>
             )}
           </Form.Item>
         </div>
@@ -134,7 +149,6 @@ const RequestEditModalContent: React.FC<{
 const RequestStatusInteractive: React.FC = () => {
   const { data: session } = useSession();
 
-  // ✅ Fix: khởi tạo mặc định rỗng
   const [data, setData] = useState<PaginatedResponse<RequirementDetail>>({
     data: [],
     page: 0,
@@ -201,34 +215,26 @@ const RequestStatusInteractive: React.FC = () => {
     }
   };
 
-  const handleFormSubmit = async (values: RequestFormValues) => {
-    if (editingRequest) {
-      const payload: UpdateRequestRoomDto = {
-        id: editingRequest.id,
-        description: values.requestDescription,
-      };
-      try {
-        await updateRequest(payload);
-        const updatedRequests = requests.map((item: RequirementDetail) =>
-          item.id === editingRequest.id
-            ? { ...item, description: values.requestDescription }
-            : item
-        );
-        setRequests(updatedRequests);
-        messageApi.success({
-          content: "Request updated successfully!",
-          duration: 2,
-        });
-      } catch (error: any) {
-        messageApi.error({
-          content: error.message || "Failed to update request.",
-          duration: 2,
-        });
-      }
-    }
-    setIsFormModalOpen(false);
-    setEditingRequest(null);
-  };
+  const handleFormSubmit = async (values: RequestFormValues, imageFile?: File) => {
+  if (!editingRequest) return;
+
+  try {
+    // Gọi API update cả description và ảnh
+    await updateRequirementWithImage(
+      editingRequest.id,
+      values.requestDescription,
+      imageFile
+    );
+    await fetchData(data.page || 0, data.size || 5);
+
+    messageApi.success("Request updated successfully!");
+  } catch (error: any) {
+    messageApi.error("Failed to update request.");
+  }
+
+  setIsFormModalOpen(false);
+  setEditingRequest(null);
+};
 
   const handleEditRequest = (record: RequirementDetail) => {
     setEditingRequest(record);
