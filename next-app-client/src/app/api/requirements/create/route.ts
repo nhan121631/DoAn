@@ -9,23 +9,24 @@ export async function POST(req: NextRequest) {
     if (!session) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+    
     try {
-        const request = await req.json();
-        console.log("Request body:", request);
-
-        const response = await fetch(`${API_URL}/requirements/request-room`, {
+        const formData = await req.formData();
+        // Forward form-data lên backend endpoint mới
+        const response = await fetch(`${API_URL}/requirements/request-room-with-image`, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
                 'Authorization': `Bearer ${session.user.accessToken}`,
+                // Không set Content-Type, để fetch tự set multipart/form-data
             },
-            body: JSON.stringify(request),
+            body: formData, // Forward nguyên form-data
         });
+
         const data = await response.json();
         if (!response.ok) {
             return NextResponse.json({ error: data?.message || "Failed to create requirement" }, { status: response.status });
         }
-        return NextResponse.json(data, { status: 200 });
+return NextResponse.json(data, { status: 200 });
     } catch (error: any) {
         return NextResponse.json({ error: error.message || "Internal Server Error" }, { status: 500 });
     }

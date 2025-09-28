@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -30,14 +31,31 @@ public class RequirementController {
     @Autowired
     private RequirementService requirementService;
 
-    @PostMapping("/request-room")
-    public ResponseEntity<RequirementRequestRoomDto> createRequestRoom(
-            @RequestBody @Valid RequirementRequestRoomDto requestRoomDto) {
+    @PostMapping("/request-room-with-image")
+    public ResponseEntity<RequirementRequestRoomDto> createRequestRoomWithImage(
+            @RequestPart("data") @Valid RequirementRequestRoomDto requestRoomDto,
+            @RequestPart(value = "image", required = false) MultipartFile image) {
         try {
-            RequirementRequestRoomDto result = requirementService.createRequestRoom(requestRoomDto);
+            RequirementRequestRoomDto result = requirementService.createRequestRoomWithImage(requestRoomDto, image);
             return ResponseEntity.status(HttpStatus.CREATED).body(result);
         } catch (IllegalArgumentException ex) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+
+    @PatchMapping("/{idRequirement}/update-with-image")
+    public ResponseEntity<RequirementRequestRoomDto> updateRequirementWithImage(
+            @PathVariable("idRequirement") UUID idRequirement,
+            @RequestPart("data") @Valid RequirementRequestUpdateDto updateDto,
+            @RequestPart(value = "image", required = false) MultipartFile image) {
+        try {
+            RequirementRequestRoomDto result = requirementService.updateRequirementWithImage(idRequirement, updateDto,
+                    image);
+            return ResponseEntity.ok(result);
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         } catch (Exception ex) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
@@ -49,7 +67,8 @@ public class RequirementController {
             @PathVariable("idRequirement") UUID idRequirement,
             @RequestParam("image") MultipartFile image) {
         try {
-            boolean isUploaded = requirementService.uploadRequirementImage(idRequirement, image);
+            boolean isUploaded = requirementService.uploadRequirementImage(idRequirement,
+                    image);
             if (isUploaded) {
                 return ResponseEntity.ok("Image uploaded successfully");
             } else {

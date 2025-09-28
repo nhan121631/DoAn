@@ -16,7 +16,7 @@ const ManageAccountPage = () => {
         borderRadius: borderRadiusLG,
       }}
     >
-      <h2 className="mb-4 text-xl font-semibold dark:text-white">
+      <h2 className="mb-4 text-2xl font-semibold dark:text-white">
         Account Management
       </h2>
       <TableManageAccount />

@@ -18,12 +18,12 @@ export default function NoLookingForFilter() {
         Sorry, we couldn&#39;t find any rooms matching your search. Try
         adjusting your filters or search again.
       </p>
-      <Link
+      {/* <Link
         href="/users"
         className="mt-6 px-6 py-2 rounded bg-blue-600 text-white font-semibold hover:bg-blue-700 transition"
       >
         See all post
-      </Link>
+      </Link> */}
     </div>
   );
 }

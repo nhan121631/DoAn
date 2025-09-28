@@ -105,19 +105,22 @@ const ManageBlogPage = () => {
         const colorConfig = {
           ANNOUNCEMENT: {
             color: "orange",
-            className: "bg-orange-50 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 border-orange-200 dark:border-orange-700"
+            className:
+              "bg-orange-50 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 border-orange-200 dark:border-orange-700",
           },
           GUIDE: {
             color: "blue",
-            className: "bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-700"
+            className:
+              "bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-700",
           },
           NEWS: {
             color: "green",
-            className: "bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300 border-green-200 dark:border-green-700"
+            className:
+              "bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300 border-green-200 dark:border-green-700",
           },
         } as const;
         return (
-          <Tag 
+          <Tag
             color={colorConfig[category].color}
             className={colorConfig[category].className}
           >
@@ -131,7 +134,7 @@ const ManageBlogPage = () => {
       dataIndex: "status",
       key: "status",
       render: (status: BlogStatus) => (
-        <Tag 
+        <Tag
           color={status === "PUBLISHED" ? "green" : "orange"}
           className={
             status === "PUBLISHED"
@@ -174,7 +177,9 @@ const ManageBlogPage = () => {
           />
           <Popconfirm
             title={
-              <span className="text-gray-900 dark:text-gray-100">Delete Blog</span>
+              <span className="text-gray-900 dark:text-gray-100">
+                Delete Blog
+              </span>
             }
             description={
               <span className="text-gray-700 dark:text-gray-300">
@@ -230,7 +235,10 @@ const ManageBlogPage = () => {
     <div className="p-6 space-y-6 bg-gray-50 dark:bg-gray-900 min-h-screen">
       <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
         <div className="flex justify-between items-center mb-6">
-          <Title level={2} className="text-gray-900 dark:!text-gray-100">
+          <Title
+            level={2}
+            className="text-gray-900 dark:!text-gray-100 !text-2xl !font-semibold !mb-0"
+          >
             Blog Management
           </Title>
           <Button
@@ -247,7 +255,9 @@ const ManageBlogPage = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
           <Input
             placeholder="Search by title..."
-            prefix={<SearchOutlined className="text-gray-400 dark:text-gray-500" />}
+            prefix={
+              <SearchOutlined className="text-gray-400 dark:text-gray-500" />
+            }
             value={searchTitle}
             onChange={(e) => setSearchTitle(e.target.value)}
             allowClear
@@ -311,7 +321,6 @@ const ManageBlogPage = () => {
 
       {/* Preview Modal */}
       <Modal
-       
         title={
           <span className="text-gray-900 dark:text-gray-100">
             Preview: {previewBlog?.title}
@@ -350,7 +359,7 @@ const ManageBlogPage = () => {
               <strong className="text-gray-900 dark:text-gray-100">
                 Category:
               </strong>
-              <Tag 
+              <Tag
                 color="blue"
                 className="bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-700"
               >

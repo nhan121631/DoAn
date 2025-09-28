@@ -1,14 +1,14 @@
 "use client";
 
 import { useLocationContext } from "@/context/LocationContext";
-import { useSession } from "next-auth/react";
+import { getRoomVipUser, getRoomVipWithLocation } from "@/services/RoomService";
 import { PaginatedResponse, RoomInUser } from "@/types/types";
-import RoomVipCard from "../rooms/RoomVipCard";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { BiChevronLeft, BiChevronRight } from "react-icons/bi";
 import { HiSparkles } from "react-icons/hi";
-import { getRoomVipWithLocation, getRoomVipUser } from "@/services/RoomService";
-import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import RoomVipCard from "../rooms/RoomVipCard";
 
 interface RentalRoomsWithLocationProps {
   initialVipRooms?: PaginatedResponse<RoomInUser>;
