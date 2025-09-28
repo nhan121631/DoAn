@@ -5,6 +5,7 @@ import AppHeader from "./components/Header";
 import { ThemeContext } from "./context/ThemeContext";
 import { Outlet } from "react-router";
 import { QueryClientProvider } from "@tanstack/react-query";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { queryClient } from "./lib/react-query";
 
 function Admin() {
@@ -42,6 +43,7 @@ function Admin() {
           </Layout>
         </Layout>
       </ThemeContext.Provider>
+      <ReactQueryDevtools initialIsOpen={true} />
     </QueryClientProvider>
   );
 }

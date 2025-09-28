@@ -9,7 +9,7 @@ import {
   EditOutlined,
   EyeOutlined,
   FilterOutlined,
-  SearchOutlined
+  SearchOutlined,
 } from "@ant-design/icons";
 import {
   Button,
@@ -39,7 +39,10 @@ const statusMap: Record<number, { text: string; color: string }> = {
   3: { text: "Pending", color: "blue" },
 };
 
-const LandlordContracts: React.FC<LandlordContractsProps> = ({ contracts, onContractDeleted }) => {
+const LandlordContracts: React.FC<LandlordContractsProps> = ({
+  contracts,
+  onContractDeleted,
+}) => {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<number | null>(null);
   const [isInvoiceModalOpen, setIsInvoiceModalOpen] = useState(false);
@@ -56,7 +59,9 @@ const LandlordContracts: React.FC<LandlordContractsProps> = ({ contracts, onCont
   const handleDelete = async (record: ContractData) => {
     try {
       await ContractService.deleteContract(record.id);
-      messageApi.success(`Deleted contract ${record.contractName} successfully`);
+      messageApi.success(
+        `Deleted contract ${record.contractName} successfully`
+      );
       // Call the callback to refresh data
       if (onContractDeleted) {
         onContractDeleted();
@@ -64,8 +69,8 @@ const LandlordContracts: React.FC<LandlordContractsProps> = ({ contracts, onCont
     } catch (error) {
       console.error("Error deleting contract:", error);
       messageApi.error(
-        error instanceof Error 
-          ? error.message 
+        error instanceof Error
+          ? error.message
           : "Failed to delete contract. Please try again."
       );
     }
@@ -173,7 +178,7 @@ const LandlordContracts: React.FC<LandlordContractsProps> = ({ contracts, onCont
               onClick={() => handleEdit(record)}
             />
           </Tooltip>
-      
+
           <Tooltip title="Delete Contract">
             <Popconfirm
               title="Are you sure delete this contract?"
@@ -208,8 +213,9 @@ const LandlordContracts: React.FC<LandlordContractsProps> = ({ contracts, onCont
     <div className="space-y-6">
       {contextHolder}
       <div className="mb-4">
-        <h2 className="text-4xl font-semibold dark:!text-white">Contract Management</h2>
-    
+        <h2 className="text-2xl font-semibold dark:!text-white">
+          Contract Management
+        </h2>
       </div>
       <Card
         title={

@@ -44,6 +44,9 @@ import com.ants.ktc.ants_ktc.services.RoomService;
 import com.ants.ktc.ants_ktc.services.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Valid;
 import jakarta.validation.Validator;
@@ -52,6 +55,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @RestController
 @RequestMapping("/api/rooms")
+@Tag(name = "Room API", description = "API for managing rooms")
 public class RoomController {
     @Autowired
     private RoomService roomService;
@@ -63,6 +67,8 @@ public class RoomController {
     private RatingService ratingService;
 
     @PostMapping
+    @Operation(summary = "Create a new room", description = "Creates a new room")
+    @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<RoomResponseDto> createRoom(
             @RequestPart("room") String roomJson,
             @RequestPart(value = "images", required = false) List<MultipartFile> images) throws IOException {
@@ -82,6 +88,8 @@ public class RoomController {
     }
 
     @PatchMapping("/{id}")
+    @Operation(summary = "Update an existing room", description = "Updates an existing room by ID")
+    @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<RoomResponseDto> updateRoom(
             @PathVariable("id") UUID id,
             @RequestPart("room") String roomJson,

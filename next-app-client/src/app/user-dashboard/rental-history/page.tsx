@@ -8,7 +8,7 @@ import React from "react";
 import { IoMdAddCircleOutline } from "react-icons/io";
 import { userFetchBookings } from "@/services/BookingService";
 import { RequirementRequestRoomDto } from "@/types/types";
-import { createRequest, uploadRequirementImage  } from "@/services/Requirements";
+import { createRequest } from "@/services/Requirements"; 
 import { AlignCenter } from "lucide-react";
 import { bookingConfirmationNotification, createRequestNotification } from "@/services/NotificationService";
 import { useSession } from "next-auth/react";
@@ -122,59 +122,40 @@ function RentalHistory() {
   };
 
   const handleFinish = async (request: RequirementRequestRoomDto) => {
-  try {
-    console.log("Submitting request:", request);
-    
-    const result = await createRequest(request);
-    
-    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
-    const selectedFile = fileInput?.files?.[0];
-    
-    if (selectedFile && result.idRequirement) {
-      try {
-        await uploadRequirementImage(result.idRequirement, selectedFile);
-        messageApi.success({
-          content: "Request submitted successfully with image!",
-          duration: 2,
-        });
-      } catch (uploadError) {
-        console.error("Failed to upload image:", uploadError);
-        messageApi.warning({
-          content: "Request created successfully, but failed to upload image",
-          duration: 3,
-        });
-      }
-    } else {
+    try {
+      console.log("Request submitted:", request);
+      
       messageApi.success({
-        content: "Request submitted successfully",
+        content: "Request submitted successfully!",
         duration: 2,
       });
-    }
-    
-    setOpen(false);
-    setFieldValue(null);
-    form.resetFields();
-  } catch (error: any) {
-    let errorMsg = "Failed to submit request";
-    if (error?.message) {
-      if (Array.isArray(error.message)) {
-        errorMsg = error.message[0];
-      } else {
-        errorMsg = error.message;
+      
+      setOpen(false);
+      setFieldValue(null);
+      form.resetFields();
+    } catch (error: any) {
+      let errorMsg = "Failed to submit request";
+      if (error?.message) {
+        if (Array.isArray(error.message)) {
+          errorMsg = error.message[0];
+        } else {
+          errorMsg = error.message;
+        }
       }
+      messageApi.error({
+        content: errorMsg,
+        duration: 3,
+      });
     }
-    messageApi.error({
-      content: errorMsg,
-      duration: 3,
-    });
-  }
-};
+  };
 
   const handleAccept = async (key: string, idRoom: string | number | undefined) => {
     modal.setSelectedKey(key);
     modal.setVisible(true);
     const landlordId = await getLandlordByRoomId(idRoom as string);
-    await bookingConfirmationNotification(session?.user.id, landlordId.id, "Your booking deposit is confirmed and waiting for landlord's confirmation.");
+    const getNameLandlord = tableData.find(item => item.key === key)?.name_landlord || "the landlord";
+    const nameRoom = tableData.find(item => item.key === key)?.room || '';
+    await bookingConfirmationNotification(session?.user.id, landlordId.id, "Your booking deposit is confirmed and waiting for landlord's:" + getNameLandlord + " confirmation at room " + nameRoom + ".");
   };
 
   const handleConfirm = async () => {
@@ -378,7 +359,6 @@ function RentalHistory() {
         fieldValue={fieldValue}
         modalType={modalType}
       />
-      ;
     </div>
   );
 }

@@ -129,11 +129,12 @@ export default function RoomMapPage() {
                       </svg>
                     </div>
                     <h3 className="text-lg font-medium text-gray-900 mb-2">
-                      Không có phòng nào được tìm thấy
+                      Rooms will appear here when you select a location on the
+                      map
                     </h3>
                     <p className="text-sm text-gray-500 max-w-sm">
-                      Thử di chuyển và zoom trên bản đồ để tìm kiếm các phòng
-                      trọ có sẵn trong khu vực
+                      Try moving and zooming on the map to find available rooms
+                      in the area
                     </p>
                   </div>
                 ) : (

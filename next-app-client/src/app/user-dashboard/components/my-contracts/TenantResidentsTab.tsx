@@ -227,7 +227,7 @@ export default function TenantResidentsTab({
         frontImageFile,
         backImageFile
       );
-      await createResidentNotification(contract.landlordId, contract.tenantId, contract.id);
+      await createResidentNotification(contract.landlordId, contract.tenantId, contract.id, "A new resident has been added to your contract by the tenant: " + values.fullName);
       console.log("Created resident:", newResident);
 
       setResidents((prev) => [...prev, newResident]);

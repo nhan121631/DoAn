@@ -26,9 +26,13 @@ export default function ManageChatPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string>("");
   const [showSidebar, setShowSidebar] = useState(true);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   // Use a ref for a value that doesn't trigger re-render
   const lastReadTimestamps = useRef(new Map<string, Date>());
+  
+  // Track users that have been marked as read recently to prevent overriding optimistic updates
+  const recentlyMarkedAsRead = useRef(new Set<string>());
 
   // Effect 1: Listen for read statuses
   useEffect(() => {
@@ -50,29 +54,106 @@ export default function ManageChatPage() {
           );
         }
       });
-      lastReadTimestamps.current = newTimestamps;
+      
+      // Check if timestamps actually changed
+      const oldSize = lastReadTimestamps.current.size;
+      const newSize = newTimestamps.size;
+      let hasChanged = oldSize !== newSize;
+      
+      if (!hasChanged) {
+        // Compare individual timestamps
+        for (const [userId, timestamp] of newTimestamps) {
+          const oldTimestamp = lastReadTimestamps.current.get(userId);
+          if (!oldTimestamp || oldTimestamp.getTime() !== timestamp.getTime()) {
+            hasChanged = true;
+            break;
+          }
+        }
+      }
+      
+      if (hasChanged) {
+        lastReadTimestamps.current = newTimestamps;
+        console.log("Read timestamps updated:", newTimestamps);
+        // Trigger conversation list refresh
+        setRefreshTrigger(prev => prev + 1);
+      }
     });
 
     return () => unsubscribe();
   }, [landlordId]);
+
+  // Cleanup protection on unmount
+  useEffect(() => {
+    return () => {
+      recentlyMarkedAsRead.current.clear();
+    };
+  }, []);
 
   // Effect 2: Listen for all messages and update chat list
   useEffect(() => {
     const unsubscribe = listenForConversations(
       landlordId,
       lastReadTimestamps,
-      setUserList,
+      (users) => {
+        setUserList(prevUserList => {
+          // Filter out users that have been recently marked as read to preserve optimistic updates
+          const filteredUsers = users.map(user => {
+            if (recentlyMarkedAsRead.current.has(user.id)) {
+              // Keep the local unreadCount (which should be 0) instead of server data
+              const currentUser = prevUserList.find(u => u.id === user.id);
+              console.log(`ManageChat: Protecting user ${user.id} from server override. Server: ${user.unreadCount}, Local: ${currentUser?.unreadCount ?? 0}`);
+              return {
+                ...user,
+                unreadCount: currentUser?.unreadCount ?? 0
+              };
+            }
+            return user;
+          });
+          
+          return filteredUsers;
+        });
+      },
       setIsLoading,
       setError
     );
     return () => unsubscribe();
-  }, [landlordId]);
+  }, [landlordId, refreshTrigger]);
 
   // Handle selecting a user
   const handleUserSelect = useCallback(
     async (user: ChatUser) => {
       setSelectedUserId(user.id);
-      await markConversationAsRead(landlordId, user.id);
+      
+      // Add to recently marked as read to protect from server overrides
+      recentlyMarkedAsRead.current.add(user.id);
+      
+      // Immediately update local state for better UX (optimistic update)
+      setUserList(prevUsers => 
+        prevUsers.map(u => 
+          u.id === user.id ? { ...u, unreadCount: 0 } : u
+        )
+      );
+
+      try {
+        await markConversationAsRead(landlordId, user.id);
+        console.log(`ManageChat: Successfully marked conversation with ${user.id} as read`);
+        
+        // Remove protection after a delay to allow Firebase to propagate
+        setTimeout(() => {
+          recentlyMarkedAsRead.current.delete(user.id);
+        }, 2000); // 2 seconds should be enough for Firebase to sync
+        
+      } catch (error) {
+        console.error("ManageChat: Failed to mark conversation as read:", error);
+        // Remove protection and revert the optimistic update if marking as read failed
+        recentlyMarkedAsRead.current.delete(user.id);
+        setUserList(prevUsers => 
+          prevUsers.map(u => 
+            u.id === user.id ? { ...u, unreadCount: user.unreadCount } : u
+          )
+        );
+      }
+      
       // Ẩn sidebar trên mobile khi chọn user
       if (window.innerWidth < 768) {
         setShowSidebar(false);
@@ -85,6 +166,8 @@ export default function ManageChatPage() {
   const handleBackToSidebar = useCallback(() => {
     setShowSidebar(true);
     setSelectedUserId("");
+    // Clear protection when going back
+    recentlyMarkedAsRead.current.clear();
   }, []);
 
   // Sort user list

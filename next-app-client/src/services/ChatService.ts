@@ -155,20 +155,26 @@ export const markConversationAsRead = async (
   landlordId: string,
   otherUserId: string
 ) => {
-  const readStatusDocRef = doc(
-    db,
-    "readStatuses",
-    `${landlordId}-${otherUserId}`
-  );
-  await setDoc(
-    readStatusDocRef,
-    {
-      userId: landlordId,
-      conversationId: otherUserId,
-      lastRead: serverTimestamp(),
-    },
-    { merge: true }
-  );
+  try {
+    const readStatusDocRef = doc(
+      db,
+      "readStatuses",
+      `${landlordId}-${otherUserId}`
+    );
+    await setDoc(
+      readStatusDocRef,
+      {
+        userId: landlordId,
+        conversationId: otherUserId,
+        lastRead: serverTimestamp(),
+      },
+      { merge: true }
+    );
+    console.log(`Marked conversation with ${otherUserId} as read for ${landlordId}`);
+  } catch (error) {
+    console.error("Error marking conversation as read:", error);
+    throw error;
+  }
 };
 
 /**
@@ -242,6 +248,79 @@ export const sendTextMessage = async (
     createdAt: serverTimestamp(),
     messageType: 'text',
   });
+};
+
+/**
+ * Lắng nghe tổng số tin nhắn chưa đọc cho dashboard
+ * @param landlordId ID của chủ nhà
+ * @param setUnreadCount Callback để cập nhật số lượng tin nhắn chưa đọc
+ * @returns Hàm unsubscribe để dọn dẹp listener
+ */
+export const listenForUnreadCount = (
+  landlordId: string,
+  setUnreadCount: (count: number) => void
+): (() => void) => {
+  if (!landlordId) {
+    return () => {};
+  }
+
+  let currentReadTimestamps = new Map<string, Date>();
+
+  // Listen for read statuses first
+  const readStatusQuery = query(
+    collection(db, "readStatuses"),
+    where("userId", "==", landlordId)
+  );
+
+  const unsubscribeReadStatus = onSnapshot(readStatusQuery, (snapshot) => {
+    const newTimestamps = new Map<string, Date>();
+    snapshot.forEach((doc) => {
+      const data = doc.data();
+      if (data.lastRead) {
+        newTimestamps.set(
+          data.conversationId,
+          new Date(data.lastRead.seconds * 1000)
+        );
+      }
+    });
+    currentReadTimestamps = newTimestamps;
+    console.log("Unread count listener: Read timestamps updated:", newTimestamps);
+  });
+
+  // Listen for messages and calculate unread count
+  const messagesQuery = query(
+    collection(db, "messages"),
+    where("recipientId", "==", landlordId),
+    orderBy("createdAt", "desc")
+  );
+
+  const unsubscribeMessages = onSnapshot(messagesQuery, (snapshot) => {
+    const unreadCounts = new Map<string, number>();
+
+    snapshot.forEach((doc) => {
+      const data = doc.data();
+      const senderId = data.senderId;
+
+      if (!senderId || senderId === landlordId) return;
+
+      const lastReadTime = currentReadTimestamps.get(senderId);
+      const messageTime = data.createdAt ? new Date(data.createdAt.seconds * 1000) : new Date();
+
+      if (!lastReadTime || lastReadTime < messageTime) {
+        const currentCount = unreadCounts.get(senderId) || 0;
+        unreadCounts.set(senderId, currentCount + 1);
+      }
+    });
+
+    const totalUnread = Array.from(unreadCounts.values()).reduce((sum, count) => sum + count, 0);
+    console.log("Unread count listener: Total unread messages:", totalUnread);
+    setUnreadCount(totalUnread);
+  });
+
+  return () => {
+    unsubscribeReadStatus();
+    unsubscribeMessages();
+  };
 };
 
 /**

@@ -158,10 +158,10 @@ const ManagePostTypePage = () => {
     >
       {contextHolder}
 
-      <h2 className="text-xl font-semibold mb-4 dark:text-white">
+      <h2 className="text-2xl font-semibold mb-4 dark:text-white">
         Post Type Management
       </h2>
-      <Button type="primary" className="mb-4" onClick={() => setOpen(true) }>
+      <Button type="primary" className="mb-4" onClick={() => setOpen(true)}>
         Create Post Type
       </Button>
       <TableManagePostType messageApi={messageApi} handleUpdate={handleEdit} />
