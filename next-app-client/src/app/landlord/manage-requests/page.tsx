@@ -14,7 +14,10 @@ import {
   updateRequirementStatus,
 } from "@/services/Requirements";
 import { useSession } from "next-auth/react";
-import { createRequestNotification, requestProcessedNotification } from "@/services/NotificationService";
+import {
+  createRequestNotification,
+  requestProcessedNotification,
+} from "@/services/NotificationService";
 import RequestDetailModal from "../components/manage-requests/ModalRequest";
 
 export default function ManageRequests() {
@@ -55,7 +58,11 @@ export default function ManageRequests() {
     fetchData(page, size);
   };
 
-  const handleStatusChange = async (id: string, userId: string, description: string) => {
+  const handleStatusChange = async (
+    id: string,
+    userId: string,
+    description: string
+  ) => {
     try {
       await updateRequirementStatus(id);
       setRequests((prev) =>
@@ -63,7 +70,11 @@ export default function ManageRequests() {
           item.id === id ? { ...item, status: (item.status = 1) } : item
         )
       );
-      await requestProcessedNotification(session?.user.id, userId,  "Request " + description + " successfully processed by landlord.");
+      await requestProcessedNotification(
+        session?.user.id,
+        userId,
+        "Request " + description + " successfully processed by landlord."
+      );
       // Send notification to tenant
       messageApi.success({
         content: "Status updated successfully!",
@@ -91,7 +102,11 @@ export default function ManageRequests() {
       });
       const userId = requests.find((req) => req.id === id)?.userId;
       const description = requests.find((req) => req.id === id)?.description;
-      await requestProcessedNotification(session?.user.id, userId, "Request " + description + " has been rejected by landlord.");
+      await requestProcessedNotification(
+        session?.user.id,
+        userId,
+        "Request " + description + " has been rejected by landlord."
+      );
     } catch (error: any) {
       messageApi.error({
         content: error.message,
@@ -185,7 +200,9 @@ export default function ManageRequests() {
         status === 0 ? (
           <Popconfirm
             title="Mark as completed?"
-            onConfirm={() => handleStatusChange(record.id, record.userId, record.description)}
+            onConfirm={() =>
+              handleStatusChange(record.id, record.userId, record.description)
+            }
             okText="Yes"
             cancelText="No"
           >
@@ -236,10 +253,10 @@ export default function ManageRequests() {
     <div className="p-4">
       {contextHolder}
       <div className="mb-4">
-        <h2 className="text-4xl font-semibold dark:!text-white">
+        <h2 className="text-2xl font-semibold dark:!text-white">
           Manage Requests
         </h2>
-        <p className="text-xl text-gray-500">Room Request Management</p>
+        <p className="text-lg text-gray-500">Room Request Management</p>
       </div>
       <Table
         columns={columns}

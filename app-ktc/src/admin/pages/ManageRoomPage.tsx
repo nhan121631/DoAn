@@ -16,10 +16,10 @@ function ManageRoom() {
         borderRadius: borderRadiusLG,
       }}
     >
-      <h2 className="text-xl font-semibold mb-4 dark:text-white">
+      <h2 className="text-2xl font-semibold mb-4 dark:text-white">
         Room Management
       </h2>
-      
+
       <TableManageRoom />
     </Content>
   );

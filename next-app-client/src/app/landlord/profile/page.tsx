@@ -27,7 +27,7 @@ export default async function ProfileInfo() {
         <div className="px-6 py-6 mx-auto max-w-7xl">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <h1 className="text-3xl font-bold text-transparent bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text">
+              <h1 className="text-2xl font-bold text-transparent bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text">
                 Profile Dashboard
               </h1>
             </div>
@@ -49,21 +49,21 @@ export default async function ProfileInfo() {
                 <div className="relative inline-block mb-6">
                   <div className="absolute inset-0 rounded-full opacity-75 bg-gradient-to-r from-blue-400 to-purple-500 blur-md animate-pulse"></div>
                   <div className="relative w-32 h-32 mb-4 overflow-hidden border-4 border-blue-500 rounded-full">
-  <Image
-    src={
-              typeof userProfile?.avatar === "string" &&
-              userProfile.avatar?.trim() !== ""
-                ? userProfile.avatar.startsWith("http")
-                  ? userProfile.avatar
-                  : `${URL_IMAGE}${userProfile.avatar}`
-                : "/images/default/avatar.jpg"
-            }
-    alt="Avatar"
-    fill
-    unoptimized
-    className="object-cover"
-  />
-</div>
+                    <Image
+                      src={
+                        typeof userProfile?.avatar === "string" &&
+                        userProfile.avatar?.trim() !== ""
+                          ? userProfile.avatar.startsWith("http")
+                            ? userProfile.avatar
+                            : `${URL_IMAGE}${userProfile.avatar}`
+                          : "/images/default/avatar.jpg"
+                      }
+                      alt="Avatar"
+                      fill
+                      unoptimized
+                      className="object-cover"
+                    />
+                  </div>
                   <div className="absolute w-8 h-8 bg-green-500 border-4 border-white rounded-full shadow-lg -bottom-2 -right-2 dark:border-gray-800"></div>
                 </div>
 

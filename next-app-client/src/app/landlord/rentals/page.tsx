@@ -28,7 +28,7 @@ interface RentalData {
 
 export default function RentalsPage() {
   const [data, setData] = useState<RentalData[]>([]);
-  const {data : session} = useSession();
+  const { data: session } = useSession();
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 5,
@@ -108,8 +108,12 @@ export default function RentalsPage() {
       });
       // Refresh data after update
       await fetchTableData(pagination.current, pagination.pageSize);
-      const nameRoom = data.find(item => item.key === bookingId)?.room || '';
-      await bookingConfirmationNotification(session?.user.id, userId, `Your booking has been ${actionName} by the landlord at room ${nameRoom}.`);
+      const nameRoom = data.find((item) => item.key === bookingId)?.room || "";
+      await bookingConfirmationNotification(
+        session?.user.id,
+        userId,
+        `Your booking has been ${actionName} by the landlord at room ${nameRoom}.`
+      );
     } catch (error) {
       console.error("Failed to update booking status:", error);
       messageApi.error({
@@ -137,7 +141,10 @@ export default function RentalsPage() {
     } catch (error) {
       console.error("Failed to delete booking:", error);
       const errMsg = error instanceof Error ? error.message : String(error);
-      messageApi.error({ content: `Failed to remove booking: ${errMsg}`, duration: 4 });
+      messageApi.error({
+        content: `Failed to remove booking: ${errMsg}`,
+        duration: 4,
+      });
     }
   };
 
@@ -206,7 +213,12 @@ export default function RentalsPage() {
                   title="Accept this booking?"
                   description="Are you sure you want to accept this booking request?"
                   onConfirm={() =>
-                    handleUpdateBookingStatus(record.key, 1, "accepted", record.userId)
+                    handleUpdateBookingStatus(
+                      record.key,
+                      1,
+                      "accepted",
+                      record.userId
+                    )
                   }
                   okText="Yes"
                   cancelText="No"
@@ -228,7 +240,12 @@ export default function RentalsPage() {
                   title="Reject this booking?"
                   description="Are you sure you want to reject this booking request?"
                   onConfirm={() =>
-                    handleUpdateBookingStatus(record.key, 2, "rejected", record.userId)
+                    handleUpdateBookingStatus(
+                      record.key,
+                      2,
+                      "rejected",
+                      record.userId
+                    )
                   }
                   okText="Yes"
                   cancelText="No"
@@ -267,7 +284,12 @@ export default function RentalsPage() {
                 title="Confirm deposit received?"
                 description="Are you sure the tenant has made the deposit payment?"
                 onConfirm={() =>
-                  handleUpdateBookingStatus(record.key, 4, "deposit confirmed", record.userId)
+                  handleUpdateBookingStatus(
+                    record.key,
+                    4,
+                    "deposit confirmed",
+                    record.userId
+                  )
                 }
                 okText="Yes"
                 cancelText="No"
@@ -353,10 +375,10 @@ export default function RentalsPage() {
       {contextHolder}
       <div style={{ padding: 24 }}>
         <div className="mb-4">
-          <h2 className="text-4xl font-semibold dark:!text-white">
+          <h2 className="text-2xl font-semibold dark:!text-white">
             Rental Management
           </h2>
-          <p className="text-xl text-gray-500">Room Rental Management.</p>
+          <p className="text-lg text-gray-500">Room Rental Management.</p>
         </div>
         <Table
           columns={columns}

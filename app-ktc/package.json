@@ -14,6 +14,7 @@
     "@hookform/resolvers": "^5.1.1",
     "@tailwindcss/vite": "^4.1.11",
     "@tanstack/react-query": "^5.84.2",
+    "@tanstack/react-query-devtools": "^5.90.2",
     "@tinymce/tinymce-react": "^6.3.0",
     "antd": "^5.26.4",
     "axios": "^1.11.0",
