@@ -136,6 +136,7 @@ export default function BillsTab({
         electricityUsage: 0,
         waterUsage: 0,
         damageFee: 0,
+        note: "",
         electricityFee: 0,
         waterFee: 0,
         serviceFee: roomData.priceMonth || 0,
@@ -159,6 +160,7 @@ export default function BillsTab({
         electricityUsage: electricityUsage,
         waterUsage: waterUsage,
         damageFee: editBill.damageFee || 0,
+        note: editBill.note || "",
         electricityFee: editBill.electricityFee,
         waterFee: editBill.waterFee,
         serviceFee: roomData?.priceMonth || editBill.serviceFee,
@@ -179,6 +181,7 @@ export default function BillsTab({
         waterFee: values.waterFee,
         serviceFee: values.serviceFee,
         damageFee: values.damageFee,
+        note: values.note || null,
         totalAmount: values.totalAmount,
         // Include usage and price data
         electricityUsage: values.electricityUsage,
@@ -211,6 +214,7 @@ export default function BillsTab({
         waterFee: values.waterFee,
         serviceFee: values.serviceFee,
         damageFee: values.damageFee,
+        note: values.note || null,
         totalAmount: values.totalAmount,
         // Include usage and price data
         electricityUsage: values.electricityUsage,
@@ -229,6 +233,7 @@ export default function BillsTab({
         electricityUsage: 0,
         waterUsage: 0,
         damageFee: 0,
+        note: "",
         electricityFee: 0,
         waterFee: 0,
         serviceFee: roomData?.priceMonth || 0,
@@ -336,11 +341,11 @@ export default function BillsTab({
       align: "right" as const,
       render: (v: number, record: BillData) => (
         <div>
-          <div className="font-medium">{v?.toLocaleString()}đ</div>
+          <div className="font-medium">{v?.toLocaleString('vi-VN')}đ</div>
           {record.electricityUsage && record.electricityPrice && (
             <div className="text-xs text-gray-500">
               {record.electricityUsage.toFixed(2)} kWh ×{" "}
-              {record.electricityPrice.toLocaleString()}đ/kWh
+              {record.electricityPrice.toLocaleString('vi-VN')}đ/kWh
             </div>
           )}
         </div>
@@ -355,11 +360,11 @@ export default function BillsTab({
       align: "right" as const,
       render: (v: number, record: BillData) => (
         <div>
-          <div className="font-medium">{v?.toLocaleString()}đ</div>
+          <div className="font-medium">{v?.toLocaleString('vi-VN')}đ</div>
           {record.waterUsage && record.waterPrice && (
             <div className="text-xs text-gray-500">
               {record.waterUsage.toFixed(2)} m³ ×{" "}
-              {record.waterPrice.toLocaleString()}đ/m³
+              {record.waterPrice.toLocaleString('vi-VN')}đ/m³
             </div>
           )}
         </div>
@@ -374,10 +379,15 @@ export default function BillsTab({
       align: "right" as const,
       render: (v: number, record: BillData) => (
         <div>
-          <div className="font-medium">{v?.toLocaleString()}đ</div>
+          <div className="font-medium">{v?.toLocaleString('vi-VN')}đ</div>
           {record.damageFee != null && record.damageFee > 0 && (
             <div className="text-xs text-red-500">
-              + Damage Fee: {record.damageFee.toLocaleString()}đ
+              + Other Fee: {record.damageFee.toLocaleString('vi-VN')}đ
+              {record.note && (
+                <div className="text-xs text-gray-500 italic">
+                  ({record.note})
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -391,7 +401,7 @@ export default function BillsTab({
       key: "totalAmount",
       width: "130px",
       align: "right" as const,
-      render: (v: number) => v?.toLocaleString() + "đ",
+      render: (v: number) => v?.toLocaleString('vi-VN') + "đ",
       sorter: (a: BillData, b: BillData) =>
         (a.totalAmount || 0) - (b.totalAmount || 0),
     },
@@ -534,6 +544,7 @@ export default function BillsTab({
       waterUsage,
       electricityPrice: elecPrice,
       waterPrice: waterPrice,
+      note: bill.note,
     };
   });
 
@@ -701,6 +712,7 @@ export default function BillsTab({
                   electricityUsage: 0,
                   waterUsage: 0,
                   damageFee: 0,
+                  note: "",
                   electricityFee: 0,
                   waterFee: 0,
                   serviceFee: roomData?.priceMonth || 0,
@@ -897,7 +909,7 @@ export default function BillsTab({
               label={
                 <span className="transition-colors duration-300 dark:text-gray-300">
                   Electricity Usage (kWh) - Price:{" "}
-                  {roomData?.elecPrice?.toLocaleString() || 0}đ/kWh
+                  {roomData?.elecPrice?.toLocaleString('vi-VN') || 0}đ/kWh
                 </span>
               }
               name="electricityUsage"
@@ -911,9 +923,9 @@ export default function BillsTab({
                 placeholder="Enter electricity usage"
                 style={{ width: "100%" }}
                 formatter={(value) =>
-                  `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                  `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ".")
                 }
-                parser={(value) => value?.replace(/\$\s?|(,*)/g, "") as any}
+                parser={(value) => value?.replace(/\$\s?|(\.)/g, "") as any}
                 className="dark:bg-[#17223b] dark:border-gray-600 dark:text-white transition-colors duration-300"
               />
             </Form.Item>
@@ -922,7 +934,7 @@ export default function BillsTab({
               label={
                 <span className="transition-colors duration-300 dark:text-gray-300">
                   Water Usage (m³) - Price:{" "}
-                  {roomData?.waterPrice?.toLocaleString() || 0}đ/m³
+                  {roomData?.waterPrice?.toLocaleString('vi-VN') || 0}đ/m³
                 </span>
               }
               name="waterUsage"
@@ -934,9 +946,9 @@ export default function BillsTab({
                 placeholder="Enter water usage"
                 style={{ width: "100%" }}
                 formatter={(value) =>
-                  `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                  `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ".")
                 }
-                parser={(value) => value?.replace(/\$\s?|(,*)/g, "") as any}
+                parser={(value) => value?.replace(/\$\s?|(\.)/g, "") as any}
                 className="dark:bg-[#17223b] dark:border-gray-600 dark:text-white transition-colors duration-300"
               />
             </Form.Item>
@@ -944,7 +956,7 @@ export default function BillsTab({
             <Form.Item
               label={
                 <span className="transition-colors duration-300 dark:text-gray-300">
-                  Service Fee: {roomData?.priceMonth?.toLocaleString() || 0}
+                  Service Fee: {roomData?.priceMonth?.toLocaleString('vi-VN') || 0}
                   đ/month
                 </span>
               }
@@ -954,7 +966,7 @@ export default function BillsTab({
                 style={{ width: "100%" }}
                 disabled
                 formatter={(value) =>
-                  `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                  `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ".")
                 }
                 className="dark:bg-[#22304a] dark:border-gray-600 dark:text-white transition-colors duration-300"
               />
@@ -963,7 +975,7 @@ export default function BillsTab({
             <Form.Item
               label={
                 <span className="transition-colors duration-300 dark:text-gray-300">
-                  Damage Fee (đ)
+                  Other Fees (đ)
                 </span>
               }
               name="damageFee"
@@ -973,9 +985,26 @@ export default function BillsTab({
                 placeholder="Enter damage fee"
                 style={{ width: "100%" }}
                 formatter={(value) =>
-                  `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                  `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ".")
                 }
-                parser={(value) => value?.replace(/\$\s?|(,*)/g, "") as any}
+                parser={(value) => value?.replace(/\$\s?|(\.)/g, "") as any}
+                className="dark:bg-[#17223b] dark:border-gray-600 dark:text-white transition-colors duration-300"
+              />
+            </Form.Item>
+
+            <Form.Item
+              label={
+                <span className="transition-colors duration-300 dark:text-gray-300">
+                  Other Fees Description
+                </span>
+              }
+              name="note"
+            >
+              <Input.TextArea
+                placeholder="Enter note for other fee (optional)"
+                rows={2}
+                maxLength={500}
+                showCount
                 className="dark:bg-[#17223b] dark:border-gray-600 dark:text-white transition-colors duration-300"
               />
             </Form.Item>
@@ -993,7 +1022,7 @@ export default function BillsTab({
                   style={{ width: "100%" }}
                   disabled
                   formatter={(value) =>
-                    `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                    `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ".")
                   }
                   className="dark:bg-[#22304a] dark:border-gray-600 dark:text-white transition-colors duration-300"
                 />
@@ -1011,7 +1040,7 @@ export default function BillsTab({
                   style={{ width: "100%" }}
                   disabled
                   formatter={(value) =>
-                    `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                    `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ".")
                   }
                   className="dark:bg-[#22304a] dark:border-gray-600 dark:text-white transition-colors duration-300"
                 />
@@ -1029,7 +1058,7 @@ export default function BillsTab({
                   style={{ width: "100%" }}
                   disabled
                   formatter={(value) =>
-                    `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                    `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ".")
                   }
                   className="dark:bg-[#22304a] dark:border-gray-600 dark:text-white transition-colors duration-300"
                 />
@@ -1091,7 +1120,7 @@ export default function BillsTab({
             label={
               <span className="transition-colors duration-300 dark:text-gray-300">
                 Electricity Usage (kWh) - Price:{" "}
-                {roomData?.elecPrice?.toLocaleString() || 0}đ/kWh
+                {roomData?.elecPrice?.toLocaleString('vi-VN') || 0}đ/kWh
               </span>
             }
             name="electricityUsage"
@@ -1105,9 +1134,9 @@ export default function BillsTab({
               placeholder="Enter electricity usage"
               style={{ width: "100%" }}
               formatter={(value) =>
-                `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ".")
               }
-              parser={(value) => value?.replace(/\$\s?|(,*)/g, "") as any}
+              parser={(value) => value?.replace(/\$\s?|(\.)/g, "") as any}
               className="dark:bg-[#17223b] dark:border-gray-600 dark:text-white transition-colors duration-300"
             />
           </Form.Item>
@@ -1116,7 +1145,7 @@ export default function BillsTab({
             label={
               <span className="transition-colors duration-300 dark:text-gray-300">
                 Water Usage (m³) - Price:{" "}
-                {roomData?.waterPrice?.toLocaleString() || 0}đ/m³
+                {roomData?.waterPrice?.toLocaleString('vi-VN') || 0}đ/m³
               </span>
             }
             name="waterUsage"
@@ -1128,9 +1157,9 @@ export default function BillsTab({
               placeholder="Enter water usage"
               style={{ width: "100%" }}
               formatter={(value) =>
-                `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ".")
               }
-              parser={(value) => value?.replace(/\$\s?|(,*)/g, "") as any}
+              parser={(value) => value?.replace(/\$\s?|(\.)/g, "") as any}
               className="dark:bg-[#17223b] dark:border-gray-600 dark:text-white transition-colors duration-300"
             />
           </Form.Item>
@@ -1138,7 +1167,7 @@ export default function BillsTab({
           <Form.Item
             label={
               <span className="transition-colors duration-300 dark:text-gray-300">
-                Service Fee: {roomData?.priceMonth?.toLocaleString() || 0}
+                Service Fee: {roomData?.priceMonth?.toLocaleString('vi-VN') || 0}
                 đ/month
               </span>
             }
@@ -1148,7 +1177,7 @@ export default function BillsTab({
               style={{ width: "100%" }}
               disabled
               formatter={(value) =>
-                `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ".")
               }
               className="dark:bg-[#22304a] dark:border-gray-600 dark:text-white transition-colors duration-300"
             />
@@ -1157,19 +1186,36 @@ export default function BillsTab({
           <Form.Item
             label={
               <span className="transition-colors duration-300 dark:text-gray-300">
-                Damage Fee (đ)
+                Other Fees (đ)
               </span>
             }
             name="damageFee"
           >
             <InputNumber
               min={0}
-              placeholder="Enter damage fee"
+              placeholder="Enter other fees"
               style={{ width: "100%" }}
               formatter={(value) =>
-                `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ".")
               }
-              parser={(value) => value?.replace(/\$\s?|(,*)/g, "") as any}
+              parser={(value) => value?.replace(/\$\s?|(\.)/g, "") as any}
+              className="dark:bg-[#17223b] dark:border-gray-600 dark:text-white transition-colors duration-300"
+            />
+          </Form.Item>
+
+          <Form.Item
+            label={
+              <span className="transition-colors duration-300 dark:text-gray-300">
+                Other Fees Description
+              </span>
+            }
+            name="note"
+          >
+            <Input.TextArea
+              placeholder="Enter note for other fee (optional)"
+              rows={2}
+              maxLength={500}
+              showCount
               className="dark:bg-[#17223b] dark:border-gray-600 dark:text-white transition-colors duration-300"
             />
           </Form.Item>
@@ -1187,7 +1233,7 @@ export default function BillsTab({
                 style={{ width: "100%" }}
                 disabled
                 formatter={(value) =>
-                  `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                  `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ".")
                 }
                 className="dark:bg-[#22304a] dark:border-gray-600 dark:text-white transition-colors duration-300"
               />
@@ -1205,7 +1251,7 @@ export default function BillsTab({
                 style={{ width: "100%" }}
                 disabled
                 formatter={(value) =>
-                  `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                  `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ".")
                 }
                 className="dark:bg-[#22304a] dark:border-gray-600 dark:text-white transition-colors duration-300"
               />
@@ -1223,7 +1269,7 @@ export default function BillsTab({
                 style={{ width: "100%" }}
                 disabled
                 formatter={(value) =>
-                  `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                  `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ".")
                 }
                 className="dark:bg-[#22304a] dark:border-gray-600 dark:text-white transition-colors duration-300"
               />

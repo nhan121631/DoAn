@@ -38,6 +38,7 @@ public class BillService {
         bill.setElectricityFee(request.getElectricityFee());
         bill.setWaterFee(request.getWaterFee());
         bill.setServiceFee(request.getServiceFee());
+        bill.setNote(request.getNote());
         bill.setTotalAmount(request.getTotalAmount());
         bill.setStatus(BillStatus.PENDING);
 
@@ -52,6 +53,7 @@ public class BillService {
         if (dto.getElectricityFee() != null) bill.setElectricityFee(dto.getElectricityFee());
         if (dto.getWaterFee() != null) bill.setWaterFee(dto.getWaterFee());
         if (dto.getServiceFee() != null) bill.setServiceFee(dto.getServiceFee());
+        if (dto.getNote() != null) bill.setNote(dto.getNote());
         if (dto.getTotalAmount() != null) bill.setTotalAmount(dto.getTotalAmount());
         if (dto.getStatus() != null) bill.setStatus(dto.getStatus());
 
@@ -103,6 +105,7 @@ public class BillService {
                     + (bill.getServiceFee() != null ? bill.getServiceFee() : 0);
             damageFee = bill.getTotalAmount() - totalBase;
         }
+        String note = bill.getNote();
 
         return BillResponseDto.builder()
                 .id(bill.getId())
@@ -114,6 +117,7 @@ public class BillService {
                 .waterUsage(waterUsage)
                 .waterFee(bill.getWaterFee())
                 .serviceFee(bill.getServiceFee())
+                .note(note)
                 .damageFee(damageFee)
                 .totalAmount(bill.getTotalAmount())
                 .status(bill.getStatus())

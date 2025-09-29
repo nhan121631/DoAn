@@ -16,6 +16,7 @@ import { PiHandDepositLight } from "react-icons/pi";
 import { LuBookCheck } from "react-icons/lu";
 import { VscFeedback } from "react-icons/vsc";
 import { GrHostMaintenance } from "react-icons/gr";
+import { HiUsers } from "react-icons/hi";
 
 const { Sider } = Layout;
 
@@ -40,12 +41,13 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
     "/landlord/manage-rooms": "4",
     "/landlord/rentals": "5",
     "/landlord/manage-contracts": "6",
-    "/landlord/manage-requests": "7",
-    "/landlord/manage-maintain": "8",
-    "/landlord/manage-comments": "9",
-    "/landlord/add-funds": "10",
-    "/landlord/payment-history": "11",
-    "/landlord/manage-chat": "12",
+    "/landlord/manage-residents": "7",
+    "/landlord/manage-requests": "8",
+    "/landlord/manage-maintain": "9",
+    "/landlord/manage-comments": "10",
+    "/landlord/add-funds": "11",
+    "/landlord/payment-history": "12",
+    "/landlord/manage-chat": "13",
   };
 
   // const selectedKey = pathToKey[pathname] || "1";
@@ -53,7 +55,8 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
     const p = pathname || "";
     if (/^\/landlord\/manage-rooms(\/|$)/.test(p)) return "4";
     if (/^\/landlord\/manage-contracts(\/|$)/.test(p)) return "6";
-    if (/^\/landlord\/add-funds(\/|$)/.test(p)) return "10";
+    if (/^\/landlord\/manage-residents(\/|$)/.test(p)) return "7";
+    if (/^\/landlord\/add-funds(\/|$)/.test(p)) return "11";
     return pathToKey[p] || "1";
   };
   const selectedKey = getSelectedKey();
@@ -208,6 +211,24 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
                   alignItems: "center",
                 }}
               >
+                <HiUsers />
+              </span>
+            ),
+            label: (
+              <Link href="/landlord/manage-residents">Residents Management</Link>
+            ),
+          },
+          {
+            key: "8",
+            icon: (
+              <span
+                style={{
+                  fontSize: 18,
+                  marginRight: 4,
+                  display: "inline-flex",
+                  alignItems: "center",
+                }}
+              >
                 <MdOutlineRequestQuote />
               </span>
             ),
@@ -216,7 +237,7 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
             ),
           },
           {
-            key: "8",
+            key: "9",
             icon: (
               <span
                 style={{
@@ -236,7 +257,7 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
             ),
           },
           {
-            key: "9",
+            key: "10",
             icon: (
               <span
                 style={{
@@ -254,7 +275,7 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
             ),
           },
           {
-            key: "10",
+            key: "11",
             icon: (
               <span
                 style={{
@@ -270,7 +291,7 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
             label: <Link href="/landlord/add-funds">Deposit Management</Link>,
           },
           {
-            key: "11",
+            key: "12",
             icon: (
               <span
                 style={{
@@ -288,7 +309,7 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
             ),
           },
           {
-            key: "12",
+            key: "13",
             icon: (
               <span
                 style={{

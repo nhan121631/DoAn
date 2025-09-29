@@ -32,7 +32,8 @@ public class TemporaryResidenceService {
     @Autowired
     private LandlordTaskService landlordTaskService;
 
-    @Transactional
+
+
     public TemporaryResidenceResponse create(TemporaryResidenceCreateRequest request,
             MultipartFile frontImage,
             MultipartFile backImage) {
@@ -47,6 +48,7 @@ public class TemporaryResidenceService {
         temp.setStartDate(request.getStartDate());
         temp.setEndDate(request.getEndDate());
         temp.setNote(request.getNote());
+        temp.setStatus("PENDING");
 
         // Upload ảnh mặt trước
         if (frontImage != null && !frontImage.isEmpty()) {
@@ -86,6 +88,18 @@ public class TemporaryResidenceService {
         TemporaryResidence saved = temporaryResidenceRepository.save(temp);
         return convertToDto(saved);
     }
+    public List<TemporaryResidenceResponse> getByLandlord(UUID landlordId) {
+        return temporaryResidenceRepository.findByLandlordId(landlordId)
+                .stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
+    }
+    public List<TemporaryResidenceResponse> getByTenant(UUID tenantId) {
+        return temporaryResidenceRepository.findByTenantId(tenantId)
+                .stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
+    }
 
     public TemporaryResidenceResponse update(UUID id,
             TemporaryResidenceUpdateRequest request,
@@ -100,6 +114,7 @@ public class TemporaryResidenceService {
         temp.setStartDate(request.getStartDate());
         temp.setEndDate(request.getEndDate());
         temp.setNote(request.getNote());
+        temp.setStatus(request.getStatus());
 
         // Nếu có upload ảnh mới -> xóa ảnh cũ + upload ảnh mới
         if (frontImage != null && !frontImage.isEmpty()) {
@@ -146,6 +161,7 @@ public class TemporaryResidenceService {
     }
 
     public TemporaryResidenceResponse convertToDto(TemporaryResidence entity) {
+
         return TemporaryResidenceResponse.builder()
                 .id(entity.getId())
                 .contractId(entity.getContract().getId())
@@ -155,6 +171,7 @@ public class TemporaryResidenceService {
                 .startDate(entity.getStartDate())
                 .endDate(entity.getEndDate())
                 .note(entity.getNote())
+                .status(entity.getStatus())
                 .idCardFrontUrl(entity.getIdCardFrontUrl())
                 .idCardBackUrl(entity.getIdCardBackUrl())
                 .build();

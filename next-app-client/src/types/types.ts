@@ -336,6 +336,7 @@ export interface BillData {
   waterFee: number;
   serviceFee: number;
   damageFee?: number;
+  note?: string; // Note for damage fee description
   totalAmount: number;
   paid?: boolean; // For backward compatibility
   status: 'PENDING' | 'CONFIRMING' | 'PAID' | 'OVERDUE';
@@ -355,6 +356,7 @@ export interface ResidentData {
   startDate: string;
   endDate: string;
   note: string;
+  status: string;
   idCardFrontUrl: string;
   idCardBackUrl: string;
 }
@@ -374,6 +376,7 @@ export interface ContractData {
   depositAmount: number;
   monthlyRent: number;
   status: number; // 0: active, 1: terminated, 2: expired, 3: pending
+  contractImage?: string;
   bills: BillData[];
   residents?: ResidentData[];
   landlordPaymentInfo?: PaymentInfoDto;
