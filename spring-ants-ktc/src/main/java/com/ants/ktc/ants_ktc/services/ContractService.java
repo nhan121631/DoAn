@@ -202,8 +202,8 @@ public class ContractService {
 
             if (days > 0 && days % 30 == 0) {
                 LandlordTaskCreateDto dto = LandlordTaskCreateDto.builder()
-                        .title("Tính tiền trọ tháng " + LocalDate.now().getMonthValue() + "/"
-                                + LocalDate.now().getYear() + " cho phòng " + contract.getRoom().getTitle())
+                        .title("Bills month " + LocalDate.now().getMonthValue() + "/"
+                                + LocalDate.now().getYear() + " for room " + contract.getRoom().getTitle())
                         .description("Calculate the monthly rent for room " + contract.getRoom().getTitle())
                         .startDate(LocalDateTime.now())
                         .dueDate(LocalDateTime.now().plusDays(7))
