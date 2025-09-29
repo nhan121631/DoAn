@@ -24,7 +24,7 @@ export async function GET(
         "Authorization": `Bearer ${session.user.accessToken}`,
       },
     });
-
+//test
     const data = await res.json();
     if (!res.ok) {
       return NextResponse.json({ error: data.message || "Fetch residents failed" }, { status: res.status });
