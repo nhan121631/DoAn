@@ -346,7 +346,6 @@ public class BookingService {
                 }
         }
 
-
         // xoa booking set isRemoved = 1
         @Transactional
         public void deleteBooking(UUID bookingId, UUID userId) {

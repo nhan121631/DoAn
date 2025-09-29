@@ -207,6 +207,7 @@ public class ContractService {
                         .description("Calculate the monthly rent for room " + contract.getRoom().getTitle())
                         .startDate(LocalDateTime.now())
                         .dueDate(LocalDateTime.now().plusDays(7))
+                        .type("BILL")
                         .status("PENDING")
                         .priority("MEDIUM")
                         .landlordId(contract.getLandlord().getId().toString())
