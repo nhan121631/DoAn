@@ -210,7 +210,7 @@ export default function ManageResidentsPage() {
         backImageFile || undefined
       );
 
-      message.success("Resident added successfully!");
+      messageApi.success("Resident added successfully!");
       setAddResidentOpen(false);
       resetForm();
       loadResidents(); // Reload data
