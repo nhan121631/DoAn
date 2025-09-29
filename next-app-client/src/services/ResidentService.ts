@@ -54,6 +54,7 @@ async createResident(
     startDate: residentData.startDate,
     endDate: residentData.endDate,
     note: residentData.note || "",
+    status: residentData.status || "PENDING",
     contractId: contractId
   })], { type: "application/json" });
 
@@ -98,6 +99,7 @@ async createResident(
       startDate: residentData.startDate,
       endDate: residentData.endDate,
       note: residentData.note || "",
+      status: residentData.status || "PENDING",
       contractId: contractId
     };
     

@@ -96,6 +96,18 @@ export default function ManageResidentsPage() {
     loadResidents();
   }, [session?.user?.id]);
 
+  // Cleanup forms on unmount
+  useEffect(() => {
+    return () => {
+      try {
+        addForm.resetFields();
+        editForm.resetFields();
+      } catch (error) {
+        // Ignore cleanup errors
+      }
+    };
+  }, [addForm, editForm]);
+
   const loadResidents = async () => {
     if (!session?.user?.id) return;
 
@@ -156,8 +168,13 @@ export default function ManageResidentsPage() {
 
   // Handle form reset and image cleanup
   const resetForm = () => {
-    addForm.resetFields();
-    editForm.resetFields();
+    try {
+      addForm.resetFields();
+      editForm.resetFields();
+    } catch (error) {
+      // Ignore form reset errors when forms are not connected
+      console.log('Form reset warning (can be ignored):', error);
+    }
     setFrontImageFile(null);
     setBackImageFile(null);
     setFrontImagePreview("");
@@ -230,13 +247,18 @@ export default function ManageResidentsPage() {
     try {
       setLoading(true);
 
+      console.log('Form values received:', values); // Debug log to see what form sends
+
       // Format dates to YYYY-MM-DD format for backend
       const formattedData = {
-        ...values,
+        fullName: values.fullName,
+        idNumber: values.idNumber,
+        relationship: values.relationship,
         startDate: values.startDate.format("YYYY-MM-DD"),
         endDate: values.endDate.format("YYYY-MM-DD"),
-        contractId: editResident.contractId,
+        note: values.note,
         status: values.status, // Ensure status is included
+        contractId: editResident.contractId,
       };
 
       console.log("Updating resident with data:", formattedData); // Debug log
@@ -304,34 +326,50 @@ export default function ManageResidentsPage() {
 
   // Date validation for add form
   const validateEndDateAdd = (_: any, value: any) => {
-    const startDate = addForm.getFieldValue("startDate");
-    if (value && startDate && value.isBefore(startDate)) {
-      return Promise.reject(new Error("End date must be after start date!"));
+    try {
+      const startDate = addForm.getFieldValue("startDate");
+      if (value && startDate && value.isBefore(startDate)) {
+        return Promise.reject(new Error("End date must be after start date!"));
+      }
+    } catch (error) {
+      // Form not ready, skip validation
     }
     return Promise.resolve();
   };
 
   const validateStartDateAdd = (_: any, value: any) => {
-    const endDate = addForm.getFieldValue("endDate");
-    if (value && endDate && value.isAfter(endDate)) {
-      return Promise.reject(new Error("Start date must be before end date!"));
+    try {
+      const endDate = addForm.getFieldValue("endDate");
+      if (value && endDate && value.isAfter(endDate)) {
+        return Promise.reject(new Error("Start date must be before end date!"));
+      }
+    } catch (error) {
+      // Form not ready, skip validation
     }
     return Promise.resolve();
   };
 
   // Date validation for edit form
   const validateEndDateEdit = (_: any, value: any) => {
-    const startDate = editForm.getFieldValue("startDate");
-    if (value && startDate && value.isBefore(startDate)) {
-      return Promise.reject(new Error("End date must be after start date!"));
+    try {
+      const startDate = editForm.getFieldValue("startDate");
+      if (value && startDate && value.isBefore(startDate)) {
+        return Promise.reject(new Error("End date must be after start date!"));
+      }
+    } catch (error) {
+      // Form not ready, skip validation
     }
     return Promise.resolve();
   };
 
   const validateStartDateEdit = (_: any, value: any) => {
-    const endDate = editForm.getFieldValue("endDate");
-    if (value && endDate && value.isAfter(endDate)) {
-      return Promise.reject(new Error("Start date must be before end date!"));
+    try {
+      const endDate = editForm.getFieldValue("endDate");
+      if (value && endDate && value.isAfter(endDate)) {
+        return Promise.reject(new Error("Start date must be before end date!"));
+      }
+    } catch (error) {
+      // Form not ready, skip validation
     }
     return Promise.resolve();
   };
@@ -816,6 +854,7 @@ export default function ManageResidentsPage() {
             layout="vertical"
             onFinish={handleEditResident}
             preserve={false}
+            key={editResident.id}
             initialValues={{
               fullName: editResident.fullName,
               idNumber: editResident.idNumber,
