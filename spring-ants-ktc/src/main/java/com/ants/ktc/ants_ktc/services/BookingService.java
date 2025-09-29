@@ -3,6 +3,7 @@ package com.ants.ktc.ants_ktc.services;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -13,6 +14,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.ants.ktc.ants_ktc.dtos.LandlordTask.LandlordTaskCreateDto;
 import com.ants.ktc.ants_ktc.dtos.address.AddressResponseDto;
@@ -60,6 +62,9 @@ public class BookingService {
 
         @Autowired
         private LandlordTaskService landlordTaskService;
+
+        @Autowired
+        private CloudinaryService cloudinaryService;
 
         @Transactional
         public BookingRoomByUserResponseDto createBooking(UUID userId, BookingRoomRequestDto request) {
@@ -311,6 +316,29 @@ public class BookingService {
                                 .build();
         }
 
+        // upload anh bill chuyen khoan
+        @Transactional
+        public String uploadBillTransferImage(UUID bookingId, MultipartFile file) {
+                try {
+                        // Verify booking exists
+                        Booking booking = bookingJpaRepository.findById(bookingId)
+                                        .orElseThrow(() -> new IllegalArgumentException("Booking not found"));
+
+                        // Upload image to Cloudinary
+                        Map<String, String> uploadResult = cloudinaryService.uploadFile(file);
+                        String imageUrl = uploadResult.get("url");
+
+                        // Update booking with bill transfer image URL (using imageProof field)
+                        booking.setImageProof(imageUrl);
+                        bookingJpaRepository.save(booking);
+
+                        return imageUrl;
+                } catch (Exception e) {
+                        throw new RuntimeException("Failed to upload bill transfer image: " + e.getMessage());
+                }
+        }
+
+
         // xoa booking set isRemoved = 1
         @Transactional
         public void deleteBooking(UUID bookingId, UUID userId) {
@@ -533,6 +561,7 @@ public class BookingService {
                                 .tenantCount(projection.getTenantCount())
                                 .status(projection.getStatus())
                                 .isRemoved(projection.getIsRemoved())
+                                .imageProof(projection.getImageProof())
                                 .room(convertFromRoomLandlordProjectionToDto(projection.getRoom()))
                                 .user(convertFromTenantProjectionToDto(projection.getUser()))
                                 .build();

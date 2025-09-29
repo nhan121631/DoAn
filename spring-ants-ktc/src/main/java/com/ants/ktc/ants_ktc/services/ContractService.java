@@ -193,6 +193,7 @@ public class ContractService {
                                 .serviceFee(b.getServiceFee())
                                 .totalAmount(b.getTotalAmount())
                                 .status(b.getStatus())
+                                .imageProof(b.getImageProof())
                                 .build();
                     })
                     .collect(Collectors.toList()));

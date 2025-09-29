@@ -2,6 +2,7 @@
 import { BillService } from "@/services/BillService";
 import { ContractService } from "@/services/ContractService";
 import { getRoomById } from "@/services/RoomService";
+import { URL_IMAGE } from "@/services/Constant";
 import { BillData, ContractData } from "@/types/types";
 import {
   DeleteOutlined,
@@ -11,8 +12,10 @@ import {
   ExportOutlined,
   EyeOutlined,
   FilterOutlined,
+  ReloadOutlined,
   SearchOutlined,
 } from "@ant-design/icons";
+import Image from "next/image";
 import {
   Button,
   Card,
@@ -27,7 +30,7 @@ import {
   Statistic,
   Table,
   Tag,
-  Tooltip
+  Tooltip,
 } from "antd";
 import dayjs from "dayjs";
 import type { Key } from "react";
@@ -59,6 +62,9 @@ export default function BillsTab({
   const [exportModalOpen, setExportModalOpen] = useState(false);
   const [exportLoading, setExportLoading] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [imageModalOpen, setImageModalOpen] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<string>("");
+  const [refreshKey, setRefreshKey] = useState(0);
   const [exportForm] = Form.useForm();
   const [editForm] = Form.useForm();
   const [addForm] = Form.useForm();
@@ -68,6 +74,7 @@ export default function BillsTab({
     elecPrice?: number;
     waterPrice?: number;
     priceMonth?: number;
+    imageProof?: string;
   } | null>(null);
 
   // Fetch room data to get electricity and water prices
@@ -84,6 +91,43 @@ export default function BillsTab({
     };
     fetchRoomData();
   }, [contract.roomId]);
+
+  // Periodically refresh contract data to get updated bill information
+  React.useEffect(() => {
+    const refreshContract = async () => {
+      try {
+        const updatedContract = await ContractService.getById(contract.id);
+        onContractUpdate(updatedContract);
+      } catch (error) {
+        console.error("Failed to refresh contract data:", error);
+      }
+    };
+
+    // Set up periodic refresh every 30 seconds
+    const interval = setInterval(refreshContract, 30000);
+
+    // Also refresh when the component mounts or refreshKey changes
+    if (refreshKey > 0) {
+      refreshContract();
+    }
+
+    return () => clearInterval(interval);
+  }, [contract.id, onContractUpdate, refreshKey]);
+
+  // Manual refresh function
+  const handleManualRefresh = async () => {
+    try {
+      setLoading(true);
+      const updatedContract = await ContractService.getById(contract.id);
+      onContractUpdate(updatedContract);
+      messageApi.success("Bill data refreshed!");
+    } catch (error) {
+      console.error("Failed to refresh contract data:", error);
+      messageApi.error("Failed to refresh bill data");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Update addForm serviceFee when roomData changes
   React.useEffect(() => {
@@ -102,6 +146,7 @@ export default function BillsTab({
         electricityFee,
         waterFee,
         totalAmount,
+        imageProof: roomData.imageProof || "",
       });
     }
   }, [roomData, addForm, addBillOpen]);
@@ -140,6 +185,7 @@ export default function BillsTab({
         waterFee: 0,
         serviceFee: roomData.priceMonth || 0,
         totalAmount: roomData.priceMonth || 0,
+        imageProof: roomData.imageProof || "",
       });
     }
   }, [roomData, addForm, addBillOpen]);
@@ -219,7 +265,12 @@ export default function BillsTab({
         waterPrice: roomData?.waterPrice,
       };
       await BillService.createBill(contract.id, billData);
-      await paymentNotification(contract.landlordId, contract.tenantId, contract.id, "New bill added to your contract. Please check and make payment on time.");
+      await paymentNotification(
+        contract.landlordId,
+        contract.tenantId,
+        contract.id,
+        "New bill added to your contract. Please check and make payment on time."
+      );
       messageApi.success("Bill added!");
       setAddBillOpen(false);
       addForm.resetFields();
@@ -316,6 +367,16 @@ export default function BillsTab({
     } finally {
       setExportLoading(false);
     }
+  };
+
+  const handleImageClick = (imageUrl: string) => {
+    setSelectedImage(imageUrl);
+    setImageModalOpen(true);
+  };
+
+  const handleImageModalClose = () => {
+    setImageModalOpen(false);
+    setSelectedImage("");
   };
 
   const billColumns = [
@@ -432,6 +493,35 @@ export default function BillsTab({
         const statusA = a.status || (a.paid === true ? "PAID" : "PENDING");
         const statusB = b.status || (b.paid === true ? "PAID" : "PENDING");
         return statusA.localeCompare(statusB);
+      },
+    },
+    {
+      title: "Image Proof",
+      dataIndex: "imageProof",
+      align: "center" as const,
+      render: (text: string, record: BillData) => {
+        if (!text || text === null || text === undefined) {
+          return (
+            <div className="w-16 h-16 bg-gray-200 flex items-center justify-center rounded text-gray-500 text-xs">
+              No Image
+            </div>
+          );
+        }
+        return (
+          <div
+            className="w-16 h-16 cursor-pointer hover:opacity-80 transition-opacity"
+            onClick={() => handleImageClick(`${URL_IMAGE}${text}`)}
+          >
+            <Image
+              src={`${URL_IMAGE}${text}`}
+              alt="Payment Proof"
+              width={64}
+              height={64}
+              className="object-cover rounded border border-gray-300"
+              style={{ width: "64px", height: "64px" }}
+            />
+          </div>
+        );
       },
     },
     {
@@ -690,6 +780,14 @@ export default function BillsTab({
                 <Tag color="red">Overdue</Tag>
               </Select.Option>
             </Select>
+            <Button
+              icon={<ReloadOutlined />}
+              onClick={handleManualRefresh}
+              loading={loading}
+              title="Refresh bill data"
+            >
+              Refresh
+            </Button>
             <Button
               type="primary"
               onClick={() => {
@@ -1230,6 +1328,36 @@ export default function BillsTab({
             </Form.Item>
           </div>
         </Form>
+      </Modal>
+
+      {/* Image Modal */}
+      <Modal
+        open={imageModalOpen}
+        onCancel={handleImageModalClose}
+        footer={null}
+        centered
+        width="auto"
+        style={{ maxWidth: "90vw", maxHeight: "90vh" }}
+        bodyStyle={{ padding: 0 }}
+      >
+        {selectedImage && (
+          <div className="flex justify-center items-center">
+            <Image
+              src={selectedImage}
+              alt="Payment Proof - Full Size"
+              width={800}
+              height={600}
+              style={{
+                maxWidth: "85vw",
+                maxHeight: "85vh",
+                objectFit: "contain",
+                width: "auto",
+                height: "auto",
+              }}
+              className="rounded"
+            />
+          </div>
+        )}
       </Modal>
     </div>
   );

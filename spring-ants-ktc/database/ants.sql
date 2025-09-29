@@ -81,6 +81,7 @@ CREATE TABLE IF NOT EXISTS `bills` (
   `water_fee` double DEFAULT NULL,
   `contract_id` binary(16) NOT NULL,
   `status` enum('CONFIRMING','PAID','PENDING') NOT NULL,
+  `image_proof` varchar(500) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `FKqcaq3a8nmv30ag9amlmow089i` (`contract_id`),
   CONSTRAINT `FKqcaq3a8nmv30ag9amlmow089i` FOREIGN KEY (`contract_id`) REFERENCES `contracts` (`id`)

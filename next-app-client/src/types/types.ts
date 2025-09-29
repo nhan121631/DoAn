@@ -344,6 +344,7 @@ export interface BillData {
   waterUsage?: number;
   electricityPrice?: number;
   waterPrice?: number;
+  imageProof?: string;
 }
 
 export interface ResidentData {

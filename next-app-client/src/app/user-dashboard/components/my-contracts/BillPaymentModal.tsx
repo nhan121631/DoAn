@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { Modal, Popconfirm, Button, message } from "antd";
-import { BankOutlined } from "@ant-design/icons";
+import { Modal, Popconfirm, Button, message, Upload } from "antd";
+import { BankOutlined, UploadOutlined } from "@ant-design/icons";
 import Image from "next/image";
 import { BillData, ContractData, LandlordPaymentInfo } from "@/types/types";
 import { BillService } from "@/services/BillService";
 import { createPayment } from "@/services/PaymentServive";
 import { paymentNotification } from "@/services/NotificationService";
+import type { UploadFile, UploadProps } from "antd/es/upload/interface";
 
 interface BillPaymentModalProps {
   open: boolean;
@@ -30,6 +31,8 @@ function BillPaymentModal({
   const [loading, setLoading] = useState(false);
   const [transferConfirmed, setTransferConfirmed] = useState(false);
   const [paymentLoading, setPaymentLoading] = useState(false);
+  const [uploadedImage, setUploadedImage] = useState<UploadFile | null>(null);
+  const [imageUploading, setImageUploading] = useState(false);
 
   const [messageApi, contextHolder] = message.useMessage();
   // Fetch landlord payment info when modal opens
@@ -115,6 +118,11 @@ function BillPaymentModal({
       return;
     }
 
+    if (!uploadedImage) {
+      messageApi.warning("Please upload your bill payment image first");
+      return;
+    }
+
     if (!bill || !contract) return;
 
     try {
@@ -123,9 +131,17 @@ function BillPaymentModal({
 
       messageApi.success("Transfer confirmation submitted successfully!");
 
-      await paymentNotification(contract.tenantId, contract.landlordId, contract.id, "Transfer confirmation submitted successfully for room: "+ contract.contractName +". Please verify the payment.");
+      await paymentNotification(
+        contract.tenantId,
+        contract.landlordId,
+        contract.id,
+        "Transfer confirmation submitted successfully for room: " +
+          contract.contractName +
+          ". Please verify the payment."
+      );
       onConfirm();
       setTransferConfirmed(false);
+      setUploadedImage(null);
     } catch (error) {
       console.error("Failed to update bill status:", error);
       messageApi.error("Failed to confirm transfer");
@@ -134,7 +150,53 @@ function BillPaymentModal({
 
   const handleCancel = () => {
     setTransferConfirmed(false);
+    setUploadedImage(null);
     onCancel();
+  };
+
+  // Handle file upload
+  const handleUpload = async (file: File) => {
+    if (!contract || !bill) return false;
+
+    setImageUploading(true);
+    try {
+      const result = await BillService.uploadBillImageProof(
+        contract.id,
+        bill.id,
+        file
+      );
+      messageApi.success("Bill payment image uploaded successfully!");
+
+      // Create upload file object for display
+      const uploadFile: UploadFile = {
+        uid: Date.now().toString(),
+        name: file.name,
+        status: "done",
+        url: result.imageUrl,
+      };
+      setUploadedImage(uploadFile);
+
+      return false; // Prevent default upload
+    } catch (error) {
+      console.error("Failed to upload image:", error);
+      messageApi.error(
+        error instanceof Error ? error.message : "Failed to upload image"
+      );
+      return false;
+    } finally {
+      setImageUploading(false);
+    }
+  };
+
+  const uploadProps: UploadProps = {
+    accept: "image/*",
+    beforeUpload: handleUpload,
+    fileList: uploadedImage ? [uploadedImage] : [],
+    onRemove: () => {
+      setUploadedImage(null);
+      return true;
+    },
+    maxCount: 1,
   };
 
   const copyBankNumber = () => {
@@ -213,7 +275,6 @@ function BillPaymentModal({
             </div>
           </div>
 
-
           {/* Manual Transfer Section */}
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
             <h3 className="text-lg font-semibold text-yellow-800 mb-3">
@@ -279,6 +340,31 @@ function BillPaymentModal({
             </div>
           </div>
 
+          {/* Upload Bill Payment Image */}
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+            <h4 className="font-semibold text-red-800 mb-3">
+              Upload Bill Payment Image *
+            </h4>
+            <p className="text-sm text-red-700 mb-3">
+              Please upload a screenshot or photo of your bank transfer as proof
+              of bill payment.
+            </p>
+            <Upload {...uploadProps}>
+              <Button
+                icon={<UploadOutlined />}
+                loading={imageUploading}
+                className="w-full"
+              >
+                {imageUploading ? "Uploading..." : "Select Image"}
+              </Button>
+            </Upload>
+            {!uploadedImage && (
+              <p className="text-xs text-red-600 mt-1">
+                * This field is required to confirm your payment
+              </p>
+            )}
+          </div>
+
           {/* Contact Info */}
           <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
             <h4 className="font-semibold text-gray-800 mb-2">
@@ -324,7 +410,7 @@ function BillPaymentModal({
                 type="default"
                 className="flex-1"
                 loading={confirmLoading}
-                disabled={!transferConfirmed}
+                disabled={!transferConfirmed || !uploadedImage}
               >
                 Confirm Manual Transfer
               </Button>

@@ -29,6 +29,9 @@ public class Bill extends BaseEntity {
     @Column(name = "total_amount")
     private Double totalAmount;
 
+    @Column(name = "image_proof")
+    private String imageProof;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     private BillStatus status = BillStatus.PENDING;

@@ -22,6 +22,8 @@ public class Booking extends BaseEntity {
     private int status; // 0: pending, 1: accepted, 2: rejected, 3: waiting for deposit, 4: deposited
     private int isRemoved = 0; // 0: not removed, 1: removed
 
+    private String imageProof;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "room_id", nullable = false)
     private Room room;
