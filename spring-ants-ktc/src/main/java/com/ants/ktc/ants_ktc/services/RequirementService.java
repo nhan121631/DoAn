@@ -22,6 +22,7 @@ import com.ants.ktc.ants_ktc.dtos.requirement.RequirementUserResponseDto;
 import com.ants.ktc.ants_ktc.entities.Requirement;
 import com.ants.ktc.ants_ktc.entities.Room;
 import com.ants.ktc.ants_ktc.entities.User;
+import com.ants.ktc.ants_ktc.repositories.LandlordTaskJpaRepository;
 import com.ants.ktc.ants_ktc.repositories.RequirementJpaRepository;
 import com.ants.ktc.ants_ktc.repositories.RoomJpaRepository;
 import com.ants.ktc.ants_ktc.repositories.UserJpaRepository;
@@ -33,6 +34,7 @@ import jakarta.transaction.Transactional;
 
 @Service
 public class RequirementService {
+
         @Autowired
         private RequirementJpaRepository requirementJpaRepository;
         @Autowired
@@ -43,6 +45,12 @@ public class RequirementService {
         private CloudinaryService cloudinaryService;
         @Autowired
         private LandlordTaskService landlordTaskService;
+        @Autowired
+        private LandlordTaskJpaRepository landlordTaskJpaRepository;
+
+        RequirementService(LandlordTaskJpaRepository landlordTaskJpaRepository) {
+                this.landlordTaskJpaRepository = landlordTaskJpaRepository;
+        }
 
         @Transactional
         public RequirementRequestRoomDto createRequestRoomWithImage(RequirementRequestRoomDto requestRoomDto,
@@ -67,23 +75,26 @@ public class RequirementService {
                         request.setImagePublicId(uploadResult.get("publicId"));
                 }
 
+                Requirement savedRequirement = requirementJpaRepository.save(request);
+
+                requestRoomDto.setIdRequirement(savedRequirement.getId());
+
                 // Tạo task cho landlord
                 LandlordTaskCreateDto dto = LandlordTaskCreateDto.builder()
                                 .title("Requirement: " + requestRoomDto.getDescription().substring(0,
-                                                Math.min(20, requestRoomDto.getDescription().length())) + "...")
+                                                Math.min(20, requestRoomDto.getDescription().length())))
                                 .description(requestRoomDto.getDescription())
                                 .startDate(LocalDateTime.now())
                                 .dueDate(LocalDateTime.now().plusDays(7))
                                 .status("PENDING")
+                                .type("REQUEST")
+                                .relatedEntityId(savedRequirement.getId())
                                 .priority("MEDIUM")
                                 .landlordId(landlordId.toString())
                                 .roomId(requestRoomDto.getRoomId().toString())
                                 .build();
                 landlordTaskService.createTask(dto);
 
-                Requirement savedRequirement = requirementJpaRepository.save(request);
-
-                requestRoomDto.setIdRequirement(savedRequirement.getId());
                 if (savedRequirement.getImageUrl() != null) {
                         requestRoomDto.setImageUrl(savedRequirement.getImageUrl());
                 }
@@ -232,6 +243,7 @@ public class RequirementService {
         @Transactional
         public boolean updateRequirementStatus(UUID id) {
                 int updated = requirementJpaRepository.updateRequirementStatus(id);
+                landlordTaskJpaRepository.updateTaskStatus(id, "COMPLETED");
                 if (updated > 0) {
                         return true;
                 }
@@ -241,6 +253,8 @@ public class RequirementService {
         @Transactional
         public boolean rejectRequirement(UUID id) {
                 int updated = requirementJpaRepository.rejectRequirements(id);
+                landlordTaskJpaRepository.updateTaskStatus(id, "COMPLETED");
+
                 if (updated > 0) {
                         return true;
                 }

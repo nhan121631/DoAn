@@ -424,6 +424,7 @@ export interface LandlordTaskResponseDto {
   description?: string;
   priority: 'LOW' | 'MEDIUM' | 'HIGH';
   status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
+  type?: string;
   startDate?: string;
   dueDate?: string;
   createdAt: string;

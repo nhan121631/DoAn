@@ -44,6 +44,7 @@ export default async function Page({
 }) {
   const { id } = await params;
   const room = await getRoomById(id);
+  console.log("type post: ", room?.typepost);
   if (!room) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -82,7 +83,7 @@ export default async function Page({
                   {room.title || "Premium Room for Rent"}
                 </h1>
                 <div className="flex items-center gap-2">
-                  <DollarSign className="w-6 h-6 text-green-300" />
+                  {/* <DollarSign className="w-6 h-6 text-green-300" /> */}
                   <span className="text-3xl font-bold text-green-300">
                     {room.priceMonth
                       ? `${room.priceMonth.toLocaleString("vi-VN")} VND`
@@ -427,7 +428,7 @@ export default async function Page({
           {/* Right Sidebar - Enhanced */}
           <div className="w-full lg:w-1/3">
             <div className="sticky top-6">
-              <RightSidebar id={id} />
+              <RightSidebar id={id} postType={room.typepost} />
             </div>
           </div>
         </div>
