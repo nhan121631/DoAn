@@ -99,11 +99,20 @@ export default function ManageResidentsPage() {
   // Cleanup forms on unmount
   useEffect(() => {
     return () => {
-      try {
-        addForm.resetFields();
-        editForm.resetFields();
-      } catch (error) {
-        // Ignore cleanup errors
+      // Only attempt cleanup if forms exist and have the resetFields method
+      if (addForm && typeof addForm.resetFields === "function") {
+        try {
+          addForm.resetFields();
+        } catch (error) {
+          // Ignore cleanup errors
+        }
+      }
+      if (editForm && typeof editForm.resetFields === "function") {
+        try {
+          editForm.resetFields();
+        } catch (error) {
+          // Ignore cleanup errors
+        }
       }
     };
   }, [addForm, editForm]);
@@ -168,12 +177,20 @@ export default function ManageResidentsPage() {
 
   // Handle form reset and image cleanup
   const resetForm = () => {
-    try {
-      addForm.resetFields();
-      editForm.resetFields();
-    } catch (error) {
-      // Ignore form reset errors when forms are not connected
-      console.log('Form reset warning (can be ignored):', error);
+    // Only reset forms if they exist and are connected
+    if (addForm && typeof addForm.resetFields === "function") {
+      try {
+        addForm.resetFields();
+      } catch (error) {
+        // Ignore form reset errors when forms are not connected
+      }
+    }
+    if (editForm && typeof editForm.resetFields === "function") {
+      try {
+        editForm.resetFields();
+      } catch (error) {
+        // Ignore form reset errors when forms are not connected
+      }
     }
     setFrontImageFile(null);
     setBackImageFile(null);
@@ -247,7 +264,7 @@ export default function ManageResidentsPage() {
     try {
       setLoading(true);
 
-      console.log('Form values received:', values); // Debug log to see what form sends
+      console.log("Form values received:", values); // Debug log to see what form sends
 
       // Format dates to YYYY-MM-DD format for backend
       const formattedData = {
@@ -326,6 +343,9 @@ export default function ManageResidentsPage() {
 
   // Date validation for add form
   const validateEndDateAdd = (_: any, value: any) => {
+    if (!addForm || typeof addForm.getFieldValue !== "function") {
+      return Promise.resolve();
+    }
     try {
       const startDate = addForm.getFieldValue("startDate");
       if (value && startDate && value.isBefore(startDate)) {
@@ -338,6 +358,9 @@ export default function ManageResidentsPage() {
   };
 
   const validateStartDateAdd = (_: any, value: any) => {
+    if (!addForm || typeof addForm.getFieldValue !== "function") {
+      return Promise.resolve();
+    }
     try {
       const endDate = addForm.getFieldValue("endDate");
       if (value && endDate && value.isAfter(endDate)) {
@@ -351,6 +374,9 @@ export default function ManageResidentsPage() {
 
   // Date validation for edit form
   const validateEndDateEdit = (_: any, value: any) => {
+    if (!editForm || typeof editForm.getFieldValue !== "function") {
+      return Promise.resolve();
+    }
     try {
       const startDate = editForm.getFieldValue("startDate");
       if (value && startDate && value.isBefore(startDate)) {
@@ -363,6 +389,9 @@ export default function ManageResidentsPage() {
   };
 
   const validateStartDateEdit = (_: any, value: any) => {
+    if (!editForm || typeof editForm.getFieldValue !== "function") {
+      return Promise.resolve();
+    }
     try {
       const endDate = editForm.getFieldValue("endDate");
       if (value && endDate && value.isAfter(endDate)) {
