@@ -24,6 +24,7 @@ public class ContractResponseDto {
     private Date endDate;
     private Double monthlyRent;
     private int status;
+    private String contractImage;
     private List<BillResponseDto> bills; // Danh sách hóa đơn liên quan
     private PaymentInfoDto landlordPaymentInfo;
 }

@@ -16,4 +16,4 @@ layoutClass: gap-16
 - Build a website for room rental and booking management.
 - Support posting rental ads and searching rooms easily.
 - Provide convenient online booking for tenants.
-- Help landlords manage information, revenue, and tenants effectively.
+- Help owners manage information, revenue, and tenants effectively.

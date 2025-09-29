@@ -7,7 +7,7 @@ layoutClass: gap-16
 
 ### 1. Functional Requirements
 
-#### The platform connects landlords and tenants via a modern, user-friendly website. It solves traditional rental issues such as searching, verifying, managing contracts, payments, and maintenance.
+#### The platform connects owners and tenants via a modern, user-friendly website. It solves traditional rental issues such as searching, verifying, managing contracts, payments, and maintenance.
 <br />
 <div className="flex justify-center gap-4">
 <div className="flex flex-col">
@@ -19,7 +19,7 @@ layoutClass: gap-16
 	</ul>
 </div>
 <div className="flex flex-col">
-	<div className="font-bold mb-2">For Landlords:</div>
+	<div className="font-bold mb-2">For Owners:</div>
 	<ul className="list-none pl-0">
 		<li>Post rental ads, manage room list & availability</li>
 		<li>Manage tenant info & booking requests</li>

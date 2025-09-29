@@ -3,6 +3,7 @@ package com.ants.ktc.ants_ktc.services;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -13,6 +14,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.ants.ktc.ants_ktc.dtos.LandlordTask.LandlordTaskCreateDto;
 import com.ants.ktc.ants_ktc.dtos.address.AddressResponseDto;
@@ -35,6 +37,7 @@ import com.ants.ktc.ants_ktc.entities.Room;
 import com.ants.ktc.ants_ktc.entities.User;
 import com.ants.ktc.ants_ktc.entities.UserProfile;
 import com.ants.ktc.ants_ktc.repositories.BookingJpaRepository;
+import com.ants.ktc.ants_ktc.repositories.LandlordTaskJpaRepository;
 import com.ants.ktc.ants_ktc.repositories.RoomJpaRepository;
 import com.ants.ktc.ants_ktc.repositories.UserJpaRepository;
 import com.ants.ktc.ants_ktc.repositories.projection.BookingLandlordProjection;
@@ -60,6 +63,12 @@ public class BookingService {
 
         @Autowired
         private LandlordTaskService landlordTaskService;
+
+        @Autowired
+        private LandlordTaskJpaRepository landlordTaskRepository;
+
+        @Autowired
+        private CloudinaryService cloudinaryService;
 
         @Transactional
         public BookingRoomByUserResponseDto createBooking(UUID userId, BookingRoomRequestDto request) {
@@ -105,6 +114,7 @@ public class BookingService {
                 // room.setAvailable(1);
                 // roomJpaRepository.save(room);
 
+                Booking savedBooking = bookingJpaRepository.save(booking);
                 LandlordTaskCreateDto dto = LandlordTaskCreateDto.builder()
                                 .title("Booking room for " + room.getTitle())
                                 .description("New booking request for room: " + room.getTitle() + " by user: "
@@ -112,13 +122,13 @@ public class BookingService {
                                 .startDate(LocalDateTime.now())
                                 .dueDate(LocalDateTime.now().plusDays(7)) // Set due date 7 days later
                                 .status("PENDING")
+                                .type("BOOKING")
+                                .relatedEntityId(savedBooking.getId())
                                 .priority("HIGH")
                                 .landlordId(room.getUser().getId().toString())
                                 .roomId(room.getId().toString())
                                 .build();
                 landlordTaskService.createTask(dto);
-
-                Booking savedBooking = bookingJpaRepository.save(booking);
                 return convertToResponseDto(savedBooking);
         }
 
@@ -231,6 +241,7 @@ public class BookingService {
                                         int updated = bookingJpaRepository
                                                         .updateStatusByRoomIdAndOldStatusExcludeBookingId(
                                                                         room.getId(), 0, 2, booking.getId());
+
                                         System.out.println("Updated and rejected " + updated
                                                         + " other pending bookings for room " + room.getId());
                                 } catch (Exception e) {
@@ -242,6 +253,7 @@ public class BookingService {
                                 message = "Booking accepted successfully";
                         } else if (currentStatus == 0 && newStatus == 2) {
                                 booking.setStatus(newStatus);
+                                landlordTaskRepository.updateTaskStatus(booking.getId(), "COMPLETED");
 
                                 // Room room = booking.getRoom();
                                 // room.setAvailable(0);
@@ -251,6 +263,7 @@ public class BookingService {
                         // Landlord từ 3 -> 4 (confirm deposit)
                         else if (currentStatus == 3 && newStatus == 4) {
                                 booking.setStatus(newStatus);
+                                landlordTaskRepository.updateTaskStatus(booking.getId(), "COMPLETED");
                                 // Set phòng là không available khi đã confirm deposit
                                 // Room room = booking.getRoom();
                                 // room.setAvailable(1);
@@ -309,6 +322,28 @@ public class BookingService {
                                 .message(message)
                                 .success(true)
                                 .build();
+        }
+
+        // upload anh bill chuyen khoan
+        @Transactional
+        public String uploadBillTransferImage(UUID bookingId, MultipartFile file) {
+                try {
+                        // Verify booking exists
+                        Booking booking = bookingJpaRepository.findById(bookingId)
+                                        .orElseThrow(() -> new IllegalArgumentException("Booking not found"));
+
+                        // Upload image to Cloudinary
+                        Map<String, String> uploadResult = cloudinaryService.uploadFile(file);
+                        String imageUrl = uploadResult.get("url");
+
+                        // Update booking with bill transfer image URL (using imageProof field)
+                        booking.setImageProof(imageUrl);
+                        bookingJpaRepository.save(booking);
+
+                        return imageUrl;
+                } catch (Exception e) {
+                        throw new RuntimeException("Failed to upload bill transfer image: " + e.getMessage());
+                }
         }
 
         // xoa booking set isRemoved = 1
@@ -519,6 +554,7 @@ public class BookingService {
                                 .tenantCount(projection.getTenantCount())
                                 .status(projection.getStatus())
                                 .isRemoved(projection.getIsRemoved())
+                                .imageProof(projection.getImageProof())
                                 .room(convertFromRoomProjectionToDto(projection.getRoom()))
                                 .build();
         }
@@ -533,6 +569,7 @@ public class BookingService {
                                 .tenantCount(projection.getTenantCount())
                                 .status(projection.getStatus())
                                 .isRemoved(projection.getIsRemoved())
+                                .imageProof(projection.getImageProof())
                                 .room(convertFromRoomLandlordProjectionToDto(projection.getRoom()))
                                 .user(convertFromTenantProjectionToDto(projection.getUser()))
                                 .build();
@@ -709,6 +746,7 @@ public class BookingService {
                                 .rentalExpires(booking.getRentalExpires())
                                 .tenantCount(booking.getTenantCount())
                                 .status(booking.getStatus())
+                                .imageProof(booking.getImageProof())
                                 .room(convertToRoomDto(booking.getRoom()))
                                 // .user(convertToUserDto(booking.getUser()))
                                 .build();

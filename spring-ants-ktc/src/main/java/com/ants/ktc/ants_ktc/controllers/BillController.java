@@ -9,6 +9,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.ants.ktc.ants_ktc.dtos.bill.BillRequestDto;
 import com.ants.ktc.ants_ktc.dtos.bill.BillResponseDto;
@@ -71,5 +72,17 @@ public class BillController {
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=bill-" + billId + ".pdf")
                 .contentType(MediaType.APPLICATION_PDF)
                 .body(pdf);
+    }
+
+    @PostMapping("/{billId}/upload-image-proof")
+    public ResponseEntity<String> uploadBillImageProof(
+            @PathVariable("billId") UUID billId,
+            @RequestPart("file") MultipartFile file) {
+        try {
+            String imageUrl = billService.uploadBillImageProof(billId, file);
+            return ResponseEntity.ok(imageUrl);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Upload failed: " + e.getMessage());
+        }
     }
 }

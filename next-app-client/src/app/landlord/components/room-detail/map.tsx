@@ -1,23 +1,20 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
+import { useEffect, useState } from "react";
 import {
-  FaMapMarkerAlt,
-  FaUniversity,
-  FaShoppingCart,
-  FaStore,
-  FaHospital,
-  FaPiggyBank,
-  FaHamburger,
-  FaTree,
-  FaMapPin,
-  FaSearch,
-  FaChartBar,
-  FaRunning,
-  FaBuilding,
   FaChevronDown,
   FaChevronUp,
+  FaHamburger,
+  FaHospital,
+  FaMapMarkerAlt,
+  FaMapPin,
+  FaPiggyBank,
+  FaSearch,
+  FaShoppingCart,
+  FaStore,
+  FaTree,
+  FaUniversity,
 } from "react-icons/fa";
-import { useEffect, useState } from "react";
 
 interface NearbyPlace {
   name: string;

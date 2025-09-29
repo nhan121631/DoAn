@@ -13,17 +13,21 @@ import {
   Card,
   Input,
   message,
+  Modal,
   Select,
   Space,
   Statistic,
   Table,
   Tag,
-  Tooltip
+  Tooltip,
 } from "antd";
 import type { ColumnsType } from "antd/es/table";
+import Image from "next/image";
 import { useEffect, useState } from "react";
 import BillDetail from "./BillDetail";
 import BillPaymentModal from "./BillPaymentModal";
+
+import { URL_IMAGE } from "@/services/Constant";
 
 interface TenantBillsTabProps {
   contract: ContractData;
@@ -47,6 +51,8 @@ export default function TenantBillsTab({ contract }: TenantBillsTabProps) {
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
+  const [imagePreviewOpen, setImagePreviewOpen] = useState(false);
+  const [selectedImageUrl, setSelectedImageUrl] = useState<string>("");
 
   useEffect(() => {
     // Process bills to ensure all data is complete
@@ -300,6 +306,38 @@ export default function TenantBillsTab({ contract }: TenantBillsTabProps) {
       },
     },
     {
+      title: "Image Proof",
+      dataIndex: "imageProof",
+      align: "center" as const,
+      render: (text: string, record: BillData) => {
+        if (!text || text === null || text === undefined) {
+          return (
+            <div className="w-16 h-16 bg-gray-200 flex items-center justify-center rounded text-gray-500 text-xs">
+              No Image
+            </div>
+          );
+        }
+        return (
+          <div
+            className="w-16 h-16 cursor-pointer hover:opacity-80 transition-opacity"
+            onClick={() => {
+              setSelectedImageUrl(`${URL_IMAGE}${text}`);
+              setImagePreviewOpen(true);
+            }}
+          >
+            <Image
+              src={`${URL_IMAGE}${text}`}
+              alt="Payment Proof"
+              width={64}
+              height={64}
+              className="object-cover rounded border border-gray-300"
+              style={{ width: "64px", height: "64px" }}
+            />
+          </div>
+        );
+      },
+    },
+    {
       title: "Actions",
       key: "actions",
       render: (_, record) => {
@@ -481,6 +519,29 @@ export default function TenantBillsTab({ contract }: TenantBillsTabProps) {
         bill={paymentBill}
         contract={contract}
       />
+
+      {/* Image Preview Modal */}
+      <Modal
+        open={imagePreviewOpen}
+        title="Bill Image Proof"
+        footer={null}
+        onCancel={() => setImagePreviewOpen(false)}
+        width={800}
+        centered
+      >
+        {selectedImageUrl && (
+          <div className="flex justify-center">
+            <Image
+              src={selectedImageUrl}
+              alt="Bill proof preview"
+              width={600}
+              height={400}
+              className="object-contain"
+              style={{ maxWidth: "100%", maxHeight: "70vh" }}
+            />
+          </div>
+        )}
+      </Modal>
 
       {/* Payment Instructions */}
       {contextHolder}

@@ -28,7 +28,7 @@ public interface TransactionsJpaRepository extends JpaRepository<Transaction, UU
         @Query("SELECT t FROM Transaction t WHERE t.wallet.user.id = :userId")
         List<Transaction> findAllTransactionsByUserIdWithWallet(@Param("userId") UUID userId);
 
-        @Query("SELECT t FROM Transaction t WHERE t.wallet.user.id = :userId")
+        @Query("SELECT t FROM Transaction t WHERE t.wallet.user.id = :userId ORDER BY t.transactionDate DESC")
         Page<Transaction> findAllByUserId(@Param("userId") UUID userId, Pageable pageable);
 
         @Query("SELECT t FROM Transaction t WHERE t.wallet = :wallet AND t.transactionType = :type ORDER BY t.transactionDate DESC LIMIT 1")

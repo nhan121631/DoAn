@@ -99,14 +99,15 @@ export async function deleteBooking(bookingId: string) {
     throw new Error("Missing bookingId");
   }
 
-  const response = await fetch(`/api/booking/landlord?bookingId=${encodeURIComponent(
-    bookingId
-  )}`, {
-    method: "PATCH",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
+  const response = await fetch(
+    `/api/booking/landlord?bookingId=${encodeURIComponent(bookingId)}`,
+    {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }
+  );
 
   if (!response.ok) {
     // Backend may return plain text (error message) or JSON. Read text and try to parse JSON.
@@ -124,4 +125,48 @@ export async function deleteBooking(bookingId: string) {
   // Success: backend may return plain text confirmation
   const successText = await response.text();
   return { success: true, message: successText };
+}
+
+export async function uploadBillTransferImage(bookingId: string, file: File) {
+  if (!bookingId) {
+    throw new Error("Missing bookingId");
+  }
+
+  if (!file) {
+    throw new Error("Missing file");
+  }
+
+  console.log("BookingService - uploadBillTransferImage called with:", {
+    bookingId,
+    fileName: file.name,
+  });
+
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const response = await fetch(
+    `/api/booking/${bookingId}/upload-bill-transfer`,
+    {
+      method: "POST",
+      body: formData,
+    }
+  );
+
+  console.log("BookingService - Upload response status:", response.status);
+  console.log("BookingService - Upload response ok:", response.ok);
+
+  if (!response.ok) {
+    const errorJson = await response.json();
+    console.error("BookingService - Upload error response:", errorJson);
+
+    const errorMessage =
+      errorJson.error ||
+      errorJson.message ||
+      "Failed to upload bill transfer image";
+    throw new Error(errorMessage);
+  }
+
+  const result = await response.json();
+  console.log("BookingService - Upload success response:", result);
+  return result;
 }

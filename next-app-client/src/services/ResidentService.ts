@@ -12,6 +12,22 @@ export const ResidentService = {
     return response.json();
   },
 
+  // Get all residents for a specific landlord
+  async getByLandlord(landlordId: string): Promise<ResidentData[]> {
+    const response = await fetch(`/api/temporary-residences/landlord/${landlordId}`);
+    if (!response.ok) {
+      throw new Error("Failed to fetch residents by landlord");
+    }
+    return response.json();
+  },
+   async getByTenant(tenantId: string): Promise<ResidentData[]> {
+    const response = await fetch(`/api/temporary-residences/tenant/${tenantId}`);
+    if (!response.ok) {
+      throw new Error("Failed to fetch residents by tenant");
+    }
+    return response.json();
+  },
+
   // Get specific resident by ID
   async getById(contractId: string, residentId: string): Promise<ResidentData> {
     const response = await fetch(`${BASE_URL}/${contractId}/residents/${residentId}`);
@@ -38,6 +54,7 @@ async createResident(
     startDate: residentData.startDate,
     endDate: residentData.endDate,
     note: residentData.note || "",
+    status: residentData.status || "PENDING",
     contractId: contractId
   })], { type: "application/json" });
 
@@ -75,16 +92,21 @@ async createResident(
   ): Promise<ResidentData> {
     const formData = new FormData();
     
-    // Convert residentData -> Blob JSON file giống createResident
-    const blob = new Blob([JSON.stringify({
+    const dataToSend = {
       fullName: residentData.fullName,
       idNumber: residentData.idNumber,
       relationship: residentData.relationship,
       startDate: residentData.startDate,
       endDate: residentData.endDate,
       note: residentData.note || "",
+      status: residentData.status || "PENDING",
       contractId: contractId
-    })], { type: "application/json" });
+    };
+    
+    console.log('ResidentService - Data being sent to backend:', dataToSend); // Debug log
+    
+    // Convert residentData -> Blob JSON file giống createResident
+    const blob = new Blob([JSON.stringify(dataToSend)], { type: "application/json" });
 
     formData.append("data", blob, "data.json");
     

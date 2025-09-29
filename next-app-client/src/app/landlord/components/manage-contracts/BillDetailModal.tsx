@@ -138,13 +138,23 @@ export default function BillDetailModal({
                     selectedBill.damageFee > 0 && (
                       <tr className="border-t dark:border-gray-600 bg-red-50 dark:bg-red-900/20 transition-colors duration-300">
                         <td className="py-3 px-4 text-red-700 dark:text-red-300 font-medium transition-colors duration-300">
-                          Damage Fee
+                          Other Fees
                         </td>
                         <td className="py-3 px-4 text-right text-red-800 dark:text-red-200 font-medium transition-colors duration-300">
                           {selectedBill.damageFee?.toLocaleString("vi-VN")} đ
                         </td>
                       </tr>
                     )}
+                  {selectedBill.note && (
+                    <tr className="border-t dark:border-gray-600 bg-yellow-50 dark:bg-yellow-900/20 transition-colors duration-300">
+                      <td className="py-3 px-4 text-yellow-700 dark:text-yellow-300 font-medium transition-colors duration-300">
+                        Note
+                      </td>
+                      <td className="py-3 px-4 text-left text-yellow-800 dark:text-yellow-200 font-medium transition-colors duration-300">
+                        {selectedBill.note}
+                      </td>
+                    </tr>
+                  )}
                   <tr className="border-t dark:border-gray-600 border-gray-300 bg-blue-50 dark:bg-[#17223b] transition-colors duration-300">
                     <td className="py-4 px-4 font-bold text-lg text-gray-800 dark:text-white transition-colors duration-300">
                       TOTAL

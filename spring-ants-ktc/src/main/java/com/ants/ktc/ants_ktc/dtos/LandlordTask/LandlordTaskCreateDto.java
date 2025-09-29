@@ -10,6 +10,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Data
 @Builder
@@ -36,6 +37,11 @@ public class LandlordTaskCreateDto {
 
     @NotBlank(message = "Priority is required")
     private String priority; // LOW, MEDIUM, HIGH
+
+    // @NotBlank(message = "Type is required")
+    private String type; // REQUEST, BOOKING, RESIDENT, BILL, OTHER
+
+    private UUID relatedEntityId;
 
     @NotBlank(message = "LandlordId cannot be blank")
     private String landlordId;

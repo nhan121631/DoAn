@@ -123,6 +123,9 @@ export default function RoomVipCard({
   }, [room.images]);
 
   // Video should not auto-play - only play when user clicks play button
+  const formatVNDPrice = (price: number) => {
+    return new Intl.NumberFormat("vi-VN").format(price);
+  };
 
   return (
     <>
@@ -446,7 +449,8 @@ export default function RoomVipCard({
                   </span>
                   <div className="flex items-baseline gap-1">
                     <span className="text-xl font-bold sm:text-2xl text-emerald-600">
-                      {room.priceMonth.toLocaleString("en-US")}
+                      {/* {room.priceMonth.toLocaleString("en-US")} */}
+                      {formatVNDPrice(room.priceMonth)}
                     </span>
                     <span className="text-sm text-slate-600">VNĐ</span>
                   </div>

@@ -25,7 +25,7 @@ class: text-left
   <div style="width: 45%;">
     <h2>⚙️ Backend</h2>
     <div v-motion="fade">
-      <div>Spring Boot (Java) / Node.js (Express/NestJS)</div>
+      <div>Spring Boot (Java)</div>
       <div>REST API (CRUD)</div>
       <div>JWT Authentication</div>
       <div>OAuth2 (Google OAuth)</div>
@@ -78,7 +78,7 @@ class: text-left
   <div style="width: 45%;">
     <h2>📊 Database & Optimization</h2>
     <div v-motion="fade">
-      <div>MySQL / PostgreSQL integration & queries</div>
+      <div>MySQL integration & queries</div>
       <div>Indexing & Query tuning</div>
       <div>Performance profiling & monitoring</div>
       <div>Backup & versioning strategies</div>

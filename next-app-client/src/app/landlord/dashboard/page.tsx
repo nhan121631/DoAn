@@ -59,19 +59,20 @@ import {
   LandlordTaskResponseDto,
   LandlordTaskUpdateDto,
 } from "@/types/types";
-import { userFetchBookings, landlordFetchBookings } from "@/services/BookingService";
+import {
+  userFetchBookings,
+  landlordFetchBookings,
+} from "@/services/BookingService";
 import { getRequestsByLandlordId } from "@/services/Requirements";
 import { ContractService } from "@/services/ContractService";
 import { BillService } from "@/services/BillService";
-import { listenForConversations, listenForUnreadCount } from "@/services/ChatService";
+import {
+  listenForConversations,
+  listenForUnreadCount,
+} from "@/services/ChatService";
 import { useRouter } from "next/navigation";
 import { db } from "@/lib/firebase";
-import {
-  collection,
-  query,
-  where,
-  onSnapshot,
-} from "firebase/firestore";
+import { collection, query, where, onSnapshot } from "firebase/firestore";
 const { Title, Text } = Typography;
 const { TextArea } = Input;
 const { Option } = Select;
@@ -136,12 +137,14 @@ export default function LandlordDashboardPage() {
     completed: 0,
     overdue: 0,
   });
-  const [notificationStats, setNotificationStats] = useState<NotificationStats>({
-    newBookings: 0,
-    newRequirements: 0,
-    confirmingBills: 0,
-    newMessages: 0,
-  });
+  const [notificationStats, setNotificationStats] = useState<NotificationStats>(
+    {
+      newBookings: 0,
+      newRequirements: 0,
+      confirmingBills: 0,
+      newMessages: 0,
+    }
+  );
   const [loadingStats, setLoadingStats] = useState(false);
   const [persistentMessageCount, setPersistentMessageCount] = useState(0);
 
@@ -199,19 +202,19 @@ export default function LandlordDashboardPage() {
       try {
         const bookingsResponse = await landlordFetchBookings(0, 100);
 
-        
         // Handle different response structures (bookings array could be in bookings or data property)
-        const bookingsArray = bookingsResponse.bookings || bookingsResponse.data || bookingsResponse;
-       
-        
+        const bookingsArray =
+          bookingsResponse.bookings ||
+          bookingsResponse.data ||
+          bookingsResponse;
+
         // Filter only bookings with status = 0 (pending bookings showing Accept/Reject buttons)
-        const pendingBookings = bookingsArray?.filter((booking: any) => {
-        
-          return booking.status === 0;
-        }) || [];
-        
+        const pendingBookings =
+          bookingsArray?.filter((booking: any) => {
+            return booking.status === 0;
+          }) || [];
+
         newBookings = pendingBookings.length;
-      
       } catch (error) {
         console.error("Error fetching bookings:", error);
       }
@@ -219,31 +222,42 @@ export default function LandlordDashboardPage() {
       // Fetch requirements with pending status
       try {
         const requirementsResponse = await getRequestsByLandlordId(0, 100);
-        newRequirements = requirementsResponse.data?.filter((req: any) => {
-          return req.status === "PENDING" || req.status === 0 || req.status === false;
-        })?.length || 0;
-      
+        newRequirements =
+          requirementsResponse.data?.filter((req: any) => {
+            return (
+              req.status === "PENDING" ||
+              req.status === 0 ||
+              req.status === false
+            );
+          })?.length || 0;
       } catch (error) {
         console.error("Error fetching requirements:", error);
       }
 
       // Fetch confirming bills from contracts
       try {
-        const contractsResponse = await ContractService.getByLandlord(session.user.id, 0, 1000);
-      
-        
+        const contractsResponse = await ContractService.getByLandlord(
+          session.user.id,
+          0,
+          1000
+        );
+
         let totalConfirmingBills = 0;
-        
+
         // Only use contract.bills data, no API calls to avoid 500 errors
         for (const contract of contractsResponse.content || []) {
           try {
-            if (contract.bills && Array.isArray(contract.bills) && contract.bills.length > 0) {
-              const confirmingBillsForContract = contract.bills.filter((bill: any) => {
-             
-                return bill.status === "CONFIRMING";
-              }).length;
+            if (
+              contract.bills &&
+              Array.isArray(contract.bills) &&
+              contract.bills.length > 0
+            ) {
+              const confirmingBillsForContract = contract.bills.filter(
+                (bill: any) => {
+                  return bill.status === "CONFIRMING";
+                }
+              ).length;
               totalConfirmingBills += confirmingBillsForContract;
-             
             } else {
               console.log(`Contract ${contract.id}: No bills data available`);
             }
@@ -252,9 +266,8 @@ export default function LandlordDashboardPage() {
             // Continue to next contract
           }
         }
-        
+
         confirmingBills = totalConfirmingBills;
-        
       } catch (error) {
         console.error("Error fetching confirming bills:", error);
         // Set default value if everything fails
@@ -335,7 +348,7 @@ export default function LandlordDashboardPage() {
       setIsSubmittingCreate(false);
       return;
     }
-    
+
     try {
       // Validate required fields
       if (!values.title?.trim()) {
@@ -363,7 +376,11 @@ export default function LandlordDashboardPage() {
         return;
       }
 
-      if (values.startDate && values.dueDate && dayjs(values.dueDate).isBefore(dayjs(values.startDate))) {
+      if (
+        values.startDate &&
+        values.dueDate &&
+        dayjs(values.dueDate).isBefore(dayjs(values.startDate))
+      ) {
         messageApi.error("Due date must be after or equal to start date");
         setIsSubmittingCreate(false);
         return;
@@ -422,7 +439,7 @@ export default function LandlordDashboardPage() {
     try {
       await editForm.validateFields();
     } catch (errorInfo) {
-      console.log('Validation failed:', errorInfo);
+      console.log("Validation failed:", errorInfo);
       return; // Don't proceed if validation fails
     }
 
@@ -448,7 +465,11 @@ export default function LandlordDashboardPage() {
         return;
       }
 
-      if (values.startDate && values.dueDate && dayjs(values.dueDate).isBefore(dayjs(values.startDate))) {
+      if (
+        values.startDate &&
+        values.dueDate &&
+        dayjs(values.dueDate).isBefore(dayjs(values.startDate))
+      ) {
         messageApi.error("Due date must be after or equal to start date");
         setIsSubmittingEdit(false);
         return;
@@ -560,12 +581,12 @@ export default function LandlordDashboardPage() {
     if (session?.user?.id) {
       fetchTasks();
       fetchNotificationStats();
-      
+
       // Set up interval to refresh notifications every 30 seconds
       const interval = setInterval(() => {
         fetchNotificationStats();
       }, 30000);
-      
+
       return () => clearInterval(interval);
     }
   }, [session]);
@@ -584,14 +605,14 @@ export default function LandlordDashboardPage() {
       session.user.id,
       (totalUnreadMessages) => {
         console.log("Dashboard: Received unread count:", totalUnreadMessages);
-        
+
         // Update count based on actual unread messages
         setPersistentMessageCount(totalUnreadMessages);
-        
+
         // Update notification stats with the current count
-        setNotificationStats(prev => ({
+        setNotificationStats((prev) => ({
           ...prev,
-          newMessages: totalUnreadMessages
+          newMessages: totalUnreadMessages,
         }));
       }
     );
@@ -743,7 +764,19 @@ export default function LandlordDashboardPage() {
                 type="text"
                 size="small"
                 icon={<EyeOutlined />}
-                onClick={() => openDetailDrawer(record)}
+                onClick={() =>
+                  record.type == "REQUEST"
+                    ? router.push(`/landlord/manage-requests`)
+                    : record.type == "BILL"
+                    ? router.push(`/landlord/manage-contracts`)
+                    : record.type == "BOOKING"
+                    ? router.push(`/landlord/rentals`)
+                    : record.type == "MAINTENANCE"
+                    ? router.push(`/landlord/manage-maintain`)
+                    : record.type == "TEMPORARY_RESIDENCE"
+                    ? router.push(`/landlord/manage-residents`)
+                    : openDetailDrawer(record)
+                }
               />
             </Tooltip>
 
@@ -819,12 +852,14 @@ export default function LandlordDashboardPage() {
           Manage your properties, bookings, and tenant requests efficiently
         </Text>
         <div className="mt-4 h-1 w-24 bg-gradient-to-r from-blue-500 to-green-500 mx-auto rounded-full"></div>
-        
+
         <div className="mt-4 flex items-center justify-center gap-4">
           {loadingStats && (
             <div>
               <Spin size="small" />
-              <Text className="ml-2 text-gray-500 dark:text-gray-400">Loading notifications...</Text>
+              <Text className="ml-2 text-gray-500 dark:text-gray-400">
+                Loading notifications...
+              </Text>
             </div>
           )}
           <Button
@@ -846,19 +881,22 @@ export default function LandlordDashboardPage() {
         <Col span={24}>
           <Card className="shadow-lg bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-700 border-l-4 border-l-blue-500">
             <div className="flex items-center justify-between mb-6">
-              <Title level={4} className="!text-gray-900 dark:!text-white !mb-0 flex items-center">
+              <Title
+                level={4}
+                className="!text-gray-900 dark:!text-white !mb-0 flex items-center"
+              >
                 🏠 Property Management Center
               </Title>
               <Text className="text-gray-500 dark:text-gray-400 text-sm">
                 {dayjs().format("dddd, MMMM DD, YYYY")}
               </Text>
             </div>
-            
+
             <Row gutter={[20, 20]}>
               <Col xs={24} sm={12} lg={6}>
-                <div 
+                <div
                   className="bg-white dark:bg-gray-800 rounded-xl p-6 cursor-pointer hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-blue-500"
-                  onClick={() => router.push('/landlord/rentals')}
+                  onClick={() => router.push("/landlord/rentals")}
                 >
                   <div className="flex items-center justify-between mb-4">
                     <div className="bg-blue-100 dark:bg-blue-900/30 p-3 rounded-full">
@@ -866,7 +904,9 @@ export default function LandlordDashboardPage() {
                     </div>
                     {notificationStats.newBookings > 0 && (
                       <div className="bg-red-500 text-white text-xs rounded-full px-2 py-1 font-bold">
-                        {notificationStats.newBookings > 99 ? '99+' : notificationStats.newBookings}
+                        {notificationStats.newBookings > 99
+                          ? "99+"
+                          : notificationStats.newBookings}
                       </div>
                     )}
                   </div>
@@ -874,10 +914,9 @@ export default function LandlordDashboardPage() {
                     Rental Management
                   </h3>
                   <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
-                    {notificationStats.newBookings > 0 
+                    {notificationStats.newBookings > 0
                       ? `${notificationStats.newBookings} pending bookings`
-                      : "No pending bookings"
-                    }
+                      : "No pending bookings"}
                   </p>
                   <div className="flex items-center text-blue-600 dark:text-blue-400 text-sm font-medium">
                     Manage Bookings <ArrowRightOutlined className="ml-2" />
@@ -886,9 +925,9 @@ export default function LandlordDashboardPage() {
               </Col>
 
               <Col xs={24} sm={12} lg={6}>
-                <div 
+                <div
                   className="bg-white dark:bg-gray-800 rounded-xl p-6 cursor-pointer hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-orange-500"
-                  onClick={() => router.push('/landlord/manage-requests')}
+                  onClick={() => router.push("/landlord/manage-requests")}
                 >
                   <div className="flex items-center justify-between mb-4">
                     <div className="bg-orange-100 dark:bg-orange-900/30 p-3 rounded-full">
@@ -896,7 +935,9 @@ export default function LandlordDashboardPage() {
                     </div>
                     {notificationStats.newRequirements > 0 && (
                       <div className="bg-red-500 text-white text-xs rounded-full px-2 py-1 font-bold">
-                        {notificationStats.newRequirements > 99 ? '99+' : notificationStats.newRequirements}
+                        {notificationStats.newRequirements > 99
+                          ? "99+"
+                          : notificationStats.newRequirements}
                       </div>
                     )}
                   </div>
@@ -904,10 +945,9 @@ export default function LandlordDashboardPage() {
                     Request Management
                   </h3>
                   <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
-                    {notificationStats.newRequirements > 0 
+                    {notificationStats.newRequirements > 0
                       ? `${notificationStats.newRequirements} pending requirements`
-                      : "No pending requirements"
-                    }
+                      : "No pending requirements"}
                   </p>
                   <div className="flex items-center text-orange-600 dark:text-orange-400 text-sm font-medium">
                     View Requests <ArrowRightOutlined className="ml-2" />
@@ -916,9 +956,9 @@ export default function LandlordDashboardPage() {
               </Col>
 
               <Col xs={24} sm={12} lg={6}>
-                <div 
+                <div
                   className="bg-white dark:bg-gray-800 rounded-xl p-6 cursor-pointer hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-green-500"
-                  onClick={() => router.push('/landlord/manage-contracts')}
+                  onClick={() => router.push("/landlord/manage-contracts")}
                 >
                   <div className="flex items-center justify-between mb-4">
                     <div className="bg-green-100 dark:bg-green-900/30 p-3 rounded-full">
@@ -926,7 +966,9 @@ export default function LandlordDashboardPage() {
                     </div>
                     {notificationStats.confirmingBills > 0 && (
                       <div className="bg-red-500 text-white text-xs rounded-full px-2 py-1 font-bold">
-                        {notificationStats.confirmingBills > 99 ? '99+' : notificationStats.confirmingBills}
+                        {notificationStats.confirmingBills > 99
+                          ? "99+"
+                          : notificationStats.confirmingBills}
                       </div>
                     )}
                   </div>
@@ -934,10 +976,9 @@ export default function LandlordDashboardPage() {
                     Payment Confirmation
                   </h3>
                   <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
-                    {notificationStats.confirmingBills > 0 
+                    {notificationStats.confirmingBills > 0
                       ? `${notificationStats.confirmingBills} bills awaiting confirmation`
-                      : "No bills awaiting confirmation"
-                    }
+                      : "No bills awaiting confirmation"}
                   </p>
                   <div className="flex items-center text-green-600 dark:text-green-400 text-sm font-medium">
                     Confirm Payments <ArrowRightOutlined className="ml-2" />
@@ -946,11 +987,11 @@ export default function LandlordDashboardPage() {
               </Col>
 
               <Col xs={24} sm={12} lg={6}>
-                <div 
+                <div
                   className="bg-white dark:bg-gray-800 rounded-xl p-6 cursor-pointer hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-purple-500"
                   onClick={() => {
                     resetMessageCount();
-                    router.push('/landlord/manage-chat');
+                    router.push("/landlord/manage-chat");
                   }}
                 >
                   <div className="flex items-center justify-between mb-4">
@@ -959,7 +1000,9 @@ export default function LandlordDashboardPage() {
                     </div>
                     {persistentMessageCount > 0 && (
                       <div className="bg-red-500 text-white text-xs rounded-full px-2 py-1 font-bold">
-                        {persistentMessageCount > 99 ? '99+' : persistentMessageCount}
+                        {persistentMessageCount > 99
+                          ? "99+"
+                          : persistentMessageCount}
                       </div>
                     )}
                   </div>
@@ -967,10 +1010,9 @@ export default function LandlordDashboardPage() {
                     Messages
                   </h3>
                   <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
-                    {persistentMessageCount > 0 
+                    {persistentMessageCount > 0
                       ? `${persistentMessageCount} unread messages`
-                      : "No new messages"
-                    }
+                      : "No new messages"}
                   </p>
                   <div className="flex items-center text-purple-600 dark:text-purple-400 text-sm font-medium">
                     Open Chat <ArrowRightOutlined className="ml-2" />
@@ -1001,7 +1043,7 @@ export default function LandlordDashboardPage() {
                   </div>
                 </div>
               </Col>
-              
+
               <Col xs={24} sm={12} lg={6}>
                 <div className="bg-white dark:bg-gray-800 rounded-lg p-4 text-center border border-gray-200 dark:border-gray-600">
                   <ClockCircleOutlined className="text-3xl text-orange-600 dark:text-orange-400 mb-2" />
@@ -1013,7 +1055,7 @@ export default function LandlordDashboardPage() {
                   </div>
                 </div>
               </Col>
-              
+
               <Col xs={24} sm={12} lg={6}>
                 <div className="bg-white dark:bg-gray-800 rounded-lg p-4 text-center border border-gray-200 dark:border-gray-600">
                   <CheckCircleOutlined className="text-3xl text-green-600 dark:text-green-400 mb-2" />
@@ -1025,7 +1067,7 @@ export default function LandlordDashboardPage() {
                   </div>
                 </div>
               </Col>
-              
+
               <Col xs={24} sm={12} lg={6}>
                 <div className="bg-white dark:bg-gray-800 rounded-lg p-4 text-center border border-gray-200 dark:border-gray-600">
                   <ExclamationCircleOutlined className="text-3xl text-red-600 dark:text-red-400 mb-2" />
@@ -1255,8 +1297,8 @@ export default function LandlordDashboardPage() {
 
           <Row gutter={16}>
             <Col span={12}>
-              <Form.Item 
-                name="startDate" 
+              <Form.Item
+                name="startDate"
                 label="Start Date"
                 rules={[
                   {
@@ -1274,9 +1316,9 @@ export default function LandlordDashboardPage() {
                 <DatePicker
                   style={{ width: "100%" }}
                   placeholder="Select start date (optional)"
-                  showTime={{ 
+                  showTime={{
                     format: "HH:mm",
-                    defaultValue: dayjs().hour(18).minute(0) // Default 18:00
+                    defaultValue: dayjs().hour(18).minute(0), // Default 18:00
                   }}
                   format="YYYY-MM-DD HH:mm"
                   disabledDate={(current) =>
@@ -1284,15 +1326,15 @@ export default function LandlordDashboardPage() {
                   }
                   onChange={() => {
                     // Trigger validation for due date when start date changes
-                    createForm.validateFields(['dueDate']);
+                    createForm.validateFields(["dueDate"]);
                   }}
                 />
               </Form.Item>
             </Col>
 
             <Col span={12}>
-              <Form.Item 
-                name="dueDate" 
+              <Form.Item
+                name="dueDate"
                 label="Due Date"
                 rules={[
                   {
@@ -1303,9 +1345,15 @@ export default function LandlordDashboardPage() {
                         );
                       }
                       const startDate = createForm.getFieldValue("startDate");
-                      if (value && startDate && dayjs(value).isBefore(dayjs(startDate))) {
+                      if (
+                        value &&
+                        startDate &&
+                        dayjs(value).isBefore(dayjs(startDate))
+                      ) {
                         return Promise.reject(
-                          new Error("Due date must be after or equal to start date")
+                          new Error(
+                            "Due date must be after or equal to start date"
+                          )
                         );
                       }
                       return Promise.resolve();
@@ -1316,9 +1364,9 @@ export default function LandlordDashboardPage() {
                 <DatePicker
                   style={{ width: "100%" }}
                   placeholder="Select due date (optional)"
-                  showTime={{ 
+                  showTime={{
                     format: "HH:mm",
-                    defaultValue: dayjs().hour(18).minute(0) // Default 18:00
+                    defaultValue: dayjs().hour(18).minute(0), // Default 18:00
                   }}
                   format="YYYY-MM-DD HH:mm"
                   disabledDate={(current) => {
@@ -1329,7 +1377,7 @@ export default function LandlordDashboardPage() {
                   }}
                   onChange={() => {
                     // Trigger validation when due date changes
-                    createForm.validateFields(['dueDate']);
+                    createForm.validateFields(["dueDate"]);
                   }}
                 />
               </Form.Item>
@@ -1441,8 +1489,8 @@ export default function LandlordDashboardPage() {
 
           <Row gutter={16}>
             <Col span={12}>
-              <Form.Item 
-                name="startDate" 
+              <Form.Item
+                name="startDate"
                 label="Start Date"
                 validateTrigger={["onChange", "onBlur"]}
                 rules={[
@@ -1466,7 +1514,7 @@ export default function LandlordDashboardPage() {
                   onChange={(value) => {
                     // Trigger validation immediately when value changes
                     setTimeout(() => {
-                      createForm.validateFields(['startDate', 'dueDate']);
+                      createForm.validateFields(["startDate", "dueDate"]);
                     }, 0);
                   }}
                 />
@@ -1487,9 +1535,15 @@ export default function LandlordDashboardPage() {
                       }
                       // Validate due date is after start date
                       const startDate = editForm.getFieldValue("startDate");
-                      if (startDate && value && dayjs(value).isBefore(dayjs(startDate))) {
+                      if (
+                        startDate &&
+                        value &&
+                        dayjs(value).isBefore(dayjs(startDate))
+                      ) {
                         return Promise.reject(
-                          new Error("Due date must be after or equal to start date")
+                          new Error(
+                            "Due date must be after or equal to start date"
+                          )
                         );
                       }
                       return Promise.resolve();
@@ -1504,7 +1558,7 @@ export default function LandlordDashboardPage() {
                   format="YYYY-MM-DD HH:mm"
                   onChange={() => {
                     // Trigger validation when due date changes
-                    editForm.validateFields(['dueDate']);
+                    editForm.validateFields(["dueDate"]);
                   }}
                 />
               </Form.Item>
@@ -1664,7 +1718,9 @@ export default function LandlordDashboardPage() {
                   </h3>
                   <div className="flex items-center text-gray-900 dark:text-white">
                     <CalendarOutlined className="mr-2" />
-                    {dayjs(selectedTask.startDate).format("MMMM DD, YYYY HH:mm")}
+                    {dayjs(selectedTask.startDate).format(
+                      "MMMM DD, YYYY HH:mm"
+                    )}
                   </div>
                 </div>
               )}
