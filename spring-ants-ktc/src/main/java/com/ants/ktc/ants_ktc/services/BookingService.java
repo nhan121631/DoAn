@@ -338,7 +338,6 @@ public class BookingService {
                 }
         }
 
-
         // xoa booking set isRemoved = 1
         @Transactional
         public void deleteBooking(UUID bookingId, UUID userId) {
@@ -547,6 +546,7 @@ public class BookingService {
                                 .tenantCount(projection.getTenantCount())
                                 .status(projection.getStatus())
                                 .isRemoved(projection.getIsRemoved())
+                                .imageProof(projection.getImageProof())
                                 .room(convertFromRoomProjectionToDto(projection.getRoom()))
                                 .build();
         }
@@ -738,6 +738,7 @@ public class BookingService {
                                 .rentalExpires(booking.getRentalExpires())
                                 .tenantCount(booking.getTenantCount())
                                 .status(booking.getStatus())
+                                .imageProof(booking.getImageProof())
                                 .room(convertToRoomDto(booking.getRoom()))
                                 // .user(convertToUserDto(booking.getUser()))
                                 .build();

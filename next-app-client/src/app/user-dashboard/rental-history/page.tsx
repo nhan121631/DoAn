@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import { Button, Table, Tag, Form, Space, message } from "antd";
+import { Button, Table, Tag, Form, Space, message, Modal } from "antd";
 import ModalPayment from "../components/rental-history/ModalPayment";
 import RequestModal from "../components/rental-history/RequestModal";
 import { useEffect, useState } from "react";
@@ -8,11 +8,16 @@ import React from "react";
 import { IoMdAddCircleOutline } from "react-icons/io";
 import { userFetchBookings } from "@/services/BookingService";
 import { RequirementRequestRoomDto } from "@/types/types";
-// import { createRequest } from "@/services/Requirements"; 
+// import { createRequest } from "@/services/Requirements";
 // import { AlignCenter } from "lucide-react";
-import { bookingConfirmationNotification, createRequestNotification } from "@/services/NotificationService";
+import {
+  bookingConfirmationNotification,
+  createRequestNotification,
+} from "@/services/NotificationService";
 import { useSession } from "next-auth/react";
 import { getLandlordByRoomId } from "@/services/RoomService";
+import { URL_IMAGE } from "@/services/Constant";
+import Image from "next/image";
 
 function useRentalStatusModal() {
   const [visible, setVisible] = useState(false);
@@ -46,6 +51,7 @@ interface RentalData {
   status: number;
   isRemoved?: number;
   userId?: string | number;
+  imageProof?: string;
 }
 
 function RentalHistory() {
@@ -59,6 +65,8 @@ function RentalHistory() {
   const modal = useRentalStatusModal();
   const [messageApi, contextHolder] = message.useMessage();
   const { data: session } = useSession();
+  const [imageModalOpen, setImageModalOpen] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<string>("");
 
   const mapBookingToRentalData = (booking: any): RentalData => {
     const address = booking.room.address;
@@ -82,6 +90,7 @@ function RentalHistory() {
         : "",
       status: booking.status,
       isRemoved: booking.isRemoved,
+      imageProof: booking.imageProof || "",
     };
   };
 
@@ -124,12 +133,12 @@ function RentalHistory() {
   const handleFinish = async (request: RequirementRequestRoomDto) => {
     try {
       console.log("Request submitted:", request);
-      
+
       messageApi.success({
         content: "Request submitted successfully!",
         duration: 2,
       });
-      
+
       setOpen(false);
       setFieldValue(null);
       form.resetFields();
@@ -149,13 +158,26 @@ function RentalHistory() {
     }
   };
 
-  const handleAccept = async (key: string, idRoom: string | number | undefined) => {
+  const handleAccept = async (
+    key: string,
+    idRoom: string | number | undefined
+  ) => {
     modal.setSelectedKey(key);
     modal.setVisible(true);
     const landlordId = await getLandlordByRoomId(idRoom as string);
-    const getNameLandlord = tableData.find(item => item.key === key)?.name_landlord || "the landlord";
-    const nameRoom = tableData.find(item => item.key === key)?.room || '';
-    await bookingConfirmationNotification(session?.user.id, landlordId.id, "Your booking deposit is confirmed and waiting for landlord's:" + getNameLandlord + " confirmation at room " + nameRoom + ".");
+    const getNameLandlord =
+      tableData.find((item) => item.key === key)?.name_landlord ||
+      "the landlord";
+    const nameRoom = tableData.find((item) => item.key === key)?.room || "";
+    await bookingConfirmationNotification(
+      session?.user.id,
+      landlordId.id,
+      "Your booking deposit is confirmed and waiting for landlord's:" +
+        getNameLandlord +
+        " confirmation at room " +
+        nameRoom +
+        "."
+    );
   };
 
   const handleConfirm = async () => {
@@ -172,6 +194,16 @@ function RentalHistory() {
         modal.setVisible(false);
       }
     }
+  };
+
+  const handleImageClick = (imageUrl: string) => {
+    setSelectedImage(imageUrl);
+    setImageModalOpen(true);
+  };
+
+  const handleImageModalClose = () => {
+    setImageModalOpen(false);
+    setSelectedImage("");
   };
 
   const columns = [
@@ -219,6 +251,35 @@ function RentalHistory() {
       sorter: (a: RentalData, b: RentalData) => {
         const getNum = (v: string) => parseInt(v.replace(/[^\d]/g, ""), 10);
         return getNum(a.price) - getNum(b.price);
+      },
+    },
+    {
+      title: "Image Proof",
+      dataIndex: "imageProof",
+      align: "center" as const,
+      render: (text: string) => {
+        if (!text) {
+          return (
+            <div className="w-16 h-16 bg-gray-200 flex items-center justify-center rounded text-gray-500 text-xs">
+              No Image
+            </div>
+          );
+        }
+        return (
+          <div
+            className="w-16 h-16 cursor-pointer hover:opacity-80 transition-opacity"
+            onClick={() => handleImageClick(`${URL_IMAGE}${text}`)}
+          >
+            <Image
+              src={`${URL_IMAGE}${text}`}
+              alt="Bill Transfer"
+              width={64}
+              height={64}
+              className="object-cover rounded border border-gray-300"
+              style={{ width: "64px", height: "64px" }}
+            />
+          </div>
+        );
       },
     },
     {
@@ -359,6 +420,36 @@ function RentalHistory() {
         fieldValue={fieldValue}
         modalType={modalType}
       />
+
+      {/* Image Modal */}
+      <Modal
+        open={imageModalOpen}
+        onCancel={handleImageModalClose}
+        footer={null}
+        centered
+        width="auto"
+        style={{ maxWidth: "90vw", maxHeight: "90vh" }}
+        bodyStyle={{ padding: 0 }}
+      >
+        {selectedImage && (
+          <div className="flex justify-center items-center">
+            <Image
+              src={selectedImage}
+              alt="Bill Transfer - Full Size"
+              width={800}
+              height={600}
+              style={{
+                maxWidth: "85vw",
+                maxHeight: "85vh",
+                objectFit: "contain",
+                width: "auto",
+                height: "auto",
+              }}
+              className="rounded"
+            />
+          </div>
+        )}
+      </Modal>
     </div>
   );
 }
