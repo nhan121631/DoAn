@@ -32,8 +32,6 @@ public class TemporaryResidenceService {
     @Autowired
     private LandlordTaskService landlordTaskService;
 
-
-
     public TemporaryResidenceResponse create(TemporaryResidenceCreateRequest request,
             MultipartFile frontImage,
             MultipartFile backImage) {
@@ -72,6 +70,8 @@ public class TemporaryResidenceService {
         if (roomId == null) {
             throw new IllegalArgumentException("Room not found for the room");
         }
+
+        TemporaryResidence saved = temporaryResidenceRepository.save(temp);
         LandlordTaskCreateDto dto = LandlordTaskCreateDto.builder()
                 .title("Temporary Residence: " + request.getNote().substring(0,
                         Math.min(20, request.getNote().length())) + "...")
@@ -79,21 +79,23 @@ public class TemporaryResidenceService {
                 .startDate(LocalDateTime.now())
                 .dueDate(LocalDateTime.now().plusDays(1))
                 .status("PENDING")
+                .type("TEMPORARY_RESIDENCE")
+                .relatedEntityId(saved.getId())
                 .priority("HIGH")
                 .landlordId(landlordId.toString())
                 .roomId(roomId.toString())
                 .build();
         landlordTaskService.createTask(dto);
-
-        TemporaryResidence saved = temporaryResidenceRepository.save(temp);
         return convertToDto(saved);
     }
+
     public List<TemporaryResidenceResponse> getByLandlord(UUID landlordId) {
         return temporaryResidenceRepository.findByLandlordId(landlordId)
                 .stream()
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
     }
+
     public List<TemporaryResidenceResponse> getByTenant(UUID tenantId) {
         return temporaryResidenceRepository.findByTenantId(tenantId)
                 .stream()

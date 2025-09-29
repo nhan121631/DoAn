@@ -6,12 +6,7 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { MdPhone, MdEmail, MdVerified, MdLocationOn } from "react-icons/md";
-import {
-  FaTimes,
-  FaStar,
-  FaUserCheck,
-  FaCrown,
-} from "react-icons/fa";
+import { FaTimes, FaStar, FaUserCheck, FaCrown } from "react-icons/fa";
 import {
   IoShareSocialOutline,
   IoWarningOutline,
@@ -325,7 +320,9 @@ export default function UserInfoCard({ id }: { id: string }) {
     if (reportReason === "Other reasons") {
       const descriptionTrim = reportDescription.trim();
       if (!descriptionTrim) {
-        messageApi.error("Please provide details when selecting 'Other reasons'.");
+        messageApi.error(
+          "Please provide details when selecting 'Other reasons'."
+        );
         return;
       }
     }
@@ -385,7 +382,9 @@ export default function UserInfoCard({ id }: { id: string }) {
           setReportStatus(null);
         }, 1500);
       } else {
-        messageApi.error(data.message || "An error occurred while submitting the report.");
+        messageApi.error(
+          data.message || "An error occurred while submitting the report."
+        );
         setReportStatus(
           "Error submitting report: " + (data.message || "Please try again.")
         );
@@ -541,9 +540,8 @@ export default function UserInfoCard({ id }: { id: string }) {
   return (
     <div
       data-user-info-card
-      className={`space-y-4 transition-all duration-300 ${
-        isSticky ? "sticky top-10 z-10" : ""
-      }`}
+      className={`space-y-4 transition-all duration-300 
+        ${isSticky ? "sticky top-10 z-10" : ""}`}
     >
       {/* Main Profile Card */}
       <div className="overflow-hidden transition-all duration-500 bg-white border border-gray-100 shadow-xl rounded-2xl hover:shadow-2xl">

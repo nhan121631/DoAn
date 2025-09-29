@@ -402,11 +402,11 @@ export default function BillsTab({
       align: "right" as const,
       render: (v: number, record: BillData) => (
         <div>
-          <div className="font-medium">{v?.toLocaleString('vi-VN')}đ</div>
+          <div className="font-medium">{v?.toLocaleString("vi-VN")}đ</div>
           {record.electricityUsage && record.electricityPrice && (
             <div className="text-xs text-gray-500">
               {record.electricityUsage.toFixed(2)} kWh ×{" "}
-              {record.electricityPrice.toLocaleString('vi-VN')}đ/kWh
+              {record.electricityPrice.toLocaleString("vi-VN")}đ/kWh
             </div>
           )}
         </div>
@@ -421,11 +421,11 @@ export default function BillsTab({
       align: "right" as const,
       render: (v: number, record: BillData) => (
         <div>
-          <div className="font-medium">{v?.toLocaleString('vi-VN')}đ</div>
+          <div className="font-medium">{v?.toLocaleString("vi-VN")}đ</div>
           {record.waterUsage && record.waterPrice && (
             <div className="text-xs text-gray-500">
               {record.waterUsage.toFixed(2)} m³ ×{" "}
-              {record.waterPrice.toLocaleString('vi-VN')}đ/m³
+              {record.waterPrice.toLocaleString("vi-VN")}đ/m³
             </div>
           )}
         </div>
@@ -440,10 +440,10 @@ export default function BillsTab({
       align: "right" as const,
       render: (v: number, record: BillData) => (
         <div>
-          <div className="font-medium">{v?.toLocaleString('vi-VN')}đ</div>
+          <div className="font-medium">{v?.toLocaleString("vi-VN")}đ</div>
           {record.damageFee != null && record.damageFee > 0 && (
             <div className="text-xs text-red-500">
-              + Other Fee: {record.damageFee.toLocaleString('vi-VN')}đ
+              + Other Fee: {record.damageFee.toLocaleString("vi-VN")}đ
               {record.note && (
                 <div className="text-xs text-gray-500 italic">
                   ({record.note})
@@ -462,7 +462,7 @@ export default function BillsTab({
       key: "totalAmount",
       width: "130px",
       align: "right" as const,
-      render: (v: number) => v?.toLocaleString('vi-VN') + "đ",
+      render: (v: number) => v?.toLocaleString("vi-VN") + "đ",
       sorter: (a: BillData, b: BillData) =>
         (a.totalAmount || 0) - (b.totalAmount || 0),
     },
@@ -1007,7 +1007,7 @@ export default function BillsTab({
               label={
                 <span className="transition-colors duration-300 dark:text-gray-300">
                   Electricity Usage (kWh) - Price:{" "}
-                  {roomData?.elecPrice?.toLocaleString('vi-VN') || 0}đ/kWh
+                  {roomData?.elecPrice?.toLocaleString("vi-VN") || 0}đ/kWh
                 </span>
               }
               name="electricityUsage"
@@ -1032,7 +1032,7 @@ export default function BillsTab({
               label={
                 <span className="transition-colors duration-300 dark:text-gray-300">
                   Water Usage (m³) - Price:{" "}
-                  {roomData?.waterPrice?.toLocaleString('vi-VN') || 0}đ/m³
+                  {roomData?.waterPrice?.toLocaleString("vi-VN") || 0}đ/m³
                 </span>
               }
               name="waterUsage"
@@ -1054,7 +1054,8 @@ export default function BillsTab({
             <Form.Item
               label={
                 <span className="transition-colors duration-300 dark:text-gray-300">
-                  Service Fee: {roomData?.priceMonth?.toLocaleString('vi-VN') || 0}
+                  Service Fee:{" "}
+                  {roomData?.priceMonth?.toLocaleString("vi-VN") || 0}
                   đ/month
                 </span>
               }
@@ -1218,7 +1219,7 @@ export default function BillsTab({
             label={
               <span className="transition-colors duration-300 dark:text-gray-300">
                 Electricity Usage (kWh) - Price:{" "}
-                {roomData?.elecPrice?.toLocaleString('vi-VN') || 0}đ/kWh
+                {roomData?.elecPrice?.toLocaleString("vi-VN") || 0}đ/kWh
               </span>
             }
             name="electricityUsage"
@@ -1243,7 +1244,7 @@ export default function BillsTab({
             label={
               <span className="transition-colors duration-300 dark:text-gray-300">
                 Water Usage (m³) - Price:{" "}
-                {roomData?.waterPrice?.toLocaleString('vi-VN') || 0}đ/m³
+                {roomData?.waterPrice?.toLocaleString("vi-VN") || 0}đ/m³
               </span>
             }
             name="waterUsage"
@@ -1265,7 +1266,8 @@ export default function BillsTab({
           <Form.Item
             label={
               <span className="transition-colors duration-300 dark:text-gray-300">
-                Service Fee: {roomData?.priceMonth?.toLocaleString('vi-VN') || 0}
+                Service Fee:{" "}
+                {roomData?.priceMonth?.toLocaleString("vi-VN") || 0}
                 đ/month
               </span>
             }
@@ -1384,7 +1386,7 @@ export default function BillsTab({
         centered
         width="auto"
         style={{ maxWidth: "90vw", maxHeight: "90vh" }}
-        bodyStyle={{ padding: 0 }}
+        styles={{ body: { padding: 0 } }}
       >
         {selectedImage && (
           <div className="flex justify-center items-center">
