@@ -773,6 +773,8 @@ export default function LandlordDashboardPage() {
                     ? router.push(`/landlord/rentals`)
                     : record.type == "MAINTENANCE"
                     ? router.push(`/landlord/manage-maintain`)
+                    : record.type == "TEMPORARY_RESIDENCE"
+                    ? router.push(`/landlord/manage-residents`)
                     : openDetailDrawer(record)
                 }
               />

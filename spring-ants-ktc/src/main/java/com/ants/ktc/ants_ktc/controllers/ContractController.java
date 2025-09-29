@@ -34,30 +34,30 @@ public class ContractController {
     }
 
     @GetMapping("/tenant/{tenantId}")
-    public ResponseEntity<List<ContractResponseDto>> getContractsByTenant(@PathVariable UUID tenantId) {
+    public ResponseEntity<List<ContractResponseDto>> getContractsByTenant(@PathVariable("tenantId") UUID tenantId) {
         return ResponseEntity.ok(contractService.getContractsByTenant(tenantId));
     }
 
     @GetMapping("/landlord/{landlordId}")
     public ResponseEntity<Page<ContractResponseDto>> getContractsByLandlord(
-            @PathVariable UUID landlordId,
+            @PathVariable("landlordId") UUID landlordId,
             Pageable pageable) {
         return ResponseEntity.ok(contractService.getContractsByLandlord(landlordId, pageable));
     }
 
     @GetMapping("/room/{roomId}")
-    public ResponseEntity<List<ContractResponseDto>> getContractsByRoom(@PathVariable UUID roomId) {
+    public ResponseEntity<List<ContractResponseDto>> getContractsByRoom(@PathVariable("roomId") UUID roomId) {
         return ResponseEntity.ok(contractService.getContractsByRoom(roomId));
     }
 
     @GetMapping("/{contractId}")
-    public ResponseEntity<ContractResponseDto> getContractById(@PathVariable UUID contractId) {
+    public ResponseEntity<ContractResponseDto> getContractById(@PathVariable("contractId") UUID contractId) {
         return ResponseEntity.ok(contractService.getContractById(contractId));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<ContractResponseDto> updateContract(
-            @PathVariable UUID id,
+            @PathVariable("id") UUID id,
             @RequestBody @Valid ContractUpdateRequestDto dto) {
         dto.setId(id);
         return ResponseEntity.ok(contractService.updateContract(dto));
@@ -65,13 +65,13 @@ public class ContractController {
 
     @PutMapping("/{id}/image")
     public ResponseEntity<ContractResponseDto> updateContractImage(
-            @PathVariable UUID id,
+            @PathVariable("id") UUID id,
             @RequestParam("file") MultipartFile file) {
         return ResponseEntity.ok(contractService.uploadContractImage(id, file));
     }
 
     @GetMapping("/status/{status}")
-    public ResponseEntity<List<ContractResponseDto>> getContractsByStatus(@PathVariable int status) {
+    public ResponseEntity<List<ContractResponseDto>> getContractsByStatus(@PathVariable("status") int status) {
         return ResponseEntity.ok(contractService.getContractsByStatus(status));
     }
 
@@ -88,7 +88,7 @@ public class ContractController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteContract(@PathVariable UUID id) {
+    public ResponseEntity<Void> deleteContract(@PathVariable("id") UUID id) {
         contractService.deleteContract(id);
         return ResponseEntity.noContent().build();
     }
