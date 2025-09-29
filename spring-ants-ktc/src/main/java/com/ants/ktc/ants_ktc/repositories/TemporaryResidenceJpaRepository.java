@@ -27,4 +27,10 @@ public interface TemporaryResidenceJpaRepository extends JpaRepository<Temporary
                         "WHERE c.tenant.id = :tenantId")
         List<TemporaryResidence> findByTenantId(@Param("tenantId") UUID tenantId);
 
+        @Query("select c.landlord.id from Contract c where c.id = :contractID")
+        UUID findLandlordByTemporaryResidenceId(@Param("contractID") UUID contractID);
+
+        @Query("SELECT t.room.id FROM Contract t WHERE t.id = :contractID")
+        UUID findRoomIdByTemporaryResidenceId(@Param("contractID") UUID contractID);
+
 }

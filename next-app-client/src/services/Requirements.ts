@@ -11,22 +11,27 @@ import { API_URL } from "./Constant";
 // import { Update } from "next/dist/build/swc/types";
 
 export async function createRequest(
-  data: RequirementRequestRoomDto
+  data: RequirementRequestRoomDto,
+  imageFile?: File
 ): Promise<RequirementRequestRoomDto> {
+  const formData = new FormData();
+  
+  const jsonBlob = new Blob([JSON.stringify(data)], { type: "application/json" });
+  formData.append("data", jsonBlob, "data.json");
+  
+  if (imageFile) {
+    formData.append("image", imageFile);
+  }
+
   const response = await fetch("/api/requirements/create", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(data),
+    body: formData,
   });
 
   const result = await response.json();
   if (!response.ok) {
-    // Nếu backend trả về error dạng { error: ..., message: ... }
     let errorMsg =
       result?.error || result?.message || "Failed to create request";
-    // Nếu message là mảng, lấy phần tử đầu tiên
     if (Array.isArray(errorMsg)) {
       errorMsg = errorMsg[0];
     }
@@ -34,6 +39,44 @@ export async function createRequest(
   }
   return result;
 }
+//upload image + create request
+export async function updateRequirementWithImage(
+  idRequirement: string,
+  description: string,
+  imageFile?: File
+): Promise<RequirementRequestRoomDto> {
+  const formData = new FormData();
+  
+  const updateData = {
+    id: idRequirement,
+    description: description,
+  };
+  
+  const jsonBlob = new Blob([JSON.stringify(updateData)], { type: "application/json" });
+  formData.append("data", jsonBlob, "data.json");
+  
+  if (imageFile) {
+    formData.append("image", imageFile);
+  }
+
+  const response = await fetch(`/api/requirements/${idRequirement}/update-with-image`, {
+    method: 'PATCH',
+    body: formData,
+  });
+
+  const result = await response.json();
+  if (!response.ok) {
+    let errorMsg = result?.error || result?.message || "Failed to update requirement";
+    if (Array.isArray(errorMsg)) {
+      errorMsg = errorMsg[0];
+    }
+    throw new Error(errorMsg);
+  }
+  return result;
+}
+
+//
+
 
 export async function getRequestsByLandlordId(
   page = 0,

@@ -32,16 +32,16 @@
 - **Manage Accounts**
 - **Favorite**
 - **Maintain**
-- **Landlord & Landlord Card**
+- Quản lý **Landlord & Landlord Card**
 - **Increase views for posts**
 
 ### 🔹 Nam
 
-- **Contract**
-- **Bill**
-- **Resident**
-- **Blog**
-- **Feedback**
+- Quản lý **Contract** giữa landlord và tenant
+- Quản lý **Bill** của từng contract
+- Quản lý **Resident** của từng contract
+- Quản lý **Blog** cho admin, hiển thị bên tenant
+- Quản lý **Feedback** của landlord, add and view cho tenant
 
 
 ### 🔹 Đức
@@ -81,12 +81,12 @@
   - **RoomVipCard**, **RoomNormalCard**
   - **Quảng cáo (Ads)**
 - **Trung**:
-  - **Footer**
   - Trang **So sánh Room**
   - Trang **NewPost** (hiển thị phòng mới đăng)
   - Trang **Favorited-rooms**
   - **Card thông tin Landlord** trong trang chi tiết
   - Sử dụng **IntersectionObserver + timer để tăng view tự động**
+  - **Footer**
 - **Nam**:
   - Trang **Contract**
   - Trang **Bill**

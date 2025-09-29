@@ -170,7 +170,9 @@ const TableManageRoom: React.FC = () => {
       key: "approval",
       sorter: true,
       render: (_, record) => {
-        if (record.approval === 0) {
+        if (record.isRemoved === 1) {
+          return <Tag color="red">Post Removed</Tag>;
+        } else if (record.approval === 0) {
           return (
             <Space>
               <Popconfirm

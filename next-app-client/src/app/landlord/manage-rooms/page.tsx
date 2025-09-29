@@ -333,6 +333,8 @@ function TableManageRoom() {
                     postEndDate,
                     selectedTypePostId as string
                   );
+                  console.log("postEndDate", postEndDate);
+                  console.log("postStartDate", postStartDate);
                   messageApi.success({
                     content: `Extend until ${extendDates[record.id]} for "${
                       record.title
@@ -498,10 +500,10 @@ function TableManageRoom() {
       {contextHolder}
       <div className="flex items-center justify-between mb-4">
         <div className="mb-4">
-          <h2 className="text-4xl font-semibold dark:!text-white">
+          <h2 className="text-2xl font-semibold dark:!text-white">
             Manage Rooms
           </h2>
-          <p className="text-xl text-gray-500">Room Post Management.</p>
+          <p className="text-lg text-gray-500">Room Post Management.</p>
         </div>
         <div>
           <Button

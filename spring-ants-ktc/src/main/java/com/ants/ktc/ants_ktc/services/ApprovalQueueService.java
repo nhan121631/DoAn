@@ -29,6 +29,12 @@ public class ApprovalQueueService {
 
     public boolean enqueueRoomForApproval(UUID roomId) {
         try {
+            // Kiểm tra xem roomId đã có trong queue hay chưa
+            if (isRoomAlreadyInQueue(roomId)) {
+                System.out.println("[ApprovalQueueService] ⏭️ Room " + roomId + " already exists in approval queue");
+                return false; // Không thêm duplicate
+            }
+
             Room room = roomJpaRepository.findById(roomId)
                     .orElseThrow(() -> new RuntimeException("Room not found: " + roomId));
 
@@ -51,7 +57,15 @@ public class ApprovalQueueService {
     }
 
     /**
-     * Thêm nhiều phòng vào hàng đợi duyệt
+     * Kiểm tra xem roomId đã tồn tại trong queue hay chưa
+     */
+    private boolean isRoomAlreadyInQueue(UUID roomId) {
+        return approvalQueue.stream()
+                .anyMatch(message -> message.getRoomId().equals(roomId));
+    }
+
+    /**
+     * Thêm nhiều phòng vào hàng đợi duyệt với kiểm tra duplicate
      */
     @Transactional(readOnly = true)
     public int enqueuePendingRooms() {
@@ -62,7 +76,17 @@ public class ApprovalQueueService {
                     .collect(Collectors.toList());
 
             int enqueuedCount = 0;
+            int skippedDuplicateCount = 0;
+
             for (Room room : pendingRooms) {
+                // Kiểm tra xem roomId đã có trong queue hay chưa
+                if (isRoomAlreadyInQueue(room.getId())) {
+                    skippedDuplicateCount++;
+                    System.out
+                            .println("[ApprovalQueueService] ⏭️ Skipped room " + room.getId() + " (already in queue)");
+                    continue;
+                }
+
                 ApprovalMessage approvalMessage = createApprovalMessage(room);
 
                 if (approvalQueue.offer(approvalMessage)) {
@@ -74,8 +98,9 @@ public class ApprovalQueueService {
                 }
             }
 
-            System.out
-                    .println("[ApprovalQueueService] 📊 Total enqueued: " + enqueuedCount + "/" + pendingRooms.size());
+            System.out.println("[ApprovalQueueService] 📊 Total: " + pendingRooms.size() +
+                    " pending rooms, " + enqueuedCount + " enqueued, " +
+                    skippedDuplicateCount + " duplicates skipped");
             return enqueuedCount;
 
         } catch (Exception e) {
@@ -168,6 +193,24 @@ public class ApprovalQueueService {
         approvalQueue.clear();
         System.out.println("[ApprovalQueueService] Cleared " + cleared + " items from approval queue");
         return cleared;
+    }
+
+    /**
+     * Lấy danh sách tất cả room IDs hiện tại trong queue (để debug/monitoring)
+     */
+    public List<UUID> getCurrentQueueRoomIds() {
+        return approvalQueue.stream()
+                .map(ApprovalMessage::getRoomId)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Đếm số lượng room ID cụ thể trong queue
+     */
+    public int countRoomInQueue(UUID roomId) {
+        return (int) approvalQueue.stream()
+                .filter(message -> message.getRoomId().equals(roomId))
+                .count();
     }
 
     // Inner class for queue status

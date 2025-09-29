@@ -182,7 +182,7 @@ export type LandlordProfile = {
 };
 
 export type RequirementRequestRoomDto = {
-  idRequirement: string;
+  idRequirement?: string;
   userId: string;
   roomId: string;
   description: string;

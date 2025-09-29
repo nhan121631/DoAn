@@ -329,7 +329,8 @@ export default function AdvertisingPage() {
             // icon={<EyeInvisibleOutlined />}
             onClick={() => handleToggleStatus(record.id)}
           >
-            {record.isActive ? <EyeOutlined /> : <EyeInvisibleOutlined />} {record.isActive ? "Deactivate" : "Activate"}
+            {record.isActive ? <EyeOutlined /> : <EyeInvisibleOutlined />}{" "}
+            {record.isActive ? "Deactivate" : "Activate"}
           </Button>
           <Button
             type="default"
@@ -361,9 +362,12 @@ export default function AdvertisingPage() {
 
   // Real-time conflict checking với debounce
   const checkConflictsRealTime = useCallback(
-    async (position: AdsPosition, dateRange: [Dayjs | null, Dayjs | null] | null) => {
-      console.log('🔍 Checking conflicts:', { position, dateRange });
-      
+    async (
+      position: AdsPosition,
+      dateRange: [Dayjs | null, Dayjs | null] | null
+    ) => {
+      console.log("🔍 Checking conflicts:", { position, dateRange });
+
       if (!position || !dateRange || !dateRange[0] || !dateRange[1]) {
         setConflictWarning("");
         return;
@@ -380,43 +384,54 @@ export default function AdvertisingPage() {
         };
 
         // Gọi API thông qua mutation
-        const conflicts = await new Promise<AdsResponse[]>((resolve, reject) => {
-          checkConflictsMutation.mutate(conflictRequest, {
-            onSuccess: (data) => resolve(data),
-            onError: (error) => reject(error),
-          });
-        });
+        const conflicts = await new Promise<AdsResponse[]>(
+          (resolve, reject) => {
+            checkConflictsMutation.mutate(conflictRequest, {
+              onSuccess: (data) => resolve(data),
+              onError: (error) => reject(error),
+            });
+          }
+        );
 
-        console.log('🔍 Conflicts found:', conflicts);
+        console.log("🔍 Conflicts found:", conflicts);
 
         if (conflicts.length > 0) {
           const conflictMessages = conflicts
             .map(
               (conflict: AdsResponse) =>
-                `"${conflict.title}" (Priority: ${conflict.priority}, ${dayjs(conflict.startDate).format("DD/MM/YYYY")} - ${dayjs(conflict.endDate).format("DD/MM/YYYY")})`
+                `"${conflict.title}" (Priority: ${conflict.priority}, ${dayjs(
+                  conflict.startDate
+                ).format("DD/MM/YYYY")} - ${dayjs(conflict.endDate).format(
+                  "DD/MM/YYYY"
+                )})`
             )
             .join(", ");
-          
+
           setConflictWarning(`⚠️ Conflicts detected with: ${conflictMessages}`);
         } else {
           setConflictWarning("");
         }
       } catch (error) {
-        console.warn('Could not check conflicts:', error);
+        console.warn("Could not check conflicts:", error);
         setConflictWarning("");
       } finally {
         setIsCheckingConflicts(false);
       }
-    }, [editingAds?.id, checkConflictsMutation]
+    },
+    [editingAds?.id, checkConflictsMutation]
   );
 
   // Watch form changes (chỉ để debug, không dùng để trigger check conflicts)
-  const position = Form.useWatch('position', form);
-  const dateRange = Form.useWatch('dateRange', form);
-  
+  const position = Form.useWatch("position", form);
+  const dateRange = Form.useWatch("dateRange", form);
+
   // Debug log
   useEffect(() => {
-    console.log('📝 Form values changed:', { position, dateRange, isModalVisible });
+    console.log("📝 Form values changed:", {
+      position,
+      dateRange,
+      isModalVisible,
+    });
   }, [position, dateRange, isModalVisible]);
 
   return (
@@ -433,7 +448,9 @@ export default function AdvertisingPage() {
                 alignItems: "center",
               }}
             >
-              <h2>Advertisement Management</h2>
+              <h2 className="text-2xl font-semibold dark:text-white">
+                Advertisement Management
+              </h2>
               <Button
                 type="primary"
                 icon={<PlusOutlined />}
@@ -564,13 +581,17 @@ export default function AdvertisingPage() {
             rules={[{ required: true, message: "Position is required" }]}
             tooltip="Choose where the banner will appear on the page. Multiple banners in the same position and time range will compete for display."
           >
-            <Select 
+            <Select
               placeholder="Select position"
               onChange={(value) => {
                 // Check conflicts khi thay đổi position (nếu đã có dateRange)
-                const currentDateRange = form.getFieldValue('dateRange');
-                if (value && currentDateRange && currentDateRange.length === 2) {
-                  console.log('✅ Position changed, checking conflicts...');
+                const currentDateRange = form.getFieldValue("dateRange");
+                if (
+                  value &&
+                  currentDateRange &&
+                  currentDateRange.length === 2
+                ) {
+                  console.log("✅ Position changed, checking conflicts...");
                   checkConflictsRealTime(value, currentDateRange);
                 }
               }}
@@ -596,10 +617,15 @@ export default function AdvertisingPage() {
               onOk={(dates) => {
                 // Chỉ check conflicts khi user click OK trên date picker
                 if (dates && dates.length === 2 && dates[0] && dates[1]) {
-                  const currentPosition = form.getFieldValue('position');
+                  const currentPosition = form.getFieldValue("position");
                   if (currentPosition) {
-                    console.log('✅ User finished selecting dates, checking conflicts...');
-                    checkConflictsRealTime(currentPosition, dates as [Dayjs, Dayjs]);
+                    console.log(
+                      "✅ User finished selecting dates, checking conflicts..."
+                    );
+                    checkConflictsRealTime(
+                      currentPosition,
+                      dates as [Dayjs, Dayjs]
+                    );
                   }
                 }
               }}
@@ -642,14 +668,19 @@ export default function AdvertisingPage() {
                 fontSize: 12,
               }}
             >
-              <div style={{ fontWeight: "bold", color: "#d48806", marginBottom: 4 }}>
+              <div
+                style={{
+                  fontWeight: "bold",
+                  color: "#d48806",
+                  marginBottom: 4,
+                }}
+              >
                 ⚠️ Scheduling Conflict Detected
               </div>
-              <div style={{ color: "#8c5803" }}>
-                {conflictWarning}
-              </div>
+              <div style={{ color: "#8c5803" }}>{conflictWarning}</div>
               <div style={{ color: "#8c5803", marginTop: 4 }}>
-                � Tip: Consider adjusting the priority or time range to avoid conflicts.
+                � Tip: Consider adjusting the priority or time range to avoid
+                conflicts.
               </div>
             </div>
           )}
