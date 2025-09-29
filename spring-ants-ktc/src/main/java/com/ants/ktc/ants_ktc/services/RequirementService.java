@@ -124,6 +124,7 @@ public class RequirementService {
                         requirement.setImagePublicId(uploadResult.get("publicId"));
                 }
 
+                requirement.setStatus(1);
                 // 3. Save requirement
                 Requirement savedRequirement = requirementJpaRepository.save(requirement);
 

@@ -12,7 +12,9 @@ import type { ColumnsType } from "antd/es/table";
 import { useSession } from "next-auth/react";
 import React, { useCallback, useEffect, useState } from "react";
 import { AiOutlineEdit } from "react-icons/ai";
-import { UploadOutlined, EyeOutlined } from "@ant-design/icons";
+import { UploadOutlined, EyeOutlined, EditOutlined } from "@ant-design/icons";
+import CompletionViewModal from "./CompletionViewModal";
+
 
 export type RequestFormValues = {
   roomName: string;
@@ -21,19 +23,19 @@ export type RequestFormValues = {
 const RequestEditModalContent: React.FC<{
   open: boolean;
   onCancel: () => void;
-  onSubmit: (values: RequestFormValues, imageFile?: File) => void; // Thêm imageFile param
+  onSubmit: (values: RequestFormValues, imageFile?: File) => void; 
   editingRequest: RequirementDetail | null;
   setData: React.Dispatch<React.SetStateAction<PaginatedResponse<RequirementDetail>>>;
 }> = ({ open, onCancel, onSubmit, editingRequest, setData }) => {
   const [form] = Form.useForm();
   const [fileList, setFileList] = useState<any[]>([]);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null); // Lưu file đã chọn
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   useEffect(() => {
     if (open && editingRequest) {
       form.setFieldsValue({
         roomName: editingRequest.roomTitle,
-        requestDescription: editingRequest.description, // Set đúng field name
+        requestDescription: editingRequest.description, 
       });
       setFileList([]);
       setSelectedFile(null);
@@ -43,11 +45,10 @@ const RequestEditModalContent: React.FC<{
   }, [editingRequest, form, open]);
 
   const handleFinish = (values: RequestFormValues) => {
-    // Gửi cả values và file đã chọn
+
     onSubmit(values, selectedFile || undefined);
   };
 
-  // Xóa handleUpload, chỉ lưu file vào state
   const uploadProps = {
     beforeUpload: (file: File) => {
       const isImage = file.type.startsWith("image/");
@@ -61,7 +62,6 @@ const RequestEditModalContent: React.FC<{
         return false;
       }
       
-      // Chỉ lưu file, không upload ngay
       setSelectedFile(file);
       return false; // Prevent auto upload
     },
@@ -164,6 +164,9 @@ const RequestStatusInteractive: React.FC = () => {
   const [editingRequest, setEditingRequest] = useState<RequirementDetail | null>(null);
   const [messageApi, contextHolder] = message.useMessage();
 
+  const [completionViewModalOpen, setCompletionViewModalOpen] = useState(false);
+  const [viewingRequest, setViewingRequest] = useState<RequirementDetail | null>(null);
+
   const fetchData = useCallback(
     async (page = 0, size = 5) => {
       if (!session) return;
@@ -192,7 +195,7 @@ const RequestStatusInteractive: React.FC = () => {
   );
 
   const handleTableChange = (pagination: any) => {
-    const page = pagination.current - 1 || 0; // Convert AntD 1-based to backend 0-based
+    const page = pagination.current - 1 || 0; 
     const size = pagination.pageSize || 5;
     fetchData(page, size);
   };
@@ -202,24 +205,53 @@ const RequestStatusInteractive: React.FC = () => {
     fetchData(0, 5);
   }, [session?.user, fetchData]);
 
-  const getStatusDisplay = (status: 0 | 1 | 2) => {
-    switch (status) {
-      case 0:
-        return { text: "Not Processed", color: "orange" };
-      case 1:
-        return { text: "Completed", color: "green" };
-      case 2:
-        return { text: "Rejected", color: "red" };
-      default:
-        return { text: "Unknown", color: "default" };
-    }
+
+  const handleViewCompletion = (record: RequirementDetail) => {
+    setViewingRequest(record);
+    setCompletionViewModalOpen(true);
   };
+
+  // const getStatusDisplay = (status: 0 | 1 | 2) => {
+  //   switch (status) {
+  //     case 0:
+  //       return { text: "Not Processed", color: "orange" };
+  //     case 1:
+  //       return { text: "Completed", color: "green" };
+  //     case 2:
+  //       return { text: "Rejected", color: "red" };
+  //     default:
+  //       return { text: "Unknown", color: "default" };
+  //   }
+  // };
+  const getStatusDisplay = (status: 0 | 1 | 2, record: RequirementDetail) => {
+  switch (status) {
+    case 0:
+      return <Tag color="orange">Not Processed</Tag>;
+    case 1:
+      return (
+        <div className="flex items-center gap-2">
+          <Tag color="green">Completed</Tag>
+          <Button
+            type="text"
+            icon={<EyeOutlined />}
+            size="small"
+            onClick={() => handleViewCompletion(record)}
+            className="text-blue-500 hover:text-blue-700"
+            title="View completion details"
+          />
+        </div>
+      );
+    case 2:
+      return <Tag color="red">Rejected</Tag>;
+    default:
+      return <Tag color="default">Unknown</Tag>;
+  }
+};
 
   const handleFormSubmit = async (values: RequestFormValues, imageFile?: File) => {
   if (!editingRequest) return;
 
   try {
-    // Gọi API update cả description và ảnh
     await updateRequirementWithImage(
       editingRequest.id,
       values.requestDescription,
@@ -250,41 +282,40 @@ const RequestStatusInteractive: React.FC = () => {
     {
       title: "STT",
       key: "stt",
-      align: "right",
+      align: "right" as const,
       width: 80,
       render: (_: any, __: any, index: number) =>
-        (data.page ?? 0) * (data.size ?? 5) + index + 1,
+        (data?.page ?? 0) * (data?.size ?? 5) + index + 1,
     },
     {
       title: "Image",
       dataIndex: "imageUrl",
       key: "imageUrl",
-      render: (imageUrl: string | undefined) =>
-        imageUrl ? (
+      width: 100,
+      render: (imageUrl: string) => {
+        const getImageUrl = (imageUrl?: string): string => {
+          if (!imageUrl) return "";
+          if (imageUrl.startsWith("http")) {
+            return imageUrl;
+          }
+          return `https://res.cloudinary.com${imageUrl}`;
+        };
+
+        return imageUrl ? (
           <Image
-            src={`https://res.cloudinary.com${imageUrl}`}
-            alt="Request"
-            width={40}
-            height={40}
-            style={{ borderRadius: 8, objectFit: "cover" }}
-            preview={{
-              mask: <EyeOutlined style={{ fontSize: 22, color: "#fff" }} />,
-            }}
-            placeholder={
-              <div
-                style={{
-                  width: 40,
-                  height: 40,
-                  background: "#eee",
-                  borderRadius: 8,
-                }}
-              />
-            }
+            src={getImageUrl(imageUrl)}
+            alt="Request image"
+            width={60}
+            height={60}
+            style={{ objectFit: "cover", borderRadius: "4px" }}
+            fallback="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMIAAADDCAYAAADQvc6UAAABRWlDQ1BJQ0MgUHJvZmlsZQAAKJFjYGASSSwoyGFhYGDIzSspCnJ3UoiIjFJgf8LAwSDCIMogwMCcmFxc4BgQ4ANUwgCjUcG3awyMIPqyLsis7PPOq3QdDFcvjV3jOD1boQVTPQrgSkktTgbSf4A4LbmgqISBgTEFyFYuLykAsTuAbJEioKOA7DkgdjqEvQHEToKwj4DVhAQ5A9k3gGyB5IxEoBmML4BsnSQk8XQkNtReEOBxcfXxUQg1Mjc0dyHgXNJBSWpFCYh2zi+oLMpMzyhRcASGUqqCZ16yno6CkYGRAQMDKMwhqj/fAIcloxgHQqxAjIHBEugw5sUIsSQpBobtQPdLciLEVJYzMPBHMDBsayhILEqEO4DxG0txmrERhM29nYGBddr//5/DGRjYNRkY/l7////39v///y4Dmn+LgeHANwDrkl1AuO+pmgAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAwqADAAQAAAABAAAAwwAAAAD9b/HnAAAHlklEQVR4Ae3dP3Ik1RnG4W+FgYxN"
           />
         ) : (
-          <span style={{ color: "#ffffff" }}>No image</span>
-        ),
-      width: 100,
+          <div className="w-[60px] h-[60px] bg-gray-200 rounded flex items-center justify-center text-gray-400 text-xs">
+            No Image
+          </div>
+        );
+      },
     },
     {
       title: "Room Name",
@@ -305,12 +336,17 @@ const RequestStatusInteractive: React.FC = () => {
       title: "Request Description",
       dataIndex: "description",
       key: "description",
+      render: (text: string) => (
+        <div className="max-w-xs truncate" title={text}>
+          {text}
+        </div>
+      ),
     },
     {
       title: "Created Date",
       dataIndex: "createdDate",
       key: "createdDate",
-      width: 130,
+      width: 120,
       render: (date: string) => {
         if (!date) return "N/A";
         return new Date(date).toLocaleDateString("vi-VN", {
@@ -320,73 +356,102 @@ const RequestStatusInteractive: React.FC = () => {
         });
       },
       sorter: (a, b) =>
-        new Date(a.createdDate || "").getTime() -
-        new Date(b.createdDate || "").getTime(),
+        new Date(a.createdDate).getTime() - new Date(b.createdDate).getTime(),
     },
     {
       title: "Status",
       dataIndex: "status",
       key: "status",
-      render: (status: 0 | 1 | 2) => {
-        const { text, color } = getStatusDisplay(status);
-        return <Tag color={color}>{text}</Tag>;
+      render: (status: 0 | 1 | 2, record: RequirementDetail) => {
+        switch (status) {
+          case 0:
+            return <Tag color="orange">Not Processed</Tag>;
+          case 1:
+            return (
+              <div className="flex items-center gap-2">
+                <Tag color="green">Completed</Tag>
+                <Button
+                  type="text"
+                  icon={<EyeOutlined />}
+                  size="small"
+                  onClick={() => handleViewCompletion(record)}
+                  className="text-blue-500 hover:text-blue-700"
+                  title="View completion details"
+                />
+              </div>
+            );
+          case 2:
+            return <Tag color="red">Rejected</Tag>;
+          default:
+            return <Tag color="default">Unknown</Tag>;
+        }
       },
-      sorter: (a, b) => a.status - b.status,
-      width: 120,
     },
     {
       title: "Actions",
       key: "actions",
-      width: 80,
-      render: (_, record) => (
-        <Space size="middle">
-          <Button
-            type="text"
-            icon={<AiOutlineEdit size={18} />}
-            onClick={() => handleEditRequest(record)}
-            title="Edit Request"
-            disabled={record.status === 1 || record.status === 2}
-          />
-        </Space>
+      render: (_, record: RequirementDetail) => (
+        <Button
+          type="text"
+          icon={<EditOutlined />}
+          onClick={() => handleEditRequest(record)}
+          className="text-blue-500 hover:text-blue-700"
+          disabled={record.status !== 0}
+          title={record.status !== 0 ? "Cannot edit processed requests" : "Edit request"}
+        />
       ),
     },
   ];
 
   return (
-    <div className="flex flex-col flex-1 p-6 bg-white rounded-lg shadow-md dark:bg-gray-800">
-      {contextHolder}
-      <h2 className="mb-6 text-2xl font-bold text-gray-800 dark:text-white">
+  <div className="p-4">
+    {contextHolder}
+    <div className="mb-4">
+      <h2 className="text-2xl font-semibold dark:!text-white">
         Request Management
       </h2>
-
-
-      <Table
-        columns={columns}
-        dataSource={requests || []}
-        rowKey="id"
-        loading={loading}
-        pagination={{
-          current: (data.page ?? 0) + 1,
-          pageSize: data.size ?? 5,
-          total: data.totalRecords ?? 0,
-          showTotal: (total, range) =>
-            `${range[0]}-${range[1]} of ${total} items`,
-        }}
-        onChange={handleTableChange}
-        className="mt-4 mb-8 border border-gray-200 rounded-md dark:border-gray-700"
-      />
-
-      {isFormModalOpen && (
-        <RequestEditModalContent
-          open={isFormModalOpen}
-          onCancel={handleCancelModal}
-          onSubmit={handleFormSubmit}
-          editingRequest={editingRequest}
-          setData={setData}
-        />
-      )}
     </div>
-  );
+
+    <Table<RequirementDetail>
+      columns={columns}
+      dataSource={requests}
+      rowKey="id"
+      loading={loading}
+      pagination={{
+        current: (data?.page ?? 0) + 1,
+        pageSize: data?.size ?? 5,
+        total: data?.totalRecords ?? 0,
+        showTotal: (total, range) =>
+          `${range[0]}-${range[1]} of ${total} items`,
+      }}
+      onChange={handleTableChange}
+    />
+
+    {/* Edit Modal - Bỏ Modal wrapper */}
+    <RequestEditModalContent
+      open={isFormModalOpen}
+      onCancel={() => {
+        setIsFormModalOpen(false);
+        setEditingRequest(null);
+      }}
+      onSubmit={handleFormSubmit}
+      editingRequest={editingRequest}
+      setData={setData}
+    />
+
+    {/* Completion View Modal */}
+    <CompletionViewModal
+      open={completionViewModalOpen}
+      onCancel={() => {
+        setCompletionViewModalOpen(false);
+        setViewingRequest(null);
+      }}
+      description={viewingRequest?.description}
+      imageUrl={viewingRequest?.imageUrl}
+      roomTitle={viewingRequest?.roomTitle}
+    />
+  </div>
+);
 };
 
 export default RequestStatusInteractive;
