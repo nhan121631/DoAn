@@ -766,9 +766,9 @@ export default function LandlordDashboardPage() {
                 icon={<EyeOutlined />}
                 onClick={() =>
                   record.type == "REQUEST"
-                    ? router.push(`/landlord/manage-contracts`)
+                    ? router.push(`/landlord/manage-requests`)
                     : record.type == "BILL"
-                    ? router.push(`/landlord/contracts`)
+                    ? router.push(`/landlord/manage-contracts`)
                     : record.type == "BOOKING"
                     ? router.push(`/landlord/rentals`)
                     : record.type == "MAINTENANCE"

@@ -127,6 +127,7 @@ public class RequirementService {
                 requirement.setStatus(1);
                 // 3. Save requirement
                 Requirement savedRequirement = requirementJpaRepository.save(requirement);
+                landlordTaskJpaRepository.updateTaskStatus(savedRequirement.getId(), "COMPLETED");
 
                 // 4. Tạo DTO để trả về
                 RequirementRequestRoomDto result = new RequirementRequestRoomDto();
