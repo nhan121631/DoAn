@@ -1,11 +1,13 @@
 package com.ants.ktc.ants_ktc.services;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.ants.ktc.ants_ktc.dtos.bill.BillRequestDto;
 import com.ants.ktc.ants_ktc.dtos.bill.BillResponseDto;
@@ -26,11 +28,12 @@ public class BillService {
     private BillJpaRepository billJpaRepository;
     @Autowired
     private ContractJpaRepository contractJpaRepository;
+    @Autowired
+    private CloudinaryService cloudinaryService;
 
     public BillResponseDto createBill(BillRequestDto request) {
         Contract contract = contractJpaRepository.findById(request.getContractId())
                 .orElseThrow(() -> new IllegalArgumentException("Contract not found"));
-
 
         Bill bill = new Bill();
         bill.setContract(contract);
@@ -45,6 +48,7 @@ public class BillService {
         Bill saved = billJpaRepository.save(bill);
         return toResponseDto(saved);
     }
+
     public BillResponseDto updateBill(BillUpdateDto dto) {
         Bill bill = billJpaRepository.findById(dto.getId())
                 .orElseThrow(() -> new IllegalArgumentException("Bill not found"));
@@ -65,6 +69,7 @@ public class BillService {
         List<Bill> bills = billJpaRepository.findByContractId(contractId);
         return bills.stream().map(this::toResponseDto).collect(Collectors.toList());
     }
+
     public List<BillResponseDto> getBillsByTenant(UUID tenantId) {
         List<Bill> bills = billJpaRepository.findByTenantId(tenantId);
         return bills.stream().map(this::toResponseDto).collect(Collectors.toList());
@@ -77,12 +82,34 @@ public class BillService {
         Bill updated = billJpaRepository.save(bill);
         return toResponseDto(updated);
     }
+
     public void deleteBill(UUID billId) {
         Bill bill = billJpaRepository.findById(billId)
                 .orElseThrow(() -> new IllegalArgumentException("Bill not found"));
         billJpaRepository.delete(bill);
     }
 
+    // upload anh chung minh thanh toan hoa don
+    @Transactional
+    public String uploadBillImageProof(UUID billId, MultipartFile file) {
+        try {
+            // Verify bill exists
+            Bill bill = billJpaRepository.findById(billId)
+                    .orElseThrow(() -> new IllegalArgumentException("Bill not found"));
+
+            // Upload image to Cloudinary
+            Map<String, String> uploadResult = cloudinaryService.uploadFile(file);
+            String imageUrl = uploadResult.get("url");
+
+            // Update bill with image proof URL
+            bill.setImageProof(imageUrl);
+            billJpaRepository.save(bill);
+
+            return imageUrl;
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to upload bill image proof: " + e.getMessage());
+        }
+    }
 
     private BillResponseDto toResponseDto(Bill bill) {
         Room room = bill.getContract().getRoom();
@@ -121,6 +148,7 @@ public class BillService {
                 .damageFee(damageFee)
                 .totalAmount(bill.getTotalAmount())
                 .status(bill.getStatus())
+                .imageProof(bill.getImageProof())
                 .build();
     }
 

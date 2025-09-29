@@ -29,8 +29,13 @@ public class Bill extends BaseEntity {
     @Column(name = "total_amount")
     private Double totalAmount;
 
+
     @Column(name = "note")
     private String note;
+
+    @Column(name = "image_proof")
+    private String imageProof;
+
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
