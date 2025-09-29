@@ -18,7 +18,7 @@ public class TemporaryResidenceResponse {
     private Date startDate;
     private Date endDate;
     private String note;
-
+    private String status;
     private String idCardFrontUrl;
     private String idCardBackUrl;
 }

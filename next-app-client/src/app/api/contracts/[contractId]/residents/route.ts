@@ -17,8 +17,8 @@ export async function GET(
   try {
     const { contractId } = await params;
     
-    // Gọi API backend lấy danh sách residents
-    const res = await fetch(`${API_URL}/temporary-residences/contract/${contractId}`, {
+    // Gọi API backend lấy danh sách residents by landlord
+    const res = await fetch(`${API_URL}/temporary-residences/landlord/${session.user.id}`, {
       method: 'GET',
       headers: {
         "Authorization": `Bearer ${session.user.accessToken}`,

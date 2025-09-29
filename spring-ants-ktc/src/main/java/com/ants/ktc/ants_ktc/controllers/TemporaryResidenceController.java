@@ -46,4 +46,14 @@ public class TemporaryResidenceController {
         temporaryResidenceService.delete(id);
         return ResponseEntity.noContent().build();
     }
+    @GetMapping("/landlord/{landlordId}")
+    public ResponseEntity<List<TemporaryResidenceResponse>> getByLandlord(
+            @PathVariable("landlordId") UUID landlordId) {
+        return ResponseEntity.ok(temporaryResidenceService.getByLandlord(landlordId));
+    }
+    @GetMapping("/tenant/{tenantId}")
+    public ResponseEntity<List<TemporaryResidenceResponse>> getByTenant(
+            @PathVariable("tenantId") UUID tenantId) {
+        return ResponseEntity.ok(temporaryResidenceService.getByTenant(tenantId));
+    }
 }

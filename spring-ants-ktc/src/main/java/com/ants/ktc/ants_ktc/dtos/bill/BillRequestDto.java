@@ -31,6 +31,8 @@ public class BillRequestDto {
     @PositiveOrZero(message = "Water fee must be greater than or equal to 0")
     private Double waterFee;
 
+    private String note;
+
     @NotNull(message = "Service fee must not be null")
     @PositiveOrZero(message = "Service fee must be greater than or equal to 0")
     private Double serviceFee;

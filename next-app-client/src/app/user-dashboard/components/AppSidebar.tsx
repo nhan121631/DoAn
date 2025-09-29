@@ -12,6 +12,7 @@ import {
   MdOutlineLockReset,
   MdOutlineMessage,
 } from "react-icons/md";
+import { TeamOutlined } from "@ant-design/icons";
 
 const { Sider } = Layout;
 
@@ -35,14 +36,16 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
     "/user-dashboard/rental-history": "3",
     "/user-dashboard/request-status": "4",
     "/user-dashboard/favorited-rooms": "5",
-    "/user-dashboard/change-password": "6",
-    "/user-dashboard/message": "7",
+    "/user-dashboard/residents": "6",
+    "/user-dashboard/change-password": "7",
+    "/user-dashboard/message": "8",
   };
 
   // const selectedKey = pathToKey[pathname || ""] || "1";
   const getSelectedKey = () => {
     const p = pathname || "";
     if (/^\/user-dashboard\/my-contracts(\/|$)/.test(p)) return "2";
+    if (/^\/user-dashboard\/residents(\/|$)/.test(p)) return "6";
     return pathToKey[p] || "1";
   };
   const selectedKey = getSelectedKey();
@@ -191,6 +194,26 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
                   alignItems: "center",
                 }}
               >
+                <TeamOutlined />
+              </span>
+            ),
+            label: (
+              <Link href="/user-dashboard/residents">
+                Residents
+              </Link>
+            ),
+          },
+          {
+            key: "7",
+            icon: (
+              <span
+                style={{
+                  fontSize: 18,
+                  marginRight: 4,
+                  display: "inline-flex",
+                  alignItems: "center",
+                }}
+              >
                 <MdOutlineLockReset />
               </span>
             ),
@@ -201,7 +224,7 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
             ),
           },
           {
-            key: "7",
+            key: "8",
             icon: (
               <span
                 style={{

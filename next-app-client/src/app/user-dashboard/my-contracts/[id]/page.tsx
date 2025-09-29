@@ -104,21 +104,7 @@ export default function TenantContractDetail() {
         />
       ),
     },
-    {
-      key: "residents",
-      label: (
-        <span>
-          <TeamOutlined />
-          Residents
-        </span>
-      ),
-      children: (
-        <TenantResidentsTab
-          contract={contract}
-          onContractUpdate={handleContractUpdate}
-        />
-      ),
-    },
+    
   ];
 
   return (

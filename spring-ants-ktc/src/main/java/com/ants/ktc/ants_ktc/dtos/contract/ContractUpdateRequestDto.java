@@ -38,4 +38,5 @@ public class ContractUpdateRequestDto {
     @Min(value = 0, message = "Status value is not valid")
     @Max(value = 3, message = "Status value is not valid")
     private Integer status; // cho phép null -> giữ nguyên nếu không update
+    private String contractImage;
 }

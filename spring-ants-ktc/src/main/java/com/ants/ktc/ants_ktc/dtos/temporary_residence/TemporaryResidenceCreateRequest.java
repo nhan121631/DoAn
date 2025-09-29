@@ -38,4 +38,6 @@ public class TemporaryResidenceCreateRequest {
 
     @Size(max = 255, message = "Note must not exceed 255 characters")
     private String note;
+    @Size(max = 255, message = "Status must not exceed 255 characters")
+    private String status;
 }

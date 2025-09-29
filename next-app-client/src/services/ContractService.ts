@@ -67,5 +67,17 @@ export const ContractService = {
 			const errorMessage = await res.text();
 			throw new Error(errorMessage || "Failed to delete contract");
 		}
+	},
+
+	async uploadContractImage(contractId: string, file: File): Promise<ContractData> {
+		const formData = new FormData();
+		formData.append("file", file);
+
+		const res = await fetch(`/api/contracts/${contractId}/image`, {
+			method: "PUT",
+			body: formData,
+		});
+		if (!res.ok) throw new Error("Failed to upload contract image");
+		return res.json();
 	}
 };

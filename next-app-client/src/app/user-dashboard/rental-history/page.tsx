@@ -8,8 +8,8 @@ import React from "react";
 import { IoMdAddCircleOutline } from "react-icons/io";
 import { userFetchBookings } from "@/services/BookingService";
 import { RequirementRequestRoomDto } from "@/types/types";
-import { createRequest } from "@/services/Requirements"; 
-import { AlignCenter } from "lucide-react";
+// import { createRequest } from "@/services/Requirements"; 
+// import { AlignCenter } from "lucide-react";
 import { bookingConfirmationNotification, createRequestNotification } from "@/services/NotificationService";
 import { useSession } from "next-auth/react";
 import { getLandlordByRoomId } from "@/services/RoomService";
@@ -66,7 +66,7 @@ function RentalHistory() {
     return {
       key: booking.bookingId,
       name_landlord: booking.room.ownerName,
-      phone_landlord: booking.room.ownerPhone,
+      phone_landlord: booking.room.ownerPhone || "Phone not updated",
       room: booking.room.title,
       idRoom: booking.room.roomId,
       address: fullAddress,

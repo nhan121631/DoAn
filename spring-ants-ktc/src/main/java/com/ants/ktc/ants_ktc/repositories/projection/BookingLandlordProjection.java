@@ -16,6 +16,8 @@ public interface BookingLandlordProjection {
 
     Integer getIsRemoved();
 
+    String getImageProof();
+
     // Room projection for landlord
     BookingRoomLandlordProjection getRoom();
 

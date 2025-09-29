@@ -1,6 +1,7 @@
 import React from "react";
-import { Descriptions, Tag } from "antd";
+import { Descriptions, Tag, Image } from "antd";
 import { ContractData } from "@/types/types";
+import { formatCloudinaryUrl, formatCloudinaryThumbnail } from "@/utils/cloudinaryUtils";
 
 interface TenantContractOverviewProps {
   contract: ContractData;
@@ -41,15 +42,39 @@ export default function TenantContractOverview({ contract }: TenantContractOverv
           {new Date(contract.endDate).toLocaleDateString()}
         </Descriptions.Item>
         <Descriptions.Item label="Deposit">
-          {contract.depositAmount?.toLocaleString()} đ
+          {contract.depositAmount?.toLocaleString('vi-VN')} đ
         </Descriptions.Item>
         <Descriptions.Item label="Monthly Rent">
-          {contract.monthlyRent?.toLocaleString()} đ / month
+          {contract.monthlyRent?.toLocaleString('vi-VN')} đ / month
         </Descriptions.Item>
         <Descriptions.Item label="Status">
           <Tag color={statusMap[contract.status]?.color}>
             {statusMap[contract.status]?.text}
           </Tag>
+        </Descriptions.Item>
+        <Descriptions.Item label="Contract Image" span={2}>
+          {contract.contractImage ? (
+            <div className="flex items-center gap-2">
+              <Image
+                src={formatCloudinaryThumbnail(contract.contractImage, 150, 100) || undefined}
+                alt="Contract Image"
+                width={150}
+                height={100}
+                style={{ objectFit: 'cover', borderRadius: '4px' }}
+                fallback="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMIAAADDCAYAAADQvc6UAAABRWlDQ1BJQ0MgUHJvZmlsZQAAKJFjYGASSSwoyGFhYGDIzSspCnJ3UoiIjFJgf8LAwSDCIMogwMCcmFxc4BgQ4ANUwgCjUcG3awyMIPqyLsis7PPOq3QdDFcvjV3jOD1boQVTPQrgSkktTgbSf4A4LbmgqISBgTEFyFYuLykAsTuAbJEioKOA7DkgdjqEvQHEToKwj4DVhAQ5A9k3gGyB5IxEoBmML4BsnSQk8XQkNtReEOBxcfXxUQg1Mjc0dyHgXNJBSWpFCYh2zi+oLMpMzyhRcASGUqqCZ16yno6CkYGRAQMDKMwhqj/fAIcloxgHQqxAjIHBEugw5sUIsSQpBobtQPdLciLEVJYzMPBHMDBsayhILEqEO4DxG0txmrERhM29nYGBddr//5/DGRjYNRkY/l7////39v///y4Dm3jaMgAAAABwSURBVHhe7cHBDQAACAwCoNGPAnOwQBE8tATFHIAAAABwSURBVHhe7cHBDQAACAwCoNGPAnOwQBE8tATFHIAAAABwSURBVHhe7cHBDQAACAwCoNGPAnOwQBE8tATFHI="
+              />
+              <a 
+                href={formatCloudinaryUrl(contract.contractImage) || '#'} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-blue-500 hover:text-blue-700"
+              >
+                View Full Image
+              </a>
+            </div>
+          ) : (
+            <span className="text-gray-500">No contract image available</span>
+          )}
         </Descriptions.Item>
       </Descriptions>
 

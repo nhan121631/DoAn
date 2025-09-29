@@ -34,6 +34,9 @@ public class TemporaryResidence extends BaseEntity {
     @Column(name = "note")
     private String note;
 
+    @Column(name = "status")
+    private String status;
+
     @Column(name = "id_card_front_url")
     private String idCardFrontUrl;
 
@@ -42,6 +45,7 @@ public class TemporaryResidence extends BaseEntity {
 
     @Column(name = "id_card_back_url")
     private String idCardBackUrl;
+
 
     @Column(name = "id_card_back_public_id")
     private String idCardBackPublicId;
