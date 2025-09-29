@@ -98,17 +98,22 @@ public class ContractService {
             contract.setLandlord(landlord);
         }
 
-        if (request.getStartDate() != null) contract.setStartDate(request.getStartDate());
-        if (request.getEndDate() != null) contract.setEndDate(request.getEndDate());
-        if (request.getDepositAmount() != null) contract.setDepositAmount(request.getDepositAmount());
-        if (request.getMonthlyRent() != null) contract.setMonthlyRent(request.getMonthlyRent());
-        if (request.getStatus() != null) contract.setStatus(request.getStatus());
-        if (request.getContractImage() != null) contract.setContractImage(request.getContractImage());
+        if (request.getStartDate() != null)
+            contract.setStartDate(request.getStartDate());
+        if (request.getEndDate() != null)
+            contract.setEndDate(request.getEndDate());
+        if (request.getDepositAmount() != null)
+            contract.setDepositAmount(request.getDepositAmount());
+        if (request.getMonthlyRent() != null)
+            contract.setMonthlyRent(request.getMonthlyRent());
+        if (request.getStatus() != null)
+            contract.setStatus(request.getStatus());
+        if (request.getContractImage() != null)
+            contract.setContractImage(request.getContractImage());
 
         Contract saved = contractJpaRepository.save(contract);
         return toResponseDto(saved);
     }
-
 
     public List<ContractResponseDto> getContractsByTenant(UUID tenantId) {
         return contractJpaRepository.findByTenantIdWithDetails(tenantId)
@@ -117,12 +122,10 @@ public class ContractService {
                 .collect(Collectors.toList());
     }
 
-
     public Page<ContractResponseDto> getContractsByLandlord(UUID landlordId, Pageable pageable) {
         return contractJpaRepository.findByLandlordId(landlordId, pageable)
                 .map(this::toResponseDto);
     }
-
 
     public List<ContractResponseDto> getContractsByRoom(UUID roomId) {
         return contractJpaRepository.findByRoomId(roomId)
@@ -131,12 +134,10 @@ public class ContractService {
                 .collect(Collectors.toList());
     }
 
-
     public ContractResponseDto getContractById(UUID contractId) {
         Contract contract = contractJpaRepository.findByIdWithDetails(contractId);
         return toResponseDto(contract);
     }
-
 
     public List<ContractResponseDto> getContractsByStatus(int status) {
         return contractJpaRepository.findByStatus(status)
@@ -178,7 +179,8 @@ public class ContractService {
     }
 
     private String extractPublicId(String contractImageUrl) {
-        if (contractImageUrl == null) return null;
+        if (contractImageUrl == null)
+            return null;
         int lastSlash = contractImageUrl.lastIndexOf("/");
         int dotIndex = contractImageUrl.lastIndexOf(".");
         if (lastSlash != -1 && dotIndex != -1 && dotIndex > lastSlash) {
@@ -200,11 +202,12 @@ public class ContractService {
 
             if (days > 0 && days % 30 == 0) {
                 LandlordTaskCreateDto dto = LandlordTaskCreateDto.builder()
-                        .title("Tính tiền trọ tháng " + LocalDate.now().getMonthValue() + "/"
-                                + LocalDate.now().getYear() + " cho phòng " + contract.getRoom().getTitle())
+                        .title("Bills month " + LocalDate.now().getMonthValue() + "/"
+                                + LocalDate.now().getYear() + " for room " + contract.getRoom().getTitle())
                         .description("Calculate the monthly rent for room " + contract.getRoom().getTitle())
                         .startDate(LocalDateTime.now())
                         .dueDate(LocalDateTime.now().plusDays(7))
+                        .type("BILL")
                         .status("PENDING")
                         .priority("MEDIUM")
                         .landlordId(contract.getLandlord().getId().toString())

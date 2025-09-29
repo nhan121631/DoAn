@@ -23,5 +23,6 @@ public class RoomBookingByUserResponseDto {
     private Double area;
     private String ownerName;
     private String ownerPhone;
+    private String imageProof;
     private AddressResponseDto address;
 }

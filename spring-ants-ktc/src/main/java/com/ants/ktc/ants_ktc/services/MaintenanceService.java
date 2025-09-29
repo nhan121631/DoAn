@@ -1,5 +1,6 @@
 package com.ants.ktc.ants_ktc.services;
 
+import com.ants.ktc.ants_ktc.dtos.LandlordTask.LandlordTaskCreateDto;
 import com.ants.ktc.ants_ktc.dtos.manage_maintain.MaintenanceRequestDto;
 import com.ants.ktc.ants_ktc.dtos.manage_maintain.MaintenanceResponseDto;
 import com.ants.ktc.ants_ktc.dtos.manage_maintain.PaginatedMaintenanceResponseDto;
@@ -7,6 +8,7 @@ import com.ants.ktc.ants_ktc.dtos.manage_maintain.RoomDetailForMaintenanceDto;
 import com.ants.ktc.ants_ktc.dtos.manage_maintain.UpdateMaintenanceRequestDto;
 import com.ants.ktc.ants_ktc.entities.Maintenances;
 import com.ants.ktc.ants_ktc.entities.Room;
+import com.ants.ktc.ants_ktc.repositories.LandlordTaskJpaRepository;
 import com.ants.ktc.ants_ktc.repositories.MaintenancesRepository;
 import com.ants.ktc.ants_ktc.repositories.RoomJpaRepository;
 import com.ants.ktc.ants_ktc.repositories.RoomNameProjection;
@@ -16,6 +18,7 @@ import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -28,6 +31,12 @@ public class MaintenanceService {
 
         @Autowired
         private RoomJpaRepository roomJpaRepository;
+
+        @Autowired
+        private LandlordTaskService landlordTaskService;
+
+        @Autowired
+        private LandlordTaskJpaRepository landlordTaskJpaRepository;
 
         @Transactional
         public MaintenanceResponseDto createMaintenance(UUID userId, MaintenanceRequestDto requestDto) {
@@ -42,6 +51,21 @@ public class MaintenanceService {
                 maintenance.setRoom(room);
 
                 Maintenances savedMaintenance = maintenancesRepository.save(maintenance);
+                // Create a corresponding LandlordTask for the maintenance request
+                LandlordTaskCreateDto dto = LandlordTaskCreateDto.builder()
+                                .title("Maintenance: " + requestDto.getProblem().substring(0,
+                                                Math.min(20, requestDto.getProblem().length())))
+                                .description(requestDto.getProblem())
+                                .startDate(LocalDateTime.now())
+                                .dueDate(LocalDateTime.now().plusDays(7))
+                                .status("PENDING")
+                                .type("MAINTENANCE")
+                                .relatedEntityId(savedMaintenance.getId())
+                                .priority("MEDIUM")
+                                .landlordId(userId.toString())
+                                .roomId(requestDto.getRoomId().toString())
+                                .build();
+                landlordTaskService.createTask(dto);
 
                 return convertToMaintenanceResponseDto(savedMaintenance);
         }
@@ -85,6 +109,9 @@ public class MaintenanceService {
                 existingMaintenance.setProblem(requestDto.getProblem());
                 existingMaintenance.setCost(requestDto.getCost());
                 existingMaintenance.setStatus(requestDto.getStatus());
+                if (Integer.valueOf(2).equals(requestDto.getStatus())) { // If status is COMPLETED
+                        landlordTaskJpaRepository.updateTaskStatus(id, "COMPLETED");
+                }
 
                 Maintenances updatedMaintenance = maintenancesRepository.save(existingMaintenance);
 

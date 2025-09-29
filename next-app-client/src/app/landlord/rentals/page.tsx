@@ -448,7 +448,7 @@ export default function RentalsPage() {
         centered
         width="auto"
         style={{ maxWidth: "90vw", maxHeight: "90vh" }}
-        bodyStyle={{ padding: 0 }}
+        styles={{ body: { padding: 0 } }}
       >
         {selectedImage && (
           <div className="flex justify-center items-center">

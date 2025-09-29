@@ -34,7 +34,7 @@ public class PostTypeService {
                 .build();
     }
 
-    @CachePut(value = "typeposts", key = "#root.args[0].id")
+    @CachePut(value = "typeposts", key = "#result.id")
     @CacheEvict(value = "typeposts", key = "'all'")
     public PostTypeResponseDto createPostType(PostTypeJpaCreateDto postTypeJpaCreateDto) {
         postTypeRepository.findByCode(postTypeJpaCreateDto.getCode())

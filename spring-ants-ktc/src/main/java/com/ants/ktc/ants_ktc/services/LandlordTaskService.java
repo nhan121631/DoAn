@@ -45,10 +45,16 @@ public class LandlordTaskService {
         task.setDescription(dto.getDescription());
         task.setStartDate(dto.getStartDate());
         task.setDueDate(dto.getDueDate());
+        task.setType(dto.getType());
+        task.setRelatedEntityId(dto.getRelatedEntityId());
         task.setStatus(dto.getStatus());
         task.setPriority(dto.getPriority());
         task.setLandlord(landlord);
         task.setRoom(room);
+
+        if (dto.getType() == null) {
+            task.setType("OTHER");
+        }
 
         task = taskRepository.save(task);
         return convertToDto(task);
@@ -106,6 +112,8 @@ public class LandlordTaskService {
         dto.setDueDate(task.getDueDate());
         dto.setStatus(task.getStatus());
         dto.setPriority(task.getPriority());
+        dto.setType(task.getType());
+        dto.setRelatedEntityId(task.getRelatedEntityId());
 
         if (task.getLandlord() != null) {
             dto.setLandlordId(task.getLandlord().getId().toString());

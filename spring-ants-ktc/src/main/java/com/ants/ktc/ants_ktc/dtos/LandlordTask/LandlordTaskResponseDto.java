@@ -12,6 +12,8 @@ public class LandlordTaskResponseDto {
     private String description;
     private LocalDateTime startDate;
     private LocalDateTime dueDate;
+    private String type;
+    private UUID relatedEntityId;
     private String status;
     private String priority;
     private String landlordId;

@@ -76,7 +76,7 @@ public class ApprovalWorker {
 
     private static final int MAX_RETRY_ATTEMPTS = 3;
     private static final long RETRY_DELAY_MS = 10000; // 10 seconds
-    private static final String GEMINI_API_URL = "http://localhost:5000/ai_approval";
+    private static final String GEMINI_API_URL = "http://localhost:5001/ai_approval";
     private static final String APPROVAL_LOG_CSV = "approval_log.csv";
 
     public ApprovalWorker() {

@@ -63,21 +63,29 @@ const getCloudinaryUrl = (relativePath: string): string => {
 };
 
 export default function ManageResidentsPage() {
-   const [messageApi, contextHolder] = message.useMessage();
+  const [messageApi, contextHolder] = message.useMessage();
   const { data: session } = useSession();
   const [residents, setResidents] = useState<ExtendedResidentData[]>([]);
-  const [selectedResident, setSelectedResident] = useState<ExtendedResidentData | null>(null);
-  const [editResident, setEditResident] = useState<ExtendedResidentData | null>(null);
+  const [selectedResident, setSelectedResident] =
+    useState<ExtendedResidentData | null>(null);
+  const [editResident, setEditResident] = useState<ExtendedResidentData | null>(
+    null
+  );
   const [addResidentOpen, setAddResidentOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  // Initialize forms only once
   const [addForm] = Form.useForm();
   const [editForm] = Form.useForm();
+
   const [frontImageFile, setFrontImageFile] = useState<File | null>(null);
   const [backImageFile, setBackImageFile] = useState<File | null>(null);
   const [frontImagePreview, setFrontImagePreview] = useState<string>("");
   const [backImagePreview, setBackImagePreview] = useState<string>("");
   const [searchText, setSearchText] = useState("");
-  const [relationshipFilter, setRelationshipFilter] = useState<string | null>(null);
+  const [relationshipFilter, setRelationshipFilter] = useState<string | null>(
+    null
+  );
   const [availableContracts, setAvailableContracts] = useState<any[]>([]);
   const [loadingContracts, setLoadingContracts] = useState(false);
 
@@ -100,28 +108,33 @@ export default function ManageResidentsPage() {
 
   const loadResidents = async () => {
     if (!session?.user?.id) return;
-    
+
     try {
       setLoading(true);
       const data = await ResidentService.getByLandlord(session.user.id);
-      console.log('Loaded residents data:', data); // Debug log
-      
+      console.log("Loaded residents data:", data); // Debug log
+
       // Fetch contract info for each resident
       const residentsWithContracts = await Promise.all(
         (data || []).map(async (resident) => {
           try {
             if (resident.contractId) {
-              const contractInfo = await ContractService.getById(resident.contractId);
+              const contractInfo = await ContractService.getById(
+                resident.contractId
+              );
               return { ...resident, contractInfo };
             }
             return resident;
           } catch (error) {
-            console.error(`Failed to load contract for resident ${resident.id}:`, error);
+            console.error(
+              `Failed to load contract for resident ${resident.id}:`,
+              error
+            );
             return resident;
           }
         })
       );
-      
+
       setResidents(residentsWithContracts);
     } catch (error) {
       console.error("Failed to load residents:", error);
@@ -133,12 +146,16 @@ export default function ManageResidentsPage() {
 
   const loadAvailableContracts = async () => {
     if (!session?.user?.id) return;
-    
+
     try {
       setLoadingContracts(true);
       // Load contracts by landlord using ContractService
-      const response = await ContractService.getByLandlord(session.user.id, 0, 100);
-      console.log('Available contracts:', response);
+      const response = await ContractService.getByLandlord(
+        session.user.id,
+        0,
+        100
+      );
+      console.log("Available contracts:", response);
       setAvailableContracts(response.content || []);
     } catch (error) {
       console.error("Failed to load contracts:", error);
@@ -210,7 +227,7 @@ export default function ManageResidentsPage() {
         backImageFile || undefined
       );
 
-      message.success("Resident added successfully!");
+      messageApi.success("Resident added successfully!");
       setAddResidentOpen(false);
       resetForm();
       loadResidents(); // Reload data
@@ -242,8 +259,8 @@ export default function ManageResidentsPage() {
         contractId: editResident.contractId,
       };
 
-      console.log('Updating resident with data:', formattedData); // Debug log
-      
+      console.log("Updating resident with data:", formattedData); // Debug log
+
       await ResidentService.updateResident(
         editResident.contractId!,
         editResident.id,
@@ -264,7 +281,10 @@ export default function ManageResidentsPage() {
     }
   };
 
-  const handleDeleteResident = async (residentId: string, contractId: string) => {
+  const handleDeleteResident = async (
+    residentId: string,
+    contractId: string
+  ) => {
     try {
       setLoading(true);
       await ResidentService.deleteResident(contractId, residentId);
@@ -359,8 +379,12 @@ export default function ManageResidentsPage() {
       resident.fullName?.toLowerCase().includes(searchText.toLowerCase()) ||
       resident.idNumber?.toLowerCase().includes(searchText.toLowerCase()) ||
       resident.note?.toLowerCase().includes(searchText.toLowerCase()) ||
-      resident.contractInfo?.roomTitle?.toLowerCase().includes(searchText.toLowerCase()) ||
-      resident.contractInfo?.contractName?.toLowerCase().includes(searchText.toLowerCase());
+      resident.contractInfo?.roomTitle
+        ?.toLowerCase()
+        .includes(searchText.toLowerCase()) ||
+      resident.contractInfo?.contractName
+        ?.toLowerCase()
+        .includes(searchText.toLowerCase());
 
     const matchesRelationship =
       !relationshipFilter || resident.relationship === relationshipFilter;
@@ -465,7 +489,7 @@ export default function ManageResidentsPage() {
             <Button
               icon={<EditOutlined />}
               onClick={() => {
-                console.log('Edit button clicked for resident:', record);
+                console.log("Edit button clicked for resident:", record);
                 setEditResident(record);
               }}
             />
@@ -473,7 +497,9 @@ export default function ManageResidentsPage() {
           <Tooltip title="Delete">
             <Popconfirm
               title="Are you sure you want to delete this resident?"
-              onConfirm={() => handleDeleteResident(record.id, record.contractId!)}
+              onConfirm={() =>
+                handleDeleteResident(record.id, record.contractId!)
+              }
               okText="Delete"
               cancelText="Cancel"
             >
@@ -493,7 +519,6 @@ export default function ManageResidentsPage() {
             Residents Management
           </h3>
         }
-        
         className="shadow-sm bg-white dark:bg-[#17223b] border-gray-200 dark:border-gray-600 transition-colors duration-300"
         extra={
           <div className="flex items-center gap-3">
@@ -578,7 +603,12 @@ export default function ManageResidentsPage() {
                 </div>
                 <div className="dark:text-gray-300 transition-colors duration-300">
                   <strong className="dark:text-white">Status:</strong>
-                  <Tag color={selectedResident.status === "DONE" ? "green" : "orange"} className="ml-2">
+                  <Tag
+                    color={
+                      selectedResident.status === "DONE" ? "green" : "orange"
+                    }
+                    className="ml-2"
+                  >
                     {selectedResident.status || "PENDING"}
                   </Tag>
                 </div>
@@ -593,7 +623,10 @@ export default function ManageResidentsPage() {
                 {(selectedResident as ExtendedResidentData).contractInfo && (
                   <div className="dark:text-gray-300 transition-colors duration-300">
                     <strong className="dark:text-white">Room Title:</strong>{" "}
-                    {(selectedResident as ExtendedResidentData).contractInfo?.roomTitle}
+                    {
+                      (selectedResident as ExtendedResidentData).contractInfo
+                        ?.roomTitle
+                    }
                   </div>
                 )}
                 <div className="col-span-2 dark:text-gray-300 transition-colors duration-300">
@@ -648,7 +681,7 @@ export default function ManageResidentsPage() {
           </div>
         )}
       </Modal>
-    {contextHolder}
+      {contextHolder}
       {/* Add Resident Modal */}
       <Modal
         title="Add Resident"
@@ -658,7 +691,7 @@ export default function ManageResidentsPage() {
           resetForm();
         }}
         footer={null}
-       destroyOnHidden={true} 
+        destroyOnHidden={true}
       >
         <Form
           form={addForm}
@@ -706,11 +739,15 @@ export default function ManageResidentsPage() {
               loading={loadingContracts}
               showSearch
               filterOption={(input, option) =>
-                (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                (option?.label ?? "")
+                  .toLowerCase()
+                  .includes(input.toLowerCase())
               }
-              options={availableContracts.map(contract => ({
+              options={availableContracts.map((contract) => ({
                 value: contract.id,
-                label: `${contract.contractName || 'Contract'} - ${contract.roomTitle || 'Room'}`
+                label: `${contract.contractName || "Contract"} - ${
+                  contract.roomTitle || "Room"
+                }`,
               }))}
             />
           </Form.Item>
@@ -806,8 +843,8 @@ export default function ManageResidentsPage() {
           resetForm();
         }}
         footer={null}
-        destroyOnHidden={true} 
-        key={editResident?.id || 'edit-modal'}
+        destroyOnHidden={true}
+        key={editResident?.id || "edit-modal"}
       >
         {editResident && (
           <Form
@@ -820,8 +857,12 @@ export default function ManageResidentsPage() {
               fullName: editResident.fullName,
               idNumber: editResident.idNumber,
               relationship: editResident.relationship,
-              startDate: editResident.startDate ? dayjs(editResident.startDate) : null,
-              endDate: editResident.endDate ? dayjs(editResident.endDate) : null,
+              startDate: editResident.startDate
+                ? dayjs(editResident.startDate)
+                : null,
+              endDate: editResident.endDate
+                ? dayjs(editResident.endDate)
+                : null,
               note: editResident.note,
               status: editResident.status || "PENDING",
             }}
@@ -837,34 +878,33 @@ export default function ManageResidentsPage() {
             <Form.Item
               label="ID Number"
               name="idNumber"
-            rules={[
-              { required: true, message: "Please enter ID number!" },
-              { len: 12, message: "ID number must be 12 digits!" },
-            ]}
-          >
-            <Input placeholder="Enter 12-digit ID number" maxLength={12} />
-          </Form.Item>
+              rules={[
+                { required: true, message: "Please enter ID number!" },
+                { len: 12, message: "ID number must be 12 digits!" },
+              ]}
+            >
+              <Input placeholder="Enter 12-digit ID number" maxLength={12} />
+            </Form.Item>
 
-          <Form.Item
-            label="Relationship"
-            name="relationship"
-            rules={[{ required: true, message: "Please select relationship!" }]}
-          >
-            <Select
-              placeholder="Select relationship"
-              options={relationshipOptions}
-            />
-          </Form.Item>
+            <Form.Item
+              label="Relationship"
+              name="relationship"
+              rules={[
+                { required: true, message: "Please select relationship!" },
+              ]}
+            >
+              <Select
+                placeholder="Select relationship"
+                options={relationshipOptions}
+              />
+            </Form.Item>
 
             <Form.Item
               label="Status"
               name="status"
               rules={[{ required: true, message: "Please select status!" }]}
             >
-              <Select
-                placeholder="Select status"
-                options={statusOptions}
-              />
+              <Select placeholder="Select status" options={statusOptions} />
             </Form.Item>
 
             <div className="grid grid-cols-2 gap-4">
@@ -953,7 +993,6 @@ export default function ManageResidentsPage() {
               </Button>
             </div>
           </Form>
-
         )}
       </Modal>
     </div>
