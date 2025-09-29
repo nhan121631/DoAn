@@ -114,7 +114,7 @@ export default function BillDetail({
                   </tr>
                   {selectedBill.damageFee != null && selectedBill.damageFee > 0 && (
                     <tr className="border-t bg-red-50">
-                      <td className="py-3 px-4 text-red-700">Damage Fee</td>
+                      <td className="py-3 px-4 text-red-700">Other Fee</td>
                       <td className="py-3 px-4 text-right text-red-800">
                         {selectedBill.damageFee.toLocaleString('vi-VN')} đ
                       </td>

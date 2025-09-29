@@ -17,9 +17,8 @@ import com.ants.ktc.ants_ktc.dtos.temporary_residence.TemporaryResidenceUpdateRe
 import com.ants.ktc.ants_ktc.entities.Contract;
 import com.ants.ktc.ants_ktc.entities.TemporaryResidence;
 import com.ants.ktc.ants_ktc.repositories.ContractJpaRepository;
+import com.ants.ktc.ants_ktc.repositories.LandlordTaskJpaRepository;
 import com.ants.ktc.ants_ktc.repositories.TemporaryResidenceJpaRepository;
-
-import jakarta.transaction.Transactional;
 
 @Service
 public class TemporaryResidenceService {
@@ -31,6 +30,9 @@ public class TemporaryResidenceService {
     private CloudinaryService cloudinaryService;
     @Autowired
     private LandlordTaskService landlordTaskService;
+
+    @Autowired
+    private LandlordTaskJpaRepository landlordTaskJpaRepository;
 
     public TemporaryResidenceResponse create(TemporaryResidenceCreateRequest request,
             MultipartFile frontImage,
@@ -117,6 +119,10 @@ public class TemporaryResidenceService {
         temp.setEndDate(request.getEndDate());
         temp.setNote(request.getNote());
         temp.setStatus(request.getStatus());
+
+        if (temp.getStatus().equals("DONE")) {
+            landlordTaskJpaRepository.updateTaskStatus(temp.getId(), "COMPLETED");
+        }
 
         // Nếu có upload ảnh mới -> xóa ảnh cũ + upload ảnh mới
         if (frontImage != null && !frontImage.isEmpty()) {
