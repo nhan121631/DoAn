@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 "use client";
 
 import React, { useEffect, useState } from "react";
@@ -351,7 +353,7 @@ export default function TenantResidentsPage() {
       render: (name: string) => (
         <div className="flex items-center gap-2">
           <UserOutlined className="dark:text-gray-300" />
-          <span className="font-medium dark:text-white transition-colors duration-300">
+          <span className="font-medium transition-colors duration-300 dark:text-white">
             {name}
           </span>
         </div>
@@ -385,10 +387,10 @@ export default function TenantResidentsPage() {
       key: "period",
       render: (_: any, record: ExtendedResidentData) => (
         <div>
-          <div className="dark:text-white transition-colors duration-300">
+          <div className="transition-colors duration-300 dark:text-white">
             {new Date(record.startDate).toLocaleDateString()}
           </div>
-          <div className="text-gray-500 dark:text-gray-400 text-sm transition-colors duration-300">
+          <div className="text-sm text-gray-500 transition-colors duration-300 dark:text-gray-400">
             to {new Date(record.endDate).toLocaleDateString()}
           </div>
         </div>
@@ -574,8 +576,8 @@ export default function TenantResidentsPage() {
 
             {/* Contract Information */}
             {selectedResident.contractInfo && (
-              <div className="border-t pt-4">
-                <h4 className="text-base font-medium text-gray-700 mb-3">Contract Information</h4>
+              <div className="pt-4 border-t">
+                <h4 className="mb-3 text-base font-medium text-gray-700">Contract Information</h4>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="text-sm font-medium text-gray-500">Contract Name</label>
@@ -598,7 +600,7 @@ export default function TenantResidentsPage() {
             )}
             
             {selectedResident.note && (
-              <div className="border-t pt-4">
+              <div className="pt-4 border-t">
                 <label className="text-sm font-medium text-gray-500">Note</label>
                 <p className="text-base">{selectedResident.note}</p>
               </div>

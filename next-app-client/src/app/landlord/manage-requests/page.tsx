@@ -99,18 +99,18 @@ export default function ManageRequests() {
     setCompletionModalOpen(true);
   };
 
-  const handleCompletionSubmit = async (description: string, imageFile?: File) => {
+  const handleCompletionSubmit = async (imageFile?: File) => {
     if (!completingRequest) return;
 
     setCompletionLoading(true);
     try {
-      await updateRequirementWithImage(completingRequest.id, description, imageFile);
+      await updateRequirementWithImage(completingRequest.id, completingRequest.description, imageFile);
       
       // Update local state
       setRequests((prev) =>
         prev.map((item) =>
           item.id === completingRequest.id 
-            ? { ...item, status: 1, description: description } 
+            ? { ...item, status: 1} 
             : item
         )
       );

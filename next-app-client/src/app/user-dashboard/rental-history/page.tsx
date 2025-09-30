@@ -260,14 +260,14 @@ function RentalHistory() {
       render: (text: string) => {
         if (!text) {
           return (
-            <div className="w-16 h-16 bg-gray-200 flex items-center justify-center rounded text-gray-500 text-xs">
+            <div className="flex items-center justify-center w-16 h-16 text-xs text-gray-500 bg-gray-200 rounded">
               No Image
             </div>
           );
         }
         return (
           <div
-            className="w-16 h-16 cursor-pointer hover:opacity-80 transition-opacity"
+            className="w-16 h-16 transition-opacity cursor-pointer hover:opacity-80"
             onClick={() => handleImageClick(`${URL_IMAGE}${text}`)}
           >
             <Image
@@ -275,7 +275,7 @@ function RentalHistory() {
               alt="Bill Transfer"
               width={64}
               height={64}
-              className="object-cover rounded border border-gray-300"
+              className="object-cover border border-gray-300 rounded"
               style={{ width: "64px", height: "64px" }}
             />
           </div>
@@ -429,10 +429,10 @@ function RentalHistory() {
         centered
         width="auto"
         style={{ maxWidth: "90vw", maxHeight: "90vh" }}
-        bodyStyle={{ padding: 0 }}
+        styles={{ body: { padding: 0 } }}
       >
         {selectedImage && (
-          <div className="flex justify-center items-center">
+          <div className="flex items-center justify-center">
             <Image
               src={selectedImage}
               alt="Bill Transfer - Full Size"
