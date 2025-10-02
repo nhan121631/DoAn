@@ -19,7 +19,11 @@ import {
 import { EditOutlined, CloudUploadOutlined } from "@ant-design/icons";
 import { ContractData } from "@/types/types";
 import { ContractService } from "@/services/ContractService";
-import { formatCloudinaryUrl, formatCloudinaryThumbnail } from "@/utils/cloudinaryUtils";
+import {
+  formatCloudinaryUrl,
+  formatCloudinaryThumbnail,
+  resolveCloudinaryUrl,
+} from "@/utils/cloudinaryUtils";
 import dayjs from "dayjs";
 
 interface ContractOverviewProps {
@@ -46,6 +50,9 @@ export default function ContractOverview({
   const [loading, setLoading] = useState(false);
   const [uploadLoading, setUploadLoading] = useState(false);
   const [form] = Form.useForm();
+  const [resolvedUrl, setResolvedUrl] = useState<string | null>(null);
+  const [isPdfResolved, setIsPdfResolved] = useState<boolean>(false);
+  const [pdfPreviewOpen, setPdfPreviewOpen] = useState(false);
 
   const handleEdit = useCallback(() => {
     form.setFieldsValue({
@@ -67,6 +74,58 @@ export default function ContractOverview({
     }
   }, [autoEdit, handleEdit]);
 
+  // Resolve cloudinary URL (raw vs image) so links/thumbnails work when backend stores raw PDF paths
+  useEffect(() => {
+    let mounted = true;
+    const doResolve = async () => {
+      if (!contract.contractImage) {
+        if (mounted) {
+          setResolvedUrl(null);
+          setIsPdfResolved(false);
+        }
+        return;
+      }
+      try {
+        const url = await resolveCloudinaryUrl(contract.contractImage);
+        if (!mounted) return;
+        setResolvedUrl(url);
+        setIsPdfResolved(!!url && /\.pdf($|\?)/i.test(url));
+      } catch (e) {
+        if (!mounted) return;
+        // fallback to formatted URL
+        const url = formatCloudinaryUrl(contract.contractImage);
+        setResolvedUrl(url);
+        setIsPdfResolved(!!url && /\.pdf($|\?)/i.test(url));
+      }
+    };
+    void doResolve();
+    return () => {
+      mounted = false;
+    };
+  }, [contract.contractImage]);
+
+  // Use resolvedUrl/isPdfResolved in UI
+  const fileUrl =
+    resolvedUrl ||
+    (contract.contractImage
+      ? formatCloudinaryUrl(contract.contractImage)
+      : null);
+  // Also check the original stored path/public id for .pdf since backend may store raw paths
+  const rawPath = contract.contractImage || "";
+  const isPdf =
+    isPdfResolved ||
+    (!!fileUrl && /\.pdf($|\?)/i.test(fileUrl)) ||
+    /\.pdf($|\?)/i.test(rawPath);
+  const isRaw =
+    rawPath.includes("/raw/upload/") ||
+    (!!resolvedUrl && resolvedUrl?.includes("/raw/upload/"));
+  const isDocument = isPdf || isRaw;
+  const thumbnailUrl = formatCloudinaryThumbnail(
+    resolvedUrl || contract.contractImage,
+    150,
+    100
+  );
+
   const handleImageUpload = async (file: File) => {
     try {
       setUploadLoading(true);
@@ -74,11 +133,11 @@ export default function ContractOverview({
         contract.id,
         file
       );
-      
+
       if (onContractUpdate) {
         onContractUpdate(updatedContract);
       }
-      
+
       messageApi.success("Contract image uploaded successfully!");
     } catch (error) {
       console.error("Upload image error:", error);
@@ -135,9 +194,9 @@ export default function ContractOverview({
           beforeUpload={handleImageUpload}
           disabled={uploadLoading}
         >
-          <Button 
-            type="primary" 
-            icon={<CloudUploadOutlined />} 
+          <Button
+            type="primary"
+            icon={<CloudUploadOutlined />}
             loading={uploadLoading}
           >
             Upload Contract Image
@@ -179,22 +238,88 @@ export default function ContractOverview({
         <Descriptions.Item label="Contract Image" span={2}>
           {contract.contractImage ? (
             <div className="flex items-center gap-2">
-              <Image
-                src={formatCloudinaryThumbnail(contract.contractImage, 150, 100) || undefined}
-                alt="Contract Image"
-                width={150}
-                height={100}
-                style={{ objectFit: 'cover', borderRadius: '4px' }}
-                fallback="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMIAAADDCAYAAADQvc6UAAABRWlDQ1BJQ0MgUHJvZmlsZQAAKJFjYGASSSwoyGFhYGDIzSspCnJ3UoiIjFJgf8LAwSDCIMogwMCcmFxc4BgQ4ANUwgCjUcG3awyMIPqyLsis7PPOq3QdDFcvjV3jOD1boQVTPQrgSkktTgbSf4A4LbmgqISBgTEFyFYuLykAsTuAbJEioKOA7DkgdjqEvQHEToKwj4DVhAQ5A9k3gGyB5IxEoBmML4BsnSQk8XQkNtReEOBxcfXxUQg1Mjc0dyHgXNJBSWpFCYh2zi+oLMpMzyhRcASGUqqCZ16yno6CkYGRAQMDKMwhqj/fAIcloxgHQqxAjIHBEugw5sUIsSQpBobtQPdLciLEVJYzMPBHMDBsayhILEqEO4DxG0txmrERhM29nYGBddr//5/DGRjYNRkY/l7////39v///y4Dm3jaMgAAAABwSURBVHhe7cHBDQAACAwCoNGPAnOwQBE8tATFHIAAAABwSURBVHhe7cHBDQAACAwCoNGPAnOwQBE8tATFHIAAAABwSURBVHhe7cHBDQAACAwCoNGPAnOwQBE8tATFHI="
-              />
-              <a 
-                href={formatCloudinaryUrl(contract.contractImage) || '#'} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-blue-500 hover:text-blue-700"
-              >
-                View Full Image
-              </a>
+              {isDocument ? (
+                // Render a small document preview (PDF/raw) with a single Download File action
+                <div className="flex items-center gap-3">
+                  <div className="w-[150px] h-[100px] flex items-center justify-center bg-gray-100 dark:bg-gray-800 rounded">
+                    {/* Always show PDF/document icon for raw files (avoid confusion with images) */}
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="48"
+                      height="48"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="#e53935"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                      <path d="M14 2v6h6"></path>
+                      <text
+                        x="6"
+                        y="17"
+                        fill="#e53935"
+                        fontSize="8"
+                        fontWeight="700"
+                      >
+                        PDF
+                      </text>
+                    </svg>
+                  </div>
+
+                  <div className="flex flex-col">
+                    <div className="text-sm text-gray-800 dark:text-gray-200 mb-2">
+                      {fileUrl
+                        ? decodeURIComponent(
+                            new URL(fileUrl).pathname.split("/").pop() ||
+                              "file.pdf"
+                          )
+                        : "file.pdf"}
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      {/* Only one action: Download File - this avoids confusing users */}
+                      <a
+                        href={fileUrl || "#"}
+                        download
+                        className="inline-block bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
+                      >
+                        Download File
+                      </a>
+                    </div>
+                    <div className="text-xs text-gray-500 mt-1">
+                      This is a document file. Use Download to get the file.
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                // Existing image rendering for non-PDF files
+                <div className="flex items-center gap-2">
+                  <Image
+                    src={
+                      formatCloudinaryThumbnail(
+                        resolvedUrl || contract.contractImage,
+                        150,
+                        100
+                      ) || undefined
+                    }
+                    alt="Contract Image"
+                    width={150}
+                    height={100}
+                    style={{ objectFit: "cover", borderRadius: "4px" }}
+                    fallback="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMIAAADDCAYAAADQvc6UAAABRWlDQ1BJQ0MgUHJvZmlsZQAAKJFjYGASSSwoyGFhYGDIzSspCnJ3UoiIjFJgf8LAwSDCIMogwMCcmFxc4BgQ4ANUwgCjUcG3awyMIPqyLsis7PPOq3QdDFcvjV3jOD1boQVTPQrgSkktTgbSf4A4LbmgqISBgTEFyFYuLykAsTuAbJEioKOA7DkgdjqEvQHEToKwj4DVhAQ5A9k3gGyB5IxEoBmML4BsnSQk8XQkNtReEOBxcfXxUQg1Mjc0dyHgXNJBSWpFCYh2zi+oLMpMzyhRcASGUqqCZ16yno6CkYGRAQMDKMwhqj/fAIcloxgHQqxAjIHBEugw5sUIsSQpBobtQPdLciLEVJYzMPBHMDBsayhILEqEO4DxG0txmrERhM29nYGBddr//5/DGRjYNRkY/l7////39v///y4Dm3jaMgAAAABwSURBVHhe7cHBDQAACAwCoNGPAnOwQBE8tATFHIAAAABwSURBVHhe7cHBDQAACAwCoNGPAnOwQBE8tATFHIAAAABwSURBVHhe7cHBDQAACAwCoNGPAnOwQBE8tATFHI="
+                  />
+                  <a
+                    href={fileUrl || "#"}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-500 hover:text-blue-700"
+                  >
+                    View Full Image
+                  </a>
+                </div>
+              )}
             </div>
           ) : (
             <span className="text-gray-500">No image uploaded</span>
@@ -254,7 +379,11 @@ export default function ContractOverview({
               name="startDate"
               rules={[{ required: true, message: "Please select start date!" }]}
             >
-              <DatePicker style={{ width: "100%" }} format="DD/MM/YYYY" disabled />
+              <DatePicker
+                style={{ width: "100%" }}
+                format="DD/MM/YYYY"
+                disabled
+              />
             </Form.Item>
 
             <Form.Item
@@ -262,7 +391,11 @@ export default function ContractOverview({
               name="endDate"
               rules={[{ required: true, message: "Please select end date!" }]}
             >
-              <DatePicker style={{ width: "100%" }} format="DD/MM/YYYY" disabled />
+              <DatePicker
+                style={{ width: "100%" }}
+                format="DD/MM/YYYY"
+                disabled
+              />
             </Form.Item>
 
             <Form.Item
@@ -326,6 +459,26 @@ export default function ContractOverview({
             </Space>
           </Form.Item>
         </Form>
+      </Modal>
+
+      {/* PDF Preview Modal */}
+      <Modal
+        title="PDF Preview"
+        open={pdfPreviewOpen}
+        onCancel={() => setPdfPreviewOpen(false)}
+        footer={null}
+        width={900}
+        destroyOnClose
+      >
+        {fileUrl ? (
+          <iframe
+            src={fileUrl}
+            title="PDF Preview"
+            style={{ width: "100%", height: "80vh", border: "none" }}
+          />
+        ) : (
+          <div className="p-4">No preview available</div>
+        )}
       </Modal>
     </div>
   );

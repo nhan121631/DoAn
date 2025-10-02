@@ -23,20 +23,54 @@ public class CloudinaryService {
 
     public Map<String, String> uploadFile(MultipartFile file) {
         try {
-            @SuppressWarnings("unchecked")
-            Map<String, Object> uploadResult = cloudinary.uploader().upload(
-                    file.getBytes(),
-                    ObjectUtils.asMap(
-                            "resource_type", "auto",
-                            "chunk_size", 6000000));
+            Map<String, Object> options = new HashMap<>();
+            options.put("chunk_size", 6000000);
 
-            String secureUrl = uploadResult.get("secure_url").toString();
-            // Cắt từ "/<cloud_name>" trở đi
-            String relativePath = secureUrl.substring(secureUrl.indexOf("/" + cloudName));
+            String contentType = file.getContentType();
+            if (contentType != null && contentType.equalsIgnoreCase("application/pdf")) {
+                // PDF cần set raw + upload để không bị Blocked for delivery
+                options.put("resource_type", "raw");
+                options.put("type", "upload");
+            } else {
+                // Ảnh, video... để auto như cũ
+                options.put("resource_type", "auto");
+            }
+
+            @SuppressWarnings("unchecked")
+            Map<String, Object> uploadResult = cloudinary.uploader().upload(file.getBytes(), options);
+
+            if (uploadResult == null) {
+                throw new RuntimeException("Cloudinary upload returned null result");
+            }
+
+            // secure_url or url may be present depending on resource_type/response
+            Object secureUrlObj = uploadResult.get("secure_url");
+            Object urlObj = uploadResult.get("url");
+            String secureUrl = secureUrlObj != null ? secureUrlObj.toString()
+                    : (urlObj != null ? urlObj.toString() : null);
+
+            String relativePath = null;
+            if (secureUrl != null && cloudName != null && secureUrl.contains("/" + cloudName)) {
+                relativePath = secureUrl.substring(secureUrl.indexOf("/" + cloudName));
+            } else if (secureUrl != null) {
+                // fallback to full secure url
+                relativePath = secureUrl;
+            }
 
             Map<String, String> result = new HashMap<>();
-            result.put("url", relativePath); // path rút gọn
-            result.put("publicId", uploadResult.get("public_id").toString());
+            result.put("url", relativePath != null ? relativePath : ""); // path rút gọn (có thể dùng full secure_url
+                                                                         // nếu bạn muốn)
+
+            Object publicIdObj = uploadResult.get("public_id");
+            if (publicIdObj != null) {
+                result.put("publicId", publicIdObj.toString());
+            }
+
+            Object formatObj = uploadResult.get("format");
+            if (formatObj != null) {
+                result.put("format", formatObj.toString()); // ví dụ: jpg, png, pdf
+            }
+
             return result;
         } catch (IOException e) {
             throw new RuntimeException("Upload to Cloudinary failed: " + e.getMessage(), e);
