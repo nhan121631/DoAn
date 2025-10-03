@@ -29,6 +29,8 @@ public class BillUpdateDto {
     @PositiveOrZero(message = "Service fee must be >= 0")
     private Double serviceFee;
 
+    private String note;
+
     @PositiveOrZero(message = "Total amount must be >= 0")
     private Double totalAmount;
     

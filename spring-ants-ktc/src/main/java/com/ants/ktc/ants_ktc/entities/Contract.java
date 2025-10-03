@@ -39,6 +39,10 @@ public class Contract extends BaseEntity {
     @Column(name = "monthly_rent", nullable = false)
     private Double monthlyRent;
 
+    @Column(name = "contract_image")
+    private String contractImage;
+
+
     @Column(name = "status", nullable = false)
     private int status;
     // 0: active, 1: terminated, 2: expired, 3: pending...

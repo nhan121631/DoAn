@@ -1,6 +1,5 @@
 package com.ants.ktc.ants_ktc.dtos.bill;
 
-
 import com.ants.ktc.ants_ktc.enums.BillStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -28,7 +27,9 @@ public class BillResponseDto {
     private Double waterFee;
 
     private Double damageFee;
+    private String note;
     private Double serviceFee;
     private Double totalAmount;
     private BillStatus status;
+    private String imageProof;
 }

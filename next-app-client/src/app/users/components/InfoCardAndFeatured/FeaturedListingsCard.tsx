@@ -1,8 +1,11 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { getRecentRooms } from "@/services/RoomService";
+import { getRecentRooms, getRoomVipUser } from "@/services/RoomService";
 import { URL_IMAGE } from "@/services/Constant";
+import { PaginatedResponse, RoomInUser } from "@/types/types";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
 export interface FeaturedListing {
   id: number;
@@ -14,8 +17,15 @@ export interface FeaturedListing {
 }
 
 export default async function FeaturedListingsCard() {
-  const featuredListings = (await getRecentRooms()) as FeaturedListing[];
-  if (featuredListings.length === 0) return null;
+  // const featuredListings = (await getRecentRooms()) as FeaturedListing[];
+  const session = await getServerSession(authOptions);
+  const userId = session?.user?.id;
+  const roomVips = (await getRoomVipUser(
+    0,
+    10,
+    userId
+  )) as PaginatedResponse<RoomInUser>;
+  if (roomVips.data.length === 0) return null;
 
   function getRelativeTime(dateString: string): string {
     const now = new Date();
@@ -43,10 +53,10 @@ export default async function FeaturedListingsCard() {
           <circle cx="10" cy="10" r="9" fill="#f87171" opacity="0.15" />
           <circle cx="10" cy="10" r="4" fill="#f87171" />
         </svg>
-        Newest posts
+        Room VIP Listings
       </h3>
       <div className="flex flex-col gap-2 w-full">
-        {featuredListings.map((listing, index) => (
+        {roomVips.data.map((listing: RoomInUser, index: number) => (
           <React.Fragment key={listing.id}>
             <Link
               href={`/detail/${listing.id}`}
@@ -54,20 +64,26 @@ export default async function FeaturedListingsCard() {
               style={{ maxWidth: "100%" }}
             >
               <div className="relative flex-shrink-0 w-20 h-20 overflow-hidden rounded-md bg-gray-100 border border-gray-200">
-                <Image
-                  src={`${URL_IMAGE}` + listing.imageUrl}
-                  alt={listing.title}
-                  fill
-                  style={{ objectFit: "cover" }}
-                  sizes="(max-width: 640px) 100vw, 120px"
-                  className="rounded-md group-hover:scale-105 transition-transform duration-300"
-                  priority
-                />
-                {listing.isHot && (
+                {listing.images && listing.images.length > 0 ? (
+                  <Image
+                    src={`${URL_IMAGE}${listing.images[0].url}`}
+                    alt={listing.title}
+                    fill
+                    style={{ objectFit: "cover" }}
+                    sizes="(max-width: 640px) 100vw, 120px"
+                    className="rounded-md group-hover:scale-105 transition-transform duration-300"
+                    priority
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                    <span className="text-gray-400 text-xs">No Image</span>
+                  </div>
+                )}
+                {/* {listing.isHot && (
                   <span className="absolute left-0 z-10 w-16 px-2 py-0.5 text-xs text-center text-white bg-red-600 shadow rounded top-2 font-bold tracking-wide animate-pulse">
                     HOT
                   </span>
-                )}
+                )} */}
               </div>
               <div className="flex flex-col justify-center flex-grow min-w-0">
                 <p className="text-sm font-semibold text-gray-800 md:text-base line-clamp-2 group-hover:text-emerald-700 transition-colors duration-200">
@@ -88,7 +104,7 @@ export default async function FeaturedListingsCard() {
                 </p>
               </div>
             </Link>
-            {index < featuredListings.length - 1 && (
+            {index < roomVips.data.length - 1 && (
               <hr className="border-t border-gray-200 mx-2" />
             )}
           </React.Fragment>

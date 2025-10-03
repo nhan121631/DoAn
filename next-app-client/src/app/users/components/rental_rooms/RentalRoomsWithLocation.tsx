@@ -3,7 +3,6 @@
 import { useLocationContext } from "@/context/LocationContext";
 import { getRoomVipUser, getRoomVipWithLocation } from "@/services/RoomService";
 import { PaginatedResponse, RoomInUser } from "@/types/types";
-import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { BiChevronLeft, BiChevronRight } from "react-icons/bi";
@@ -31,7 +30,7 @@ export default function RentalRoomsWithLocation({
   console.log("🔧 RentalRoomsWithLocation - userId prop:", userId);
 
   const router = useRouter();
-  const { data: session } = useSession();
+  // const { data: session } = useSession();
   const [isLoadingPage, setIsLoadingPage] = useState(false);
   const [optimisticPage, setOptimisticPage] = useState<number | null>(null);
   const [paginatedVipRooms, setPaginatedVipRooms] =

@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import { Table, Tag, Button, Space, Popconfirm, message } from "antd";
+import { Table, Tag, Button, Space, Popconfirm, message, Modal } from "antd";
+import { URL_IMAGE } from "@/services/Constant";
 import {
   landlordFetchBookings,
   updateBookingStatus,
@@ -10,11 +11,13 @@ import React from "react";
 import { useEffect, useState } from "react";
 import { bookingConfirmationNotification } from "@/services/NotificationService";
 import { useSession } from "next-auth/react";
+import Image from "next/image";
 
 interface RentalData {
   key: string | number;
   name_tenant: string;
   phone_tenant: string;
+  imageProof: string;
   room: string;
   address: string;
   rentalDate: string;
@@ -36,14 +39,18 @@ export default function RentalsPage() {
   });
   const [loading, setLoading] = useState(false);
   const [messageApi, contextHolder] = message.useMessage();
+  const [imageModalOpen, setImageModalOpen] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<string>("");
 
   const mapBookingToRentalData = (booking: any): RentalData => {
     const address = booking.room.address;
     const fullAddress = `${address.street}, ${address.ward.name}, ${address.ward.district.name}, ${address.ward.district.province.name}`;
+    console.log("Image Proof:", booking.imageProof);
     return {
       key: booking.bookingId,
       name_tenant: booking.user.fullName,
-      phone_tenant: booking.user.phoneNumber,
+      phone_tenant: booking.user.phoneNumber || "Phone not updated",
+      imageProof: booking.imageProof || "",
       room: booking.room.title,
       address: fullAddress,
       rentalDate: booking.rentalDate
@@ -148,6 +155,16 @@ export default function RentalsPage() {
     }
   };
 
+  const handleImageClick = (imageUrl: string) => {
+    setSelectedImage(imageUrl);
+    setImageModalOpen(true);
+  };
+
+  const handleImageModalClose = () => {
+    setImageModalOpen(false);
+    setSelectedImage("");
+  };
+
   const columns = [
     {
       title: "Tenant Name",
@@ -184,6 +201,35 @@ export default function RentalsPage() {
       dataIndex: "expires",
       sorter: (a: RentalData, b: RentalData) =>
         new Date(a.expires).getTime() - new Date(b.expires).getTime(),
+    },
+    {
+      title: "Image Proof",
+      dataIndex: "imageProof",
+      align: "center" as const,
+      render: (text: string) => {
+        if (!text) {
+          return (
+            <div className="w-16 h-16 bg-gray-200 flex items-center justify-center rounded text-gray-500 text-xs">
+              No Image
+            </div>
+          );
+        }
+        return (
+          <div
+            className="w-16 h-16 cursor-pointer hover:opacity-80 transition-opacity"
+            onClick={() => handleImageClick(`${URL_IMAGE}${text}`)}
+          >
+            <Image
+              src={`${URL_IMAGE}${text}`}
+              alt="Bill Transfer"
+              width={64}
+              height={64}
+              className="object-cover rounded border border-gray-300"
+              style={{ width: "64px", height: "64px" }}
+            />
+          </div>
+        );
+      },
     },
     {
       title: "Num of Tenants",
@@ -393,6 +439,36 @@ export default function RentalsPage() {
           onChange={handleTableChange}
         />
       </div>
+
+      {/* Image Modal */}
+      <Modal
+        open={imageModalOpen}
+        onCancel={handleImageModalClose}
+        footer={null}
+        centered
+        width="auto"
+        style={{ maxWidth: "90vw", maxHeight: "90vh" }}
+        styles={{ body: { padding: 0 } }}
+      >
+        {selectedImage && (
+          <div className="flex justify-center items-center">
+            <Image
+              src={selectedImage}
+              alt="Bill Transfer - Full Size"
+              width={800}
+              height={600}
+              style={{
+                maxWidth: "85vw",
+                maxHeight: "85vh",
+                objectFit: "contain",
+                width: "auto",
+                height: "auto",
+              }}
+              className="rounded"
+            />
+          </div>
+        )}
+      </Modal>
     </>
   );
 }

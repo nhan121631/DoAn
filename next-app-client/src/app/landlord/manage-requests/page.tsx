@@ -12,6 +12,7 @@ import {
   getRequestsByLandlordId,
   rejectRequirement,
   updateRequirementStatus,
+  updateRequirementWithImage,
 } from "@/services/Requirements";
 import { useSession } from "next-auth/react";
 import {
@@ -19,6 +20,7 @@ import {
   requestProcessedNotification,
 } from "@/services/NotificationService";
 import RequestDetailModal from "../components/manage-requests/ModalRequest";
+import CompletionModal from "../components/manage-requests/CompletionModal";
 
 export default function ManageRequests() {
   const [requests, setRequests] = useState<Requirement[]>([]);
@@ -29,6 +31,9 @@ export default function ManageRequests() {
   const [selectedRequest, setSelectedRequest] = useState<Requirement | null>(
     null
   );
+  const [completionModalOpen, setCompletionModalOpen] = useState(false);
+  const [completingRequest, setCompletingRequest] = useState<Requirement | null>(null);
+  const [completionLoading, setCompletionLoading] = useState(false);
 
   const fetchData = async (page = 0, size = 5) => {
     setLoading(true);
@@ -88,6 +93,52 @@ export default function ManageRequests() {
     }
   };
 
+//completed request
+  const handleCompleteRequest = (record: Requirement) => {
+    setCompletingRequest(record);
+    setCompletionModalOpen(true);
+  };
+
+  const handleCompletionSubmit = async (imageFile?: File) => {
+    if (!completingRequest) return;
+
+    setCompletionLoading(true);
+    try {
+      await updateRequirementWithImage(completingRequest.id, completingRequest.description, imageFile);
+      
+      // Update local state
+      setRequests((prev) =>
+        prev.map((item) =>
+          item.id === completingRequest.id 
+            ? { ...item, status: 1} 
+            : item
+        )
+      );
+
+      // Send notification
+      await requestProcessedNotification(
+        session?.user.id,
+        completingRequest.userId,
+        `Request "${completingRequest.description}" has been completed by landlord.`
+      );
+
+      messageApi.success({
+        content: "Request completed successfully!",
+        duration: 2,
+      });
+
+      setCompletionModalOpen(false);
+      setCompletingRequest(null);
+    } catch (error: any) {
+      messageApi.error({
+        content: error.message,
+        duration: 2,
+      });
+    } finally {
+      setCompletionLoading(false);
+    }
+  };
+//
   const handleReject = async (id: string) => {
     try {
       await rejectRequirement(id);
@@ -192,30 +243,50 @@ export default function ManageRequests() {
         />
       ),
     },
+    // {
+    //   title: "Status",
+    //   dataIndex: "status",
+    //   key: "status",
+    //   render: (status, record) =>
+    //     status === 0 ? (
+    //       <Popconfirm
+    //         title="Mark as completed?"
+    //         onConfirm={() =>
+    //           handleStatusChange(record.id, record.userId, record.description)
+    //         }
+    //         okText="Yes"
+    //         cancelText="No"
+    //       >
+    //         <Button type="primary" size="small">
+    //           Not processed
+    //         </Button>
+    //       </Popconfirm>
+    //     ) : status === 1 ? (
+    //       <Tag color="green">Completed</Tag>
+    //     ) : (
+    //       <Tag color="red">Rejected</Tag>
+    //     ),
+    // },
     {
-      title: "Status",
-      dataIndex: "status",
-      key: "status",
-      render: (status, record) =>
-        status === 0 ? (
-          <Popconfirm
-            title="Mark as completed?"
-            onConfirm={() =>
-              handleStatusChange(record.id, record.userId, record.description)
-            }
-            okText="Yes"
-            cancelText="No"
-          >
-            <Button type="primary" size="small">
-              Not processed
-            </Button>
-          </Popconfirm>
-        ) : status === 1 ? (
-          <Tag color="green">Completed</Tag>
-        ) : (
-          <Tag color="red">Rejected</Tag>
-        ),
-    },
+  title: "Status",
+  dataIndex: "status",
+  key: "status",
+  render: (status, record) =>
+    status === 0 ? (
+      
+      <Button 
+        type="primary" 
+        size="small"
+        onClick={() => handleCompleteRequest(record)}
+      >
+        Not processed
+      </Button>
+    ) : status === 1 ? (
+      <Tag color="green">Completed</Tag>
+    ) : (
+      <Tag color="red">Rejected</Tag>
+    ),
+},
 
     {
       title: "Action",
@@ -283,6 +354,17 @@ export default function ManageRequests() {
           setSelectedRequest(null);
         }}
         request={selectedRequest}
+      />
+
+      {/* Completion Modal */}
+      <CompletionModal
+        open={completionModalOpen}
+        onCancel={() => {
+          setCompletionModalOpen(false);
+          setCompletingRequest(null);
+        }}
+        onSubmit={handleCompletionSubmit}
+        loading={completionLoading}
       />
     </div>
   );

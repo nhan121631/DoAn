@@ -13,10 +13,13 @@ import {
   Select,
   message,
   Space,
+  Upload,
+  Image,
 } from "antd";
-import { EditOutlined } from "@ant-design/icons";
+import { EditOutlined, CloudUploadOutlined } from "@ant-design/icons";
 import { ContractData } from "@/types/types";
 import { ContractService } from "@/services/ContractService";
+import { formatCloudinaryUrl, formatCloudinaryThumbnail } from "@/utils/cloudinaryUtils";
 import dayjs from "dayjs";
 
 interface ContractOverviewProps {
@@ -41,6 +44,7 @@ export default function ContractOverview({
 }: ContractOverviewProps) {
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [uploadLoading, setUploadLoading] = useState(false);
   const [form] = Form.useForm();
 
   const handleEdit = useCallback(() => {
@@ -62,6 +66,28 @@ export default function ContractOverview({
       handleEdit();
     }
   }, [autoEdit, handleEdit]);
+
+  const handleImageUpload = async (file: File) => {
+    try {
+      setUploadLoading(true);
+      const updatedContract = await ContractService.uploadContractImage(
+        contract.id,
+        file
+      );
+      
+      if (onContractUpdate) {
+        onContractUpdate(updatedContract);
+      }
+      
+      messageApi.success("Contract image uploaded successfully!");
+    } catch (error) {
+      console.error("Upload image error:", error);
+      messageApi.error("Failed to upload contract image!");
+    } finally {
+      setUploadLoading(false);
+    }
+    return false; // Prevent default upload
+  };
 
   const handleSubmit = async (values: any) => {
     try {
@@ -103,9 +129,20 @@ export default function ContractOverview({
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
           Contract Information
         </h3>
-        <Button type="primary" icon={<EditOutlined />} onClick={handleEdit}>
-          Edit Contract
-        </Button>
+        <Upload
+          accept="image/*"
+          showUploadList={false}
+          beforeUpload={handleImageUpload}
+          disabled={uploadLoading}
+        >
+          <Button 
+            type="primary" 
+            icon={<CloudUploadOutlined />} 
+            loading={uploadLoading}
+          >
+            Upload Contract Image
+          </Button>
+        </Upload>
       </div>
 
       <Descriptions bordered column={2} size="middle">
@@ -138,6 +175,30 @@ export default function ContractOverview({
           <Tag color={statusMap[contract.status]?.color}>
             {statusMap[contract.status]?.text}
           </Tag>
+        </Descriptions.Item>
+        <Descriptions.Item label="Contract Image" span={2}>
+          {contract.contractImage ? (
+            <div className="flex items-center gap-2">
+              <Image
+                src={formatCloudinaryThumbnail(contract.contractImage, 150, 100) || undefined}
+                alt="Contract Image"
+                width={150}
+                height={100}
+                style={{ objectFit: 'cover', borderRadius: '4px' }}
+                fallback="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMIAAADDCAYAAADQvc6UAAABRWlDQ1BJQ0MgUHJvZmlsZQAAKJFjYGASSSwoyGFhYGDIzSspCnJ3UoiIjFJgf8LAwSDCIMogwMCcmFxc4BgQ4ANUwgCjUcG3awyMIPqyLsis7PPOq3QdDFcvjV3jOD1boQVTPQrgSkktTgbSf4A4LbmgqISBgTEFyFYuLykAsTuAbJEioKOA7DkgdjqEvQHEToKwj4DVhAQ5A9k3gGyB5IxEoBmML4BsnSQk8XQkNtReEOBxcfXxUQg1Mjc0dyHgXNJBSWpFCYh2zi+oLMpMzyhRcASGUqqCZ16yno6CkYGRAQMDKMwhqj/fAIcloxgHQqxAjIHBEugw5sUIsSQpBobtQPdLciLEVJYzMPBHMDBsayhILEqEO4DxG0txmrERhM29nYGBddr//5/DGRjYNRkY/l7////39v///y4Dm3jaMgAAAABwSURBVHhe7cHBDQAACAwCoNGPAnOwQBE8tATFHIAAAABwSURBVHhe7cHBDQAACAwCoNGPAnOwQBE8tATFHIAAAABwSURBVHhe7cHBDQAACAwCoNGPAnOwQBE8tATFHI="
+              />
+              <a 
+                href={formatCloudinaryUrl(contract.contractImage) || '#'} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-blue-500 hover:text-blue-700"
+              >
+                View Full Image
+              </a>
+            </div>
+          ) : (
+            <span className="text-gray-500">No image uploaded</span>
+          )}
         </Descriptions.Item>
       </Descriptions>
 
@@ -172,7 +233,7 @@ export default function ContractOverview({
               name="status"
               rules={[{ required: true, message: "Please select status!" }]}
             >
-              <Select placeholder="Select status">
+              <Select placeholder="Select status" disabled>
                 <Select.Option value={0}>Active</Select.Option>
                 <Select.Option value={1}>Terminated</Select.Option>
                 <Select.Option value={2}>Expired</Select.Option>
@@ -193,7 +254,7 @@ export default function ContractOverview({
               name="startDate"
               rules={[{ required: true, message: "Please select start date!" }]}
             >
-              <DatePicker style={{ width: "100%" }} format="DD/MM/YYYY" />
+              <DatePicker style={{ width: "100%" }} format="DD/MM/YYYY" disabled />
             </Form.Item>
 
             <Form.Item
@@ -201,7 +262,7 @@ export default function ContractOverview({
               name="endDate"
               rules={[{ required: true, message: "Please select end date!" }]}
             >
-              <DatePicker style={{ width: "100%" }} format="DD/MM/YYYY" />
+              <DatePicker style={{ width: "100%" }} format="DD/MM/YYYY" disabled />
             </Form.Item>
 
             <Form.Item
@@ -224,6 +285,7 @@ export default function ContractOverview({
                 }
                 parser={(value) => value!.replace(/\$\s?|(,*)/g, "")}
                 addonAfter="đ"
+                disabled
               />
             </Form.Item>
 
@@ -243,6 +305,7 @@ export default function ContractOverview({
                 }
                 parser={(value) => value!.replace(/\$\s?|(,*)/g, "")}
                 addonAfter="đ"
+                disabled
               />
             </Form.Item>
           </div>

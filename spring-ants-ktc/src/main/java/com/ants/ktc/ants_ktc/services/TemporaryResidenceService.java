@@ -17,9 +17,8 @@ import com.ants.ktc.ants_ktc.dtos.temporary_residence.TemporaryResidenceUpdateRe
 import com.ants.ktc.ants_ktc.entities.Contract;
 import com.ants.ktc.ants_ktc.entities.TemporaryResidence;
 import com.ants.ktc.ants_ktc.repositories.ContractJpaRepository;
+import com.ants.ktc.ants_ktc.repositories.LandlordTaskJpaRepository;
 import com.ants.ktc.ants_ktc.repositories.TemporaryResidenceJpaRepository;
-
-import jakarta.transaction.Transactional;
 
 @Service
 public class TemporaryResidenceService {
@@ -32,7 +31,9 @@ public class TemporaryResidenceService {
     @Autowired
     private LandlordTaskService landlordTaskService;
 
-    @Transactional
+    @Autowired
+    private LandlordTaskJpaRepository landlordTaskJpaRepository;
+
     public TemporaryResidenceResponse create(TemporaryResidenceCreateRequest request,
             MultipartFile frontImage,
             MultipartFile backImage) {
@@ -47,6 +48,7 @@ public class TemporaryResidenceService {
         temp.setStartDate(request.getStartDate());
         temp.setEndDate(request.getEndDate());
         temp.setNote(request.getNote());
+        temp.setStatus("PENDING");
 
         // Upload ảnh mặt trước
         if (frontImage != null && !frontImage.isEmpty()) {
@@ -70,6 +72,8 @@ public class TemporaryResidenceService {
         if (roomId == null) {
             throw new IllegalArgumentException("Room not found for the room");
         }
+
+        TemporaryResidence saved = temporaryResidenceRepository.save(temp);
         LandlordTaskCreateDto dto = LandlordTaskCreateDto.builder()
                 .title("Temporary Residence: " + request.getNote().substring(0,
                         Math.min(20, request.getNote().length())) + "...")
@@ -77,14 +81,28 @@ public class TemporaryResidenceService {
                 .startDate(LocalDateTime.now())
                 .dueDate(LocalDateTime.now().plusDays(1))
                 .status("PENDING")
+                .type("TEMPORARY_RESIDENCE")
+                .relatedEntityId(saved.getId())
                 .priority("HIGH")
                 .landlordId(landlordId.toString())
                 .roomId(roomId.toString())
                 .build();
         landlordTaskService.createTask(dto);
-
-        TemporaryResidence saved = temporaryResidenceRepository.save(temp);
         return convertToDto(saved);
+    }
+
+    public List<TemporaryResidenceResponse> getByLandlord(UUID landlordId) {
+        return temporaryResidenceRepository.findByLandlordId(landlordId)
+                .stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
+    }
+
+    public List<TemporaryResidenceResponse> getByTenant(UUID tenantId) {
+        return temporaryResidenceRepository.findByTenantId(tenantId)
+                .stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
     }
 
     public TemporaryResidenceResponse update(UUID id,
@@ -100,6 +118,11 @@ public class TemporaryResidenceService {
         temp.setStartDate(request.getStartDate());
         temp.setEndDate(request.getEndDate());
         temp.setNote(request.getNote());
+        temp.setStatus(request.getStatus());
+
+        if (temp.getStatus().equals("DONE")) {
+            landlordTaskJpaRepository.updateTaskStatus(temp.getId(), "COMPLETED");
+        }
 
         // Nếu có upload ảnh mới -> xóa ảnh cũ + upload ảnh mới
         if (frontImage != null && !frontImage.isEmpty()) {
@@ -146,6 +169,7 @@ public class TemporaryResidenceService {
     }
 
     public TemporaryResidenceResponse convertToDto(TemporaryResidence entity) {
+
         return TemporaryResidenceResponse.builder()
                 .id(entity.getId())
                 .contractId(entity.getContract().getId())
@@ -155,6 +179,7 @@ public class TemporaryResidenceService {
                 .startDate(entity.getStartDate())
                 .endDate(entity.getEndDate())
                 .note(entity.getNote())
+                .status(entity.getStatus())
                 .idCardFrontUrl(entity.getIdCardFrontUrl())
                 .idCardBackUrl(entity.getIdCardBackUrl())
                 .build();

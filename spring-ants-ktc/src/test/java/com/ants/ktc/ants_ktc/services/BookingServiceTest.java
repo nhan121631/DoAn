@@ -331,6 +331,12 @@ public class BookingServiceTest {
                     }
                 };
             }
+
+            @Override
+            public String getImageProof() {
+                // TODO Auto-generated method stub
+                throw new UnsupportedOperationException("Unimplemented method 'getImageProof'");
+            }
         };
     }
 }

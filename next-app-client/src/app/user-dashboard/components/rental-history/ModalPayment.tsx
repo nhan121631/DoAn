@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from "react";
-import { Modal, Popconfirm, Button, message } from "antd";
-import { BankOutlined } from "@ant-design/icons";
+import { Modal, Popconfirm, Button, message, Upload } from "antd";
+import { BankOutlined, UploadOutlined } from "@ant-design/icons";
 import Image from "next/image";
 import {
   updateBookingStatus,
   getLandlordPaymentInfo,
+  uploadBillTransferImage,
 } from "@/services/BookingService";
 import { LandlordPaymentInfo } from "@/types/types";
+import type { UploadFile, UploadProps } from "antd/es/upload/interface";
 
 interface ModalPaymentProps {
   open: boolean;
@@ -28,6 +30,8 @@ function ModalPayment({
   );
   const [loading, setLoading] = useState(false);
   const [transferConfirmed, setTransferConfirmed] = useState(false);
+  const [uploadedImage, setUploadedImage] = useState<UploadFile | null>(null);
+  const [imageUploading, setImageUploading] = useState(false);
   const [messageApi, contextHolder] = message.useMessage();
 
   // Fetch landlord payment info when modal opens
@@ -57,11 +61,17 @@ function ModalPayment({
       return;
     }
 
+    if (!uploadedImage) {
+      messageApi.warning("Please upload your bill transfer image first");
+      return;
+    }
+
     try {
       await updateBookingStatus(bookingId, 3); // Set status to "waiting for deposit confirmation"
       messageApi.success("Payment confirmation submitted successfully!");
       onConfirm();
       setTransferConfirmed(false);
+      setUploadedImage(null);
     } catch (error) {
       console.error("Failed to update booking status:", error);
       messageApi.error("Failed to confirm payment");
@@ -70,7 +80,47 @@ function ModalPayment({
 
   const handleCancel = () => {
     setTransferConfirmed(false);
+    setUploadedImage(null);
     onCancel();
+  };
+
+  // Handle file upload
+  const handleUpload = async (file: File) => {
+    setImageUploading(true);
+    try {
+      const result = await uploadBillTransferImage(bookingId, file);
+      messageApi.success("Bill transfer image uploaded successfully!");
+
+      // Create upload file object for display
+      const uploadFile: UploadFile = {
+        uid: Date.now().toString(),
+        name: file.name,
+        status: "done",
+        url: result.imageUrl,
+      };
+      setUploadedImage(uploadFile);
+
+      return false; // Prevent default upload
+    } catch (error) {
+      console.error("Failed to upload image:", error);
+      messageApi.error(
+        error instanceof Error ? error.message : "Failed to upload image"
+      );
+      return false;
+    } finally {
+      setImageUploading(false);
+    }
+  };
+
+  const uploadProps: UploadProps = {
+    accept: "image/*",
+    beforeUpload: handleUpload,
+    fileList: uploadedImage ? [uploadedImage] : [],
+    onRemove: () => {
+      setUploadedImage(null);
+      return true;
+    },
+    maxCount: 1,
   };
 
   const copyBankNumber = () => {
@@ -176,6 +226,31 @@ function ModalPayment({
             </div>
           </div>
 
+          {/* Upload Bill Transfer Image */}
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+            <h4 className="font-semibold text-red-800 mb-3">
+              Upload Bill Transfer Image *
+            </h4>
+            <p className="text-sm text-red-700 mb-3">
+              Please upload a screenshot or photo of your bank transfer as proof
+              of payment.
+            </p>
+            <Upload {...uploadProps}>
+              <Button
+                icon={<UploadOutlined />}
+                loading={imageUploading}
+                className="w-full"
+              >
+                {imageUploading ? "Uploading..." : "Select Image"}
+              </Button>
+            </Upload>
+            {!uploadedImage && (
+              <p className="text-xs text-red-600 mt-1">
+                * This field is required to confirm your payment
+              </p>
+            )}
+          </div>
+
           {/* Transfer Confirmation */}
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
             <div className="flex items-start gap-3">
@@ -218,7 +293,7 @@ function ModalPayment({
                 type="primary"
                 className="flex-1 bg-blue-600 hover:bg-blue-700"
                 loading={confirmLoading}
-                disabled={!transferConfirmed}
+                disabled={!transferConfirmed || !uploadedImage}
               >
                 Confirm Payment Sent
               </Button>

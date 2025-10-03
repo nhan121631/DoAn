@@ -7,24 +7,24 @@ import com.ants.ktc.ants_ktc.services.BillExportService;
 import com.ants.ktc.ants_ktc.services.ContractService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.UUID;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
 @RequestMapping("/api/contracts")
 public class ContractController {
+
     @Autowired
     private ContractService contractService;
+
     @Autowired
     private BillExportService billExportService;
 
@@ -60,8 +60,14 @@ public class ContractController {
             @PathVariable("id") UUID id,
             @RequestBody @Valid ContractUpdateRequestDto dto) {
         dto.setId(id);
-
         return ResponseEntity.ok(contractService.updateContract(dto));
+    }
+
+    @PutMapping("/{id}/image")
+    public ResponseEntity<ContractResponseDto> updateContractImage(
+            @PathVariable("id") UUID id,
+            @RequestParam("file") MultipartFile file) {
+        return ResponseEntity.ok(contractService.uploadContractImage(id, file));
     }
 
     @GetMapping("/status/{status}")
@@ -72,10 +78,9 @@ public class ContractController {
     @GetMapping("/{contractId}/bills/export")
     public ResponseEntity<byte[]> exportBills(
             @PathVariable("contractId") UUID contractId,
-            @RequestParam("fromMonth") String fromMonth, // yyyy-MM
+            @RequestParam("fromMonth") String fromMonth,
             @RequestParam("toMonth") String toMonth) throws Exception {
         byte[] data = billExportService.exportBillsToExcel(contractId, fromMonth, toMonth);
-
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=bills.xlsx")
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
@@ -89,9 +94,8 @@ public class ContractController {
     }
 
     @GetMapping("/test")
-    public String getMethodName() {
+    public String runAutoTask() {
         contractService.autoTaskBillsGeneration();
         return "Task completed";
     }
-
 }

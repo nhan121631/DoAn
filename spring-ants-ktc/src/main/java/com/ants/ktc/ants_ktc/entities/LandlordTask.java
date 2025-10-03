@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Data
@@ -18,6 +19,8 @@ public class LandlordTask extends BaseEntity {
     private LocalDateTime dueDate;
     private String status; // PENDING, IN_PROGRESS, COMPLETED, CANCELED
     private String priority; // LOW, MEDIUM, HIGH
+    private String type; // REQUEST, BOOKING, RESIDENT, BILL, OTHER, MAINTENANCE
+    private UUID relatedEntityId;
 
     @ManyToOne
     @JoinColumn(name = "landlord_id")

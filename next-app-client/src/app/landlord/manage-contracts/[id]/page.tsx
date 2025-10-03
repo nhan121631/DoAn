@@ -8,14 +8,12 @@ import { Spin, message, Tabs, Button } from "antd";
 import {
   FileTextOutlined,
   DollarOutlined,
-  TeamOutlined,
   ArrowLeftOutlined,
 } from "@ant-design/icons";
 import { ContractData } from "@/types/types";
 import { ContractService } from "@/services/ContractService";
 import ContractOverview from "../../components/manage-contracts/ContractOverview";
 import BillsTab from "../../components/manage-contracts/BillsTab";
-import ResidentsTab from "../../components/manage-contracts/ResidentsTab";
 
 export default function LandlordContractDetail() {
   const router = useRouter();
@@ -108,22 +106,7 @@ export default function LandlordContractDetail() {
         />
       ),
     },
-    {
-      key: "residents",
-      label: (
-        <span>
-          <TeamOutlined />
-          Residents
-        </span>
-      ),
-      children: (
-        <ResidentsTab
-          contract={contract}
-          onContractUpdate={handleContractUpdate}
-          messageApi={messageApi}
-        />
-      ),
-    },
+
   ];
 
   return (

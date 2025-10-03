@@ -12,7 +12,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.ants.ktc.ants_ktc.dtos.booking.BookingRoomByUserResponseDto;
 import com.ants.ktc.ants_ktc.dtos.booking.BookingRoomRequestDto;
@@ -215,6 +217,39 @@ public class BookingController {
             return ResponseEntity.ok("Booking deleted successfully");
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    // Upload bill transfer image
+    @PostMapping("/{bookingId}/upload-bill-transfer")
+    @Operation(summary = "Upload bill transfer image", description = "Upload a bill transfer image for a booking")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Image uploaded successfully", content = @Content(mediaType = "application/json", schema = @Schema(example = """
+                    {
+                        "message": "Image uploaded successfully",
+                        "imageUrl": "/v1234567890/folder/image.jpg"
+                    }
+                    """))),
+            @ApiResponse(responseCode = "400", description = "Bad request - invalid booking ID or file", content = @Content(mediaType = "application/json", schema = @Schema(example = """
+                    {
+                        "error": "Booking not found"
+                    }
+                    """))),
+            @ApiResponse(responseCode = "401", description = "Unauthorized - invalid or missing JWT token"),
+            @ApiResponse(responseCode = "500", description = "Internal server error - upload failed")
+    })
+    public ResponseEntity<?> uploadBillTransferImage(
+            @PathVariable("bookingId") UUID bookingId,
+            @RequestPart("file") MultipartFile file) {
+        try {
+            String imageUrl = bookingService.uploadBillTransferImage(bookingId, file);
+            return ResponseEntity.ok(java.util.Map.of(
+                    "message", "Image uploaded successfully",
+                    "imageUrl", imageUrl));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage()));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(500).body(java.util.Map.of("error", e.getMessage()));
         }
     }
 
