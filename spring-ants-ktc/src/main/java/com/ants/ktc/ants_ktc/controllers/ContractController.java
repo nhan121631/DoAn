@@ -77,7 +77,7 @@ public class ContractController {
 
     @GetMapping("/{contractId}/bills/export")
     public ResponseEntity<byte[]> exportBills(
-            @PathVariable UUID contractId,
+            @PathVariable("contractId") UUID contractId,
             @RequestParam("fromMonth") String fromMonth,
             @RequestParam("toMonth") String toMonth) throws Exception {
         byte[] data = billExportService.exportBillsToExcel(contractId, fromMonth, toMonth);
