@@ -53,6 +53,10 @@ public class Ads extends BaseEntity {
         LEFT, RIGHT, TOP, BOTTOM, CENTER
     }
 
+    @JoinColumn(name = "user_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    private User user;
+
     // Helper method to check if ad is currently active
     public boolean isCurrentlyActive() {
         Date now = new Date();
