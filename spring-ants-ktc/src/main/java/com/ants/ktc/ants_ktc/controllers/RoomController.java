@@ -113,8 +113,10 @@ public class RoomController {
     @GetMapping("/by-landlord/{id}/paging")
     public ResponseEntity<PaginationRoomResponseDto> getAllRoomByLandlordIdPaginated(@PathVariable("id") UUID id,
             @RequestParam(value = "page", defaultValue = "0") int page,
-            @RequestParam(value = "size", defaultValue = "5") int size) {
-        PaginationRoomResponseDto rooms = roomService.getAllRoomByLandlordIdPaginated(id, page, size);
+            @RequestParam(value = "size", defaultValue = "5") int size,
+            @RequestParam(value = "sortField", required = false) String sortField,
+            @RequestParam(value = "sortOrder", required = false) String sortOrder) {
+        PaginationRoomResponseDto rooms = roomService.getAllRoomByLandlordIdPaginated(id, page, size, sortField, sortOrder);
         return ResponseEntity.ok(rooms);
     }
 

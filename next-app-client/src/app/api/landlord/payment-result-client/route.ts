@@ -1,6 +1,7 @@
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { NextResponse } from "next/server";
+import { API_URL } from "@/services/Constant";
 
 // POST: Tạo transaction mới cho user
 export async function POST(request: Request) {
@@ -20,7 +21,7 @@ export async function POST(request: Request) {
 
     // Gọi trực tiếp backend
     const backendRes = await fetch(
-      `http://localhost:3333/api/transactions/${userId}`,
+      `${API_URL}/transactions/${userId}`,
       {
         method: "POST",
         headers: {

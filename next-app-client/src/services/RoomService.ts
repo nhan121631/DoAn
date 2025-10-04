@@ -45,11 +45,22 @@ export async function updateRoom(roomId: string, formData: FormData) {
   return response.json();
 }
 
-export async function getRoomsByLandlord(page: number, size: number) {
+export async function getRoomsByLandlord(
+  page: number,
+  size: number,
+  sortField?: string,
+  sortOrder?: string
+) {
   try {
-    const response = await fetch(
-      `/api/landlord/room?page=${page}&size=${size}`
-    );
+    let url = `/api/landlord/room?page=${page}&size=${size}`;
+    if (sortField) {
+      url += `&sortField=${encodeURIComponent(sortField)}`;
+    }
+    if (sortOrder) {
+      url += `&sortOrder=${encodeURIComponent(sortOrder)}`;
+    }
+
+    const response = await fetch(url);
     if (!response.ok) {
       const data = await response.json();
       throw new Error(data.message || "Failed to fetch rooms");

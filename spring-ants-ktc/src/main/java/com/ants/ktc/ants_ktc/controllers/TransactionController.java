@@ -41,9 +41,11 @@ public class TransactionController {
     public ResponseEntity<PaginationTransactionResponseDto> getTransactionsByUserIdPaginated(
             @PathVariable("userId") UUID userId,
             @RequestParam(value = "page", defaultValue = "0") int page,
-            @RequestParam(value = "size", defaultValue = "8") int size) {
+            @RequestParam(value = "size", defaultValue = "8") int size,
+            @RequestParam(value = "sortField", required = false) String sortField,
+            @RequestParam(value = "sortOrder", required = false) String sortOrder) {
         PaginationTransactionResponseDto responseDto = transactionService.getTransactionsByUserIdPaginated(userId, page,
-                size);
+                size, sortField, sortOrder);
         return new ResponseEntity<>(responseDto, HttpStatus.OK);
     }
 

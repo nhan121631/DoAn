@@ -38,11 +38,18 @@ function TableManageRoom() {
   const [messageApi, contextHolder] = message.useMessage();
 
   const router = useRouter();
+  const [sortField, setSortField] = useState<string | undefined>(undefined);
+  const [sortOrder, setSortOrder] = useState<string | undefined>(undefined);
 
-  const fetchRooms = async (page = 1, pageSize = pagination.pageSize) => {
+  const fetchRooms = async (
+    page = 1,
+    pageSize = pagination.pageSize,
+    sf?: string,
+    so?: string
+  ) => {
     setLoading(true);
     try {
-      const res = await getRoomsByLandlord(page, pageSize);
+      const res = await getRoomsByLandlord(page, pageSize, sf, so);
       console.log("Rooms API response:", res);
       setData(res.rooms || []);
       setPagination({
@@ -73,12 +80,51 @@ function TableManageRoom() {
   }, []);
 
   useEffect(() => {
-    fetchRooms(pagination.current, pagination.pageSize);
+    fetchRooms(pagination.current, pagination.pageSize, sortField, sortOrder);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleTableChange = (pag: TablePaginationConfig) => {
-    fetchRooms(pag.current!, pag.pageSize!);
+  const handleTableChange = (
+    pag: TablePaginationConfig,
+    _filters: Record<string, any>,
+    sorter: any
+  ) => {
+    const newPage = pag.current ?? 1;
+    const newPageSize = pag.pageSize ?? pagination.pageSize;
+
+    let sf: string | undefined = undefined;
+    let so: string | undefined = undefined;
+
+    if (Array.isArray(sorter)) {
+      if (sorter.length > 0) {
+        sf = sorter[0]?.field || sorter[0]?.columnKey;
+        so =
+          sorter[0]?.order === "descend"
+            ? "desc"
+            : sorter[0]?.order === "ascend"
+            ? "asc"
+            : undefined;
+      }
+    } else if (sorter) {
+      sf = sorter.field || sorter.columnKey;
+      if (sorter.order) {
+        so =
+          sorter.order === "descend"
+            ? "desc"
+            : sorter.order === "ascend"
+            ? "asc"
+            : undefined;
+      }
+    }
+
+    setPagination((prev) => ({
+      ...prev,
+      current: newPage,
+      pageSize: newPageSize,
+    }));
+    setSortField(sf);
+    setSortOrder(so);
+    fetchRooms(newPage, newPageSize, sf, so);
   };
 
   const toggleHidden = async (record: any) => {

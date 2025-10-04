@@ -91,8 +91,10 @@ public class BookingController {
     public ResponseEntity<PaginationUserBookingRoomResponseDto> getPaginatedUserBookings(
             @PathVariable("userId") UUID userId,
             @RequestParam("page") int page,
-            @RequestParam("size") int size) {
-        PaginationUserBookingRoomResponseDto response = bookingService.getPaginatedUserBookings(userId, page, size);
+            @RequestParam("size") int size,
+            @RequestParam(value = "sortField", required = false) String sortField,
+            @RequestParam(value = "sortOrder", required = false) String sortOrder) {
+        PaginationUserBookingRoomResponseDto response = bookingService.getPaginatedUserBookings(userId, page, size, sortField, sortOrder);
         return ResponseEntity.ok(response);
     }
 
@@ -101,8 +103,10 @@ public class BookingController {
     public ResponseEntity<PaginationLandlordResponseDto> getPaginatedLandlordBookings(
             @PathVariable("landlordId") UUID landlordId,
             @RequestParam("page") int page,
-            @RequestParam("size") int size) {
-        PaginationLandlordResponseDto response = bookingService.getPaginatedLandlordBookings(landlordId, page, size);
+            @RequestParam("size") int size,
+            @RequestParam(value = "sortField", required = false) String sortField,
+            @RequestParam(value = "sortOrder", required = false) String sortOrder) {
+        PaginationLandlordResponseDto response = bookingService.getPaginatedLandlordBookings(landlordId, page, size, sortField, sortOrder);
         return ResponseEntity.ok(response);
     }
 

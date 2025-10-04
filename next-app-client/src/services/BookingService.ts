@@ -1,8 +1,21 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { LandlordPaymentInfo } from "@/types/types";
 
-export async function userFetchBookings(page: number, size: number) {
-  const response = await fetch(`/api/booking/user?page=${page}&size=${size}`);
+export async function userFetchBookings(
+  page: number,
+  size: number,
+  sortField?: string,
+  sortOrder?: string
+) {
+  let url = `/api/booking/user?page=${page}&size=${size}`;
+  if (sortField) {
+    url += `&sortField=${encodeURIComponent(sortField)}`;
+  }
+  if (sortOrder) {
+    url += `&sortOrder=${encodeURIComponent(sortOrder)}`;
+  }
+
+  const response = await fetch(url);
   if (!response.ok) {
     const errorJson = await response.json();
     throw new Error(errorJson.message || "Failed to fetch bookings");
@@ -11,10 +24,21 @@ export async function userFetchBookings(page: number, size: number) {
   return data;
 }
 
-export async function landlordFetchBookings(page: number, size: number) {
-  const response = await fetch(
-    `/api/booking/landlord?page=${page}&size=${size}`
-  );
+export async function landlordFetchBookings(
+  page: number,
+  size: number,
+  sortField?: string,
+  sortOrder?: string
+) {
+  let url = `/api/booking/landlord?page=${page}&size=${size}`;
+  if (sortField) {
+    url += `&sortField=${encodeURIComponent(sortField)}`;
+  }
+  if (sortOrder) {
+    url += `&sortOrder=${encodeURIComponent(sortOrder)}`;
+  }
+
+  const response = await fetch(url);
   if (!response.ok) {
     const errorJson = await response.json();
     throw new Error(errorJson.message || "Failed to fetch bookings");

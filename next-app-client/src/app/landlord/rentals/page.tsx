@@ -41,6 +41,8 @@ export default function RentalsPage() {
   const [messageApi, contextHolder] = message.useMessage();
   const [imageModalOpen, setImageModalOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string>("");
+  const [sortField, setSortField] = useState<string | undefined>(undefined);
+  const [sortOrder, setSortOrder] = useState<string | undefined>(undefined);
 
   const mapBookingToRentalData = (booking: any): RentalData => {
     const address = booking.room.address;
@@ -69,10 +71,15 @@ export default function RentalsPage() {
     };
   };
 
-  const fetchTableData = async (page = 1, pageSize = pagination.pageSize) => {
+  const fetchTableData = async (
+    page = 1,
+    pageSize = pagination.pageSize,
+    sf?: string,
+    so?: string
+  ) => {
     setLoading(true);
     try {
-      const response = await landlordFetchBookings(page - 1, pageSize);
+      const response = await landlordFetchBookings(page - 1, pageSize, sf, so);
       let bookings = response.bookings || response;
       const total = response.totalRecords || bookings.length;
       if (bookings.length > pageSize) {
@@ -89,16 +96,50 @@ export default function RentalsPage() {
   };
 
   useEffect(() => {
-    fetchTableData(pagination.current, pagination.pageSize);
+    fetchTableData(
+      pagination.current,
+      pagination.pageSize,
+      sortField,
+      sortOrder
+    );
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pagination.current, pagination.pageSize]);
+  }, [pagination.current, pagination.pageSize, sortField, sortOrder]);
 
-  const handleTableChange = (pagination: any) => {
+  const handleTableChange = (pagination: any, _filters: any, sorter: any) => {
+    // Extract sorter into sortField and sortOrder
+    let sf: string | undefined = undefined;
+    let so: string | undefined = undefined;
+
+    if (Array.isArray(sorter)) {
+      if (sorter.length > 0) {
+        sf = sorter[0]?.field || sorter[0]?.columnKey;
+        so =
+          sorter[0]?.order === "descend"
+            ? "desc"
+            : sorter[0]?.order === "ascend"
+            ? "asc"
+            : undefined;
+      }
+    } else if (sorter) {
+      sf = sorter.field || sorter.columnKey;
+      if (sorter.order) {
+        so =
+          sorter.order === "descend"
+            ? "desc"
+            : sorter.order === "ascend"
+            ? "asc"
+            : undefined;
+      }
+    }
+
     setPagination((prev) => ({
       ...prev,
       current: pagination.current,
       pageSize: pagination.pageSize,
     }));
+    setSortField(sf);
+    setSortOrder(so);
+    fetchTableData(pagination.current, pagination.pageSize, sf, so);
   };
 
   const handleUpdateBookingStatus = async (
