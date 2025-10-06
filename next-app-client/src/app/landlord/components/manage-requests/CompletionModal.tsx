@@ -1,6 +1,6 @@
 "use client";
 
-import { Modal, Form, Input, Upload, Button, message } from "antd";
+import { Modal, Form, Upload, Button, message } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import { useState } from "react";
 import type { UploadFile } from "antd/es/upload/interface";
@@ -8,7 +8,7 @@ import type { UploadFile } from "antd/es/upload/interface";
 interface CompletionModalProps {
   open: boolean;
   onCancel: () => void;
-  onSubmit: (description: string, imageFile?: File) => void;
+  onSubmit: (imageFile?: File) => void; // Bỏ description parameter
   loading?: boolean;
 }
 
@@ -22,8 +22,8 @@ const CompletionModal: React.FC<CompletionModalProps> = ({
   const [fileList, setFileList] = useState<UploadFile[]>([]);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
-  const handleFinish = (values: { description: string }) => {
-    onSubmit(values.description, selectedFile || undefined);
+  const handleFinish = () => {
+    onSubmit(selectedFile || undefined); // Chỉ truyền ảnh
     form.resetFields();
     setFileList([]);
     setSelectedFile(null);
@@ -51,10 +51,10 @@ const CompletionModal: React.FC<CompletionModalProps> = ({
       }
 
       setSelectedFile(file);
-      return false; // Prevent auto upload
+      return false;
     },
     onChange: ({ fileList }: { fileList: UploadFile[] }) => {
-      setFileList(fileList.slice(-1)); // Keep only the last file
+      setFileList(fileList.slice(-1));
     },
     fileList,
     maxCount: 1,
@@ -75,20 +75,6 @@ const CompletionModal: React.FC<CompletionModalProps> = ({
         layout="vertical"
         onFinish={handleFinish}
       >
-        <Form.Item
-          label="Completion Description"
-          name="description"
-          rules={[
-            { required: true, message: 'Please enter completion description!' },
-            { min: 5, message: 'Description must be at least 5 characters!' }
-          ]}
-        >
-          <Input.TextArea
-            rows={4}
-            placeholder="Describe what has been done to complete this request..."
-          />
-        </Form.Item>
-
         <Form.Item
           label="Upload Completion Image (Optional)"
           name="image"

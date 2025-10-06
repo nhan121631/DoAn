@@ -77,7 +77,7 @@ public interface BookingJpaRepository extends JpaRepository<Booking, UUID> {
                         "JOIN FETCH d.province p " +
                         "JOIN FETCH b.user u " +
                         "JOIN FETCH u.profile up " +
-                        "WHERE r.user.id = :landlordId")
+                        "WHERE r.user.id = :landlordId AND b.isRemoved = 0")
         Page<BookingLandlordProjection> findByLandlordIdProjection(@Param("landlordId") UUID landlordId,
                         Pageable pageable);
 
