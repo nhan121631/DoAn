@@ -61,10 +61,10 @@ function ModalPayment({
       return;
     }
 
-    if (!uploadedImage) {
-      messageApi.warning("Please upload your bill transfer image first");
-      return;
-    }
+    // if (!uploadedImage) {
+    //   messageApi.warning("Please upload your bill transfer image first");
+    //   return;
+    // }
 
     try {
       await updateBookingStatus(bookingId, 3); // Set status to "waiting for deposit confirmation"
@@ -227,11 +227,11 @@ function ModalPayment({
           </div>
 
           {/* Upload Bill Transfer Image */}
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-            <h4 className="font-semibold text-red-800 mb-3">
-              Upload Bill Transfer Image *
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <h4 className="font-semibold text-blue-700 mb-3">
+              Upload Bill Transfer Image
             </h4>
-            <p className="text-sm text-red-700 mb-3">
+            <p className="text-sm text-blue-600 mb-3">
               Please upload a screenshot or photo of your bank transfer as proof
               of payment.
             </p>
@@ -244,11 +244,11 @@ function ModalPayment({
                 {imageUploading ? "Uploading..." : "Select Image"}
               </Button>
             </Upload>
-            {!uploadedImage && (
+            {/* {!uploadedImage && (
               <p className="text-xs text-red-600 mt-1">
                 * This field is required to confirm your payment
               </p>
-            )}
+            )} */}
           </div>
 
           {/* Transfer Confirmation */}
@@ -293,7 +293,8 @@ function ModalPayment({
                 type="primary"
                 className="flex-1 bg-blue-600 hover:bg-blue-700"
                 loading={confirmLoading}
-                disabled={!transferConfirmed || !uploadedImage}
+                // disabled={!transferConfirmed || !uploadedImage}
+                disabled={!transferConfirmed}
               >
                 Confirm Payment Sent
               </Button>

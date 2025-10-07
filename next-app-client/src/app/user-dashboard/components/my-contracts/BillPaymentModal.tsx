@@ -118,10 +118,10 @@ function BillPaymentModal({
       return;
     }
 
-    if (!uploadedImage) {
-      messageApi.warning("Please upload your bill payment image first");
-      return;
-    }
+    // if (!uploadedImage) {
+    //   messageApi.warning("Please upload your bill payment image first");
+    //   return;
+    // }
 
     if (!bill || !contract) return;
 
@@ -341,11 +341,11 @@ function BillPaymentModal({
           </div>
 
           {/* Upload Bill Payment Image */}
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-            <h4 className="font-semibold text-red-800 mb-3">
-              Upload Bill Payment Image *
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <h4 className="font-semibold text-blue-700 mb-3">
+              Upload Bill Payment Image
             </h4>
-            <p className="text-sm text-red-700 mb-3">
+            <p className="text-sm text-blue-600 mb-3">
               Please upload a screenshot or photo of your bank transfer as proof
               of bill payment.
             </p>
@@ -358,11 +358,11 @@ function BillPaymentModal({
                 {imageUploading ? "Uploading..." : "Select Image"}
               </Button>
             </Upload>
-            {!uploadedImage && (
+            {/* {!uploadedImage && (
               <p className="text-xs text-red-600 mt-1">
                 * This field is required to confirm your payment
               </p>
-            )}
+            )} */}
           </div>
 
           {/* Contact Info */}
@@ -407,10 +407,11 @@ function BillPaymentModal({
               disabled={!transferConfirmed}
             >
               <Button
-                type="default"
+                type="primary"
                 className="flex-1"
                 loading={confirmLoading}
-                disabled={!transferConfirmed || !uploadedImage}
+                // disabled={!transferConfirmed || !uploadedImage}
+                disabled={!transferConfirmed}
               >
                 Confirm Manual Transfer
               </Button>
