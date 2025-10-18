@@ -38,6 +38,7 @@ public class BlogService {
         blog.setCategory(Category.valueOf(request.getCategory()));
         blog.setThumbnailUrl(author.getProfile().getAvatar());
         blog.setAuthorId(authorId);
+        blog.setUser(author); // Set user relationship
         blog.setCreatedAt(LocalDateTime.now());
         blog.setUpdatedAt(LocalDateTime.now());
         blog.setStatus(Status.DRAFT); // mặc định khi tạo mới

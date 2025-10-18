@@ -1,13 +1,17 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { queryOptions, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  queryOptions,
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query";
 import apiClient from "../lib/api-client-ad";
-import type { 
-  BlogResponse, 
-  BlogCreateRequest, 
-  BlogUpdateRequest, 
+import type {
+  BlogResponse,
+  BlogCreateRequest,
+  BlogUpdateRequest,
   BlogPageResponse,
   BlogCategory,
-  BlogStatus 
+  BlogStatus,
 } from "../types/type";
 import type { MutationConfig } from "../lib/react-query";
 
@@ -22,11 +26,13 @@ export const getBlogs = (
     page: page.toString(),
     size: size.toString(),
   });
-  
-  if (status) params.append('status', status);
-  if (category) params.append('category', category);
-  
-  return apiClient.get(`/blogs?${params.toString()}`);
+
+  if (status) params.append("status", status);
+  if (category) params.append("category", category);
+
+  return apiClient.get(
+    `/blogs?${params.toString()}`
+  ) as unknown as Promise<BlogPageResponse>;
 };
 
 export const getBlogsQueryOptions = (
@@ -36,64 +42,78 @@ export const getBlogsQueryOptions = (
   category?: BlogCategory
 ) => {
   return queryOptions({
-    queryKey: ['blogs', page, size, status, category] as const,
+    queryKey: ["blogs", page, size, status, category] as const,
     queryFn: () => getBlogs(page, size, status, category),
   });
 };
 
 // ======= Get Blog by Slug =======
 export const getBlogBySlug = (slug: string): Promise<BlogResponse> => {
-  return apiClient.get(`/blogs/slug/${slug}`);
+  return apiClient.get(
+    `/blogs/slug/${slug}`
+  ) as unknown as Promise<BlogResponse>;
 };
 
 export const getBlogBySlugQueryOptions = (slug: string) => {
   return queryOptions({
-    queryKey: ['blog', slug] as const,
+    queryKey: ["blog", slug] as const,
     queryFn: () => getBlogBySlug(slug),
     enabled: !!slug,
   });
 };
 
 // ======= Create Blog =======
-const createBlog = async ({ request, authorId }: { request: BlogCreateRequest; authorId: string }): Promise<BlogResponse> => {
-  console.log('🚀 Creating blog with data:', {
+const createBlog = async ({
+  request,
+  authorId,
+}: {
+  request: BlogCreateRequest;
+  authorId: string;
+}): Promise<BlogResponse> => {
+  console.log("🚀 Creating blog with data:", {
     authorId,
     request: {
       ...request,
-      content: `${request.content.substring(0, 100)}${request.content.length > 100 ? '...' : ''}`
-    }
+      content: `${request.content.substring(0, 100)}${
+        request.content.length > 100 ? "..." : ""
+      }`,
+    },
   });
-  
+
   const url = `/blogs?authorId=${authorId}`;
-  console.log('🌐 Request URL:', url);
-  console.log('📦 Request payload:', request);
-  
+  console.log("🌐 Request URL:", url);
+  console.log("📦 Request payload:", request);
+
   try {
     const response = await apiClient.post(url, request);
-    console.log('✅ Response received:', response);
-    return response.data;
+    console.log("✅ Response received:", response);
+    return response as unknown as BlogResponse;
   } catch (error: any) {
-    console.error('❌ Request failed with error:', error);
-    
+    console.error("❌ Request failed with error:", error);
+
     // Log the actual request that was sent
     if (error.config) {
-      console.error('🔍 Failed request config:');
-      console.error('  URL:', error.config.url);
-      console.error('  Method:', error.config.method);
-      console.error('  Headers:', error.config.headers);
-      console.error('  Data:', error.config.data);
+      console.error("🔍 Failed request config:");
+      console.error("  URL:", error.config.url);
+      console.error("  Method:", error.config.method);
+      console.error("  Headers:", error.config.headers);
+      console.error("  Data:", error.config.data);
     }
-    
+
     throw error;
   }
 };
 
 type CreateBlogPayload = { request: BlogCreateRequest; authorId: string };
 type UseCreateBlogOptions = {
-  mutationConfig?: MutationConfig<(payload: CreateBlogPayload) => Promise<BlogResponse>>;
+  mutationConfig?: MutationConfig<
+    (payload: CreateBlogPayload) => Promise<BlogResponse>
+  >;
 };
 
-export const useCreateBlog = ({ mutationConfig }: UseCreateBlogOptions = {}) => {
+export const useCreateBlog = ({
+  mutationConfig,
+}: UseCreateBlogOptions = {}) => {
   const queryClient = useQueryClient();
 
   const { onSuccess, onError, ...restConfig } = mutationConfig || {};
@@ -101,28 +121,31 @@ export const useCreateBlog = ({ mutationConfig }: UseCreateBlogOptions = {}) => 
   return useMutation({
     mutationFn: createBlog,
     onSuccess: (data, variables, ...args) => {
-      console.log('✅ Blog created successfully:', data);
-      queryClient.invalidateQueries({ queryKey: ['blogs'] });
+      console.log("✅ Blog created successfully:", data);
+      queryClient.invalidateQueries({ queryKey: ["blogs"] });
       onSuccess?.(data, variables, ...args);
     },
     onError: (error: any, variables, ...args) => {
-      console.error('❌ Failed to create blog:', error);
-      console.error('📋 Request data that failed:', {
+      console.error("❌ Failed to create blog:", error);
+      console.error("📋 Request data that failed:", {
         authorId: variables.authorId,
-        request: variables.request
+        request: variables.request,
       });
-      
+
       // Log detailed error information
       if (error?.response) {
-        console.error('📊 Response status:', error.response.status);
-        console.error('📋 Response data:', error.response.data);
-        console.error('📋 Response headers:', error.response.headers);
+        console.error("📊 Response status:", error.response.status);
+        console.error("📋 Response data:", error.response.data);
+        console.error("📋 Response headers:", error.response.headers);
       } else if (error?.request) {
-        console.error('📡 Request was made but no response received:', error.request);
+        console.error(
+          "📡 Request was made but no response received:",
+          error.request
+        );
       } else {
-        console.error('⚠️ Error setting up request:', error.message);
+        console.error("⚠️ Error setting up request:", error.message);
       }
-      
+
       onError?.(error, variables, ...args);
     },
     ...restConfig,
@@ -130,16 +153,29 @@ export const useCreateBlog = ({ mutationConfig }: UseCreateBlogOptions = {}) => 
 };
 
 // ======= Update Blog =======
-const updateBlog = ({ id, request }: { id: string; request: BlogUpdateRequest }): Promise<BlogResponse> => {
-  return apiClient.put(`/blogs/${id}`, request);
+const updateBlog = ({
+  id,
+  request,
+}: {
+  id: string;
+  request: BlogUpdateRequest;
+}): Promise<BlogResponse> => {
+  return apiClient.put(
+    `/blogs/${id}`,
+    request
+  ) as unknown as Promise<BlogResponse>;
 };
 
 type UpdateBlogPayload = { id: string; request: BlogUpdateRequest };
 type UseUpdateBlogOptions = {
-  mutationConfig?: MutationConfig<(payload: UpdateBlogPayload) => Promise<BlogResponse>>;
+  mutationConfig?: MutationConfig<
+    (payload: UpdateBlogPayload) => Promise<BlogResponse>
+  >;
 };
 
-export const useUpdateBlog = ({ mutationConfig }: UseUpdateBlogOptions = {}) => {
+export const useUpdateBlog = ({
+  mutationConfig,
+}: UseUpdateBlogOptions = {}) => {
   const queryClient = useQueryClient();
 
   const { onSuccess, ...restConfig } = mutationConfig || {};
@@ -147,8 +183,8 @@ export const useUpdateBlog = ({ mutationConfig }: UseUpdateBlogOptions = {}) => 
   return useMutation({
     mutationFn: updateBlog,
     onSuccess: (data, variables, ...args) => {
-      queryClient.invalidateQueries({ queryKey: ['blogs'] });
-      queryClient.invalidateQueries({ queryKey: ['blog', data.slug] });
+      queryClient.invalidateQueries({ queryKey: ["blogs"] });
+      queryClient.invalidateQueries({ queryKey: ["blog", data.slug] });
       onSuccess?.(data, variables, ...args);
     },
     ...restConfig,
@@ -157,15 +193,19 @@ export const useUpdateBlog = ({ mutationConfig }: UseUpdateBlogOptions = {}) => 
 
 // ======= Delete Blog =======
 const deleteBlog = ({ id }: { id: string }): Promise<void> => {
-  return apiClient.delete(`/blogs/${id}`);
+  return apiClient.delete(`/blogs/${id}`) as unknown as Promise<void>;
 };
 
 type DeleteBlogPayload = { id: string };
 type UseDeleteBlogOptions = {
-  mutationConfig?: MutationConfig<(payload: DeleteBlogPayload) => Promise<void>>;
+  mutationConfig?: MutationConfig<
+    (payload: DeleteBlogPayload) => Promise<void>
+  >;
 };
 
-export const useDeleteBlog = ({ mutationConfig }: UseDeleteBlogOptions = {}) => {
+export const useDeleteBlog = ({
+  mutationConfig,
+}: UseDeleteBlogOptions = {}) => {
   const queryClient = useQueryClient();
 
   const { onSuccess, ...restConfig } = mutationConfig || {};
@@ -173,7 +213,7 @@ export const useDeleteBlog = ({ mutationConfig }: UseDeleteBlogOptions = {}) => 
   return useMutation({
     mutationFn: deleteBlog,
     onSuccess: (data, variables, ...args) => {
-      queryClient.invalidateQueries({ queryKey: ['blogs'] });
+      queryClient.invalidateQueries({ queryKey: ["blogs"] });
       onSuccess?.(data, variables, ...args);
     },
     ...restConfig,
