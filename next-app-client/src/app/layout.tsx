@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Roboto_Mono } from "next/font/google";
 import "./globals.css";
 import { NextAuthProvider } from "./components/providers/authProviders";
+import SessionWatcher from "@/components/SessionWatcher";
 import FavoriteInitializer from "./user-dashboard/components/favorited-rooms/FavoriteInitializer";
 import { AntdRegistry } from "@ant-design/nextjs-registry";
 
@@ -30,6 +31,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${inter.variable} ${robotoMono.variable} antialiased`}>
         <NextAuthProvider>
+          <SessionWatcher />
           <AntdRegistry>
             <FavoriteInitializer />
             {children}
