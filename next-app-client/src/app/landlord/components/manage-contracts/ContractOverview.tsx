@@ -199,7 +199,7 @@ export default function ContractOverview({
             icon={<CloudUploadOutlined />}
             loading={uploadLoading}
           >
-            Upload Contract Image
+            Upload Contract File
           </Button>
         </Upload>
       </div>
