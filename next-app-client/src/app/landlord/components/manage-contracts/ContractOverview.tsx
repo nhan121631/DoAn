@@ -468,7 +468,7 @@ export default function ContractOverview({
         onCancel={() => setPdfPreviewOpen(false)}
         footer={null}
         width={900}
-        destroyOnClose
+
       >
         {fileUrl ? (
           <iframe

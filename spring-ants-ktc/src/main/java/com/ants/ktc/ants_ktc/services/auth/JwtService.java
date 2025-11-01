@@ -69,7 +69,7 @@ public class JwtService {
 
         // claims.put("roles", roles);
 
-        long jwtExpiration = 604800000; // 1 week in milliseconds
+        long jwtExpiration = 120000; // 2 minute
         return createToken(claims, user.getUsername(), jwtExpiration);
     }
 
