@@ -10,6 +10,7 @@ import {
   RatingResponseDto,
 } from "../../types/index";
 import Image from "next/image";
+import { URL_IMAGE } from "@/services/Constant";
 
 interface FeedbackProps {
   roomId: string;
@@ -107,12 +108,12 @@ const Feedback: React.FC<FeedbackProps> = ({ roomId }) => {
           )}
           {access === FeedbackAccess.ALREADY_RATED && (
             <div className="text-green-600 mb-4">
-              Bạn đã gửi feedback cho phòng này.
+              You have already submitted feedback for this room. Thank you!
             </div>
           )}
           {access === FeedbackAccess.NOT_USED && (
             <div className="text-red-600 mb-4">
-              Bạn cần thuê phòng này trước khi gửi feedback.
+              You need to stay in this room before leaving feedback.
             </div>
           )}
 
@@ -122,7 +123,7 @@ const Feedback: React.FC<FeedbackProps> = ({ roomId }) => {
               <Spin />
             ) : feedbacks.length === 0 ? (
               <p className="text-gray-500">
-                Chưa có feedback nào cho phòng này.
+                No feedback available for this room.
               </p>
             ) : (
               <div className="space-y-3 max-h-96 overflow-y-auto pr-2">
@@ -130,7 +131,7 @@ const Feedback: React.FC<FeedbackProps> = ({ roomId }) => {
                   <div key={item.id} className="bg-white rounded shadow p-3">
                     <div className="flex items-center gap-3">
                       <Image
-                        src={item.avatar}
+                        src={URL_IMAGE + item.avatar}
                         alt={item.userName}
                         width={40}
                         height={40}
@@ -158,7 +159,7 @@ const Feedback: React.FC<FeedbackProps> = ({ roomId }) => {
                         <div className="bg-yellow-50 border-l-2 border-yellow-400 p-2 rounded">
                           <div className="flex justify-start items-center gap-2">
                             <Image
-                              src={item.landLordAvatar}
+                              src={URL_IMAGE + item.landLordAvatar}
                               alt={item.landLordUserName}
                               className="w-10 h-10 rounded-full object-cover border"
                               width={40}
