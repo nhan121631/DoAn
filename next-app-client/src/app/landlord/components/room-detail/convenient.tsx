@@ -1,5 +1,5 @@
 import React from "react";
-import { BsCheckCircleFill } from "react-icons/bs";
+import { BsCheckCircleFill, BsXCircleFill } from "react-icons/bs";
 
 const convenients = [
   { label: "furnished", displayName: "Fully Furnished", enabled: false },
@@ -31,25 +31,42 @@ export default function Convenient({ features }: ConvenientProps) {
     displayName: feature.displayName,
     enabled: featureMap.has(feature.label),
   }));
+
   return (
-    <div className="mt-6">
-      <h2 className="text-lg font-bold text-gray-800 mb-3 dark:text-white">
+    <div className="mb-8">
+      <h3 className="flex items-center gap-2 mb-4 text-xl font-bold text-gray-800 dark:text-white">
+        <BsCheckCircleFill className="w-5 h-5 text-blue-600" />
         Conveniences
-      </h2>
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-y-2 gap-x-6 text-[15px]">
+      </h3>
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
         {convenientFeatures.map((feature) => (
-          <div key={feature.label} className="flex items-center space-x-2">
+          <div
+            key={feature.label}
+            className={`flex items-center gap-2.5 p-3.5 rounded-lg border transition-all duration-200 ${
+              feature.enabled
+                ? "bg-blue-50 border-blue-200 dark:bg-blue-950/30 dark:border-blue-800 shadow-sm"
+                : "bg-gray-50 border-gray-200 dark:bg-gray-800/30 dark:border-gray-700 opacity-40"
+            }`}
+          >
             <span
-              className={feature.enabled ? "text-green-600" : "text-gray-300"}
+              className={`flex-shrink-0 ${
+                feature.enabled
+                  ? "text-blue-600 dark:text-blue-400"
+                  : "text-gray-400 dark:text-gray-600"
+              }`}
             >
-              <BsCheckCircleFill />
+              {feature.enabled ? (
+                <BsCheckCircleFill className="w-4 h-4" />
+              ) : (
+                <BsXCircleFill className="w-4 h-4" />
+              )}
             </span>
             <span
-              className={
+              className={`text-sm font-medium ${
                 feature.enabled
-                  ? "text-black dark:!text-white"
-                  : "text-gray-400 "
-              }
+                  ? "text-gray-800 dark:text-gray-200"
+                  : "text-gray-500 dark:text-gray-600"
+              }`}
             >
               {feature.displayName}
             </span>
