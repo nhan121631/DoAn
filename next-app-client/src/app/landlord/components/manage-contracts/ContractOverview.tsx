@@ -138,10 +138,10 @@ export default function ContractOverview({
         onContractUpdate(updatedContract);
       }
 
-      messageApi.success("Contract image uploaded successfully!");
+      messageApi.success("Contract file uploaded successfully!");
     } catch (error) {
       console.error("Upload image error:", error);
-      messageApi.error("Failed to upload contract image!");
+      messageApi.error("Failed to upload contract file!");
     } finally {
       setUploadLoading(false);
     }
@@ -236,7 +236,7 @@ export default function ContractOverview({
             {statusMap[contract.status]?.text}
           </Tag>
         </Descriptions.Item>
-        <Descriptions.Item label="Contract Image" span={2}>
+        <Descriptions.Item label="Contract File" span={2}>
           {contract.contractImage ? (
             <div className="flex items-center gap-2">
               {isDocument ? (
@@ -305,7 +305,7 @@ export default function ContractOverview({
                         100
                       ) || undefined
                     }
-                    alt="Contract Image"
+                    alt="Contract File"
                     width={150}
                     height={100}
                     style={{ objectFit: "cover", borderRadius: "4px" }}
