@@ -135,6 +135,9 @@ public class ContractService {
     }
 
     public ContractResponseDto getContractById(UUID contractId) {
+        if (!contractJpaRepository.existsById(contractId)) {
+            throw new RuntimeException("Contract not found");
+        }
         Contract contract = contractJpaRepository.findByIdWithDetails(contractId);
         return toResponseDto(contract);
     }
