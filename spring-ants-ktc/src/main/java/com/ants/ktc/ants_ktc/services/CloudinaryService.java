@@ -27,12 +27,24 @@ public class CloudinaryService {
             options.put("chunk_size", 6000000);
 
             String contentType = file.getContentType();
+            String originalFilename = file.getOriginalFilename();
+            String fileExtension = null;
+            if (originalFilename != null && originalFilename.contains(".")) {
+                fileExtension = originalFilename.substring(originalFilename.lastIndexOf(".") + 1).toLowerCase();
+            }
+
             if (contentType != null && contentType.equalsIgnoreCase("application/pdf")) {
-                // PDF cần set raw + upload để không bị Blocked for delivery
                 options.put("resource_type", "raw");
                 options.put("type", "upload");
+                // Đảm bảo public_id có đuôi .pdf
+                String publicId = "contracts/" + System.currentTimeMillis();
+                if (fileExtension == null || !fileExtension.equals("pdf")) {
+                    publicId += ".pdf";
+                } else {
+                    publicId += "." + fileExtension;
+                }
+                options.put("public_id", publicId);
             } else {
-                // Ảnh, video... để auto như cũ
                 options.put("resource_type", "auto");
             }
 
@@ -43,7 +55,6 @@ public class CloudinaryService {
                 throw new RuntimeException("Cloudinary upload returned null result");
             }
 
-            // secure_url or url may be present depending on resource_type/response
             Object secureUrlObj = uploadResult.get("secure_url");
             Object urlObj = uploadResult.get("url");
             String secureUrl = secureUrlObj != null ? secureUrlObj.toString()
@@ -53,13 +64,11 @@ public class CloudinaryService {
             if (secureUrl != null && cloudName != null && secureUrl.contains("/" + cloudName)) {
                 relativePath = secureUrl.substring(secureUrl.indexOf("/" + cloudName));
             } else if (secureUrl != null) {
-                // fallback to full secure url
                 relativePath = secureUrl;
             }
 
             Map<String, String> result = new HashMap<>();
-            result.put("url", relativePath != null ? relativePath : ""); // path rút gọn (có thể dùng full secure_url
-                                                                         // nếu bạn muốn)
+            result.put("url", relativePath != null ? relativePath : "");
 
             Object publicIdObj = uploadResult.get("public_id");
             if (publicIdObj != null) {
@@ -68,7 +77,9 @@ public class CloudinaryService {
 
             Object formatObj = uploadResult.get("format");
             if (formatObj != null) {
-                result.put("format", formatObj.toString()); // ví dụ: jpg, png, pdf
+                result.put("format", formatObj.toString());
+            } else if (fileExtension != null) {
+                result.put("format", fileExtension);
             }
 
             return result;
