@@ -185,10 +185,6 @@ public class ContractService {
         if (contractImageUrl == null)
             return null;
         int lastSlash = contractImageUrl.lastIndexOf("/");
-        // Nếu là file PDF/raw thì trả về cả tên và đuôi
-        if (contractImageUrl.endsWith(".pdf")) {
-            return contractImageUrl.substring(lastSlash + 1);
-        }
         int dotIndex = contractImageUrl.lastIndexOf(".");
         if (lastSlash != -1 && dotIndex != -1 && dotIndex > lastSlash) {
             return contractImageUrl.substring(lastSlash + 1, dotIndex);
