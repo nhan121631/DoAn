@@ -128,6 +128,19 @@ export default function ContractOverview({
 
   const handleImageUpload = async (file: File) => {
     try {
+      // Validate file type - only accept PDF
+      if (file.type !== "application/pdf") {
+        messageApi.error("Only PDF files are allowed!");
+        return false;
+      }
+
+      // Validate file size (optional - max 10MB)
+      const maxSize = 10 * 1024 * 1024; // 10MB
+      if (file.size > maxSize) {
+        messageApi.error("File size must be less than 10MB!");
+        return false;
+      }
+
       setUploadLoading(true);
       const updatedContract = await ContractService.uploadContractImage(
         contract.id,
@@ -138,10 +151,10 @@ export default function ContractOverview({
         onContractUpdate(updatedContract);
       }
 
-      messageApi.success("Contract file uploaded successfully!");
+      messageApi.success("Contract PDF uploaded successfully!");
     } catch (error) {
-      console.error("Upload image error:", error);
-      messageApi.error("Failed to upload contract file!");
+      console.error("Upload file error:", error);
+      messageApi.error("Failed to upload contract PDF!");
     } finally {
       setUploadLoading(false);
     }
@@ -189,7 +202,7 @@ export default function ContractOverview({
           Contract Information
         </h3>
         <Upload
-          accept="image/*"
+          accept=".pdf,application/pdf"
           showUploadList={false}
           beforeUpload={handleImageUpload}
           disabled={uploadLoading}
@@ -200,7 +213,7 @@ export default function ContractOverview({
             loading={uploadLoading}
             disabled={contract.status !== 0} // Only allow uploading if contract status is Active
           >
-            Upload Contract File
+            Upload Contract File (PDF only)
           </Button>
         </Upload>
       </div>
@@ -270,27 +283,77 @@ export default function ContractOverview({
                   </div>
 
                   <div className="flex flex-col">
-                    <div className="text-sm text-gray-800 dark:text-gray-200 mb-2">
-                      {fileUrl
-                        ? decodeURIComponent(
-                            new URL(fileUrl).pathname.split("/").pop() ||
-                              "file.pdf"
-                          )
-                        : "file.pdf"}
+                    <div className="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">
+                      {(() => {
+                        if (!fileUrl) return "contract.pdf";
+                        try {
+                          const urlPath = new URL(fileUrl).pathname;
+                          let filename = decodeURIComponent(
+                            urlPath.split("/").pop() || "contract"
+                          );
+                          // Đảm bảo file luôn có đuôi .pdf
+                          if (!filename.toLowerCase().endsWith(".pdf")) {
+                            filename += ".pdf";
+                          }
+                          return filename;
+                        } catch {
+                          return "contract.pdf";
+                        }
+                      })()}
                     </div>
 
                     <div className="flex items-center gap-2">
-                      {/* Only one action: Download File - this avoids confusing users */}
-                      <a
-                        href={fileUrl || "#"}
-                        download
-                        className="inline-block bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
+                      {/* Download PDF file with proper .pdf extension */}
+                      <button
+                        className="inline-block bg-blue-500 text-white px-3 py-1.5 rounded hover:bg-blue-600 transition-colors font-medium cursor-pointer"
+                        onClick={async () => {
+                          if (!fileUrl) return;
+                          try {
+                            // Fetch file from Cloudinary
+                            const response = await fetch(fileUrl);
+                            const blob = await response.blob();
+
+                            // Extract filename and ensure .pdf extension
+                            let filename = "contract.pdf";
+                            try {
+                              const urlPath = new URL(fileUrl).pathname;
+                              const extractedName = decodeURIComponent(
+                                urlPath.split("/").pop() || "contract"
+                              );
+                              filename = extractedName;
+                              // Đảm bảo file luôn có đuôi .pdf
+                              if (!filename.toLowerCase().endsWith(".pdf")) {
+                                filename += ".pdf";
+                              }
+                            } catch {
+                              filename = "contract.pdf";
+                            }
+
+                            // Create download link
+                            const url = window.URL.createObjectURL(blob);
+                            const a = document.createElement("a");
+                            a.href = url;
+                            a.download = filename;
+                            document.body.appendChild(a);
+                            a.click();
+                            window.URL.revokeObjectURL(url);
+                            document.body.removeChild(a);
+
+                            messageApi.success(
+                              "File PDF downloaded successfully!"
+                            );
+                          } catch (error) {
+                            console.error("Download error:", error);
+                            messageApi.error("Failed to download file!");
+                          }
+                        }}
                       >
-                        Download File
-                      </a>
+                        📥 Download PDF
+                      </button>
                     </div>
-                    <div className="text-xs text-gray-500 mt-1">
-                      This is a document file. Use Download to get the file.
+                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      Click button above to download PDF file with proper
+                      extension
                     </div>
                   </div>
                 </div>
