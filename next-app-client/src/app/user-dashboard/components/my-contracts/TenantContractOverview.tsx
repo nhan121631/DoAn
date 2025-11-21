@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Descriptions, Tag, Image } from "antd";
+import { FileOutlined } from "@ant-design/icons";
 import { ContractData } from "@/types/types";
 import {
   formatCloudinaryUrl,
@@ -113,135 +114,50 @@ export default function TenantContractOverview({
         </Descriptions.Item>
         <Descriptions.Item label="Contract File" span={2}>
           {contract.contractImage ? (
-            <div className="flex items-center gap-2">
-              {isDocument ? (
-                // Render a small document preview (PDF/raw) with a single Download File action
-                <div className="flex items-center gap-3">
-                  <div className="w-[150px] h-[100px] flex items-center justify-center bg-gray-100 dark:bg-gray-800 rounded">
-                    {/* Always show PDF/document icon for raw files (avoid confusion with images) */}
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="48"
-                      height="48"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="#e53935"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                      <path d="M14 2v6h6"></path>
-                      <text
-                        x="6"
-                        y="17"
-                        fill="#e53935"
-                        fontSize="8"
-                        fontWeight="700"
-                      >
-                        PDF
-                      </text>
-                    </svg>
-                  </div>
-
-                  <div className="flex flex-col">
-                    <div className="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">
-                      {(() => {
-                        if (!fileUrl) return "contract.pdf";
-                        try {
-                          const urlPath = new URL(fileUrl).pathname;
-                          let filename = decodeURIComponent(
-                            urlPath.split("/").pop() || "contract"
-                          );
-                          // Đảm bảo file luôn có đuôi .pdf
-                          if (!filename.toLowerCase().endsWith(".pdf")) {
-                            filename += ".pdf";
-                          }
-                          return filename;
-                        } catch {
-                          return "contract.pdf";
-                        }
-                      })()}
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      {/* Download PDF file with proper .pdf extension */}
-                      <button
-                        className="inline-block bg-blue-500 text-white px-3 py-1.5 rounded hover:bg-blue-600 transition-colors font-medium cursor-pointer"
-                        onClick={async () => {
-                          if (!fileUrl) return;
-                          try {
-                            // Fetch file from Cloudinary
-                            const response = await fetch(fileUrl);
-                            const blob = await response.blob();
-
-                            // Extract filename and ensure .pdf extension
-                            let filename = "contract.pdf";
-                            try {
-                              const urlPath = new URL(fileUrl).pathname;
-                              const extractedName = decodeURIComponent(
-                                urlPath.split("/").pop() || "contract"
-                              );
-                              filename = extractedName;
-                              // Đảm bảo file luôn có đuôi .pdf
-                              if (!filename.toLowerCase().endsWith(".pdf")) {
-                                filename += ".pdf";
-                              }
-                            } catch {
-                              filename = "contract.pdf";
-                            }
-
-                            // Create download link
-                            const url = window.URL.createObjectURL(blob);
-                            const a = document.createElement("a");
-                            a.href = url;
-                            a.download = filename;
-                            document.body.appendChild(a);
-                            a.click();
-                            window.URL.revokeObjectURL(url);
-                            document.body.removeChild(a);
-                          } catch (error) {
-                            console.error("Download error:", error);
-                            alert("Failed to download file!");
-                          }
-                        }}
-                      >
-                        📥 Download PDF
-                      </button>
-                    </div>
-                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                      Click button above to download PDF file with proper
-                      extension
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                // Existing image rendering for non-PDF files
-                <div className="flex items-center gap-2">
-                  <Image
-                    src={
-                      formatCloudinaryThumbnail(
-                        resolvedUrl || contract.contractImage,
-                        150,
-                        100
-                      ) || undefined
-                    }
-                    alt="Contract File"
-                    width={150}
-                    height={100}
-                    style={{ objectFit: "cover", borderRadius: "4px" }}
-                    fallback="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMIAAADDCAYAAADQvc6UAAABRWlDQ1BJQ0MgUHJvZmlsZQAAKJFjYGASSSwoyGFhYGDIzSspCnJ3UoiIjFJgf8LAwSDCIMogwMCcmFxc4BgQ4ANUwgCjUcG3awyMIPqyLsis7PPOq3QdDFcvjV3jOD1boQVTPQrgSkktTgbSf4A4LbmgqISBgTEFyFYuLykAsTuAbJEioKOA7DkgdjqEvQHEToKwj4DVhAQ5A9k3gGyB5IxEoBmML4BsnSQk8XQkNtReEOBxcfXxUQg1Mjc0dyHgXNJBSWpFCYh2zi+oLMpMzyhRcASGUqqCZ16yno6CkYGRAQMDKMwhqj/fAIcloxgHQqxAjIHBEugw5sUIsSQpBobtQPdLciLEVJYzMPBHMDBsayhILEqEO4DxG0txmrERhM29nYGBddr//5/DGRjYNRkY/l7////39v///y4Dm3jaMgAAAABwSURBVHhe7cHBDQAACAwCoNGPAnOwQBE8tATFHIAAAABwSURBVHhe7cHBDQAACAwCoNGPAnOwQBE8tATFHIAAAABwSURBVHhe7cHBDQAACAwCoNGPAnOwQBE8tATFHI="
+            <div className="flex flex-col gap-3">
+              {/* File info - click to open in Google Docs Viewer */}
+              <div className="flex items-center gap-3">
+                <a
+                  href={`https://docs.google.com/viewer?url=${encodeURIComponent(
+                    fileUrl || ""
+                  )}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-[60px] h-[60px] flex items-center justify-center bg-gray-100 dark:bg-gray-800 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+                  title="Click to view file"
+                >
+                  <FileOutlined
+                    style={{ fontSize: "32px", color: "#2563eb" }}
                   />
+                </a>
+
+                <div className="flex-1">
                   <a
-                    href={fileUrl || "#"}
+                    href={`https://docs.google.com/viewer?url=${encodeURIComponent(
+                      fileUrl || ""
+                    )}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-blue-500 hover:text-blue-700"
+                    className="text-sm font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors"
                   >
-                    View Full Image
+                    {(() => {
+                      if (!fileUrl) return "contract-file";
+                      try {
+                        const urlPath = new URL(fileUrl).pathname;
+                        let filename = decodeURIComponent(
+                          urlPath.split("/").pop() || "contract-file"
+                        );
+                        return filename;
+                      } catch {
+                        return "contract-file";
+                      }
+                    })()}
                   </a>
+                  <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    Click to view file in new tab
+                  </div>
                 </div>
-              )}
+              </div>
             </div>
           ) : (
             <span className="text-gray-500">No contract file available</span>
