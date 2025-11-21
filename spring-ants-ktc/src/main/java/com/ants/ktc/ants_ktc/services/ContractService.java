@@ -135,6 +135,9 @@ public class ContractService {
     }
 
     public ContractResponseDto getContractById(UUID contractId) {
+        if (!contractJpaRepository.existsById(contractId)) {
+            throw new RuntimeException("Contract not found");
+        }
         Contract contract = contractJpaRepository.findByIdWithDetails(contractId);
         return toResponseDto(contract);
     }
@@ -195,7 +198,7 @@ public class ContractService {
 
         for (Contract contract : activeContracts) {
             if (contract.getEndDate().before(new java.util.Date())) {
-                contract.setStatus(2); // 1 = EXPIRED
+                contract.setStatus(2); // 2 = EXPIRED
                 contractJpaRepository.save(contract);
             }
         }
