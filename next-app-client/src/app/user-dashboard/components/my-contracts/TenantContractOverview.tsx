@@ -111,7 +111,7 @@ export default function TenantContractOverview({
             {statusMap[contract.status]?.text}
           </Tag>
         </Descriptions.Item>
-        <Descriptions.Item label="Contract Image" span={2}>
+        <Descriptions.Item label="Contract File" span={2}>
           {contract.contractImage ? (
             <div className="flex items-center gap-2">
               {isDocument ? (
@@ -180,7 +180,7 @@ export default function TenantContractOverview({
                         100
                       ) || undefined
                     }
-                    alt="Contract Image"
+                    alt="Contract File"
                     width={150}
                     height={100}
                     style={{ objectFit: "cover", borderRadius: "4px" }}
@@ -198,7 +198,7 @@ export default function TenantContractOverview({
               )}
             </div>
           ) : (
-            <span className="text-gray-500">No contract image available</span>
+            <span className="text-gray-500">No contract file available</span>
           )}
         </Descriptions.Item>
       </Descriptions>

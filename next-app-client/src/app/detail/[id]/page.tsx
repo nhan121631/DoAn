@@ -10,7 +10,6 @@ import { getRoomById, getRoomVipUser } from "@/services/RoomService";
 import { Image, RoomInUser } from "@/types/types";
 import {
   Calendar,
-  DollarSign,
   Droplets,
   FileText,
   Home,
