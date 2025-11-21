@@ -171,14 +171,15 @@ const LandlordContracts: React.FC<LandlordContractsProps> = ({
               <Button type="text" icon={<EyeOutlined />} />
             </Link>
           </Tooltip>
+
           <Tooltip title="Edit Contract">
             <Button
               type="text"
               icon={<EditOutlined />}
+              disabled={record.status !== 0} // Chỉ cho phép edit nếu status là Active
               onClick={() => handleEdit(record)}
             />
           </Tooltip>
-
           <Tooltip title="Delete Contract">
             <Popconfirm
               title="Are you sure delete this contract?"

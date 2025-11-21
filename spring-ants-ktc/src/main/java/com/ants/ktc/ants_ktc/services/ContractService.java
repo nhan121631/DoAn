@@ -189,6 +189,18 @@ public class ContractService {
         return null;
     }
 
+    @Scheduled(cron = "0 0 0 * * *")
+    public void autoCheckAndUpdateExpiredContracts() {
+        List<Contract> activeContracts = contractJpaRepository.findByStatus(0); // 0 = ACTIVE
+
+        for (Contract contract : activeContracts) {
+            if (contract.getEndDate().before(new java.util.Date())) {
+                contract.setStatus(2); // 1 = EXPIRED
+                contractJpaRepository.save(contract);
+            }
+        }
+    }
+
     @Scheduled(cron = "0 0 1 * * *") // 1h sáng mỗi ngày
     public void autoTaskBillsGeneration() {
         System.out.println("[Auto Task] Start generating tasks for contracts...");

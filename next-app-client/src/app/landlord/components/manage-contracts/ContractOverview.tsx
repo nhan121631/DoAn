@@ -198,6 +198,7 @@ export default function ContractOverview({
             type="primary"
             icon={<CloudUploadOutlined />}
             loading={uploadLoading}
+            disabled={contract.status !== 0} // Only allow uploading if contract status is Active
           >
             Upload Contract File
           </Button>
@@ -468,7 +469,6 @@ export default function ContractOverview({
         onCancel={() => setPdfPreviewOpen(false)}
         footer={null}
         width={900}
-
       >
         {fileUrl ? (
           <iframe
