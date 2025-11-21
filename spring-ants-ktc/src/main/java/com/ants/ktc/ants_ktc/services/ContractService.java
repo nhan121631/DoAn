@@ -195,7 +195,7 @@ public class ContractService {
 
         for (Contract contract : activeContracts) {
             if (contract.getEndDate().before(new java.util.Date())) {
-                contract.setStatus(2); // 1 = EXPIRED
+                contract.setStatus(2); // 2 = EXPIRED
                 contractJpaRepository.save(contract);
             }
         }
