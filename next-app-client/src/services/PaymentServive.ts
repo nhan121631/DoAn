@@ -159,6 +159,41 @@ export const confirmPayment = async (query: string) => {
   }
 };
 
+
+//-------------create-payment paypal--------------//
+export const createPaymentPaypal = async (payload: {
+  amount: number;
+  description: string;
+  userId: string;
+}) => {
+  const res = await fetch("/api/payments/paypal/create", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || "Payment creation failed");
+  return data;
+};
+//------- confirm payment ------//
+export const confirmPaymentPaypal = async (query: string) => {
+  try {
+    const res = await fetch(`/api/payments/paypal/confirm?${query}`, {
+      method: "GET",
+    });
+
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.message || "Failed to confirm payment");
+    }
+
+    return data;
+  } catch (error: any) {
+    console.error("Confirm payment service error:", error);
+    throw error;
+  }
+};
 // export async function getAllTransactionsByUserId(
 //   userId: string,
 //   accessToken: string

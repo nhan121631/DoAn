@@ -40,47 +40,6 @@ export default function PaymentResultClient() {
     };
     fetchSession();
   }, [userId]);
-
-  // useEffect(() => {
-  //   const fetchPaymentResult = async () => {
-  //     try {
-  //       const params = new URLSearchParams();
-  //       searchParams.forEach((value, key) => {
-  //         params.append(key, value);
-  //       });
-  //       const response = await fetch(`/api/vnpay-return?${params.toString()}`);
-  //       if (!response.ok) {
-  //         throw new Error("Failed to process payment result");
-  //       }
-  //       const data = await response.json();
-  //       setPaymentData(data);
-  //       try {
-  //         // savePaymentToLocalStorage(data);
-  //         const transactionData = mapPaymentDataToTransactionData(data);
-  //         // await createTransactionByUserId(userId, transactionData);
-  //         await fetch("/api/landlord/payment-result-client", {
-  //           method: "POST",
-  //           headers: { "Content-Type": "application/json" },
-  //           body: JSON.stringify(transactionData),
-  //         });
-  //         console.log("Transaction data:", transactionData);
-  //       } catch (saveError) {
-  //         console.error("Failed to save payment data:", saveError);
-  //       }
-  //     } catch (err) {
-  //       setError("An error occurred while processing the payment result");
-  //       console.error("Payment result fetch error:", err);
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
-  //   if (searchParams.toString()) {
-  //     fetchPaymentResult();
-  //   } else {
-  //     setError("No payment information found");
-  //     setLoading(false);
-  //   }
-  // }, [searchParams]);
   useEffect(() => {
     const fetchPaymentResult = async () => {
       try {
@@ -111,10 +70,6 @@ export default function PaymentResultClient() {
             vnp_OrderInfo: tx.description || "",
             vnp_TransactionNo: tx.transactionCode,
             vnp_BankCode: tx.bankTransactionName,
-            // vnp_CardType: tx.cardType || "",
-            // vnp_PayDate: tx.transactionDate || "",
-            // vnp_ResponseCode: tx.responseCode,
-            // vnp_TransactionStatus: tx.transactionStatus,
           };
         }
 
