@@ -1,6 +1,6 @@
-import AuthHeader from "@/app/users/components/Auth/AuthHeader";
-import ForgotPasswordForm from "@/app/users/components/Auth/ForgotPasswordForm";
 import Image from "next/image";
+import ForgotPasswordForm from "../../users/components/Auth/ForgotPasswordForm";
+import AuthHeader from "../../users/components/Auth/AuthHeader";
 
 export default function ForgotPasswordPage() {
   return (

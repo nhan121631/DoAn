@@ -1,8 +1,8 @@
-import AuthHeader from "@/app/users/components/Auth/AuthHeader";
 import AuthForms from "../../users/components/Auth/AuthForms";
 import Image from "next/image";
 import { getCsrfToken } from "next-auth/react";
 import { Suspense } from "react";
+import AuthHeader from "../../users/components/Auth/AuthHeader";
 
 export default async function LoginPage() {
   const csrfToken = await getCsrfToken();

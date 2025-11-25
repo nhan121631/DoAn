@@ -1,4 +1,4 @@
-import MapSection from "@/app/landlord/components/room-detail/map";
+import MapSection from "../../landlord/components/room-detail/map";
 import ContactForm from "./ContactForm";
 import { Phone, Mail, MapPin, MessageCircle } from "lucide-react";
 

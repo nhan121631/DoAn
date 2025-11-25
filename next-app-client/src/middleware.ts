@@ -53,12 +53,24 @@
 //     '/landlord/:path*'
 //   ],
 // };
-export { default } from "next-auth/middleware";
+////////////////////////////////////////////////////////////////////////////////
+// export { default } from "next-auth/middleware";
 
+
+// export const config = {
+//   matcher: [
+//     '/user-dashboard/:path*',
+//     '/landlord/:path*'
+//   ],
+// };
+import createIntlMiddleware from 'next-intl/middleware';
+import { routing } from './i18n/routing';
+
+export default createIntlMiddleware(routing);
 
 export const config = {
   matcher: [
-    '/user-dashboard/:path*',
-    '/landlord/:path*'
+    '/',
+    '/(vi|en)/:path*'
   ],
 };
