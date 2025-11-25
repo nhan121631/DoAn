@@ -1,4 +1,4 @@
-// Helper function để decode JWT payload (không cần thư viện ngoài)
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export function decodeJwtPayload(token: string): any {
   try {
     // JWT có 3 phần: header.payload.signature

@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { getSession, signOut } from "next-auth/react";
 import { isJwtValid } from "@/utils/jwtUtils";
 
@@ -16,7 +18,7 @@ export async function fetchWithAuth(
     // Kiểm tra JWT còn hiệu lực không
     if (session?.user?.accessToken) {
       if (!isJwtValid(session.user.accessToken)) {
-        console.log("JWT đã hết hạn, đang logout...");
+        console.log("JWT has expired, logging out...");
         await signOut({ callbackUrl: "/auth/login", redirect: true });
         throw new Error("JWT expired - redirecting to login");
       }

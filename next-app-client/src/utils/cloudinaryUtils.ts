@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { URL_IMAGE } from "../services/Constant";
 
 // Utility function để format Cloudinary URL
@@ -97,7 +99,7 @@ export const resolveCloudinaryUrl = async (
   if (path.startsWith("http")) return path;
 
   // Normalize
-  let p = path.startsWith("/") ? path.slice(1) : path;
+  const p = path.startsWith("/") ? path.slice(1) : path;
 
   // Build candidates
   const candidates: string[] = [];

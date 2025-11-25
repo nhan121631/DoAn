@@ -144,7 +144,7 @@ export default function TenantContractOverview({
                       if (!fileUrl) return "contract-file";
                       try {
                         const urlPath = new URL(fileUrl).pathname;
-                        let filename = decodeURIComponent(
+                        const filename = decodeURIComponent(
                           urlPath.split("/").pop() || "contract-file"
                         );
                         return filename;
