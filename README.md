@@ -16,7 +16,6 @@
 - Tính năng **Map**: hiển thị phòng theo vị trí, gợi ý phòng quanh khu vực click trên bản đồ
 
 ### 🔹 Khôi
-
 - **Transaction**
 - **Wallet**
 - **Room/Admin**, **Room/Landlord**
