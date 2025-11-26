@@ -435,7 +435,8 @@ function SuggestAddressBar({
   const handleInputChange = (field: string, value: string) => {
     // If updating specificAddress, keep only the first segment (street/name) before comma
     if (field === "specificAddress") {
-      const streetOnly = value ? value.split(",")[0].trim() : "";
+      // Chỉ lấy phần đầu tiên trước dấu phẩy nếu có, không trim toàn bộ
+      const streetOnly = value ? value.split(",")[0] : "";
       setFormData((prev) => ({ ...prev, specificAddress: streetOnly }));
       if (errors.specificAddress) {
         setErrors((prev) => ({ ...prev, specificAddress: "" }));
