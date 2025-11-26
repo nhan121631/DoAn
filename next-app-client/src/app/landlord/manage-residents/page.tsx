@@ -45,11 +45,11 @@ const { Title } = Typography;
 const { TextArea } = Input;
 
 const relationshipOptions = [
-  { value: "Vợ/Chồng", label: "Vợ/Chồng" },
-  { value: "Con", label: "Con" },
-  { value: "Bố/Mẹ", label: "Bố/Mẹ" },
-  { value: "Anh/Em", label: "Anh/Em" },
-  { value: "Khác", label: "Khác" },
+  { value: "Wife/Husband", label: "Wife/Husband" },
+  { value: "Child", label: "Child" },
+  { value: "Father/Mother", label: "Father/Mother" },
+  { value: "Brother/Sister", label: "Brother/Sister" },
+  { value: "Other", label: "Other" },
 ];
 
 const statusOptions = [
@@ -723,6 +723,7 @@ export default function ManageResidentsPage() {
         }}
         footer={null}
         destroyOnHidden={true}
+        forceRender={true}
       >
         <Form
           form={addForm}
@@ -875,6 +876,7 @@ export default function ManageResidentsPage() {
         }}
         footer={null}
         destroyOnHidden={true}
+        forceRender={true}
         key={editResident?.id || "edit-modal"}
       >
         {editResident && (
