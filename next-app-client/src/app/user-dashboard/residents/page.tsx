@@ -47,16 +47,14 @@ const { Title } = Typography;
 const { TextArea } = Input;
 
 const relationshipOptions = [
-  { value: "Bản thân", label: "Bản thân" },
-  { value: "Vợ/Chồng", label: "Vợ/Chồng" },
-  { value: "Con", label: "Con" },
-  { value: "Bố/Mẹ", label: "Bố/Mẹ" },
-  { value: "Anh/Em", label: "Anh/Em" },
-  { value: "Bạn bè", label: "Bạn" },
-  { value: "Khác", label: "Khác" },
+  { value: "MySelf", label: "MySelf" },
+  { value: "Wife/Husband", label: "Wife/Husband" },
+  { value: "Child", label: "Child" },
+  { value: "Father/Mother", label: "Father/Mother" },
+  { value: "Brother/Sister", label: "Brother/Sister" },
+  { value: "Friend", label: "Friend" },
+  { value: "Other", label: "Other" },
 ];
-
-
 
 // Helper function to convert Cloudinary relative path to full URL
 const getCloudinaryUrl = (relativePath: string): string => {
@@ -69,8 +67,11 @@ export default function TenantResidentsPage() {
   const [messageApi, contextHolder] = message.useMessage();
   const { data: session } = useSession();
   const [residents, setResidents] = useState<ExtendedResidentData[]>([]);
-  const [selectedResident, setSelectedResident] = useState<ExtendedResidentData | null>(null);
-  const [editResident, setEditResident] = useState<ExtendedResidentData | null>(null);
+  const [selectedResident, setSelectedResident] =
+    useState<ExtendedResidentData | null>(null);
+  const [editResident, setEditResident] = useState<ExtendedResidentData | null>(
+    null
+  );
   const [addResidentOpen, setAddResidentOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [addForm] = Form.useForm();
@@ -80,8 +81,12 @@ export default function TenantResidentsPage() {
   const [frontImagePreview, setFrontImagePreview] = useState<string>("");
   const [backImagePreview, setBackImagePreview] = useState<string>("");
   const [searchText, setSearchText] = useState("");
-  const [relationshipFilter, setRelationshipFilter] = useState<string | null>(null);
-  const [availableContracts, setAvailableContracts] = useState<ContractData[]>([]);
+  const [relationshipFilter, setRelationshipFilter] = useState<string | null>(
+    null
+  );
+  const [availableContracts, setAvailableContracts] = useState<ContractData[]>(
+    []
+  );
   const [loadingContracts, setLoadingContracts] = useState(false);
 
   // Load residents from API
@@ -91,28 +96,33 @@ export default function TenantResidentsPage() {
 
   const loadResidents = async () => {
     if (!session?.user?.id) return;
-    
+
     try {
       setLoading(true);
       const data = await ResidentService.getByTenant(session.user.id);
-      console.log('Loaded residents data:', data); // Debug log
-      
+      console.log("Loaded residents data:", data); // Debug log
+
       // Fetch contract info for each resident
       const residentsWithContracts = await Promise.all(
         (data || []).map(async (resident) => {
           try {
             if (resident.contractId) {
-              const contractInfo = await ContractService.getById(resident.contractId);
+              const contractInfo = await ContractService.getById(
+                resident.contractId
+              );
               return { ...resident, contractInfo };
             }
             return resident;
           } catch (error) {
-            console.error(`Failed to load contract for resident ${resident.id}:`, error);
+            console.error(
+              `Failed to load contract for resident ${resident.id}:`,
+              error
+            );
             return resident;
           }
         })
       );
-      
+
       setResidents(residentsWithContracts);
     } catch (error) {
       console.error("Failed to load residents:", error);
@@ -124,12 +134,12 @@ export default function TenantResidentsPage() {
 
   const loadAvailableContracts = async () => {
     if (!session?.user?.id) return;
-    
+
     try {
       setLoadingContracts(true);
       // Load contracts by tenant using ContractService
       const response = await ContractService.getByTenant(session.user.id);
-      console.log('Available contracts:', response);
+      console.log("Available contracts:", response);
       setAvailableContracts(response || []);
     } catch (error) {
       console.error("Failed to load contracts:", error);
@@ -229,8 +239,8 @@ export default function TenantResidentsPage() {
         contractId: editResident.contractId,
       };
 
-      console.log('Updating resident with data:', formattedData); // Debug log
-      
+      console.log("Updating resident with data:", formattedData); // Debug log
+
       await ResidentService.updateResident(
         editResident.contractId!,
         editResident.id,
@@ -251,7 +261,10 @@ export default function TenantResidentsPage() {
     }
   };
 
-  const handleDeleteResident = async (residentId: string, contractId: string) => {
+  const handleDeleteResident = async (
+    residentId: string,
+    contractId: string
+  ) => {
     try {
       setLoading(true);
       await ResidentService.deleteResident(contractId, residentId);
@@ -330,8 +343,12 @@ export default function TenantResidentsPage() {
       resident.fullName?.toLowerCase().includes(searchText.toLowerCase()) ||
       resident.idNumber?.toLowerCase().includes(searchText.toLowerCase()) ||
       resident.note?.toLowerCase().includes(searchText.toLowerCase()) ||
-      resident.contractInfo?.roomTitle?.toLowerCase().includes(searchText.toLowerCase()) ||
-      resident.contractInfo?.contractName?.toLowerCase().includes(searchText.toLowerCase());
+      resident.contractInfo?.roomTitle
+        ?.toLowerCase()
+        .includes(searchText.toLowerCase()) ||
+      resident.contractInfo?.contractName
+        ?.toLowerCase()
+        .includes(searchText.toLowerCase());
 
     const matchesRelationship =
       !relationshipFilter || resident.relationship === relationshipFilter;
@@ -452,7 +469,9 @@ export default function TenantResidentsPage() {
             <Popconfirm
               title="Delete resident"
               description="Are you sure you want to delete this resident?"
-              onConfirm={() => handleDeleteResident(record.id, record.contractId!)}
+              onConfirm={() =>
+                handleDeleteResident(record.id, record.contractId!)
+              }
               okText="Yes"
               cancelText="No"
             >
@@ -486,7 +505,7 @@ export default function TenantResidentsPage() {
               style={{ width: 220 }}
               allowClear
             />
-            
+
             {/* Relationship Filter */}
             <Select
               placeholder="Filter by relationship"
@@ -497,12 +516,12 @@ export default function TenantResidentsPage() {
               suffixIcon={<FilterOutlined />}
               options={relationshipOptions}
             />
-            
+
             {/* Clear Filters */}
             {(searchText || relationshipFilter) && (
               <Button onClick={clearFilters}>Clear Filters</Button>
             )}
-            
+
             {/* Add Button */}
             <Button
               type="primary"
@@ -543,65 +562,105 @@ export default function TenantResidentsPage() {
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-sm font-medium text-gray-500">Full Name</label>
+                <label className="text-sm font-medium text-gray-500">
+                  Full Name
+                </label>
                 <p className="text-base">{selectedResident.fullName}</p>
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-500">ID Number</label>
+                <label className="text-sm font-medium text-gray-500">
+                  ID Number
+                </label>
                 <p className="text-base">{selectedResident.idNumber}</p>
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-500">Relationship</label>
+                <label className="text-sm font-medium text-gray-500">
+                  Relationship
+                </label>
                 <p className="text-base">
                   <Tag color="blue">{selectedResident.relationship}</Tag>
                 </p>
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-500">Status</label>
+                <label className="text-sm font-medium text-gray-500">
+                  Status
+                </label>
                 <p className="text-base">
-                  <Tag color={selectedResident.status === "DONE" ? "green" : "orange"}>
+                  <Tag
+                    color={
+                      selectedResident.status === "DONE" ? "green" : "orange"
+                    }
+                  >
                     {selectedResident.status || "PENDING"}
                   </Tag>
                 </p>
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-500">Start Date</label>
-                <p className="text-base">{new Date(selectedResident.startDate).toLocaleDateString()}</p>
+                <label className="text-sm font-medium text-gray-500">
+                  Start Date
+                </label>
+                <p className="text-base">
+                  {new Date(selectedResident.startDate).toLocaleDateString()}
+                </p>
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-500">End Date</label>
-                <p className="text-base">{new Date(selectedResident.endDate).toLocaleDateString()}</p>
+                <label className="text-sm font-medium text-gray-500">
+                  End Date
+                </label>
+                <p className="text-base">
+                  {new Date(selectedResident.endDate).toLocaleDateString()}
+                </p>
               </div>
             </div>
 
             {/* Contract Information */}
             {selectedResident.contractInfo && (
               <div className="pt-4 border-t">
-                <h4 className="mb-3 text-base font-medium text-gray-700">Contract Information</h4>
+                <h4 className="mb-3 text-base font-medium text-gray-700">
+                  Contract Information
+                </h4>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="text-sm font-medium text-gray-500">Contract Name</label>
-                    <p className="text-base">{selectedResident.contractInfo.contractName}</p>
+                    <label className="text-sm font-medium text-gray-500">
+                      Contract Name
+                    </label>
+                    <p className="text-base">
+                      {selectedResident.contractInfo.contractName}
+                    </p>
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-gray-500">Room Title</label>
-                    <p className="text-base line-clamp-2">{selectedResident.contractInfo.roomTitle}</p>
+                    <label className="text-sm font-medium text-gray-500">
+                      Room Title
+                    </label>
+                    <p className="text-base line-clamp-2">
+                      {selectedResident.contractInfo.roomTitle}
+                    </p>
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-gray-500">Landlord</label>
-                    <p className="text-base">{selectedResident.contractInfo.landlordName}</p>
+                    <label className="text-sm font-medium text-gray-500">
+                      Landlord
+                    </label>
+                    <p className="text-base">
+                      {selectedResident.contractInfo.landlordName}
+                    </p>
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-gray-500">Monthly Rent</label>
-                    <p className="text-base">${selectedResident.contractInfo.monthlyRent}</p>
+                    <label className="text-sm font-medium text-gray-500">
+                      Monthly Rent
+                    </label>
+                    <p className="text-base">
+                      ${selectedResident.contractInfo.monthlyRent}
+                    </p>
                   </div>
                 </div>
               </div>
             )}
-            
+
             {selectedResident.note && (
               <div className="pt-4 border-t">
-                <label className="text-sm font-medium text-gray-500">Note</label>
+                <label className="text-sm font-medium text-gray-500">
+                  Note
+                </label>
                 <p className="text-base">{selectedResident.note}</p>
               </div>
             )}
@@ -610,7 +669,9 @@ export default function TenantResidentsPage() {
             <div className="grid grid-cols-2 gap-4">
               {selectedResident.idCardFrontUrl && (
                 <div>
-                  <label className="text-sm font-medium text-gray-500">ID Card Front</label>
+                  <label className="text-sm font-medium text-gray-500">
+                    ID Card Front
+                  </label>
                   <Image
                     src={getCloudinaryUrl(selectedResident.idCardFrontUrl)}
                     alt="ID Card Front"
@@ -622,7 +683,9 @@ export default function TenantResidentsPage() {
               )}
               {selectedResident.idCardBackUrl && (
                 <div>
-                  <label className="text-sm font-medium text-gray-500">ID Card Back</label>
+                  <label className="text-sm font-medium text-gray-500">
+                    ID Card Back
+                  </label>
                   <Image
                     src={getCloudinaryUrl(selectedResident.idCardBackUrl)}
                     alt="ID Card Back"
@@ -638,7 +701,7 @@ export default function TenantResidentsPage() {
       </Modal>
 
       {contextHolder}
-      
+
       {/* Add Resident Modal */}
       <Modal
         title="Add Resident"
@@ -649,6 +712,7 @@ export default function TenantResidentsPage() {
         }}
         footer={null}
         destroyOnHidden={true}
+        forceRender={true}
       >
         <Form
           form={addForm}
@@ -668,7 +732,9 @@ export default function TenantResidentsPage() {
               loading={loadingContracts}
               options={availableContracts.map((contract) => ({
                 value: contract.id,
-                label: `${contract.roomTitle || 'Unknown Room'} - ${contract.contractName || 'No Contract Name'}`,
+                label: `${contract.roomTitle || "Unknown Room"} - ${
+                  contract.contractName || "No Contract Name"
+                }`,
               }))}
             />
           </Form.Item>
@@ -784,10 +850,12 @@ export default function TenantResidentsPage() {
 
           <Form.Item>
             <div className="flex justify-end gap-2">
-              <Button onClick={() => {
-                setAddResidentOpen(false);
-                // Form will be reset by destroyOnClose
-              }}>
+              <Button
+                onClick={() => {
+                  setAddResidentOpen(false);
+                  // Form will be reset by destroyOnClose
+                }}
+              >
                 Cancel
               </Button>
               <Button type="primary" htmlType="submit" loading={loading}>
@@ -808,13 +876,10 @@ export default function TenantResidentsPage() {
         }}
         footer={null}
         destroyOnHidden={true}
-        key={editResident?.id || 'edit-modal'}
+        forceRender={true}
+        key={editResident?.id || "edit-modal"}
       >
-        <Form
-          form={editForm}
-          layout="vertical"
-          onFinish={handleEditResident}
-        >
+        <Form form={editForm} layout="vertical" onFinish={handleEditResident}>
           <Form.Item
             label="Full Name"
             name="fullName"
@@ -926,10 +991,12 @@ export default function TenantResidentsPage() {
 
           <Form.Item>
             <div className="flex justify-end gap-2">
-              <Button onClick={() => {
-                setEditResident(null);
-                // Form will be reset by destroyOnClose
-              }}>
+              <Button
+                onClick={() => {
+                  setEditResident(null);
+                  // Form will be reset by destroyOnClose
+                }}
+              >
                 Cancel
               </Button>
               <Button type="primary" htmlType="submit" loading={loading}>
