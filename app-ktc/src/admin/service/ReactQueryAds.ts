@@ -286,9 +286,9 @@ export const useToggleAdsStatus = () => {
 
   return useMutation({
     mutationFn: adsApi.toggleAdsStatus,
-    onSuccess: (data) => {
+    onSuccess: (_data, id) => {
       queryClient.invalidateQueries({ queryKey: ["ads"] });
-      queryClient.invalidateQueries({ queryKey: ["ads", data.id] });
+      queryClient.invalidateQueries({ queryKey: ["ads", id] });
     },
   });
 };
