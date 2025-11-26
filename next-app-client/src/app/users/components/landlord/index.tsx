@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import LandlordCard from "./LandlordCard";
-import { landlordService } from "@/services/LandlordService"; 
+import { landlordService } from "@/services/LandlordService";
 import { PageResponse } from "@/types/types";
 import { LandLordInfo } from "@/app/landlord/types";
 
@@ -9,23 +9,25 @@ export default function LandlordListCard() {
   const [landlords, setLandlords] = useState<LandLordInfo[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [pageData, setPageData] = useState<PageResponse<LandLordInfo> | null>(null);
-  const [currentPage, setCurrentPage] = useState(0);  
+  const [pageData, setPageData] = useState<PageResponse<LandLordInfo> | null>(
+    null
+  );
+  const [currentPage, setCurrentPage] = useState(0);
   const pageSize = 6;
 
   useEffect(() => {
     fetchLandlords(currentPage);
   }, [currentPage]);
 
-  const fetchLandlords = async (page: number) => {  
+  const fetchLandlords = async (page: number) => {
     try {
       setLoading(true);
       const response = await landlordService.getAllLandlords(page, pageSize);
       setLandlords(response.content);
       setPageData(response);
     } catch (err) {
-      setError('Failed to load landlords');
-      console.error('Error:', err);
+      setError("Failed to load landlords");
+      console.error("Error:", err);
     } finally {
       setLoading(false);
     }
@@ -33,13 +35,13 @@ export default function LandlordListCard() {
 
   const goToPreviousPage = () => {
     if (pageData?.hasPrevious) {
-      setCurrentPage(prev => prev - 1);
+      setCurrentPage((prev) => prev - 1);
     }
   };
 
   const goToNextPage = () => {
     if (pageData?.hasNext) {
-      setCurrentPage(prev => prev + 1);
+      setCurrentPage((prev) => prev + 1);
     }
   };
 
@@ -62,7 +64,7 @@ export default function LandlordListCard() {
         <div className="relative px-4 py-20 mx-auto max-w-7xl sm:px-6 lg:px-8">
           <div className="text-center">
             <p className="text-red-600">{error}</p>
-            <button 
+            <button
               onClick={() => fetchLandlords(currentPage)}
               className="px-4 py-2 mt-4 text-white bg-blue-600 rounded-lg hover:bg-blue-700"
             >
@@ -93,7 +95,6 @@ export default function LandlordListCard() {
           <h2 className="mb-4 text-3xl font-bold text-gray-900 md:text-4xl">
             Trusted
             <span className="text-transparent bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text">
-              {" "}
               Landlords
             </span>
           </h2>
@@ -111,12 +112,22 @@ export default function LandlordListCard() {
             disabled={!pageData?.hasPrevious}
             className={`absolute left-0 top-1/2 z-10 -translate-x-20 -translate-y-1/2 rounded-full p-3 shadow-lg transition-all duration-300 ${
               pageData?.hasPrevious
-                ? 'bg-white hover:bg-blue-50 hover:shadow-xl text-gray-700 hover:text-blue-600'
-                : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                ? "bg-white hover:bg-blue-50 hover:shadow-xl text-gray-700 hover:text-blue-600"
+                : "bg-gray-100 text-gray-400 cursor-not-allowed"
             }`}
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 19l-7-7 7-7"
+              />
             </svg>
           </button>
 
@@ -126,12 +137,22 @@ export default function LandlordListCard() {
             disabled={!pageData?.hasNext}
             className={`absolute right-0 top-1/2 z-10 -translate-y-1/2 translate-x-20 rounded-full p-3 shadow-lg transition-all duration-300 ${
               pageData?.hasNext
-                ? 'bg-white hover:bg-blue-50 hover:shadow-xl text-gray-700 hover:text-blue-600'
-                : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                ? "bg-white hover:bg-blue-50 hover:shadow-xl text-gray-700 hover:text-blue-600"
+                : "bg-gray-100 text-gray-400 cursor-not-allowed"
             }`}
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 5l7 7-7 7"
+              />
             </svg>
           </button>
 
@@ -158,9 +179,7 @@ export default function LandlordListCard() {
               Page {(pageData?.page || 0) + 1} of {pageData?.totalPages || 1}
             </span>
             <span className="w-1 h-1 bg-gray-400 rounded-full"></span>
-            <span>
-              {pageData?.totalElements || 0} landlords total
-            </span>
+            <span>{pageData?.totalElements || 0} landlords total</span>
           </div>
         </div>
 

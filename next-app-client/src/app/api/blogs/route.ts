@@ -43,6 +43,7 @@ export async function GET(request: Request) {
     }
     
     const data = await response.json();
+    console.log("Fetched blogs data api:", data);
     return new Response(JSON.stringify(data), { 
       status: response.status,
       headers: {
