@@ -2,19 +2,19 @@
 
 "use client";
 
-import { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import ChatClient from "@/app/components/chat/ChatClient";
-import { useSession } from "next-auth/react";
-import { URL_IMAGE } from "@/services/Constant";
-import Image from "next/image";
-import { doc, onSnapshot, query, collection, where } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { URL_IMAGE } from "@/services/Constant";
+import { collection, onSnapshot, query, where } from "firebase/firestore";
+import { useSession } from "next-auth/react";
+import Image from "next/image";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 // Import from the new service file
 import {
+  ChatUser,
   listenForConversations,
   markConversationAsRead,
-  ChatUser,
 } from "@/services/ChatService";
 
 export default function ManageChatPage() {

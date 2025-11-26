@@ -62,6 +62,8 @@ function RentalHistory() {
     total: 0,
   });
   const [loading, setLoading] = useState(false);
+  const [sortField, setSortField] = useState<string | undefined>(undefined);
+  const [sortOrder, setSortOrder] = useState<string | undefined>(undefined);
   const modal = useRentalStatusModal();
   const [messageApi, contextHolder] = message.useMessage();
   const { data: session } = useSession();
@@ -94,10 +96,15 @@ function RentalHistory() {
     };
   };
 
-  const fetchTableData = async (page = 1, pageSize = pagination.pageSize) => {
+  const fetchTableData = async (
+    page = 1,
+    pageSize = pagination.pageSize,
+    sf?: string,
+    so?: string
+  ) => {
     setLoading(true);
     try {
-      const response = await userFetchBookings(page - 1, pageSize);
+      const response = await userFetchBookings(page - 1, pageSize, sf, so);
       const bookings = response.bookings || response;
       const total = response.totalRecords || bookings.length;
       setTableData(bookings.map(mapBookingToRentalData));
@@ -110,12 +117,44 @@ function RentalHistory() {
   };
 
   useEffect(() => {
-    fetchTableData(pagination.current, pagination.pageSize);
+    fetchTableData(
+      pagination.current,
+      pagination.pageSize,
+      sortField,
+      sortOrder
+    );
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pagination.current, pagination.pageSize]);
+  }, [pagination.current, pagination.pageSize, sortField, sortOrder]);
 
-  const handleTableChange = (pagination: any) => {
-    fetchTableData(pagination.current, pagination.pageSize);
+  const handleTableChange = (pagination: any, _filters: any, sorter: any) => {
+    let sf: string | undefined = undefined;
+    let so: string | undefined = undefined;
+
+    if (Array.isArray(sorter)) {
+      if (sorter.length > 0) {
+        sf = sorter[0]?.field || sorter[0]?.columnKey;
+        so =
+          sorter[0]?.order === "descend"
+            ? "desc"
+            : sorter[0]?.order === "ascend"
+            ? "asc"
+            : undefined;
+      }
+    } else if (sorter) {
+      sf = sorter.field || sorter.columnKey;
+      if (sorter.order) {
+        so =
+          sorter.order === "descend"
+            ? "desc"
+            : sorter.order === "ascend"
+            ? "asc"
+            : undefined;
+      }
+    }
+
+    setSortField(sf);
+    setSortOrder(so);
+    fetchTableData(pagination.current, pagination.pageSize, sf, so);
   };
 
   // State for RequestModal

@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -139,8 +140,12 @@ public class BookingService {
                                 .collect(Collectors.toList());
         }
 
-        public PaginationUserBookingRoomResponseDto getPaginatedUserBookings(UUID userId, int page, int size) {
-                Pageable pageable = PageRequest.of(page, size);
+        public PaginationUserBookingRoomResponseDto getPaginatedUserBookings(UUID userId, int page, int size,
+                        String sortField, String sortOrder) {
+                String sortBy = (sortField != null && !sortField.isBlank()) ? sortField : "rentalDate";
+                String direction = (sortOrder != null && sortOrder.equalsIgnoreCase("desc")) ? "desc" : "asc";
+                Pageable pageable = PageRequest.of(page, size,
+                                direction.equals("asc") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending());
                 Page<BookingUserProjection> bookingPage = bookingJpaRepository.findByUserIdProjection(userId, pageable);
                 List<BookingRoomByUserResponseDto> bookingDtos = bookingPage.getContent().stream()
                                 .map(this::convertFromProjectionToResponseDto)
@@ -158,8 +163,12 @@ public class BookingService {
         }
 
         // lấy tất cả booking của landlord
-        public PaginationLandlordResponseDto getPaginatedLandlordBookings(UUID landlordId, int page, int size) {
-                Pageable pageable = PageRequest.of(page, size);
+        public PaginationLandlordResponseDto getPaginatedLandlordBookings(UUID landlordId, int page, int size,
+                        String sortField, String sortOrder) {
+                String sortBy = (sortField != null && !sortField.isBlank()) ? sortField : "rentalDate";
+                String direction = (sortOrder != null && sortOrder.equalsIgnoreCase("desc")) ? "desc" : "asc";
+                Pageable pageable = PageRequest.of(page, size,
+                                direction.equals("asc") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending());
                 Page<BookingLandlordProjection> bookingPage = bookingJpaRepository
                                 .findByLandlordIdProjection(landlordId, pageable);
                 List<BookingRoomByLandlordResponseDto> bookingDtos = bookingPage.getContent().stream()

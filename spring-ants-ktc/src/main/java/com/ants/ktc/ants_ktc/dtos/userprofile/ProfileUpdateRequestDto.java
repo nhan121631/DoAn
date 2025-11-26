@@ -27,8 +27,7 @@ public class ProfileUpdateRequestDto {
     private String email;
 
     // @NotBlank(message = "Phone number is required")
-    @NotBlank(message = "Phone number is required")
-    @Pattern(regexp = "^[0-9]{10,11}$", message = "Phone number must be 10 or 11 digits")
+    @Pattern(regexp = "^(|[0-9]{10,11})$", message = "Phone number must be 10 or 11 digits")
     private String phoneNumber;
     private String avatar;
     private String bankName;

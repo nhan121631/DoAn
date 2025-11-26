@@ -1,5 +1,7 @@
 package com.ants.ktc.ants_ktc.services;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.mail.SimpleMailMessage;
@@ -12,10 +14,10 @@ import org.springframework.web.multipart.MultipartFile;
 import com.ants.ktc.ants_ktc.dtos.room.RoomSuggestionInfoDto;
 
 import jakarta.mail.internet.MimeMessage;
-import java.util.List;
 
 @Service
 public class MailService {
+
   @Autowired
   private JavaMailSender emailSender;
 
@@ -307,4 +309,156 @@ public class MailService {
     }
   }
 
+  // ML
+  @Async
+  public void sendMLRoomSuggestionEmail(String to, String userName, List<RoomSuggestionInfoDto> suggestedRooms) {
+    System.out.println("[MailService] 🤖 STARTING ML Room Suggestion Email for: " + to);
+
+    if (suggestedRooms == null || suggestedRooms.isEmpty()) {
+      System.out.println("[MailService] ❌ No ML suggested rooms provided, returning early");
+      return;
+    }
+
+    System.out.println("[MailService] 🧠 Building ML email HTML for " + suggestedRooms.size() + " AI-selected rooms");
+
+    StringBuilder roomsHtml = new StringBuilder();
+    int roomIndex = 1;
+
+    for (RoomSuggestionInfoDto room : suggestedRooms) {
+      // Tạo chuỗi hiển thị khoảng cách với ML badge
+      String distanceInfo = "";
+      if (room.getDistanceKm() != null) {
+        distanceInfo = String.format(
+            "<span style='background: #e8f5e8; color: #2e7d2e; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold;'>🚗 %.1f km</span>",
+            room.getDistanceKm());
+      }
+
+      // ML Badge để nhận biết email từ AI
+      String mlBadge = String.format(
+          "<span style='background: linear-gradient(45deg, #667eea 0%%, #764ba2 100%%); color: white; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold;'>🤖 AI #%d</span>",
+          roomIndex);
+
+      roomsHtml.append(String.format(
+          """
+              <div style='border: 1px solid #ddd; border-radius: 12px; padding: 20px; margin: 20px 0; background: linear-gradient(135deg, #f5f7fa 0%%, #c3cfe2 100%%); box-shadow: 0 4px 15px rgba(0,0,0,0.1);'>
+                <div style='display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;'>
+                  <h3 style='color: #1976d2; margin: 0; font-size: 18px;'>🏠 %s</h3>
+                  %s
+                </div>
+                <div style='display: flex; flex-wrap: wrap; gap: 12px; margin: 12px 0;'>
+                  <span style='background: #e3f2fd; color: #1976d2; padding: 6px 12px; border-radius: 6px; font-size: 13px; font-weight: bold;'>💰 %s VNĐ/tháng</span>
+                  <span style='background: #f3e5f5; color: #7b1fa2; padding: 6px 12px; border-radius: 6px; font-size: 13px; font-weight: bold;'>📐 %.1f m²</span>
+                  %s
+                </div>
+                <p style='margin: 12px 0; color: #666; font-size: 14px; line-height: 1.5;'><strong>📍 Địa chỉ:</strong> %s</p>
+                <p style='margin: 12px 0; color: #777; font-size: 13px; line-height: 1.6; background: #fff; padding: 12px; border-radius: 8px; border-left: 4px solid #1976d2;'>%s</p>
+                <div style='margin-top: 16px; padding-top: 12px; border-top: 1px solid #ddd; background: rgba(255,255,255,0.7); border-radius: 8px; padding: 12px;'>
+                  <p style='margin: 6px 0; color: #555; font-size: 12px;'><strong>👤 Liên hệ:</strong> %s</p>
+                  <p style='margin: 6px 0; color: #555; font-size: 12px;'><strong>📞 Điện thoại:</strong> %s</p>
+                  <div style='text-align: center; margin-top: 12px;'>
+                    <a href='http://localhost:3000/detail/%s' style='display:inline-block;padding:10px 20px;background:linear-gradient(45deg, #1976d2, #42a5f5);color:#fff;border-radius:8px;text-decoration:none;font-size:14px;font-weight:bold;box-shadow: 0 2px 8px rgba(25,118,210,0.3);'>🔍 Xem chi tiết</a>
+                  </div>
+                </div>
+              </div>
+              """,
+          room.getTitle(),
+          mlBadge,
+          String.format("%,.0f", room.getPriceMonth()),
+          room.getArea(),
+          distanceInfo,
+          room.getAddress(),
+          room.getDescription() != null
+              ? (room.getDescription().length() > 120 ? room.getDescription().substring(0, 120) + "..."
+                  : room.getDescription())
+              : "Không có mô tả",
+          room.getLandlordName(),
+          room.getLandlordPhone() != null ? room.getLandlordPhone() : room.getLandlordEmail(),
+          room.getId()));
+
+      roomIndex++;
+    }
+
+    String html = String.format(
+        """
+            <div style='font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; background: #f6f8fa; padding: 32px;'>
+              <div style='max-width: 650px; margin: auto; background: #ffffff; border-radius: 12px; box-shadow: 0 4px 16px rgba(0,0,0,0.1); overflow: hidden;'>
+
+                <!-- Header -->
+                <div style='background: linear-gradient(135deg, #1976d2 0%%, #42a5f5 100%%); padding: 24px; text-align: center;'>
+                  <h1 style='color: white; margin: 0; font-size: 24px; font-weight: 600;'>🏠 Gợi Ý Phòng Trọ</h1>
+                  <p style='color: rgba(255,255,255,0.9); margin: 8px 0 0 0; font-size: 14px;'>Phòng trọ phù hợp dành riêng cho bạn</p>
+                </div>
+
+                <!-- Content -->
+                <div style='padding: 32px;'>
+                  <p style='font-size: 16px; color: #333; margin-bottom: 12px;'>Xin chào <strong style='color: #1976d2;'>%s</strong>,</p>
+                  <p style='font-size: 16px; color: #333; margin-bottom: 28px; line-height: 1.6;'>
+                    Chúng tôi đã tìm thấy <strong style='color: #1976d2;'>%d phòng trọ</strong> phù hợp với sở thích và nhu cầu của bạn:
+                  </p>
+
+                  %s
+
+                  <!-- Info Section -->
+                  <div style='background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 24px 0; border-left: 4px solid #1976d2;'>
+                    <h4 style='color: #1976d2; margin: 0 0 12px 0; font-size: 16px;'>📋 Thông tin</h4>
+                    <p style='margin: 0; color: #666; font-size: 14px; line-height: 1.5;'>
+                      Các phòng trọ này được chọn dựa trên sở thích và lịch sử tìm kiếm của bạn.<br>
+                      Danh sách được cập nhật tự động hàng ngày để đảm bảo thông tin mới nhất.
+                    </p>
+                  </div>
+
+                </div>
+
+                <!-- Footer -->
+                <div style='background: #f8f9fa; padding: 20px; text-align: center; border-top: 1px solid #e9ecef;'>
+                  <p style='font-size: 13px; color: #6c757d; margin: 0;'>
+                    Email này được gửi tự động từ hệ thống gợi ý phòng trọ.<br>
+                    Để thay đổi cài đặt thông báo, vui lòng truy cập tài khoản của bạn.
+                  </p>
+                </div>
+
+              </div>
+            </div>
+            """,
+        userName, suggestedRooms.size(), roomsHtml.toString());
+
+    try {
+      System.out.println("[MailService] 🤖 Creating and sending ML MIME message to: " + to);
+
+      MimeMessage mimeMessage = emailSender.createMimeMessage();
+      MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+      helper.setTo(to);
+      helper.setSubject("🏠 Gợi Ý Phòng Trọ Phù Hợp Cho Bạn");
+      helper.setText(html, true);
+
+      System.out.println("[MailService] 🤖 Sending ML email via emailSender...");
+
+      emailSender.send(mimeMessage);
+
+      System.out.println("[MailService] ✅ ML room suggestion email sent successfully to: " + to);
+    } catch (Exception e) {
+      System.out.println("[MailService] ❌ Failed to send ML room suggestion email: " + e.getMessage());
+      System.out.println("[MailService] ❌ Exception class: " + e.getClass().getSimpleName());
+      e.printStackTrace();
+
+      try {
+        System.out.println("[MailService] 🔄 Attempting ML fallback simple text email...");
+
+        // fallback: send simple text
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(to);
+        message.setSubject("🏠 Gợi Ý Phòng Trọ Phù Hợp");
+        message.setText("Chúng tôi đã tìm thấy " + suggestedRooms.size()
+            + " phòng trọ phù hợp với sở thích của bạn. Vui lòng truy cập website để xem chi tiết.");
+        emailSender.send(message);
+
+        System.out.println("[MailService] ✅ ML fallback simple email sent successfully to: " + to);
+      } catch (Exception fallbackException) {
+        System.out.println("[MailService] ❌ Even ML fallback email failed: " + fallbackException.getMessage());
+        fallbackException.printStackTrace();
+      }
+    }
+
+    System.out.println("[MailService] 🏁 FINISHED ML sendRoomSuggestionEmail for: " + to);
+  }
 }

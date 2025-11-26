@@ -44,12 +44,12 @@ export default function BillDetailModal({
               RENTAL BILL
             </p>
             <div className="mt-3 text-sm text-gray-500 dark:text-gray-400 transition-colors duration-300">
-              <p>Ngày xuất: {new Date().toLocaleDateString("vi-VN")}</p>
-              <p>Mã hóa đơn: #{selectedBill.id}</p>
+              <p>Date: {new Date().toLocaleDateString("vi-VN")}</p>
+              <p>Bill ID: #{selectedBill.id}</p>
             </div>
           </div>
 
-          {/* Thông tin khách hàng */}
+          {/* Customer Information */}
           <div className="mb-6">
             <h3 className="text-lg font-semibold mb-3 text-gray-700 dark:text-gray-200 transition-colors duration-300">
               CUSTOMER INFORMATION

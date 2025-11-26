@@ -801,6 +801,7 @@ export default function BillsTab({
             </Button>
             <Button
               type="primary"
+              disabled={contract.status !== 0} // Only allow adding bills if contract status is Active
               onClick={() => {
                 setAddBillOpen(true);
                 // Reset form and set default values

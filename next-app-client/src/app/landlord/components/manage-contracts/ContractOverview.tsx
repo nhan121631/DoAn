@@ -16,10 +16,18 @@ import {
   Upload,
   Image,
 } from "antd";
-import { EditOutlined, CloudUploadOutlined } from "@ant-design/icons";
+import {
+  EditOutlined,
+  CloudUploadOutlined,
+  FileOutlined,
+} from "@ant-design/icons";
 import { ContractData } from "@/types/types";
 import { ContractService } from "@/services/ContractService";
-import { formatCloudinaryUrl, formatCloudinaryThumbnail } from "@/utils/cloudinaryUtils";
+import {
+  formatCloudinaryUrl,
+  formatCloudinaryThumbnail,
+  resolveCloudinaryUrl,
+} from "@/utils/cloudinaryUtils";
 import dayjs from "dayjs";
 
 interface ContractOverviewProps {
@@ -46,6 +54,9 @@ export default function ContractOverview({
   const [loading, setLoading] = useState(false);
   const [uploadLoading, setUploadLoading] = useState(false);
   const [form] = Form.useForm();
+  const [resolvedUrl, setResolvedUrl] = useState<string | null>(null);
+  const [isPdfResolved, setIsPdfResolved] = useState<boolean>(false);
+  const [pdfPreviewOpen, setPdfPreviewOpen] = useState(false);
 
   const handleEdit = useCallback(() => {
     form.setFieldsValue({
@@ -67,22 +78,93 @@ export default function ContractOverview({
     }
   }, [autoEdit, handleEdit]);
 
+  // Resolve cloudinary URL (raw vs image) so links/thumbnails work when backend stores raw PDF paths
+  useEffect(() => {
+    let mounted = true;
+    const doResolve = async () => {
+      if (!contract.contractImage) {
+        if (mounted) {
+          setResolvedUrl(null);
+          setIsPdfResolved(false);
+        }
+        return;
+      }
+      try {
+        const url = await resolveCloudinaryUrl(contract.contractImage);
+        if (!mounted) return;
+        setResolvedUrl(url);
+        setIsPdfResolved(!!url && /\.pdf($|\?)/i.test(url));
+      } catch (e) {
+        if (!mounted) return;
+        // fallback to formatted URL
+        const url = formatCloudinaryUrl(contract.contractImage);
+        setResolvedUrl(url);
+        setIsPdfResolved(!!url && /\.pdf($|\?)/i.test(url));
+      }
+    };
+    void doResolve();
+    return () => {
+      mounted = false;
+    };
+  }, [contract.contractImage]);
+
+  // Use resolvedUrl/isPdfResolved in UI
+  const fileUrl =
+    resolvedUrl ||
+    (contract.contractImage
+      ? formatCloudinaryUrl(contract.contractImage)
+      : null);
+  // Also check the original stored path/public id for .pdf since backend may store raw paths
+  const rawPath = contract.contractImage || "";
+  const isPdf =
+    isPdfResolved ||
+    (!!fileUrl && /\.pdf($|\?)/i.test(fileUrl)) ||
+    /\.pdf($|\?)/i.test(rawPath);
+  const isRaw =
+    rawPath.includes("/raw/upload/") ||
+    (!!resolvedUrl && resolvedUrl?.includes("/raw/upload/"));
+  const isDocument = isPdf || isRaw;
+  const thumbnailUrl = formatCloudinaryThumbnail(
+    resolvedUrl || contract.contractImage,
+    150,
+    100
+  );
+
   const handleImageUpload = async (file: File) => {
     try {
+      // Validate file type - accept PDF, DOC, DOCX
+      const allowedTypes = [
+        "application/pdf",
+        "application/msword",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      ];
+
+      if (!allowedTypes.includes(file.type)) {
+        messageApi.error("Only PDF, DOC, and DOCX files are allowed!");
+        return false;
+      }
+
+      // Validate file size (optional - max 10MB)
+      const maxSize = 10 * 1024 * 1024; // 10MB
+      if (file.size > maxSize) {
+        messageApi.error("File size must be less than 10MB!");
+        return false;
+      }
+
       setUploadLoading(true);
       const updatedContract = await ContractService.uploadContractImage(
         contract.id,
         file
       );
-      
+
       if (onContractUpdate) {
         onContractUpdate(updatedContract);
       }
-      
-      messageApi.success("Contract image uploaded successfully!");
+
+      messageApi.success("Contract file uploaded successfully!");
     } catch (error) {
-      console.error("Upload image error:", error);
-      messageApi.error("Failed to upload contract image!");
+      console.error("Upload file error:", error);
+      messageApi.error("Failed to upload contract file!");
     } finally {
       setUploadLoading(false);
     }
@@ -130,17 +212,18 @@ export default function ContractOverview({
           Contract Information
         </h3>
         <Upload
-          accept="image/*"
+          accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
           showUploadList={false}
           beforeUpload={handleImageUpload}
           disabled={uploadLoading}
         >
-          <Button 
-            type="primary" 
-            icon={<CloudUploadOutlined />} 
+          <Button
+            type="primary"
+            icon={<CloudUploadOutlined />}
             loading={uploadLoading}
+            disabled={contract.status !== 0} // Only allow uploading if contract status is Active
           >
-            Upload Contract Image
+            Upload Contract File (PDF, DOC, DOCX)
           </Button>
         </Upload>
       </div>
@@ -176,28 +259,55 @@ export default function ContractOverview({
             {statusMap[contract.status]?.text}
           </Tag>
         </Descriptions.Item>
-        <Descriptions.Item label="Contract Image" span={2}>
+        <Descriptions.Item label="Contract File" span={2}>
           {contract.contractImage ? (
-            <div className="flex items-center gap-2">
-              <Image
-                src={formatCloudinaryThumbnail(contract.contractImage, 150, 100) || undefined}
-                alt="Contract Image"
-                width={150}
-                height={100}
-                style={{ objectFit: 'cover', borderRadius: '4px' }}
-                fallback="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMIAAADDCAYAAADQvc6UAAABRWlDQ1BJQ0MgUHJvZmlsZQAAKJFjYGASSSwoyGFhYGDIzSspCnJ3UoiIjFJgf8LAwSDCIMogwMCcmFxc4BgQ4ANUwgCjUcG3awyMIPqyLsis7PPOq3QdDFcvjV3jOD1boQVTPQrgSkktTgbSf4A4LbmgqISBgTEFyFYuLykAsTuAbJEioKOA7DkgdjqEvQHEToKwj4DVhAQ5A9k3gGyB5IxEoBmML4BsnSQk8XQkNtReEOBxcfXxUQg1Mjc0dyHgXNJBSWpFCYh2zi+oLMpMzyhRcASGUqqCZ16yno6CkYGRAQMDKMwhqj/fAIcloxgHQqxAjIHBEugw5sUIsSQpBobtQPdLciLEVJYzMPBHMDBsayhILEqEO4DxG0txmrERhM29nYGBddr//5/DGRjYNRkY/l7////39v///y4Dm3jaMgAAAABwSURBVHhe7cHBDQAACAwCoNGPAnOwQBE8tATFHIAAAABwSURBVHhe7cHBDQAACAwCoNGPAnOwQBE8tATFHIAAAABwSURBVHhe7cHBDQAACAwCoNGPAnOwQBE8tATFHI="
-              />
-              <a 
-                href={formatCloudinaryUrl(contract.contractImage) || '#'} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-blue-500 hover:text-blue-700"
-              >
-                View Full Image
-              </a>
+            <div className="flex flex-col gap-3">
+              {/* File info - click to open in Google Docs Viewer */}
+              <div className="flex items-center gap-3">
+                <a
+                  href={`https://docs.google.com/viewer?url=${encodeURIComponent(
+                    fileUrl || ""
+                  )}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-[60px] h-[60px] flex items-center justify-center bg-gray-100 dark:bg-gray-800 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+                  title="Click to view file"
+                >
+                  <FileOutlined
+                    style={{ fontSize: "32px", color: "#2563eb" }}
+                  />
+                </a>
+
+                <div className="flex-1">
+                  <a
+                    href={`https://docs.google.com/viewer?url=${encodeURIComponent(
+                      fileUrl || ""
+                    )}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors"
+                  >
+                    {(() => {
+                      if (!fileUrl) return "contract-file";
+                      try {
+                        const urlPath = new URL(fileUrl).pathname;
+                        const filename = decodeURIComponent(
+                          urlPath.split("/").pop() || "contract-file"
+                        );
+                        return filename;
+                      } catch {
+                        return "contract-file";
+                      }
+                    })()}
+                  </a>
+                  <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    Click to view file in new tab
+                  </div>
+                </div>
+              </div>
             </div>
           ) : (
-            <span className="text-gray-500">No image uploaded</span>
+            <span className="text-gray-500">No file uploaded</span>
           )}
         </Descriptions.Item>
       </Descriptions>
@@ -254,7 +364,11 @@ export default function ContractOverview({
               name="startDate"
               rules={[{ required: true, message: "Please select start date!" }]}
             >
-              <DatePicker style={{ width: "100%" }} format="DD/MM/YYYY" disabled />
+              <DatePicker
+                style={{ width: "100%" }}
+                format="DD/MM/YYYY"
+                disabled
+              />
             </Form.Item>
 
             <Form.Item
@@ -262,7 +376,11 @@ export default function ContractOverview({
               name="endDate"
               rules={[{ required: true, message: "Please select end date!" }]}
             >
-              <DatePicker style={{ width: "100%" }} format="DD/MM/YYYY" disabled />
+              <DatePicker
+                style={{ width: "100%" }}
+                format="DD/MM/YYYY"
+                disabled
+              />
             </Form.Item>
 
             <Form.Item
@@ -326,6 +444,25 @@ export default function ContractOverview({
             </Space>
           </Form.Item>
         </Form>
+      </Modal>
+
+      {/* PDF Preview Modal */}
+      <Modal
+        title="PDF Preview"
+        open={pdfPreviewOpen}
+        onCancel={() => setPdfPreviewOpen(false)}
+        footer={null}
+        width={900}
+      >
+        {fileUrl ? (
+          <iframe
+            src={fileUrl}
+            title="PDF Preview"
+            style={{ width: "100%", height: "80vh", border: "none" }}
+          />
+        ) : (
+          <div className="p-4">No preview available</div>
+        )}
       </Modal>
     </div>
   );

@@ -102,13 +102,14 @@ public class AdsController {
     }
 
     // @GetMapping("/{id}")
-    // public ResponseEntity<AdsResponseDto> getAdsById(@PathVariable("id") UUID id) {
-    //     try {
-    //         AdsResponseDto ads = adsService.getAdsById(id);
-    //         return ResponseEntity.ok(ads);
-    //     } catch (RuntimeException e) {
-    //         return ResponseEntity.notFound().build();
-    //     }
+    // public ResponseEntity<AdsResponseDto> getAdsById(@PathVariable("id") UUID id)
+    // {
+    // try {
+    // AdsResponseDto ads = adsService.getAdsById(id);
+    // return ResponseEntity.ok(ads);
+    // } catch (RuntimeException e) {
+    // return ResponseEntity.notFound().build();
+    // }
     // }
 
     @GetMapping
@@ -123,8 +124,8 @@ public class AdsController {
 
     // @GetMapping("/active")
     // public ResponseEntity<List<AdsResponseDto>> getActiveAds() {
-    //     List<AdsResponseDto> activeAds = adsService.getActiveAds();
-    //     return ResponseEntity.ok(activeAds);
+    // List<AdsResponseDto> activeAds = adsService.getActiveAds();
+    // return ResponseEntity.ok(activeAds);
     // }
 
     @GetMapping("/active/{position}")
@@ -140,12 +141,27 @@ public class AdsController {
 
     // @GetMapping("/search")
     // public ResponseEntity<Page<AdsResponseDto>> searchAds(
-    //         @RequestParam("keyword") String keyword,
-    //         @RequestParam(name = "page", defaultValue = "0") int page,
-    //         @RequestParam(name = "size", defaultValue = "10") int size) {
-    //     Page<AdsResponseDto> adsPage = adsService.searchAds(keyword, page, size);
-    //     return ResponseEntity.ok(adsPage);
+    // @RequestParam("keyword") String keyword,
+    // @RequestParam(name = "page", defaultValue = "0") int page,
+    // @RequestParam(name = "size", defaultValue = "10") int size) {
+    // Page<AdsResponseDto> adsPage = adsService.searchAds(keyword, page, size);
+    // return ResponseEntity.ok(adsPage);
     // }
+
+    @GetMapping("/check-conflicts")
+    public ResponseEntity<List<AdsResponseDto>> checkConflicts(
+            @RequestParam("position") String position,
+            @RequestParam("startDate") String startDate,
+            @RequestParam("endDate") String endDate,
+            @RequestParam(value = "excludeId", required = false) UUID excludeId) {
+        try {
+            Ads.AdsPosition adsPosition = Ads.AdsPosition.valueOf(position.toUpperCase());
+            List<AdsResponseDto> conflicts = adsService.checkConflicts(adsPosition, startDate, endDate, excludeId);
+            return ResponseEntity.ok(conflicts);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
 
     @PatchMapping("/{id}/toggle-status")
     public ResponseEntity<AdsResponseDto> toggleAdsStatus(@PathVariable("id") UUID id) {

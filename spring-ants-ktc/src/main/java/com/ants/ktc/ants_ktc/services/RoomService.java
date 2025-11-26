@@ -660,12 +660,18 @@ public class RoomService {
         }
 
         @Transactional(readOnly = true)
-        public PaginationRoomResponseDto getAllRoomByLandlordIdPaginated(UUID userId, int page, int size) {
+        public PaginationRoomResponseDto getAllRoomByLandlordIdPaginated(UUID userId, int page, int size,
+                        String sortField, String sortOrder) {
 
                 // Ensure page is at least 1 (1-based)
                 if (page < 1)
                         page = 1;
-                Pageable pageable = PageRequest.of(page - 1, size);
+
+                String sortBy = (sortField != null && !sortField.isBlank()) ? sortField : "title";
+                String direction = (sortOrder != null && sortOrder.equalsIgnoreCase("desc")) ? "desc" : "asc";
+
+                Pageable pageable = PageRequest.of(page - 1, size,
+                                direction.equals("asc") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending());
 
                 Page<RoomByLandlordPagingProjection> roomPage = roomJpaRepository.findAllByLandlord(userId, pageable);
 

@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -104,8 +105,12 @@ public class TransactionService {
     }
 
     // Phân trang cho transaction theo userId
-    public PaginationTransactionResponseDto getTransactionsByUserIdPaginated(UUID userId, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
+    public PaginationTransactionResponseDto getTransactionsByUserIdPaginated(UUID userId, int page, int size,
+            String sortField, String sortOrder) {
+        String sortBy = (sortField != null && !sortField.isBlank()) ? sortField : "transactionDate";
+        String direction = (sortOrder != null && sortOrder.equalsIgnoreCase("desc")) ? "desc" : "asc";
+        Pageable pageable = PageRequest.of(page, size,
+                direction.equals("asc") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending());
 
         // Lấy dữ liệu phân trang từ repository theo userId
         Page<Transaction> transactionPage = transactionsJpaRepository.findAllByUserId(userId, pageable);

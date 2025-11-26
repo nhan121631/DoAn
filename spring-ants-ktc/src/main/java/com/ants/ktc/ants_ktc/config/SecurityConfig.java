@@ -81,6 +81,16 @@ public class SecurityConfig {
                                                 .hasRole("Landlords") // landlord xem feedback
                                                 .requestMatchers(HttpMethod.DELETE, "/api/rooms/feedbacks/*")
                                                 .hasAnyRole("Users", "Landlords", "Administrators")
+                                                .requestMatchers(HttpMethod.GET, "/api/ads/**").permitAll() // public
+                                                                                                            // read ads
+                                                .requestMatchers("/api/ads/**")
+                                                .hasAnyRole("Administrators", "Landlords")
+                                                // blog endpoints
+                                                .requestMatchers(HttpMethod.GET, "/api/blogs/**").permitAll() // public
+                                                                                                              // read
+                                                .requestMatchers("/api/blogs/**").hasRole("Administrators") // admin
+                                                                                                            // only for
+                                                                                                            // CUD
                                                 .anyRequest().permitAll())
                                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
                 return http.build();

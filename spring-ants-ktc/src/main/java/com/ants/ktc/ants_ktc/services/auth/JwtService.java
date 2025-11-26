@@ -117,4 +117,20 @@ public class JwtService {
         long refreshExpiration = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
         return createToken(claims, user.getUsername(), refreshExpiration);
     }
+
+    public Boolean isRefreshTokenValid(String token, UserDetails userDetails) {
+        try {
+            final String username = extractUsername(token);
+            final String tokenType = extractTokenType(token);
+            return (username.equals(userDetails.getUsername()))
+                    && !isTokenExpired(token)
+                    && "refresh_token".equals(tokenType); // Only refresh tokens for token refresh
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public String extractUserIdFromToken(String token) {
+        return extractClaim(token, claims -> claims.get("id", String.class));
+    }
 }

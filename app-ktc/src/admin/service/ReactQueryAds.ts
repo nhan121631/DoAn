@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import axios from "axios";
+import apiClient from "../lib/api-client-ad";
 
 // Types
 export type AdsPosition = "LEFT" | "RIGHT" | "TOP" | "BOTTOM" | "CENTER";
@@ -47,7 +47,7 @@ export interface PageResponse<T> {
   last: boolean;
 }
 
-const API_BASE_URL = "http://localhost:3333/api/ads";
+const API_BASE_URL = "/ads"; // Use relative URL since apiClient already has baseURL
 
 // API functions
 const adsApi = {
@@ -66,17 +66,17 @@ const adsApi = {
       sortBy = "createdDate",
       sortDir = "desc",
     } = params;
-    const response = await axios.get(`${API_BASE_URL}`, {
+    const response = await apiClient.get(`${API_BASE_URL}`, {
       params: { page, size, sortBy, sortDir },
     });
-    return response.data;
+    return response as unknown as PageResponse<AdsResponse>;
   },
 
   // Get ads by ID
-//   getAdsById: async (id: string): Promise<AdsResponse> => {
-//     const response = await axios.get(`${API_BASE_URL}/${id}`);
-//     return response.data;
-//   },
+  //   getAdsById: async (id: string): Promise<AdsResponse> => {
+  //     const response = await axios.get(`${API_BASE_URL}/${id}`);
+  //     return response.data;
+  //   },
 
   // Create new ads
   createAds: async (
@@ -105,12 +105,12 @@ const adsApi = {
       image: imageFile.name,
     });
 
-    const response = await axios.post(`${API_BASE_URL}`, formData, {
+    const response = await apiClient.post(`${API_BASE_URL}`, formData, {
       headers: {
         "Content-Type": "multipart/form-data",
       },
     });
-    return response.data;
+    return response as unknown as AdsResponse;
   },
 
   // Update ads
@@ -144,35 +144,41 @@ const adsApi = {
       image: imageFile?.name || "no new image",
     });
 
-    const response = await axios.put(`${API_BASE_URL}/${data.id}`, formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    });
-    return response.data;
+    const response = await apiClient.put(
+      `${API_BASE_URL}/${data.id}`,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+    return response as unknown as AdsResponse;
   },
 
   // Delete ads
   deleteAds: async (id: string): Promise<void> => {
-    await axios.delete(`${API_BASE_URL}/${id}`);
+    await apiClient.delete(`${API_BASE_URL}/${id}`);
   },
 
   // Search ads
-//   searchAds: async (params: {
-//     keyword: string;
-//     page?: number;
-//     size?: number;
-//   }): Promise<PageResponse<AdsResponse>> => {
-//     const { keyword, page = 0, size = 10 } = params;
-//     const response = await axios.get(`${API_BASE_URL}/search`, {
-//       params: { keyword, page, size },
-//     });
-//     return response.data;
-//   },
+  //   searchAds: async (params: {
+  //     keyword: string;
+  //     page?: number;
+  //     size?: number;
+  //   }): Promise<PageResponse<AdsResponse>> => {
+  //     const { keyword, page = 0, size = 10 } = params;
+  //     const response = await axios.get(`${API_BASE_URL}/search`, {
+  //       params: { keyword, page, size },
+  //     });
+  //     return response.data;
+  //   },
 
   // Toggle ads status
   toggleAdsStatus: async (id: string): Promise<AdsResponse> => {
-    const response = await axios.patch(`${API_BASE_URL}/${id}/toggle-status`);
+    const response = await apiClient.patch(
+      `${API_BASE_URL}/${id}/toggle-status`
+    );
     return response.data;
   },
 
@@ -184,26 +190,20 @@ const adsApi = {
     excludeId?: string;
   }): Promise<AdsResponse[]> => {
     const { position, startDate, endDate, excludeId } = params;
-    const response = await axios.get(`${API_BASE_URL}/active/${position}`);
-    const existingAds = response.data;
-
-    // Filter out the current ad being edited
-    const filteredAds = excludeId
-      ? existingAds.filter((ad: AdsResponse) => ad.id !== excludeId)
-      : existingAds;
-
-    // Check for date overlap
-    const conflicts = filteredAds.filter((ad: AdsResponse) => {
-      const adStart = new Date(ad.startDate);
-      const adEnd = new Date(ad.endDate);
-      const newStart = new Date(startDate);
-      const newEnd = new Date(endDate);
-
-      // Check if dates overlap
-      return newStart <= adEnd && newEnd >= adStart;
+    const queryParams = new URLSearchParams({
+      position,
+      startDate,
+      endDate,
     });
 
-    return conflicts;
+    if (excludeId) {
+      queryParams.append("excludeId", excludeId);
+    }
+
+    const response = await apiClient.get(
+      `${API_BASE_URL}/check-conflicts?${queryParams}`
+    );
+    return response.data;
   },
 };
 

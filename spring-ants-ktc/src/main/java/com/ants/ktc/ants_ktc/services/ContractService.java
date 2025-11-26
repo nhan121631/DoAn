@@ -135,6 +135,9 @@ public class ContractService {
     }
 
     public ContractResponseDto getContractById(UUID contractId) {
+        if (!contractJpaRepository.existsById(contractId)) {
+            throw new RuntimeException("Contract not found");
+        }
         Contract contract = contractJpaRepository.findByIdWithDetails(contractId);
         return toResponseDto(contract);
     }
@@ -187,6 +190,18 @@ public class ContractService {
             return contractImageUrl.substring(lastSlash + 1, dotIndex);
         }
         return null;
+    }
+
+    @Scheduled(cron = "0 0 0 * * *")
+    public void autoCheckAndUpdateExpiredContracts() {
+        List<Contract> activeContracts = contractJpaRepository.findByStatus(0); // 0 = ACTIVE
+
+        for (Contract contract : activeContracts) {
+            if (contract.getEndDate().before(new java.util.Date())) {
+                contract.setStatus(2); // 2 = EXPIRED
+                contractJpaRepository.save(contract);
+            }
+        }
     }
 
     @Scheduled(cron = "0 0 1 * * *") // 1h sáng mỗi ngày

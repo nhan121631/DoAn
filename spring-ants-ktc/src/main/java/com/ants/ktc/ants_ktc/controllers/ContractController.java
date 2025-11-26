@@ -67,6 +67,9 @@ public class ContractController {
     public ResponseEntity<ContractResponseDto> updateContractImage(
             @PathVariable("id") UUID id,
             @RequestParam("file") MultipartFile file) {
+        System.out.println("Received file ===============================: " + file.getOriginalFilename() + ", size: "
+                + file.getSize()
+                + ", type: " + file.getContentType());
         return ResponseEntity.ok(contractService.uploadContractImage(id, file));
     }
 

@@ -32,4 +32,10 @@ public interface AdsRepository extends JpaRepository<Ads, UUID> {
 
     @Query("SELECT a FROM Ads a WHERE a.startDate <= :endDate AND a.endDate >= :startDate")
     List<Ads> findConflictingAds(@Param("startDate") Date startDate, @Param("endDate") Date endDate);
+
+    @Query("SELECT a FROM Ads a WHERE a.user.id = :userId ORDER BY a.createdDate DESC")
+    Page<Ads> findByUserId(@Param("userId") UUID userId, Pageable pageable);
+
+    @Query("SELECT a FROM Ads a WHERE a.user.id = :userId AND a.position = :position")
+    List<Ads> findUserAdsByPosition(@Param("userId") UUID userId, @Param("position") Ads.AdsPosition position);
 }

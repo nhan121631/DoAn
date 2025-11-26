@@ -3,7 +3,7 @@
 /* eslint-disable react/no-unescaped-entities */
 "use client";
 import { formatCurrency } from "@/lib/vnpay-utils";
-import { createPayment } from "@/services/PaymentServive";
+import { createPayment, createPaymentPaypal } from "@/services/PaymentServive";
 import { message } from "antd";
 import { useEffect, useState } from "react";
 
@@ -15,6 +15,9 @@ export default function AddFundsForm({ onSuccess }: AddFundsFormProps) {
   const [amount, setAmount] = useState<string>("50000");
   const [orderInfo, setOrderInfo] = useState("");
   //   const [bankCode, setBankCode] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState<"vnpay" | "paypal">(
+    "vnpay"
+  );
   const [loading, setLoading] = useState(false);
   const [messageApi, contextHolder] = message.useMessage();
   const [userId, setUserId] = useState<string>("");
@@ -30,30 +33,41 @@ export default function AddFundsForm({ onSuccess }: AddFundsFormProps) {
   }, []);
   const handlePay = async () => {
     const amountNumber = Number(amount);
+
     if (amountNumber < 5000) {
-      messageApi.error({ content: "Minimum amount is 5,000 VND", duration: 2 });
-      return;
+      return messageApi.error("Minimum amount is 5,000 VND");
     }
 
     setLoading(true);
+
     try {
-      const data = await createPayment({
+      const payload = {
         amount: amountNumber,
         description:
           orderInfo || `Add ${formatCurrency(amountNumber)} to wallet`,
         userId,
-      });
-      if (!data.paymentUrl) {
-        throw new Error("No payment URL received");
+      };
+
+      let data;
+
+      if (paymentMethod === "vnpay") {
+        data = await createPayment(payload);
+
+        if (!data.paymentUrl) throw new Error("No payment URL received");
+
+        window.location.href = data.paymentUrl;
       }
 
-      window.location.href = data.paymentUrl;
+      if (paymentMethod === "paypal") {
+        data = await createPaymentPaypal(payload);
+
+        if (!data.approveUrl) throw new Error("No approval URL received");
+
+        window.location.href = data.approveUrl;
+      }
     } catch (err: any) {
       console.error("Payment error:", err);
-      messageApi.error({
-        content: err.message || "Payment failed",
-        duration: 2,
-      });
+      messageApi.error(err.message || "Payment failed");
     } finally {
       setLoading(false);
     }
@@ -102,35 +116,73 @@ export default function AddFundsForm({ onSuccess }: AddFundsFormProps) {
             placeholder="Enter payment description (optional)"
           />
         </div>
-        {/* Only 1 payment method: VNPay */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2  dark:!text-white">
             Payment method
           </label>
-          <div className="flex items-center gap-2">
-            <span className="inline-flex items-center px-3 py-2 bg-blue-100 text-blue-700 rounded font-semibold text-base">
-              <svg
-                width="24"
-                height="24"
-                viewBox="0 0 48 48"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                className="mr-2"
-              >
-                <rect width="48" height="48" rx="24" fill="#1976D2" />
-                <text
-                  x="24"
-                  y="30"
-                  textAnchor="middle"
-                  fontSize="16"
-                  fill="#fff"
-                  fontWeight="bold"
+          <div className="flex items-center gap-4">
+            <label className="inline-flex items-center cursor-pointer">
+              <input
+                type="radio"
+                className="form-radio text-blue-600"
+                checked={paymentMethod === "vnpay"}
+                onChange={() => setPaymentMethod("vnpay")}
+              />
+              <span className="ml-2 flex items-center">
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 48 48"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="mr-2"
                 >
-                  VNPay
-                </text>
-              </svg>
-              VNPay
-            </span>
+                  <rect width="48" height="48" rx="24" fill="#1976D2" />
+                  <text
+                    x="24"
+                    y="30"
+                    textAnchor="middle"
+                    fontSize="16"
+                    fill="#fff"
+                    fontWeight="bold"
+                  >
+                    VNPay
+                  </text>
+                </svg>
+                VNPay
+              </span>
+            </label>
+            <label className="inline-flex items-center cursor-pointer">
+              <input
+                type="radio"
+                className="form-radio text-yellow-600"
+                checked={paymentMethod === "paypal"}
+                onChange={() => setPaymentMethod("paypal")}
+              />
+              <span className="ml-2 flex items-center">
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 48 48"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="mr-2"
+                >
+                  <rect width="48" height="48" rx="24" fill="#003087" />
+                  <text
+                    x="24"
+                    y="30"
+                    textAnchor="middle"
+                    fontSize="16"
+                    fill="#fff"
+                    fontWeight="bold"
+                  >
+                    PayPal
+                  </text>
+                </svg>
+                PayPal
+              </span>
+            </label>
           </div>
         </div>
         <button
@@ -164,27 +216,9 @@ export default function AddFundsForm({ onSuccess }: AddFundsFormProps) {
             </>
           ) : (
             <div className="text-white flex items-center justify-center">
-              <svg
-                width="24"
-                height="24"
-                viewBox="0 0 48 48"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                className="mr-2"
-              >
-                <rect width="48" height="48" rx="24" fill="#1976D2" />
-                <text
-                  x="24"
-                  y="30"
-                  textAnchor="middle"
-                  fontSize="16"
-                  fill="#fff"
-                  fontWeight="bold"
-                >
-                  VNPay
-                </text>
-              </svg>
-              Pay with VNPay
+              {paymentMethod === "paypal"
+                ? "Pay with PayPal"
+                : "Pay with VNPay"}
             </div>
           )}
         </button>

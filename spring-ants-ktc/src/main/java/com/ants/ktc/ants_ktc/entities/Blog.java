@@ -1,6 +1,5 @@
 package com.ants.ktc.ants_ktc.entities;
 
-
 import com.ants.ktc.ants_ktc.enums.Category;
 import com.ants.ktc.ants_ktc.enums.Status;
 import jakarta.persistence.*;
@@ -37,5 +36,9 @@ public class Blog extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     private Status status;
+
+    @JoinColumn(name = "user_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    private User user;
 
 }

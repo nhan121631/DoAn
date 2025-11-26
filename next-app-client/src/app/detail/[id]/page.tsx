@@ -4,12 +4,12 @@ import FeedbackLayout from "@/app/landlord/components/room-detail/Feedback";
 import IncreaseView from "@/app/landlord/components/room-detail/IncreaseView";
 import MapSection from "@/app/landlord/components/room-detail/map";
 import { Slide } from "@/app/landlord/components/room-detail/Slide";
+import Convenient from "@/app/landlord/components/room-detail/convenient";
 import RightSidebar from "@/app/users/components/RightSidebar";
 import { getRoomById, getRoomVipUser } from "@/services/RoomService";
 import { Image, RoomInUser } from "@/types/types";
 import {
   Calendar,
-  DollarSign,
   Droplets,
   FileText,
   Home,
@@ -290,6 +290,9 @@ export default async function Page({
                   </div>
                 </div>
 
+                {/* Room Amenities & Facilities */}
+                <Convenient features={room.convenients || []} />
+
                 {/* Posted Date - Enhanced */}
                 <div className="mb-8">
                   <div className="p-5 border border-green-200 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-xl dark:border-green-700">
@@ -372,11 +375,6 @@ export default async function Page({
                     </div>
                   </div>
                 </div>
-
-                {/* Conveniences Section */}
-                {/* <div className="mb-8">
-                  <Convenient features={room.convenients} />
-                </div> */}
 
                 {/* Divider */}
                 <div className="relative mb-8">

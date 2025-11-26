@@ -4,6 +4,7 @@ import com.ants.ktc.ants_ktc.dtos.ads.AdsResponseDto;
 import com.ants.ktc.ants_ktc.dtos.ads.CreateAdsDto;
 import com.ants.ktc.ants_ktc.dtos.ads.UpdateAdsDto;
 import com.ants.ktc.ants_ktc.entities.Ads;
+import com.ants.ktc.ants_ktc.entities.User;
 import com.ants.ktc.ants_ktc.repositories.AdsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -31,6 +32,9 @@ public class AdsService {
     @Autowired
     private CloudinaryService cloudinaryService;
 
+    @Autowired
+    private UserService userService;
+
     private Date parseISODate(String isoDateString) {
         try {
             SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
@@ -50,6 +54,10 @@ public class AdsService {
             throw new IllegalArgumentException("Start date must be before end date");
         }
 
+        // Get current authenticated user
+        UUID currentUserId = userService.getAuthenticatedUserId();
+        User currentUser = userService.findNameById(currentUserId);
+
         // Upload image
         Map<String, String> uploadResult = cloudinaryService.uploadFile(imageFile);
 
@@ -65,6 +73,7 @@ public class AdsService {
         ads.setEndDate(endDate);
         ads.setIsActive(createDto.getIsActive());
         ads.setPriority(createDto.getPriority());
+        ads.setUser(currentUser); // Set user
 
         Ads saved = adsRepository.save(ads);
         return AdsResponseDto.fromEntity(saved);
@@ -73,6 +82,12 @@ public class AdsService {
     public AdsResponseDto updateAds(UpdateAdsDto updateDto, MultipartFile imageFile) {
         Ads ads = adsRepository.findById(updateDto.getId())
                 .orElseThrow(() -> new RuntimeException("Ads not found with id: " + updateDto.getId()));
+
+        // Verify that the current user is the owner of the ads
+        UUID currentUserId = userService.getAuthenticatedUserId();
+        if (!ads.getUser().getId().equals(currentUserId)) {
+            throw new RuntimeException("You are not authorized to update this advertisement");
+        }
 
         // Parse dates
         Date startDate = parseISODate(updateDto.getStartDate());
@@ -114,6 +129,12 @@ public class AdsService {
         Ads ads = adsRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Ads not found with id: " + id));
 
+        // Verify that the current user is the owner of the ads
+        UUID currentUserId = userService.getAuthenticatedUserId();
+        if (!ads.getUser().getId().equals(currentUserId)) {
+            throw new RuntimeException("You are not authorized to delete this advertisement");
+        }
+
         // Delete image from Cloudinary
         if (ads.getImagePublicId() != null) {
             cloudinaryService.deleteFile(ads.getImagePublicId());
@@ -124,26 +145,29 @@ public class AdsService {
 
     // @Transactional(readOnly = true)
     // public AdsResponseDto getAdsById(UUID id) {
-    //     Ads ads = adsRepository.findById(id)
-    //             .orElseThrow(() -> new RuntimeException("Ads not found with id: " + id));
-    //     return AdsResponseDto.fromEntity(ads);
+    // Ads ads = adsRepository.findById(id)
+    // .orElseThrow(() -> new RuntimeException("Ads not found with id: " + id));
+    // return AdsResponseDto.fromEntity(ads);
     // }
 
     @Transactional(readOnly = true)
     public Page<AdsResponseDto> getAllAds(int page, int size, String sortBy, String sortDir) {
+        // Get current user's ads only
+        UUID currentUserId = userService.getAuthenticatedUserId();
+
         Sort sort = sortDir.equalsIgnoreCase("desc") ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
         Pageable pageable = PageRequest.of(page, size, sort);
 
-        Page<Ads> adsPage = adsRepository.findAll(pageable);
+        Page<Ads> adsPage = adsRepository.findByUserId(currentUserId, pageable);
         return adsPage.map(AdsResponseDto::fromEntity);
     }
 
     // @Transactional(readOnly = true)
     // public List<AdsResponseDto> getActiveAds() {
-    //     List<Ads> activeAds = adsRepository.findActiveAds(new Date());
-    //     return activeAds.stream()
-    //             .map(AdsResponseDto::fromEntity)
-    //             .collect(Collectors.toList());
+    // List<Ads> activeAds = adsRepository.findActiveAds(new Date());
+    // return activeAds.stream()
+    // .map(AdsResponseDto::fromEntity)
+    // .collect(Collectors.toList());
     // }
 
     @Transactional(readOnly = true)
@@ -156,14 +180,48 @@ public class AdsService {
 
     // @Transactional(readOnly = true)
     // public Page<AdsResponseDto> searchAds(String keyword, int page, int size) {
-    //     Pageable pageable = PageRequest.of(page, size, Sort.by("createdDate").descending());
-    //     Page<Ads> adsPage = adsRepository.findByKeyword(keyword, pageable);
-    //     return adsPage.map(AdsResponseDto::fromEntity);
+    // Pageable pageable = PageRequest.of(page, size,
+    // Sort.by("createdDate").descending());
+    // Page<Ads> adsPage = adsRepository.findByKeyword(keyword, pageable);
+    // return adsPage.map(AdsResponseDto::fromEntity);
     // }
+
+    public List<AdsResponseDto> checkConflicts(Ads.AdsPosition position, String startDateStr, String endDateStr,
+            UUID excludeId) {
+        // Parse dates
+        Date startDate = parseISODate(startDateStr);
+        Date endDate = parseISODate(endDateStr);
+
+        // Get current user's ads only for conflict checking
+        UUID currentUserId = userService.getAuthenticatedUserId();
+
+        // Find all ads of current user in the same position that overlap with the date
+        // range
+        List<Ads> userAds = adsRepository.findUserAdsByPosition(currentUserId, position);
+
+        return userAds.stream()
+                .filter(ad -> {
+                    // Exclude the current ad being edited
+                    if (excludeId != null && ad.getId().equals(excludeId)) {
+                        return false;
+                    }
+
+                    // Check for date overlap
+                    return startDate.before(ad.getEndDate()) && endDate.after(ad.getStartDate());
+                })
+                .map(AdsResponseDto::fromEntity)
+                .collect(Collectors.toList());
+    }
 
     public AdsResponseDto toggleAdsStatus(UUID id) {
         Ads ads = adsRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Ads not found with id: " + id));
+
+        // Verify that the current user is the owner of the ads
+        UUID currentUserId = userService.getAuthenticatedUserId();
+        if (!ads.getUser().getId().equals(currentUserId)) {
+            throw new RuntimeException("You are not authorized to modify this advertisement");
+        }
 
         ads.setIsActive(!ads.getIsActive());
         Ads saved = adsRepository.save(ads);
