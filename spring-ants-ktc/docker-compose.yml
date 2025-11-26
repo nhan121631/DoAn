@@ -9,15 +9,16 @@ services:
     ports:
       - '3333:3333'
     environment:
-      # SPRING_DATASOURCE_URL: jdbc:mysql://165.22.245.241:3306/ants
-      # SPRING_DATASOURCE_USERNAME: root
-      # SPRING_DATASOURCE_PASSWORD: root_password
-      SPRING_DATASOURCE_URL: jdbc:mysql://server.aptech.io:3307/ants
-      SPRING_DATASOURCE_USERNAME: ants_user
-      SPRING_DATASOURCE_PASSWORD: ants_password
+      SPRING_DATASOURCE_URL: jdbc:mysql://165.22.245.241:3306/ants
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root_password
+      # SPRING_DATASOURCE_URL: jdbc:mysql://server.aptech.io:3307/ants
+      # SPRING_DATASOURCE_USERNAME: ants_user
+      # SPRING_DATASOURCE_PASSWORD: ants_password
       SPRING_REDIS_HOST: 165.22.245.241
       SPRING_REDIS_PORT: 6379
       SPRING_REDIS_PASSWORD: redis_password
+
     # depends_on:
     #   db:
     #     condition: service_healthy
