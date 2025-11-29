@@ -1,5 +1,5 @@
 // export const API_URL = "http://localhost:3333/api";
-export const API_URL = "https://159.223.50.29/api";
+export const API_URL = "https://jones-hold-mold-cohen.trycloudflare.com/api";
 // export const URL_IMAGE = "http://localhost:3333";
 export const URL_IMAGE = "https://res.cloudinary.com";
 export const URL_PPYTHON = "http://localhost:5001";
