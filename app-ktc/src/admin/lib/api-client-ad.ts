@@ -2,7 +2,7 @@
 import Axios, { type InternalAxiosRequestConfig } from 'axios';
 
 // const URL = 'http://localhost:3333/api'; 
-const URL = 'https://rentalroom-51g4.onrender.com/api'
+const URL = 'http://159.223.50.29/api';
 
 const apiClient = Axios.create({
   baseURL: URL,
