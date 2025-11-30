@@ -1,11 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import Axios, { type InternalAxiosRequestConfig } from 'axios';
-
-const URL = 'http://localhost:3333/api'; 
-// const URL = 'https://rentalroom-51g4.onrender.com/api'
+import { URL_API } from '../service/Constant';
 
 const apiClient = Axios.create({
-  baseURL: URL,
+  baseURL: URL_API,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -47,7 +45,7 @@ const refreshToken = async () => {
 
     // Create a new axios instance to avoid interceptors
     const refreshApiClient = Axios.create({
-      baseURL: URL,
+      baseURL: URL_API,
       headers: {
         'Content-Type': 'application/json',
       },

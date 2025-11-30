@@ -673,10 +673,10 @@ export default function UserInfoCard({ id }: { id: string }) {
                 )}
                 <span className="font-semibold">
                   {session?.user?.id
-                    ? landlord.phone
-                      ? maskPhone(landlord.phone)
-                      : maskEmail(landlord.email || "")
-                    : landlord.phone || landlord.email}
+                    ? landlord.phone || landlord.email
+                    : landlord.phone
+                    ? maskPhone(landlord.phone)
+                    : maskEmail(landlord.email || "")}
                 </span>
               </div>
             </Link>

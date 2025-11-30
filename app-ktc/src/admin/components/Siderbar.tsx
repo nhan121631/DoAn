@@ -24,6 +24,7 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
     "/admin/manage-post-type": "4",
     "/admin/manage-blogs": "5",
     "/admin/manage-advertisement": "6",
+    "/admin/chat": "7",
   };
   const location = useLocation();
   const selectedKey = pathToKey[location.pathname] || "1";

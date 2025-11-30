@@ -15,22 +15,60 @@ import {
   ChatUser,
   listenForConversations,
   markConversationAsRead,
+  fetchAdminIdsFromFirestore,
 } from "@/services/ChatService";
 
 export default function ManageChatPage() {
   const { data: session } = useSession();
   const landlordId = session?.user?.id ?? "";
 
+  // Determine if current user is a landlord (robust check using roles array)
+  const isLandlord = (() => {
+    const roles = session?.user?.roles;
+    if (Array.isArray(roles) && roles.length > 0) {
+      return roles.some((r) => String(r).toLowerCase().includes("landlord"));
+    }
+    return false;
+  })();
+
+  // Debug: log session and resolved role for troubleshooting during development
+  useEffect(() => {
+    console.log("ManageChat: session:", session);
+    console.log("ManageChat: isLandlord:", isLandlord);
+  }, [session, isLandlord]);
+
   const [userList, setUserList] = useState<ChatUser[]>([]);
+  const [adminIds, setAdminIds] = useState<Set<string>>(new Set());
   const [selectedUserId, setSelectedUserId] = useState<string>("");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string>("");
   const [showSidebar, setShowSidebar] = useState(true);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
+  // Load admin IDs once and keep in state
+  useEffect(() => {
+    // Only load admin list for landlords
+    if (!isLandlord) return;
+    let mounted = true;
+    (async () => {
+      try {
+        const ids = await fetchAdminIdsFromFirestore();
+        if (mounted) {
+          console.log("ManageChat: loaded adminIds", ids);
+          setAdminIds(ids);
+        }
+      } catch (err) {
+        console.error("ManageChat: failed to load admin IDs", err);
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, [isLandlord]);
+
   // Use a ref for a value that doesn't trigger re-render
   const lastReadTimestamps = useRef(new Map<string, Date>());
-  
+
   // Track users that have been marked as read recently to prevent overriding optimistic updates
   const recentlyMarkedAsRead = useRef(new Set<string>());
 
@@ -54,12 +92,12 @@ export default function ManageChatPage() {
           );
         }
       });
-      
+
       // Check if timestamps actually changed
       const oldSize = lastReadTimestamps.current.size;
       const newSize = newTimestamps.size;
       let hasChanged = oldSize !== newSize;
-      
+
       if (!hasChanged) {
         // Compare individual timestamps
         for (const [userId, timestamp] of newTimestamps) {
@@ -70,12 +108,12 @@ export default function ManageChatPage() {
           }
         }
       }
-      
+
       if (hasChanged) {
         lastReadTimestamps.current = newTimestamps;
         console.log("Read timestamps updated:", newTimestamps);
         // Trigger conversation list refresh
-        setRefreshTrigger(prev => prev + 1);
+        setRefreshTrigger((prev) => prev + 1);
       }
     });
 
@@ -95,71 +133,102 @@ export default function ManageChatPage() {
       landlordId,
       lastReadTimestamps,
       (users) => {
-        setUserList(prevUserList => {
-          // Filter out users that have been recently marked as read to preserve optimistic updates
-          const filteredUsers = users.map(user => {
+        setUserList((prevUserList) => {
+          // Map server users and protect recently-marked-as-read optimistic updates
+          const processed = users.map((user) => {
             if (recentlyMarkedAsRead.current.has(user.id)) {
-              // Keep the local unreadCount (which should be 0) instead of server data
-              const currentUser = prevUserList.find(u => u.id === user.id);
-              console.log(`ManageChat: Protecting user ${user.id} from server override. Server: ${user.unreadCount}, Local: ${currentUser?.unreadCount ?? 0}`);
+              const currentUser = prevUserList.find((u) => u.id === user.id);
               return {
                 ...user,
-                unreadCount: currentUser?.unreadCount ?? 0
+                unreadCount: currentUser?.unreadCount ?? 0,
               };
             }
             return user;
           });
-          
-          return filteredUsers;
+
+          // Ensure admin users are present even if they have no messages yet
+          // Only do this for landlords
+          if (isLandlord) {
+            adminIds.forEach((adminId) => {
+              if (!processed.find((u) => u.id === adminId)) {
+                // Try reuse previous info (name/avatar/unread) if available
+                const existing = prevUserList.find((u) => u.id === adminId);
+                if (existing) {
+                  processed.push(existing);
+                } else {
+                  processed.push({
+                    id: adminId,
+                    name: "ADMIN",
+                    avatar: undefined,
+                    lastMessageTime: undefined,
+                    lastMessageText: undefined,
+                    unreadCount: 0,
+                  });
+                }
+              }
+            });
+          }
+
+          return processed;
         });
       },
       setIsLoading,
       setError
     );
     return () => unsubscribe();
-  }, [landlordId, refreshTrigger]);
+  }, [landlordId, refreshTrigger, adminIds, isLandlord]);
 
   // Handle selecting a user
   const handleUserSelect = useCallback(
     async (user: ChatUser) => {
+      // Prevent non-landlord users from opening admin conversations
+      const isAdmin = adminIds.has(user.id);
+      if (isAdmin && !isLandlord) {
+        // Simple UI feedback; replace with message API if available
+        alert("Only landlords can start a conversation with Admin.");
+        return;
+      }
+
       setSelectedUserId(user.id);
-      
+
       // Add to recently marked as read to protect from server overrides
       recentlyMarkedAsRead.current.add(user.id);
-      
+
       // Immediately update local state for better UX (optimistic update)
-      setUserList(prevUsers => 
-        prevUsers.map(u => 
-          u.id === user.id ? { ...u, unreadCount: 0 } : u
-        )
+      setUserList((prevUsers) =>
+        prevUsers.map((u) => (u.id === user.id ? { ...u, unreadCount: 0 } : u))
       );
 
       try {
         await markConversationAsRead(landlordId, user.id);
-        console.log(`ManageChat: Successfully marked conversation with ${user.id} as read`);
-        
+        console.log(
+          `ManageChat: Successfully marked conversation with ${user.id} as read`
+        );
+
         // Remove protection after a delay to allow Firebase to propagate
         setTimeout(() => {
           recentlyMarkedAsRead.current.delete(user.id);
         }, 2000); // 2 seconds should be enough for Firebase to sync
-        
       } catch (error) {
-        console.error("ManageChat: Failed to mark conversation as read:", error);
+        console.error(
+          "ManageChat: Failed to mark conversation as read:",
+          error
+        );
         // Remove protection and revert the optimistic update if marking as read failed
         recentlyMarkedAsRead.current.delete(user.id);
-        setUserList(prevUsers => 
-          prevUsers.map(u => 
+        setUserList((prevUsers) =>
+          prevUsers.map((u) =>
             u.id === user.id ? { ...u, unreadCount: user.unreadCount } : u
           )
         );
       }
-      
+
       // Ẩn sidebar trên mobile khi chọn user
       if (window.innerWidth < 768) {
         setShowSidebar(false);
       }
     },
-    [landlordId]
+    [landlordId, adminIds]
   );
 
   // Handle back to sidebar on mobile
@@ -173,11 +242,15 @@ export default function ManageChatPage() {
   // Sort user list
   const sortedUserList = useMemo(() => {
     return [...userList].sort((a, b) => {
+      const aIsAdmin = adminIds.has(a.id);
+      const bIsAdmin = adminIds.has(b.id);
+      if (aIsAdmin && !bIsAdmin) return -1;
+      if (!aIsAdmin && bIsAdmin) return 1;
       const timeA = a.lastMessageTime?.getTime() || 0;
       const timeB = b.lastMessageTime?.getTime() || 0;
       return timeB - timeA;
     });
-  }, [userList]);
+  }, [userList, adminIds]);
 
   // Render logic remains the same
   return (
