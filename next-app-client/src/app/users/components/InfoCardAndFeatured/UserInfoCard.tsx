@@ -88,7 +88,8 @@ export default function UserInfoCard({ id }: { id: string }) {
   const { favoriteRoomIds } = useFavoriteStore();
   const isFavorited = favoriteRoomIds.has(id);
 
-  const currentPostUrl = `http://localhost:3000/detail/${id}`;
+  // const currentPostUrl = `http://localhost:3000/detail/${id}`;
+  const currentPostUrl = `http://antsroom.dev/detail/${id}`;
   const [onlineUsers, setOnlineUsers] = useState<string[]>([]);
 
   useEffect(() => {

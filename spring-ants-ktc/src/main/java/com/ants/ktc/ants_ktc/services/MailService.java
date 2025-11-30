@@ -122,7 +122,7 @@ public class MailService {
                 <div style='margin-top: 12px; padding-top: 8px; border-top: 1px solid #eee;'>
                   <p style='margin: 4px 0; color: #555; font-size: 12px;'><strong>👤 Liên hệ:</strong> %s</p>
                   <p style='margin: 4px 0; color: #555; font-size: 12px;'><strong>📞 Điện thoại:</strong> %s</p>
-                  <a href='http://localhost:3000/detail/%s' style='display:inline-block;margin-top:8px;padding:6px 16px;background:#1976d2;color:#fff;border-radius:4px;text-decoration:none;font-size:13px;font-weight:bold;'>Xem chi tiết</a>
+                  <a href='http://antsroom.dev/detail/%s' style='display:inline-block;margin-top:8px;padding:6px 16px;background:#1976d2;color:#fff;border-radius:4px;text-decoration:none;font-size:13px;font-weight:bold;'>Xem chi tiết</a>
                 </div>
               </div>
               """,
@@ -271,7 +271,7 @@ public class MailService {
                 </div>
 
                 <div style='text-align: center; margin: 24px 0;'>
-                  <a href='http://localhost:3000/landlord/rooms'
+                  <a href='http://antsroom.dev/landlord/rooms'
                      style='display: inline-block; padding: 12px 24px; background: #1976d2; color: #fff;
                             text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 16px;'>
                     📝 Chỉnh sửa phòng trọ
@@ -356,7 +356,7 @@ public class MailService {
                   <p style='margin: 6px 0; color: #555; font-size: 12px;'><strong>👤 Liên hệ:</strong> %s</p>
                   <p style='margin: 6px 0; color: #555; font-size: 12px;'><strong>📞 Điện thoại:</strong> %s</p>
                   <div style='text-align: center; margin-top: 12px;'>
-                    <a href='http://localhost:3000/detail/%s' style='display:inline-block;padding:10px 20px;background:linear-gradient(45deg, #1976d2, #42a5f5);color:#fff;border-radius:8px;text-decoration:none;font-size:14px;font-weight:bold;box-shadow: 0 2px 8px rgba(25,118,210,0.3);'>🔍 Xem chi tiết</a>
+                    <a href='http://antsroom.dev/detail/%s' style='display:inline-block;padding:10px 20px;background:linear-gradient(45deg, #1976d2, #42a5f5);color:#fff;border-radius:8px;text-decoration:none;font-size:14px;font-weight:bold;box-shadow: 0 2px 8px rgba(25,118,210,0.3);'>🔍 Xem chi tiết</a>
                   </div>
                 </div>
               </div>

@@ -8,6 +8,7 @@ import base64
 import time
 import shutil
 from urllib.parse import urlparse
+from gradient import Gradient
 
 load_dotenv()
 
@@ -16,6 +17,10 @@ CORS(app)
 
 # URL base cho Cloudinary
 URL_IMAGE = "https://res.cloudinary.com"
+
+# Cache đơn giản để tránh spam API
+approval_cache = {}
+cache_ttl = 300  # 5 phút
 
 # Tạo thư mục images nếu chưa có
 IMAGES_DIR = "api_gemini/images/"
@@ -26,16 +31,12 @@ def download_media_file(url, filename):
     """Tải file ảnh/video từ URL về thư mục ./images/"""
     try:
         filepath = os.path.join(IMAGES_DIR, filename)
-        print(f"[DEBUG] Đang tải {url} về {filepath}...")
-        
-        # Tải file
         response = requests.get(url, stream=True)
         response.raise_for_status()
         
         with open(filepath, 'wb') as f:
             shutil.copyfileobj(response.raw, f)
             
-        print(f"[DEBUG] Đã tải thành công: {filename}")
         return filepath
     except Exception as e:
         print(f"[ERROR] Lỗi khi tải {url}: {e}")
@@ -47,33 +48,33 @@ def cleanup_media_files(filepaths):
         try:
             if os.path.exists(filepath):
                 os.remove(filepath)
-                print(f"[DEBUG] Đã xóa file: {filepath}")
         except Exception as e:
             print(f"[ERROR] Lỗi khi xóa {filepath}: {e}")
 
 def load_approval_prompt():
     """Load prompt duyệt phòng từ file markdown"""
     try:
-        print("[DEBUG] Đang tìm file promt_approval.md...")
-        
-        # Thử các đường dẫn có thể có
         file_paths = [
-            'promt_approval.md',  # Cùng thư mục
-            './promt_approval.md',  # Cùng thư mục với ./
-            os.path.join(os.path.dirname(__file__), 'promt_approval.md'),  # Absolute path
-            '../promt_approval.md',  # Thư mục cha
-            'api_gemini/promt_approval.md',  # Từ root project
+            'promt_approval.md',
+            './promt_approval.md',
+            os.path.join(os.path.dirname(__file__), 'promt_approval.md'),
+            '../promt_approval.md',
+            'api_gemini/promt_approval.md',
         ]
         
         for file_path in file_paths:
             if os.path.exists(file_path):
-                print(f"[DEBUG] Tìm thấy file: {file_path}")
                 with open(file_path, 'r', encoding='utf-8') as f:
                     prompt_content = f.read()
                     if prompt_content.strip():
-                        print(f"✅ [SUCCESS] Đã tải thành công file promt_approval.md ({len(prompt_content)} ký tự)")
-                        # Thêm yêu cầu trả về đúng định dạng JSON
+                        # Thêm yêu cầu trả về đúng định dạng JSON và kiểm tra hình ảnh nghiêm ngặt
                         prompt_content += """
+
+## ⚠️ KIỂM TRA HÌNH ẢNH NGHIÊM NGẶT:
+- TỪ CHỐI ngay lập tức nếu phát hiện hình ảnh bạo lực, không phù hợp, khiêu dâm
+- TỪ CHỐI nếu hình ảnh có vũ khí, máu, nội dung đáng sợ
+- TỪ CHỐI nếu hình ảnh không liên quan đến phòng trọ
+- CHỈ DUYỆT khi hình ảnh thực sự cho thấy không gian sống phù hợp
 
 ## ⚠️ LƯU Ý QUAN TRỌNG:
 Bạn PHẢI trả về kết quả duyệt theo ĐÚNG định dạng JSON sau, không thêm markdown, không thêm text khác:
@@ -82,9 +83,8 @@ Bạn PHẢI trả về kết quả duyệt theo ĐÚNG định dạng JSON sau,
 {
   "status": 2,
   "content": [
-    "Lý do cụ thể 1",
-    "Lý do cụ thể 2",
-    "..."
+    "Hình ảnh chứa nội dung không phù hợp/bạo lực",
+    "Lý do cụ thể khác"
   ]
 }
 
@@ -92,10 +92,9 @@ Bạn PHẢI trả về kết quả duyệt theo ĐÚNG định dạng JSON sau,
 {
   "status": 1,
   "content": [
+    "Hình ảnh phù hợp và an toàn",
     "Diện tích đạt yêu cầu tối thiểu",
-    "Mật độ người/phòng phù hợp",
-    "Hình ảnh đầy đủ và rõ ràng",
-    "Giá thuê và điện nước hợp lý"
+    "Không gian sống phù hợp"
   ]
 }
 
@@ -160,44 +159,73 @@ DANH SÁCH FILE ĐÃ TẢI:
 
     full_prompt = f"{prompt}\n\n{room_info}\n\nHãy duyệt phòng này dựa trên thông tin và hình ảnh/video đã tải. Trả về ĐÚNG định dạng JSON yêu cầu, không có markdown, không có text thừa."
 
-    API_KEY = os.getenv("API_KEY")
-    MODEL = "gemini-2.0-flash"
-    URL = f"https://generativelanguage.googleapis.com/v1beta/models/{MODEL}:generateContent?key={API_KEY}"
-
-    # Tạo payload với ảnh/video đã tải
-    payload_parts = [{"text": full_prompt}]
+    # Initialize Gradient client for DigitalOcean
+    model_access_key = os.getenv("API_KEY_GPT")
+    if not model_access_key:
+        return {"status": 2, "content": ["Lỗi: Không tìm thấy API_KEY_GPT trong file .env"]}
     
-    # Thêm các file ảnh vào payload (chỉ ảnh, video cần xử lý khác)
+    client = Gradient(model_access_key=model_access_key)
+    MODEL = "openai-gpt-oss-120b"
+
+    # Tạo messages với hình ảnh base64 cho AI có thể "nhìn thấy" nội dung thực tế
+    messages = [
+        {
+            "role": "user", 
+            "content": [
+                {"type": "text", "text": full_prompt}
+            ]
+        }
+    ]
+    
+    # Thêm từng ảnh dưới dạng base64 để AI có thể phân tích nội dung
+    image_count = 0
     for filepath in downloaded_files:
         if filepath.lower().endswith(('.jpg', '.jpeg', '.png', '.gif', '.webp')):
             try:
                 with open(filepath, 'rb') as f:
                     image_data = base64.b64encode(f.read()).decode('utf-8')
-                    payload_parts.append({
-                        "inline_data": {
-                            "mime_type": "image/jpeg",
-                            "data": image_data
+                    messages[0]["content"].append({
+                        "type": "image_url",
+                        "image_url": {
+                            "url": f"data:image/jpeg;base64,{image_data}"
                         }
                     })
-                    print(f"[DEBUG] Đã thêm ảnh {os.path.basename(filepath)} vào payload")
+                    image_count += 1
+                    print(f"[INFO] Đã thêm ảnh {os.path.basename(filepath)} để AI phân tích")
             except Exception as e:
-                print(f"[ERROR] Lỗi khi thêm ảnh {filepath}: {e}")
-
-    payload = {"contents": [{"parts": payload_parts}]}
-    headers = {"Content-Type": "application/json"}
+                print(f"[ERROR] Lỗi khi mã hóa ảnh {filepath}: {e}")
+    
+    if image_count == 0:
+        # Nếu không có ảnh, từ chối luôn
+        return {"status": 2, "content": ["Không có hình ảnh để duyệt - Yêu cầu ít nhất 1 ảnh phòng"]}
     
     try:
-        print(f"[DEBUG] Đang gửi request tới Gemini AI với {len(downloaded_files)} files...")
-        resp = requests.post(URL, headers=headers, data=json.dumps(payload), timeout=20)
+        # Retry mechanism for rate limits
+        max_retries = 3
+        retry_delay = 2  # seconds
+        text = ""
         
-        # Kiểm tra lỗi 429 (Too Many Requests)
-        if resp.status_code == 429:
-            print(f"[WARNING] Rate limit exceeded (429), returning status 0...")
-            return {"status": 0, "content": ["Too many requests - Rate limit exceeded"]}
-        
-        resp.raise_for_status()
-        result = resp.json()
-        text = result["candidates"][0]["content"]["parts"][0]["text"].strip()
+        for attempt in range(max_retries):
+            try:
+                response = client.chat.completions.create(
+                    messages=messages,
+                    model=MODEL,
+                    max_tokens=1000
+                )
+                
+                text = response.choices[0].message.content.strip()
+                break  # Success, exit retry loop
+                
+            except Exception as api_error:
+                error_msg = str(api_error)
+                if ("rate" in error_msg.lower() or "429" in error_msg or "limit" in error_msg.lower()) and attempt < max_retries - 1:
+                    print(f"[WARNING] Rate limit hit, attempt {attempt + 1}/{max_retries}. Waiting {retry_delay}s...")
+                    time.sleep(retry_delay)
+                    retry_delay *= 2  # Exponential backoff
+                    continue
+                else:
+                    # Final attempt failed or non-rate-limit error
+                    raise api_error
         
         # Parse JSON response
         try:
@@ -225,27 +253,30 @@ DANH SÁCH FILE ĐÃ TẢI:
             
             return approval_result
             
-        except Exception as e:
-            print(f"[ERROR] Failed to parse AI response: {e}")
-            print(f"[DEBUG] Raw response: {text}")
+        except Exception as parse_error:
+            print(f"[ERROR] Failed to parse AI response: {parse_error}")
             return {
                 "status": 2, 
-                "content": [f"Lỗi parse JSON: {str(e)}", f"Raw response: {text[:200]}..."]
+                "content": [f"Lỗi parse JSON: {str(parse_error)}", f"Raw response: {text[:200]}..."]
             }
             
-    except requests.exceptions.HTTPError as e:
-        if e.response.status_code == 429:
-            print(f"[WARNING] Rate limit exceeded (429), returning status 0...")
-            return {"status": 0, "content": ["Too many requests - Rate limit exceeded"]}
-        else:
-            print(f"[ERROR] HTTP Error: {e}")
-            return {"status": 2, "content": [f"Lỗi HTTP: {str(e)}"]}
     except Exception as e:
-        print(f"[ERROR] AI API call failed: {e}")
-        return {"status": 2, "content": [f"Lỗi gọi API: {str(e)}"]}
+        error_msg = str(e)
+        if "rate" in error_msg.lower() or "429" in error_msg or "limit" in error_msg.lower():
+            print(f"[WARNING] Final rate limit failure after retries")
+            return {"status": 0, "content": ["Too many requests - Rate limit exceeded after retries"]}
+        elif "invalid" in error_msg.lower() or "401" in error_msg or "403" in error_msg:
+            print(f"[ERROR] Invalid API key or access denied")
+            return {"status": 2, "content": [
+                "Model Access Key không hợp lệ hoặc không có quyền truy cập",
+                "Kiểm tra MODEL_ACCESS_KEY trong file .env",
+                "Đảm bảo tài khoản DigitalOcean có credits"
+            ]}
+        else:
+            print(f"[ERROR] DigitalOcean API call failed: {e}")
+            return {"status": 2, "content": [f"Lỗi gọi DigitalOcean API: {str(e)}"]}
     finally:
         # Xóa các file đã tải sau khi xử lý
-        print(f"[DEBUG] Đang xóa {len(downloaded_files)} files đã tải...")
         cleanup_media_files(downloaded_files)
 
 
@@ -328,7 +359,7 @@ def ai_chatbot():
             room_id_str = str(uuid.UUID(bytes=row[0]))
         else:
             room_id_str = str(room_id)
-        link = f"http://antsroom.dev/detail/{room_id_str}"
+        link = f"http://localhost:3000/detail/{room_id_str}"
         rooms_text += f"- Title: {info.get('title','')}\n"
         rooms_text += f"  Address: {info.get('full_address','')}\n"
         rooms_text += f"  Price: {info.get('price_month','')} VNĐ/month\n"
@@ -340,47 +371,80 @@ def ai_chatbot():
     # Thêm prompt chi tiết nếu chưa có
     if not history or 'Bạn là Ants' not in str(history[0]):
         initial_prompt = (
-            "Bạn là Ants, trợ lý ảo cho website Ants chuyên về phòng trọ cho thuê, \n"
-            "- Luôn trả lời bằng tiếng Anh.\n\n"
-            "Nhiệm vụ của bạn:\n"
-            "- Giới thiệu và tư vấn về các lựa chọn cho thuê dựa trên dữ liệu có sẵn.\n"
-            "- Không trả lời ngoài phạm vi dịch vụ cho thuê phòng trọ của Ants.\n"
-            "- Chỉ trả lời ngắn gọn liên quan đến câu hỏi của người dùng.\n"
-            "- Giải thích rõ ràng giá cả, tiện nghi, vị trí, điều kiện cho thuê và quy trình đặt phòng.\n"
-            "- Nếu có câu hỏi cụ thể, hãy trả lời các phòng phù hợp nhất.\n" 
-            "- Trả lời lịch sự, giọng điệu thân thiện, cung cấp thông tin chính xác, ngắn gọn và dễ hiểu.\n"
-            "- Nếu thông tin không có sẵn, trả lời: "
-            "I'm sorry, currently I do not have information about suitable rooms for rent. "
-            "Please visit our website or contact our hotline 0388953628 for more details.\n"
-            "- Không trả lời các câu hỏi không liên quan đến dịch vụ cho thuê, nhà ở hoặc dịch vụ của Ants.\n"
-            "- Quy trình đặt phòng: 1. Tìm kiếm phòng phù hợp 2. Xem chi tiết phòng 3. Chọn đặt phòng 4. Theo dõi trạng thái thuê ở trang lịch sử thuê 5. Đặt cọc qua chuyển khoản là đã hoàn thành thuê phòng.\n"
-            "- Always include a clickable link to the room in Markdown format: 🔗 [View room details]({link})\n\n"
-            f"Available room data:\n{rooms_text}"
+            "Bạn là Ants, trợ lý ảo cho website Ants chuyên về phòng trọ cho thuê.\n\n"
+            "NGUYÊN TẮC TRỢ LÝ:\n"
+            "- Trả lời ngắn gọn, tập trung vào câu hỏi cụ thể của người dùng\n"
+            "- Trả lời bằng tiếng anh\n"
+            "- Chỉ cung cấp thông tin được hỏi, không lan man\n"
+            "- Nếu hỏi về phòng trọ, trả lời bằng định dạng markdown rõ ràng\n"
+            "- Không trả lời câu hỏi không liên quan đến phòng trọ\n\n"
+            "ĐỊNH DẠNG KHI TRẢ LỜI VỀ PHÒNG TRỌ:\n"
+            "## 🏠 Phòng phù hợp\n\n"
+            "### 📍 [Tên phòng](link)\n"
+            "- **Giá thuê:** X VNĐ/tháng\n"
+            "- **Diện tích:** X m²\n" 
+            "- **Địa chỉ:** địa chỉ đầy đủ\n"
+            "- **Tiện ích:** danh sách tiện ích\n\n"
+            "🔗 [Xem chi tiết](link)\n\n"
+            "THÔNG TIN LIÊN HỆ:\n"
+            "📞 Hotline: 0388953628\n\n"
+            f"DỮ LIỆU PHÒNG CÓ SẴN:\n{rooms_text}"
         )
         history = [{'role': 'user', 'text': initial_prompt}] + history
 
-    # Chuẩn bị payload gửi API Gemini
-    API_KEY = os.getenv("API_KEY")
-    MODEL = "gemini-2.0-flash"
-    URL = f"https://generativelanguage.googleapis.com/v1beta/models/{MODEL}:generateContent?key={API_KEY}"
+    # Chuẩn bị messages cho Gradient client
+    model_access_key = os.getenv("API_KEY_GPT")
+    if not model_access_key:
+        return jsonify({"reply": "Lỗi: Không tìm thấy API_KEY_GPT trong file .env"})
+    
+    client = Gradient(model_access_key=model_access_key)
+    MODEL = "openai-gpt-oss-120b"
 
-    parts = []
+    messages = []
     for turn in history:
         if turn['role'] == 'user':
-            parts.append({"text": f"Bạn: {turn['text']}"})
+            messages.append({"role": "user", "content": turn['text']})
         else:
-            parts.append({"text": turn['text']})
-
-    payload = {"contents": [{"parts": parts}]}
-    headers = {"Content-Type": "application/json"}
+            messages.append({"role": "assistant", "content": turn['text']})
 
     try:
-        resp = requests.post(URL, headers=headers, data=json.dumps(payload), timeout=15)
-        resp.raise_for_status()
-        result = resp.json()
-        reply = result["candidates"][0]["content"]["parts"][0]["text"]
+        # Retry mechanism for chatbot
+        max_retries = 2
+        retry_delay = 1
+        
+        for attempt in range(max_retries):
+            try:
+                response = client.chat.completions.create(
+                    messages=messages,
+                    model=MODEL,
+                    max_tokens=1500
+                )
+                reply = response.choices[0].message.content
+                break
+                
+            except Exception as api_error:
+                error_msg = str(api_error)
+                if ("rate" in error_msg.lower() or "429" in error_msg or "limit" in error_msg.lower()) and attempt < max_retries - 1:
+                    time.sleep(retry_delay)
+                    retry_delay *= 2
+                    continue
+                else:
+                    raise api_error
+                    
     except Exception as e:
-        reply = f"Lỗi khi gọi API: {str(e)}"
+        error_msg = str(e)
+        if "rate" in error_msg.lower() or "429" in error_msg or "limit" in error_msg.lower():
+            reply = """⏳ **Tạm thời quá tải**
+
+Hệ thống AI đang bận, vui lòng:
+- Chờ 1-2 phút rồi thử lại
+- Hoặc liên hệ hotline: 0388953628"""
+        elif "invalid" in error_msg.lower() or "401" in error_msg or "403" in error_msg:
+            reply = """❌ **Model Access Key không hợp lệ**
+
+Kiểm tra API_KEY_GPT trong file .env và đảm bảo tài khoản có credits."""
+        else:
+            reply = f"Lỗi khi gọi DigitalOcean Gradient API: {error_msg}"
 
     return jsonify({"reply": reply})
 
@@ -442,12 +506,43 @@ def ai_approval():
                 "content": ["Không thể tải file prompt duyệt phòng (promt_approval.md)"]
             }), 500
         
-        print(f"[DEBUG] Bắt đầu duyệt phòng ID: {room_data.get('id')}")
+        # Kiểm tra tiêu đề và nội dung không phù hợp trước khi gọi AI
+        title = room_data.get('title', '').lower()
+        description = room_data.get('description', '').lower()
         
-        # Gọi Gemini để duyệt phòng
+        # Danh sách từ khóa không phù hợp
+        inappropriate_keywords = [
+            'nguuu', 'nguu', 'test', 'demo', 'fake', 'spam',
+            'xxx', 'sex', 'porn', 'violence', 'bạo lực', 
+            'đánh nhau', 'máu', 'vũ khí', 'knife', 'gun'
+        ]
+        
+        for keyword in inappropriate_keywords:
+            if keyword in title or keyword in description:
+                return jsonify({
+                    "status": 2,
+                    "content": [f"Tiêu đề/mô tả chứa từ khóa không phù hợp: '{keyword}'",
+                               "Vui lòng sử dụng tiêu đề nghiêm túc cho phòng trọ"]
+                })
+        
+        # Kiểm tra cache trước khi gọi AI (để tránh spam)
+        room_hash = f"{room_data.get('id', '')}{len(room_data.get('images', []))}{room_data.get('title', '')}"
+        current_time = time.time()
+        
+        if room_hash in approval_cache:
+            cache_data = approval_cache[room_hash]
+            if current_time - cache_data['timestamp'] < cache_ttl:
+                print(f"[INFO] Trả kết quả từ cache cho room {room_data.get('id', '')}")
+                return jsonify(cache_data['result'])
+        
+        # Gọi AI để duyệt phòng (với hình ảnh thực tế)
         approval_result = approve_room_with_gemini(room_data, prompt)
         
-        print(f"[DEBUG] Kết quả duyệt: {approval_result}")
+        # Lưu vào cache
+        approval_cache[room_hash] = {
+            'result': approval_result,
+            'timestamp': current_time
+        }
         
         # Trả về kết quả
         return jsonify(approval_result)
