@@ -12,13 +12,11 @@ import type { ChatUser } from "../service/ChatService";
 import { URL_IMAGE } from "../service/Constant";
 
 export default function ChatPage() {
-  // Get admin ID from auth storage (similar to landlordId from session in next-app-client)
   const getAdminId = () => {
     try {
       const authStorage = localStorage.getItem("auth-storage");
       if (authStorage) {
         const parsed = JSON.parse(authStorage);
-        // The correct structure from zustand persist is: state.loggedInUser.id
         return parsed?.state?.loggedInUser?.id || "";
       }
     } catch (error) {
