@@ -6,7 +6,7 @@ import { Link, useLocation } from "react-router";
 import { FaChartLine } from "react-icons/fa";
 import { MdSupervisorAccount } from "react-icons/md";
 import { RiAdvertisementLine, RiHotelLine } from "react-icons/ri";
-import { MdArticle } from "react-icons/md";
+import { MdArticle, MdOutlineChat  } from "react-icons/md";
 import { BsFillFilePostFill } from "react-icons/bs";
 
 const { Sider } = Layout;
@@ -80,6 +80,11 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
             key: "6",
             icon: <RiAdvertisementLine />,
             label: <Link to="/admin/manage-advertisement">Manage Advertisement</Link>,
+          },
+          {
+            key: "7",
+            icon: <MdOutlineChat />,
+            label: <Link to="/admin/chat">Chat</Link>,
           },
         ]}
       />
