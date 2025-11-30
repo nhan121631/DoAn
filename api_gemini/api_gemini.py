@@ -328,7 +328,7 @@ def ai_chatbot():
             room_id_str = str(uuid.UUID(bytes=row[0]))
         else:
             room_id_str = str(room_id)
-        link = f"http://antsroom.dev/detail/{room_id_str}"
+        link = f"http://localhost:3000/detail/{room_id_str}"
         rooms_text += f"- Title: {info.get('title','')}\n"
         rooms_text += f"  Address: {info.get('full_address','')}\n"
         rooms_text += f"  Price: {info.get('price_month','')} VNĐ/month\n"
