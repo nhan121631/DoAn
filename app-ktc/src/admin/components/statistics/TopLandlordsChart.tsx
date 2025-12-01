@@ -118,7 +118,7 @@ const TopLandlordsChart = ({
       ),
     },
     {
-      title: "Total Revenue",
+      title: "Wallet Cash Flow",
       dataIndex: "totalRevenue",
       key: "totalRevenue",
       sorter: (a, b) => a.totalRevenue - b.totalRevenue,

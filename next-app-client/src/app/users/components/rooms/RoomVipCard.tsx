@@ -12,8 +12,9 @@ import RoomCartActionsWrapper from "./RoomCardActionsWrapper";
 import { useRouter } from "next/navigation";
 import { useCompareStore } from "@/stores/CompareStore";
 import { message } from "antd";
-import { useEffect, useRef, useState, useMemo } from "react"; // THÊM useEffect, useRef, useState
+import { useEffect, useRef, useState, useMemo } from "react";
 import { FaPlay, FaPause } from "react-icons/fa";
+import { useSession } from "next-auth/react";
 
 interface RoomVipCardProps {
   room: RoomInUser;
@@ -27,6 +28,7 @@ export default function RoomVipCard({
   onFavoriteChange,
 }: RoomVipCardProps) {
   const router = useRouter();
+  const { data: session } = useSession();
   const { items, addItem } = useCompareStore((state) => state);
   const [isCompared, setIsCompared] = useState(false);
   const [messageApi, contextHolder] = message.useMessage();
@@ -543,11 +545,16 @@ export default function RoomVipCard({
                     const phone = room.landlord.landlordProfile.phoneNumber;
                     const email = room.landlord.landlordProfile.email;
 
+                    // If user is logged in, show full contact info
+                    if (session) {
+                      return phone || email || "N/A";
+                    }
+
+                    // If not logged in, mask the contact info
                     function maskPhone(p: string | undefined | null) {
                       if (!p) return "";
                       const cleaned = p.replace(/\s+/g, "");
                       if (cleaned.length <= 6) {
-                        // fallback: replace middle chars with asterisks
                         return cleaned.replace(/.(?=.{3}$)/g, "*");
                       }
                       const prefix = cleaned.slice(0, 2);
@@ -559,7 +566,6 @@ export default function RoomVipCard({
                       if (!e) return "";
                       const parts = e.split("@");
                       if (parts.length !== 2) {
-                        // not a standard email, mask similarly to phone
                         return e.replace(/.(?=.{3}$)/g, "*");
                       }
                       const local = parts[0];

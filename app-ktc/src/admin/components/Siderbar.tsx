@@ -6,7 +6,7 @@ import { Link, useLocation } from "react-router";
 import { FaChartLine } from "react-icons/fa";
 import { MdSupervisorAccount } from "react-icons/md";
 import { RiAdvertisementLine, RiHotelLine } from "react-icons/ri";
-import { MdArticle } from "react-icons/md";
+import { MdArticle, MdOutlineChat  } from "react-icons/md";
 import { BsFillFilePostFill } from "react-icons/bs";
 
 const { Sider } = Layout;
@@ -24,6 +24,7 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
     "/admin/manage-post-type": "4",
     "/admin/manage-blogs": "5",
     "/admin/manage-advertisement": "6",
+    "/admin/chat": "7",
   };
   const location = useLocation();
   const selectedKey = pathToKey[location.pathname] || "1";
@@ -80,6 +81,11 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
             key: "6",
             icon: <RiAdvertisementLine />,
             label: <Link to="/admin/manage-advertisement">Manage Advertisement</Link>,
+          },
+          {
+            key: "7",
+            icon: <MdOutlineChat />,
+            label: <Link to="/admin/chat">Chat</Link>,
           },
         ]}
       />

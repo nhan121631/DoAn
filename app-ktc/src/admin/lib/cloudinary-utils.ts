@@ -1,11 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // Utility functions for Cloudinary URL handling
+import { URL_IMAGE } from '../service/Constant';
 
 /**
  * Cloudinary configuration
  */
 export const CLOUDINARY_CONFIG = {
-  baseUrl: 'https://res.cloudinary.com',
+  baseUrl: URL_IMAGE,
   // You can add more config here if needed
 };
 

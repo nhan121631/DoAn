@@ -107,8 +107,7 @@ export default function LandlordInfoCard({
             {/* Email - directly below name, no box */}
             {landlord.email && (
               <p className="text-sm text-white/80 mb-3 truncate max-w-[200px]">
-                {/* {session?.user?.id ? maskEmail(landlord.email) : landlord.email} */}
-                {maskEmail(landlord.email)}
+                {session?.user?.id ? landlord.email : maskEmail(landlord.email)}
               </p>
             )}
 
@@ -174,10 +173,9 @@ export default function LandlordInfoCard({
               <div className="relative flex items-center gap-3">
                 <MdPhone className="w-5 h-5" />
                 <span className="font-semibold">
-                  {/* {session?.user?.id
-                    ? maskPhone(landlord.phoneNumber)
-                    : landlord.phoneNumber} */}
-                  {maskPhone(landlord.phoneNumber)}
+                  {session?.user?.id
+                    ? landlord.phoneNumber
+                    : maskPhone(landlord.phoneNumber)}
                 </span>
               </div>
             </Link>
