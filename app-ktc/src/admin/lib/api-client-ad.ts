@@ -47,7 +47,7 @@ const refreshToken = async () => {
 
     // Create a new axios instance to avoid interceptors
     const refreshApiClient = Axios.create({
-      baseURL: URL_API,
+      baseURL: URL,
       headers: {
         'Content-Type': 'application/json',
       },
