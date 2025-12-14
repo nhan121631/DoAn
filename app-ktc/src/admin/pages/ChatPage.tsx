@@ -323,130 +323,132 @@ export default function ChatPage() {
             ))}
           </div>
         ) : (
-          <div className="space-y-3 flex-1 min-h-0 overflow-y-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-slate-200 px-6 pb-6">
-            {sortedUserList.length === 0 && (
-              <div className="text-center py-12 animate-fade-in">
-                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-slate-200 to-slate-300 dark:from-gray-800 dark:to-gray-700 flex items-center justify-center">
-                  <svg
-                    className="w-8 h-8 text-slate-400 dark:text-gray-500"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-                    />
-                  </svg>
+          <div className="flex-1 min-h-0 overflow-y-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-slate-200 dark:scrollbar-thumb-gray-700 px-6 pb-6">
+            <div className="space-y-3">
+              {sortedUserList.length === 0 && (
+                <div className="text-center py-12 animate-fade-in">
+                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-slate-200 to-slate-300 dark:from-gray-800 dark:to-gray-700 flex items-center justify-center">
+                    <svg
+                      className="w-8 h-8 text-slate-400 dark:text-gray-500"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                      />
+                    </svg>
+                  </div>
+                  <p className="text-slate-500 dark:text-gray-300 font-medium">
+                    No conversations yet
+                  </p>
+                  <p className="text-slate-400 dark:text-gray-500 text-sm mt-1">
+                    Start chatting to see messages here
+                  </p>
                 </div>
-                <p className="text-slate-500 dark:text-gray-300 font-medium">
-                  No conversations yet
-                </p>
-                <p className="text-slate-400 dark:text-gray-500 text-sm mt-1">
-                  Start chatting to see messages here
-                </p>
-              </div>
-            )}
-            {sortedUserList.map((user, index) => {
-              const isSelected = selectedUserId === user.id;
-              let timeStr = "";
-              if (user.lastMessageTime) {
-                const d = user.lastMessageTime;
-                const now = new Date();
-                if (d.toDateString() === now.toDateString()) {
-                  timeStr = d.toLocaleTimeString([], {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                    hour12: false,
-                  });
-                } else {
-                  timeStr = d.toLocaleDateString();
+              )}
+              {sortedUserList.map((user, index) => {
+                const isSelected = selectedUserId === user.id;
+                let timeStr = "";
+                if (user.lastMessageTime) {
+                  const d = user.lastMessageTime;
+                  const now = new Date();
+                  if (d.toDateString() === now.toDateString()) {
+                    timeStr = d.toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      hour12: false,
+                    });
+                  } else {
+                    timeStr = d.toLocaleDateString();
+                  }
                 }
-              }
-              return (
-                <div
-                  key={user.id}
-                  className="animate-fade-in-up"
-                  style={{ animationDelay: `${index * 50}ms` }}
-                >
-                  <button
-                    className={`group relative w-full text-left px-5 py-4 rounded-2xl transition-all duration-300 flex items-center gap-4 border-2 ${
-                      isSelected
-                        ? "border-blue-500 bg-gradient-to-r from-blue-100 to-purple-100 shadow-lg dark:from-blue-900 dark:to-purple-900"
-                        : "border-transparent bg-white dark:bg-gray-800"
-                    } hover:border-blue-400 hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 dark:hover:from-blue-900 dark:hover:to-purple-900`}
-                    onClick={() => handleUserSelect(user)}
+                return (
+                  <div
+                    key={user.id}
+                    className="animate-fade-in-up"
+                    style={{ animationDelay: `${index * 50}ms` }}
                   >
-                    {/* Avatar */}
-                    <div className="relative w-14 h-14">
-                      <div
-                        className={`w-14 h-14 rounded-full flex items-center justify-center font-bold text-xl shadow-lg ${
-                          isSelected
-                            ? "bg-gradient-to-br from-blue-400 to-purple-400 text-white"
-                            : "bg-gradient-to-br from-blue-300 to-purple-300 text-white"
-                        } transition-all duration-300 group-hover:scale-105 overflow-hidden`}
-                      >
-                        {user.avatar ? (
-                          <img
-                            src={`${URL_IMAGE + user.avatar}`}
-                            alt={user.name || "User"}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          (user.name || "?").charAt(0).toUpperCase()
-                        )}
-                      </div>
-
-                      {/* Unread badge */}
-                      {user.unreadCount && user.unreadCount > 0 ? (
-                        <div className="absolute -top-1 -right-1 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center text-white text-xs font-bold shadow-lg animate-bounce">
-                          {user.unreadCount > 9 ? "9+" : user.unreadCount}
-                        </div>
-                      ) : null}
-                    </div>
-
-                    {/* User info */}
-                    <div className="flex-1 min-w-0 relative z-10">
-                      <div className="flex items-center justify-between mb-1">
-                        <h3
-                          className={`font-semibold ${
+                    <button
+                      className={`group relative w-full text-left px-5 py-4 rounded-2xl transition-all duration-300 flex items-center gap-4 border-2 ${
+                        isSelected
+                          ? "border-blue-500 bg-gradient-to-r from-blue-100 to-purple-100 shadow-lg dark:from-blue-900 dark:to-purple-900"
+                          : "border-transparent bg-white dark:bg-gray-800"
+                      } hover:border-blue-400 hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 dark:hover:from-blue-900 dark:hover:to-purple-900`}
+                      onClick={() => handleUserSelect(user)}
+                    >
+                      {/* Avatar */}
+                      <div className="relative w-14 h-14">
+                        <div
+                          className={`w-14 h-14 rounded-full flex items-center justify-center font-bold text-xl shadow-lg ${
                             isSelected
-                              ? "text-blue-700 dark:text-blue-300"
-                              : "text-gray-900 dark:text-white"
-                          } truncate`}
+                              ? "bg-gradient-to-br from-blue-400 to-purple-400 text-white"
+                              : "bg-gradient-to-br from-blue-300 to-purple-300 text-white"
+                          } transition-all duration-300 group-hover:scale-105 overflow-hidden`}
                         >
-                          {user.name || "Unknown"}
-                        </h3>
-                        {timeStr && (
-                          <span
-                            className={`text-xs ${
-                              isSelected
-                                ? "text-blue-600 dark:text-blue-400"
-                                : "text-gray-500 dark:text-gray-400"
-                            }`}
-                          >
-                            {timeStr}
-                          </span>
-                        )}
-                      </div>
-                      <p
-                        className={`text-sm truncate ${
-                          user.unreadCount && user.unreadCount > 0
-                            ? "font-semibold text-gray-900 dark:text-white"
-                            : "text-gray-500 dark:text-gray-400"
-                        }`}
-                      >
-                        {user.lastMessageText || "No messages yet"}
-                      </p>
-                    </div>
+                          {user.avatar ? (
+                            <img
+                              src={`${URL_IMAGE + user.avatar}`}
+                              alt={user.name || "User"}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            (user.name || "?").charAt(0).toUpperCase()
+                          )}
+                        </div>
 
-                    <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-blue-500/0 to-purple-500/0 group-hover:from-blue-500/10 group-hover:to-purple-500/10 transition-all duration-300 pointer-events-none z-0" />
-                  </button>
-                </div>
-              );
-            })}
+                        {/* Unread badge */}
+                        {user.unreadCount && user.unreadCount > 0 ? (
+                          <div className="absolute -top-1 -right-1 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center text-white text-xs font-bold shadow-lg animate-bounce">
+                            {user.unreadCount > 9 ? "9+" : user.unreadCount}
+                          </div>
+                        ) : null}
+                      </div>
+
+                      {/* User info */}
+                      <div className="flex-1 min-w-0 relative z-10">
+                        <div className="flex items-center justify-between mb-1">
+                          <h3
+                            className={`font-semibold ${
+                              isSelected
+                                ? "text-blue-700 dark:text-blue-300"
+                                : "text-gray-900 dark:text-white"
+                            } truncate`}
+                          >
+                            {user.name || "Unknown"}
+                          </h3>
+                          {timeStr && (
+                            <span
+                              className={`text-xs ${
+                                isSelected
+                                  ? "text-blue-600 dark:text-blue-400"
+                                  : "text-gray-500 dark:text-gray-400"
+                              }`}
+                            >
+                              {timeStr}
+                            </span>
+                          )}
+                        </div>
+                        <p
+                          className={`text-sm truncate ${
+                            user.unreadCount && user.unreadCount > 0
+                              ? "font-semibold text-gray-900 dark:text-white"
+                              : "text-gray-500 dark:text-gray-400"
+                          }`}
+                        >
+                          {user.lastMessageText || "No messages yet"}
+                        </p>
+                      </div>
+
+                      <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-blue-500/0 to-purple-500/0 group-hover:from-blue-500/10 group-hover:to-purple-500/10 transition-all duration-300 pointer-events-none z-0" />
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         )}
       </div>
@@ -558,6 +560,13 @@ export default function ChatPage() {
         }
         .scrollbar-thumb-slate-200::-webkit-scrollbar-thumb:hover {
           background-color: rgb(203 213 225);
+        }
+        .dark .scrollbar-thumb-gray-700::-webkit-scrollbar-thumb {
+          background-color: rgb(55 65 81);
+          border-radius: 3px;
+        }
+        .dark .scrollbar-thumb-gray-700::-webkit-scrollbar-thumb:hover {
+          background-color: rgb(75 85 99);
         }
         @keyframes fade-in-up {
           from {
