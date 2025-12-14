@@ -161,10 +161,17 @@ DANH SÁCH FILE ĐÃ TẢI:
     full_prompt = f"{prompt}\n\n{room_info}\n\nHãy duyệt phòng này dựa trên thông tin và hình ảnh/video đã tải. Trả về ĐÚNG định dạng JSON yêu cầu, không có markdown, không có text thừa."
 
     API_KEY = os.getenv("API_KEY")
-    MODEL = "gemini-2.0-flash"
-    URL = f"https://generativelanguage.googleapis.com/v1beta/models/{MODEL}:generateContent?key={API_KEY}"
+    
+    # Danh sách các model để thử (theo thứ tự ưu tiên) - Giống chatbot
+    # Tất cả đều hỗ trợ vision tasks (ảnh/video)
+    models_to_try = [
+        "gemini-2.5-flash",          # ⭐ Mới nhất, tốt nhất cho vision (June 2025)
+        "gemini-flash-latest",       # Auto-update to latest flash version
+        "gemini-2.0-flash",          # Stable backup (Jan 2025)
+        "gemini-2.0-flash-lite",     # Nhanh, nhẹ cho approval nhanh
+    ]
 
-    # Tạo payload với ảnh/video đã tải
+    # Tạo payload với ảnh/video đã tải (dùng chung cho tất cả models)
     payload_parts = [{"text": full_prompt}]
     
     # Thêm các file ảnh vào payload (chỉ ảnh, video cần xử lý khác)
@@ -186,66 +193,94 @@ DANH SÁCH FILE ĐÃ TẢI:
     payload = {"contents": [{"parts": payload_parts}]}
     headers = {"Content-Type": "application/json"}
     
+    # Sử dụng try-finally để đảm bảo cleanup files
     try:
-        print(f"[DEBUG] Đang gửi request tới Gemini AI với {len(downloaded_files)} files...")
-        resp = requests.post(URL, headers=headers, data=json.dumps(payload), timeout=20)
+        # Thử các model theo thứ tự
+        last_error = None
+        for MODEL in models_to_try:
+            try:
+                URL = f"https://generativelanguage.googleapis.com/v1beta/models/{MODEL}:generateContent?key={API_KEY}"
+                print(f"[DEBUG] Trying approval with model: {MODEL} ({len(downloaded_files)} images)")
+                
+                resp = requests.post(URL, headers=headers, data=json.dumps(payload), timeout=20)
+                
+                # Kiểm tra lỗi 429 (Rate Limit) - thử model tiếp theo
+                if resp.status_code == 429:
+                    print(f"[WARNING] Rate limit exceeded for {MODEL}, trying next model...")
+                    last_error = "Rate limit exceeded"
+                    time.sleep(1)  # Đợi 1 giây trước khi thử model khác
+                    continue
+                
+                # Kiểm tra lỗi 404 (Model not found) - thử model tiếp theo
+                if resp.status_code == 404:
+                    print(f"[WARNING] Model {MODEL} not found, trying next model...")
+                    last_error = f"Model {MODEL} not available"
+                    continue
+                
+                resp.raise_for_status()
+                result = resp.json()
+                text = result["candidates"][0]["content"]["parts"][0]["text"].strip()
+                
+                # Parse JSON response
+                try:
+                    # Loại bỏ markdown formatting
+                    if '```json' in text:
+                        text = text.split('```json')[1].split('```')[0].strip()
+                    elif '```' in text:
+                        text = text.split('```')[1].split('```')[0].strip()
+                    
+                    # Loại bỏ text thừa trước và sau JSON
+                    json_start = text.find('{')
+                    json_end = text.rfind('}') + 1
+                    if json_start >= 0 and json_end > json_start:
+                        text = text[json_start:json_end]
+                    
+                    approval_result = json.loads(text)
+                    
+                    # Validate JSON structure
+                    if not isinstance(approval_result, dict):
+                        raise ValueError("Response is not a dict")
+                    if 'status' not in approval_result or 'content' not in approval_result:
+                        raise ValueError("Missing required fields")
+                    if not isinstance(approval_result['content'], list):
+                        raise ValueError("Content must be a list")
+                    
+                    print(f"[SUCCESS] Approval completed with {MODEL}")
+                    return approval_result
+                    
+                except Exception as e:
+                    print(f"[ERROR] Failed to parse response from {MODEL}: {e}")
+                    print(f"[DEBUG] Raw response: {text[:200]}...")
+                    last_error = f"Parse error: {str(e)}"
+                    continue
+                    
+            except requests.exceptions.HTTPError as e:
+                print(f"[ERROR] HTTP Error with {MODEL}: {e}")
+                last_error = str(e)
+                continue
+            except Exception as e:
+                print(f"[ERROR] Error with {MODEL}: {e}")
+                last_error = str(e)
+                continue
         
-        # Kiểm tra lỗi 429 (Too Many Requests)
-        if resp.status_code == 429:
-            print(f"[WARNING] Rate limit exceeded (429), returning status 0...")
-            return {"status": 0, "content": ["Too many requests - Rate limit exceeded"]}
+        # Nếu tất cả model đều thất bại
+        print(f"[FATAL] All approval models failed. Last error: {last_error}")
         
-        resp.raise_for_status()
-        result = resp.json()
-        text = result["candidates"][0]["content"]["parts"][0]["text"].strip()
-        
-        # Parse JSON response
-        try:
-            # Loại bỏ markdown formatting
-            if '```json' in text:
-                text = text.split('```json')[1].split('```')[0].strip()
-            elif '```' in text:
-                text = text.split('```')[1].split('```')[0].strip()
-            
-            # Loại bỏ text thừa trước và sau JSON
-            json_start = text.find('{')
-            json_end = text.rfind('}') + 1
-            if json_start >= 0 and json_end > json_start:
-                text = text[json_start:json_end]
-            
-            approval_result = json.loads(text)
-            
-            # Validate JSON structure
-            if not isinstance(approval_result, dict):
-                raise ValueError("Response is not a dict")
-            if 'status' not in approval_result or 'content' not in approval_result:
-                raise ValueError("Missing required fields")
-            if not isinstance(approval_result['content'], list):
-                raise ValueError("Content must be a list")
-            
-            return approval_result
-            
-        except Exception as e:
-            print(f"[ERROR] Failed to parse AI response: {e}")
-            print(f"[DEBUG] Raw response: {text}")
+        # Trả về status 0 nếu là rate limit, status 2 nếu lỗi khác
+        if "rate limit" in str(last_error).lower() or "429" in str(last_error):
             return {
-                "status": 2, 
-                "content": [f"Lỗi parse JSON: {str(e)}", f"Raw response: {text[:200]}..."]
+                "status": 0, 
+                "content": ["Rate limit exceeded - Please try again in a few minutes"]
             }
-            
-    except requests.exceptions.HTTPError as e:
-        if e.response.status_code == 429:
-            print(f"[WARNING] Rate limit exceeded (429), returning status 0...")
-            return {"status": 0, "content": ["Too many requests - Rate limit exceeded"]}
         else:
-            print(f"[ERROR] HTTP Error: {e}")
-            return {"status": 2, "content": [f"Lỗi HTTP: {str(e)}"]}
-    except Exception as e:
-        print(f"[ERROR] AI API call failed: {e}")
-        return {"status": 2, "content": [f"Lỗi gọi API: {str(e)}"]}
+            return {
+                "status": 2,
+                "content": [f"Lỗi duyệt phòng: {last_error}"]
+            }
+    
     finally:
-        # Xóa các file đã tải sau khi xử lý
-        print(f"[DEBUG] Đang xóa {len(downloaded_files)} files đã tải...")
+        # Luôn cleanup files dù success hay fail
+        print(f"[DEBUG] Cleaning up {len(downloaded_files)} downloaded files...")
         cleanup_media_files(downloaded_files)
 
 
@@ -317,6 +352,12 @@ def ai_chatbot():
 
     # Lấy dữ liệu phòng từ MySQL
     result, columns = get_rooms()
+    
+    # Kiểm tra nếu database trống hoặc lỗi
+    if not result or columns is None:
+        return jsonify({
+            "reply": "I'm sorry, I'm currently unable to access room information. Please try again later or contact our support at 0388953628."
+        })
 
     # Chuyển dữ liệu SQL thành văn bản thô
     rooms_text = ""
@@ -357,11 +398,19 @@ def ai_chatbot():
         )
         history = [{'role': 'user', 'text': initial_prompt}] + history
 
-    # Chuẩn bị payload gửi API Gemini
+    # Danh sách các model để thử (theo thứ tự ưu tiên)
+    # Dựa trên API response từ https://generativelanguage.googleapis.com/v1beta/models
+    models_to_try = [
+        "gemini-2.5-flash",          # ⭐ Mới nhất, mạnh nhất (June 2025)
+        "gemini-flash-latest",       # Auto-update to latest flash version
+        "gemini-2.0-flash-lite",     # Nhẹ, nhanh, tiết kiệm quota
+        "gemini-2.0-flash",          # Stable backup (Jan 2025)
+        "gemini-pro-latest",         # Pro version nếu cần
+    ]
+    
+    # Lấy API key
     API_KEY = os.getenv("API_KEY")
-    MODEL = "gemini-2.0-flash"
-    URL = f"https://generativelanguage.googleapis.com/v1beta/models/{MODEL}:generateContent?key={API_KEY}"
-
+    
     parts = []
     for turn in history:
         if turn['role'] == 'user':
@@ -372,14 +421,50 @@ def ai_chatbot():
     payload = {"contents": [{"parts": parts}]}
     headers = {"Content-Type": "application/json"}
 
-    try:
-        resp = requests.post(URL, headers=headers, data=json.dumps(payload), timeout=15)
-        resp.raise_for_status()
-        result = resp.json()
-        reply = result["candidates"][0]["content"]["parts"][0]["text"]
-    except Exception as e:
-        reply = f"Lỗi khi gọi API: {str(e)}"
-
+    # Thử các model theo thứ tự
+    last_error = None
+    for MODEL in models_to_try:
+        try:
+            URL = f"https://generativelanguage.googleapis.com/v1beta/models/{MODEL}:generateContent?key={API_KEY}"
+            print(f"[DEBUG] Trying model: {MODEL}")
+            
+            resp = requests.post(URL, headers=headers, data=json.dumps(payload), timeout=15)
+            
+            # Kiểm tra lỗi 429 (Rate Limit)
+            if resp.status_code == 429:
+                print(f"[WARNING] Rate limit exceeded for {MODEL}, trying next model...")
+                last_error = "Rate limit exceeded. Please try again in a few moments."
+                time.sleep(1)  # Đợi 1 giây trước khi thử model khác
+                continue
+            
+            # Kiểm tra lỗi 404 (Model not found)
+            if resp.status_code == 404:
+                print(f"[WARNING] Model {MODEL} not found, trying next model...")
+                last_error = f"Model {MODEL} not available"
+                continue
+            
+            resp.raise_for_status()
+            result = resp.json()
+            reply = result["candidates"][0]["content"]["parts"][0]["text"]
+            print(f"[SUCCESS] Got response from {MODEL}")
+            return jsonify({"reply": reply})
+            
+        except requests.exceptions.HTTPError as e:
+            print(f"[ERROR] HTTP Error with {MODEL}: {e}")
+            last_error = str(e)
+            continue
+        except Exception as e:
+            print(f"[ERROR] Error with {MODEL}: {e}")
+            last_error = str(e)
+            continue
+    
+    # Nếu tất cả model đều thất bại
+    print(f"[FATAL] All models failed. Last error: {last_error}")
+    reply = (
+        "I apologize, but I'm currently experiencing technical difficulties. "
+        "Please try again in a few moments or contact our support team at 0388953628 for immediate assistance."
+    )
+    
     return jsonify({"reply": reply})
 
 # API duyệt phòng - nhận interface và trả về JSON kết quả
