@@ -29,31 +29,70 @@ public class ApprovalQueueService {
 
     public boolean enqueueRoomForApproval(UUID roomId) {
         try {
-            // Kiểm tra xem roomId đã có trong queue hay chưa
+            // 1. Kiểm tra room có trong hàng đợi chưa
             if (isRoomAlreadyInQueue(roomId)) {
-                System.out.println("[ApprovalQueueService] ⏭️ Room " + roomId + " already exists in approval queue");
-                return false; // Không thêm duplicate
+                System.out.println("[ApprovalQueueService] Room " + roomId + " already exists in queue");
+                return false;
             }
 
+            // 2. Lấy dữ liệu room
             Room room = roomJpaRepository.findById(roomId)
                     .orElseThrow(() -> new RuntimeException("Room not found: " + roomId));
 
-            ApprovalMessage approvalMessage = createApprovalMessage(room);
+            // 3. Chỉ thêm room nếu KHÔNG có video
+            boolean hasNoVideo = isRoomWithoutVideo(roomId);
 
+            if (!hasNoVideo) {
+                System.out.println("[ApprovalQueueService] Room " + roomId
+                        + " NOT added because it already has a video.");
+                return false; // Có video → không thêm vào queue
+            }
+
+            System.out.println("[ApprovalQueueService] Room " + roomId
+                    + " has NO video → will be added to queue.");
+
+            // 4. Tạo message và thêm vào queue
+            ApprovalMessage approvalMessage = createApprovalMessage(room);
             boolean added = approvalQueue.offer(approvalMessage);
 
             if (added) {
-                System.out.println("[ApprovalQueueService] ✅ Room " + roomId + " added to approval queue");
+                System.out.println("[ApprovalQueueService] Room " + roomId + " added to approval queue");
                 return true;
             } else {
-                System.err.println("[ApprovalQueueService] ❌ Failed to add room " + roomId + " to queue (queue full)");
+                System.err.println("[ApprovalQueueService] Queue full, cannot add room " + roomId);
                 return false;
             }
 
         } catch (Exception e) {
-            System.err.println("[ApprovalQueueService] ❌ Error enqueuing room " + roomId + ": " + e.getMessage());
+            System.err.println("[ApprovalQueueService] Error enqueuing room " + roomId + ": " + e.getMessage());
             return false;
         }
+    }
+
+    /**
+     * Kiểm tra xem room chưa video
+     */
+    private boolean isVideoUrl(String url) {
+        if (url == null)
+            return false;
+
+        String lower = url.toLowerCase();
+        return lower.endsWith(".mp4") ||
+                lower.endsWith(".mov") ||
+                lower.endsWith(".avi") ||
+                lower.endsWith(".mkv") ||
+                lower.endsWith(".webm");
+    }
+
+    public boolean isRoomWithoutVideo(UUID roomId) {
+        Room room = roomJpaRepository.findById(roomId)
+                .orElseThrow(() -> new RuntimeException("Room not found: " + roomId));
+
+        boolean hasVideo = room.getImages().stream()
+                .anyMatch(img -> isVideoUrl(img.getUrl()));
+        System.out.println("====================has video ==================");
+
+        return !hasVideo;
     }
 
     /**
@@ -77,34 +116,49 @@ public class ApprovalQueueService {
 
             int enqueuedCount = 0;
             int skippedDuplicateCount = 0;
+            int skippedHasVideoCount = 0;
 
             for (Room room : pendingRooms) {
-                // Kiểm tra xem roomId đã có trong queue hay chưa
-                if (isRoomAlreadyInQueue(room.getId())) {
+
+                UUID roomId = room.getId();
+
+                // 1. Skip nếu đã có trong queue
+                if (isRoomAlreadyInQueue(roomId)) {
                     skippedDuplicateCount++;
-                    System.out
-                            .println("[ApprovalQueueService] ⏭️ Skipped room " + room.getId() + " (already in queue)");
+                    System.out.println("[ApprovalQueueService] Skipped room " + roomId + " (already in queue)");
                     continue;
                 }
 
+                // 2. Skip nếu room đã có VIDEO
+                if (!isRoomWithoutVideo(roomId)) {
+                    skippedHasVideoCount++;
+                    System.out.println("[ApprovalQueueService] Skipped room " + roomId + " (already has video)");
+                    continue;
+                }
+
+                // 3. Nếu không có video → cho vào queue
                 ApprovalMessage approvalMessage = createApprovalMessage(room);
 
                 if (approvalQueue.offer(approvalMessage)) {
                     enqueuedCount++;
-                    System.out.println("[ApprovalQueueService] ✅ Room " + room.getId() + " added to approval queue");
+                    System.out.println("[ApprovalQueueService] Room " + roomId + " added to approval queue");
                 } else {
-                    System.err.println("[ApprovalQueueService] ❌ Queue full, skipped room " + room.getId());
-                    break; // Queue đã đầy
+                    System.err.println("[ApprovalQueueService] Queue full, skipped room " + roomId);
+                    break; // Queue đầy
                 }
             }
 
-            System.out.println("[ApprovalQueueService] 📊 Total: " + pendingRooms.size() +
-                    " pending rooms, " + enqueuedCount + " enqueued, " +
-                    skippedDuplicateCount + " duplicates skipped");
+            System.out.println(
+                    "[ApprovalQueueService] Summary: "
+                            + pendingRooms.size() + " pending rooms, "
+                            + enqueuedCount + " enqueued, "
+                            + skippedDuplicateCount + " duplicates skipped, "
+                            + skippedHasVideoCount + " skipped (has video)");
+
             return enqueuedCount;
 
         } catch (Exception e) {
-            System.err.println("[ApprovalQueueService] ❌ Error enqueuing pending rooms: " + e.getMessage());
+            System.err.println("[ApprovalQueueService] Error enqueuing pending rooms: " + e.getMessage());
             return 0;
         }
     }

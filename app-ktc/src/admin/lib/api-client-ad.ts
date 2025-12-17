@@ -1,9 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import Axios, { type InternalAxiosRequestConfig } from 'axios';
-import { URL_API } from '../service/Constant';
+
+// const URL = 'http://localhost:3333/api'; 
+const URL = 'https://jones-hold-mold-cohen.trycloudflare.com/api';
 
 const apiClient = Axios.create({
-  baseURL: URL_API,
+  baseURL: URL,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -45,7 +47,7 @@ const refreshToken = async () => {
 
     // Create a new axios instance to avoid interceptors
     const refreshApiClient = Axios.create({
-      baseURL: URL_API,
+      baseURL: URL,
       headers: {
         'Content-Type': 'application/json',
       },

@@ -2,16 +2,11 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Copy code và requirements
 COPY . /app
-COPY .env /app/.env
 
-# Cài đặt các package cần thiết
 RUN pip install --upgrade pip && \
-    pip install flask flask-cors requests python-dotenv mysql-connector-python
+    pip install -r requirements.txt
 
-# Expose port Flask
-EXPOSE 5000
+EXPOSE 5001
 
-# Chạy Flask app
 CMD ["python", "api_gemini.py"]
