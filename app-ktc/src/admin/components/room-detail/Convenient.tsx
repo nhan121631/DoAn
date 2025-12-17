@@ -1,17 +1,17 @@
 import { BsCheckCircleFill } from "react-icons/bs";
 
 const convenients = [
-  { label: "furnished", enabled: false },
-  { label: "washing_machine", enabled: false },
-  { label: "no_curfew", enabled: false },
-  { label: "mezzanine", enabled: false },
-  { label: "fridge", enabled: false },
-  { label: "kitchen_shelf", enabled: false },
-  { label: "aircon", enabled: false },
-  { label: "private_entry", enabled: false },
-  { label: "elevator", enabled: false },
-  { label: "security_24h", enabled: false },
-  { label: "garage", enabled: false },
+  { key: "furnished", label: "Đầy đủ nội thất", enabled: false },
+  { key: "washing_machine", label: "Máy giặt", enabled: false },
+  { key: "no_curfew", label: "Không giới nghiêm", enabled: false },
+  { key: "mezzanine", label: "Gác lửng", enabled: false },
+  { key: "fridge", label: "Tủ lạnh", enabled: false },
+  { key: "kitchen_shelf", label: "Kệ bếp", enabled: false },
+  { key: "aircon", label: "Điều hòa", enabled: false },
+  { key: "private_entry", label: "Lối vào riêng", enabled: false },
+  { key: "elevator", label: "Thang máy", enabled: false },
+  { key: "security_24h", label: "An ninh 24/7", enabled: false },
+  { key: "garage", label: "Gara", enabled: false },
 ];
 
 interface Feature {
@@ -27,12 +27,12 @@ export default function Convenient({ features }: ConvenientProps) {
   const featureMap = new Map(features.map((f) => [f.name, f]));
   const convenientFeatures = convenients.map((feature) => ({
     label: feature.label,
-    enabled: featureMap.has(feature.label),
+    enabled: featureMap.has(feature.key),
   }));
   return (
     <div className="mt-6">
       <h2 className="text-lg font-bold text-gray-800 mb-3 dark:!text-white">
-        Conveniences
+        Tiện nghi nổi bật
       </h2>
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-y-2 gap-x-6 text-[15px]">
         {convenientFeatures.map((feature) => (

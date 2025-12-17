@@ -6,7 +6,7 @@ import { Link, useLocation } from "react-router";
 import { FaChartLine } from "react-icons/fa";
 import { MdSupervisorAccount } from "react-icons/md";
 import { RiAdvertisementLine, RiHotelLine } from "react-icons/ri";
-import { MdArticle, MdOutlineChat  } from "react-icons/md";
+import { MdArticle, MdOutlineChat } from "react-icons/md";
 import { BsFillFilePostFill } from "react-icons/bs";
 
 const { Sider } = Layout;
@@ -55,32 +55,36 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
           {
             key: "1",
             icon: <FaChartLine />,
-            label: <Link to="/admin/statistics">Statistics</Link>,
+            label: <Link to="/admin/statistics">Thống kê</Link>,
           },
           {
             key: "2",
             icon: <MdSupervisorAccount />,
-            label: <Link to="/admin/manage-accounts">Management Accounts</Link>,
+            label: <Link to="/admin/manage-accounts">Quản lý tài khoản</Link>,
           },
           {
             key: "3",
             icon: <RiHotelLine />,
-            label: <Link to="/admin/manage-rooms">Managememt Rooms</Link>,
+            label: <Link to="/admin/manage-rooms">Quản lý phòng</Link>,
           },
           {
             key: "4",
             icon: <BsFillFilePostFill />,
-            label: <Link to="/admin/manage-post-type">Manage Post Type</Link>,
+            label: (
+              <Link to="/admin/manage-post-type">Quản lý loại bài đăng</Link>
+            ),
           },
           {
             key: "5",
             icon: <MdArticle />,
-            label: <Link to="/admin/manage-blogs">Blog Management</Link>,
+            label: <Link to="/admin/manage-blogs">Quản lý blog</Link>,
           },
           {
             key: "6",
             icon: <RiAdvertisementLine />,
-            label: <Link to="/admin/manage-advertisement">Manage Advertisement</Link>,
+            label: (
+              <Link to="/admin/manage-advertisement">Quản lý quảng cáo</Link>
+            ),
           },
           {
             key: "7",

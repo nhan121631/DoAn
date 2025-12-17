@@ -15,11 +15,11 @@ interface ILoginInputs {
 }
 const schema = yup
   .object({
-    username: yup.string().required("Please enter phone number or email"),
+    username: yup.string().required("Vui lòng nhập username."),
     password: yup
       .string()
-      .min(6, "Password must be at least 6 characters.")
-      .required("Please enter your password."),
+      .min(6, "Mật khẩu phải có ít nhất 6 ký tự.")
+      .required("Vui lòng nhập mật khẩu."),
   })
   .required();
 
@@ -61,7 +61,7 @@ export default function LoginForm() {
           typeof latestError === "string"
             ? latestError
             : latestError?.response?.data?.errors ||
-                "You do not have permission to access admin area."
+                "Bạn không có quyền truy cập khu vực quản trị."
         );
       } else {
         setLoginGeneralErrorMessage("");
@@ -71,7 +71,7 @@ export default function LoginForm() {
       setLoginGeneralErrorMessage(
         typeof err === "string"
           ? err
-          : "You do not have permission to access admin area."
+          : "Bạn không có quyền truy cập khu vực quản trị."
       );
     }
   };
@@ -81,7 +81,7 @@ export default function LoginForm() {
         {/* Identifier Input (Phone Number or Email) */}
         <div className="mb-4">
           <label htmlFor="loginIdentifier" className="sr-only">
-            User Name
+            Tên đăng nhập
           </label>
           <input
             type="text"
@@ -89,7 +89,7 @@ export default function LoginForm() {
             className={`w-full p-3 border ${
               errors.username ? "border-red-500" : "border-gray-300"
             } rounded-md focus:outline-none focus:ring-2 focus:ring-white text-white`}
-            placeholder="Phone number or Email"
+            placeholder="Tên đăng nhập"
             {...register("username")}
           />
           {errors.username && (
@@ -103,7 +103,7 @@ export default function LoginForm() {
         {/* Password Input */}
         <div className="mb-6">
           <label htmlFor="loginPassword" className="sr-only">
-            Password
+            Mật khẩu
           </label>
           <div className="relative">
             <input
@@ -113,7 +113,7 @@ export default function LoginForm() {
               className={`w-full p-3 border ${
                 errors.password ? "border-red-500" : "border-gray-300"
               } rounded-md focus:outline-none focus:ring-2 focus:ring-white text-white pr-10`}
-              placeholder="Password"
+              placeholder="Mật khẩu"
               {...register("password")}
             />
             <span
@@ -146,7 +146,7 @@ export default function LoginForm() {
           type="submit"
           className="w-full py-3 text-lg font-semibold text-black transition duration-300 bg-gray-200 rounded-md hover:bg-gray-400"
         >
-          Log in
+          Đăng nhập
         </button>
       </form>
 
@@ -156,20 +156,20 @@ export default function LoginForm() {
           to="/auth/forgot-password"
           className="text-sm text-gray-200 hover:underline"
         >
-          Forgot your password?
+          Quên mật khẩu?
         </Link>
       </div>
       <div className="mt-8 text-xs text-center text-gray-400">
         <p>
-          By logging in, you agree to our{" "}
+          Bằng cách đăng nhập, bạn đồng ý với{" "}
           <Link to="/terms" className="text-white hover:underline">
-            terms of service
-          </Link>{" "}
-          as well as{" "}
+            điều khoản dịch vụ{" "}
+          </Link>
+          cũng như{" "}
           <Link to="/privacy" className="text-white hover:underline">
-            privacy policy
+            chính sách bảo mật
           </Link>{" "}
-          of ours
+          của chúng tôi
         </p>
       </div>
     </div>

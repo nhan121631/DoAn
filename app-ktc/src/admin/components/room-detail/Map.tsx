@@ -6,7 +6,7 @@ export default function MapSection({ address }: { address: string }) {
   return (
     <div className="mt-8">
       <h2 className="mb-2 text-lg font-bold text-gray-800 dark:!text-white">
-        Location on Map
+        Địa chỉ trên bản đồ
       </h2>
       <div className="text-sm text-gray-700 mb-2 flex items-center dark:!text-gray-300">
         <FaMapMarkerAlt className="mr-2 text-red-500" />
@@ -18,7 +18,7 @@ export default function MapSection({ address }: { address: string }) {
         rel="noopener noreferrer"
         className="inline-block mb-4 text-sm text-blue-600 underline"
       >
-        View larger map
+        Xem bản đồ lớn hơn
       </a>
       <div className="w-full h-[350px]">
         <iframe

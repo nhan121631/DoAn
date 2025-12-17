@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { DownOutlined } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
-import type {  TableColumnsType } from "antd";
+import type { TableColumnsType } from "antd";
 import { Button, Dropdown, message, Popconfirm, Table, Tag } from "antd";
 import React, { useState } from "react";
 import {
@@ -17,7 +17,9 @@ const TableManageAccount: React.FC = () => {
     pageSize: 7,
   });
 
-  const { data, isLoading } = useQuery(getPaginatedAccountsQueryOptions(pagination.page, pagination.pageSize));
+  const { data, isLoading } = useQuery(
+    getPaginatedAccountsQueryOptions(pagination.page, pagination.pageSize)
+  );
   const accountsData = data?.data || [];
   const totalRecords = data?.totalRecords || 0;
 
@@ -26,15 +28,14 @@ const TableManageAccount: React.FC = () => {
     mutationConfig: {
       onSuccess: () => {
         messageApi.success({
-          content: "You updated the account roles successfully!",
+          content: "Bạn đã cập nhật vai trò tài khoản thành công!",
           duration: 3,
         });
       },
       onError: (error: any) => {
         messageApi.error({
           content:
-            error?.response?.data?.message?.join(", ") ||
-            "An error has occurred!",
+            error?.response?.data?.message?.join(", ") || "Đã xảy ra lỗi!",
           duration: 3,
         });
       },
@@ -45,22 +46,19 @@ const TableManageAccount: React.FC = () => {
     mutationConfig: {
       onSuccess: () => {
         messageApi.success({
-          content: "You updated the account status successfully!",
+          content: "Bạn đã cập nhật trạng thái tài khoản thành công!",
           duration: 3,
         });
       },
       onError: (error: any) => {
         messageApi.error({
           content:
-            error?.response?.data?.message?.join(", ") ||
-            "An error has occurred!",
+            error?.response?.data?.message?.join(", ") || "Đã xảy ra lỗi!",
           duration: 3,
         });
       },
     },
   });
-
-  
 
   const toggleStatus = (record: UserResponseDto) => {
     const newStatus = record.status === "Active" ? 1 : 0;
@@ -70,10 +68,10 @@ const TableManageAccount: React.FC = () => {
   const updateRoleHandler = (record: UserResponseDto, roleName: string) => {
     updateRoleMutation.mutate({ id: record.id, roleNames: [roleName] });
   };
-  
+
   const columns: TableColumnsType<UserResponseDto> = [
     {
-      title: "Username",
+      title: "Tên đăng nhập",
       dataIndex: "username",
       key: "username",
     },
@@ -83,22 +81,22 @@ const TableManageAccount: React.FC = () => {
       key: "email",
     },
     {
-      title: "Phone Number",
+      title: "Số điện thoại",
       dataIndex: "phoneNumber",
       key: "phoneNumber",
     },
     {
-      title: "Roles",
+      title: "Vai trò",
       dataIndex: "roles",
       key: "roles",
       render: (roles, record) => {
         const items = [
           {
-            label: "Landlords",
+            label: "Chủ nhà",
             key: "Landlords",
           },
           {
-            label: "Users",
+            label: "Người dùng",
             key: "Users",
           },
         ];
@@ -115,13 +113,15 @@ const TableManageAccount: React.FC = () => {
             onClick={(e) => e.preventDefault()}
             disabled={updateRoleMutation.isPending || isLoading}
           >
-            <span>{currentRole}</span>
+            <span>
+              {currentRole === "Landlords" ? "Chủ nhà" : "Người dùng"}
+            </span>
           </Dropdown.Button>
         );
       },
     },
     {
-      title: "Status",
+      title: "Trạng thái",
       dataIndex: "status",
       key: "status",
       render: (status) => (
@@ -129,16 +129,16 @@ const TableManageAccount: React.FC = () => {
       ),
     },
     {
-      title: "Action",
+      title: "Hành động",
       key: "action",
       width: "15%",
       render: (_, record) =>
         record.status === "Active" ? (
           <Popconfirm
-            title="Disable this account?"
+            title="Vô hiệu hóa tài khoản này?"
             onConfirm={() => toggleStatus(record)}
-            okText="Yes"
-            cancelText="No"
+            okText="Có"
+            cancelText="Không"
           >
             <Button
               danger
@@ -146,7 +146,7 @@ const TableManageAccount: React.FC = () => {
               size="small"
               disabled={updateStatusMutation.isPending || isLoading}
             >
-              Disable
+              Vô hiệu hóa
             </Button>
           </Popconfirm>
         ) : (
@@ -156,7 +156,7 @@ const TableManageAccount: React.FC = () => {
             onClick={() => toggleStatus(record)}
             disabled={updateStatusMutation.isPending || isLoading}
           >
-            Activate
+            Kích hoạt
           </Button>
         ),
     },
