@@ -57,13 +57,13 @@ const EditBlogPage = () => {
   const updateBlogMutation = useUpdateBlog({
     mutationConfig: {
       onSuccess: () => {
-        message.success("Blog updated successfully!");
+        message.success("Blog đã được cập nhật thành công!");
         navigate("/admin/manage-blogs");
       },
       onError: (error: any) => {
-        console.error("Update blog error:", error);
+        console.error("Lỗi cập nhật blog:", error);
 
-        let errorMessage = "Failed to update blog";
+        let errorMessage = "Không thể cập nhật blog";
 
         if (error?.response?.data) {
           const serverError = error.response.data;
@@ -75,13 +75,13 @@ const EditBlogPage = () => {
           } else if (typeof serverError === "string") {
             errorMessage = serverError;
           } else {
-            errorMessage = `Server error (${error.response.status})`;
+            errorMessage = `Lỗi server (${error.response.status})`;
           }
         } else if (error?.message) {
           errorMessage = error.message;
         }
 
-        message.error(`Failed to update blog: ${errorMessage}`);
+        message.error(`Không thể cập nhật blog: ${errorMessage}`);
       },
     },
   });
@@ -117,18 +117,18 @@ const EditBlogPage = () => {
 
   const handleSubmit = (values: BlogFormData) => {
     if (!blog?.id) {
-      message.error("Blog ID not found!");
+      message.error("Không tìm thấy ID blog!");
       return;
     }
 
-    console.log("📝 Form values:", values);
-    console.log("📋 Blog ID:", blog.id);
+    console.log("Giá trị biểu mẫu:", values);
+    console.log("ID blog:", blog.id);
 
     // Validate slug format
     const slugRegex = /^[a-z0-9-]+$/;
     if (!slugRegex.test(values.slug)) {
       message.error(
-        "Slug can only contain lowercase letters, numbers, and hyphens!"
+        "Slug chỉ được chứa các chữ cái thường, số và dấu gạch ngang!"
       );
       return;
     }
@@ -141,7 +141,7 @@ const EditBlogPage = () => {
       status: values.status,
     };
 
-    console.log("🚀 Updating blog with request:", request);
+    console.log("Updating blog with request:", request);
 
     updateBlogMutation.mutate({
       id: blog.id,
@@ -169,17 +169,17 @@ const EditBlogPage = () => {
         <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
           <div className="text-center">
             <Title level={3} className="text-gray-900 dark:text-gray-100">
-              Blog not found
+              Không tìm thấy blog
             </Title>
             <p className="text-gray-600 dark:text-gray-400">
-              The blog you're looking for doesn't exist or has been deleted.
+              Blog bạn đang tìm kiếm không tồn tại hoặc đã bị xóa.
             </p>
             <Button
               type="primary"
               onClick={() => navigate("/admin/manage-blogs")}
               className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
             >
-              Back to Blog List
+              Quay lại danh sách blog
             </Button>
           </div>
         </Card>
@@ -192,7 +192,7 @@ const EditBlogPage = () => {
       <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
         <div className="flex justify-between items-center mb-6">
           <Title level={2} className="text-gray-900 dark:!text-gray-100">
-            Edit Blog
+            Chỉnh sửa Blog
           </Title>
           <div className="space-x-2">
             <Button
@@ -200,13 +200,13 @@ const EditBlogPage = () => {
               icon={<EyeOutlined />}
               className="bg-gray-100 dark:bg-gray-600 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-500 hover:bg-gray-200 dark:hover:bg-gray-500"
             >
-              Preview
+              Xem trước
             </Button>
             <Button
               onClick={() => navigate("/admin/manage-blogs")}
               className="bg-gray-100 dark:bg-gray-600 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-500 hover:bg-gray-200 dark:hover:bg-gray-500"
             >
-              Cancel
+              Hủy
             </Button>
           </div>
         </div>
@@ -217,17 +217,20 @@ const EditBlogPage = () => {
               <Form.Item
                 label={
                   <span className="text-gray-900 dark:text-gray-100">
-                    Title
+                    Tiêu đề
                   </span>
                 }
                 name="title"
                 rules={[
-                  { required: true, message: "Please enter title!" },
-                  { max: 255, message: "Title cannot exceed 255 characters!" },
+                  { required: true, message: "Vui lòng nhập tiêu đề!" },
+                  {
+                    max: 255,
+                    message: "Tiêu đề không được vượt quá 255 ký tự!",
+                  },
                 ]}
               >
                 <Input
-                  placeholder="Enter blog title..."
+                  placeholder="Nhập tiêu đề blog..."
                   size="large"
                   onChange={handleTitleChange}
                   className="bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 [&_.ant-input]:bg-white [&_.ant-input]:dark:bg-gray-700 [&_.ant-input]:text-gray-900 [&_.ant-input]:dark:text-gray-100 [&_.ant-input]:placeholder:text-gray-500 [&_.ant-input]:dark:placeholder:text-gray-400"
@@ -240,12 +243,12 @@ const EditBlogPage = () => {
                 }
                 name="slug"
                 rules={[
-                  { required: true, message: "Please enter slug!" },
-                  { max: 255, message: "Slug cannot exceed 255 characters!" },
+                  { required: true, message: "Vui lòng nhập slug!" },
+                  { max: 255, message: "Slug không được vượt quá 255 ký tự!" },
                   {
                     pattern: /^[a-z0-9-]+$/,
                     message:
-                      "Slug can only contain lowercase letters, numbers, and hyphens!",
+                      "Slug chỉ được chứa các chữ cái thường, số và dấu gạch ngang!",
                   },
                 ]}
               >
@@ -259,16 +262,16 @@ const EditBlogPage = () => {
               <Form.Item
                 label={
                   <span className="text-gray-900 dark:text-gray-100">
-                    Content
+                    Nội dung
                   </span>
                 }
                 name="content"
-                rules={[{ required: true, message: "Please enter content!" }]}
+                rules={[{ required: true, message: "Vui lòng nhập nội dung!" }]}
               >
                 <TinyMCEEditor
                   value={form.getFieldValue("content") || ""}
                   onChange={(content) => form.setFieldValue("content", content)}
-                  placeholder="Enter your blog content here..."
+                  placeholder="Nhập nội dung blog của bạn ở đây..."
                 />
               </Form.Item>
             </Col>
@@ -277,39 +280,39 @@ const EditBlogPage = () => {
               <Form.Item
                 label={
                   <span className="text-gray-900 dark:text-gray-100">
-                    Category
+                    Danh mục
                   </span>
                 }
                 name="category"
-                rules={[{ required: true, message: "Please select category!" }]}
+                rules={[{ required: true, message: "Vui lòng chọn danh mục!" }]}
               >
-                <Select 
+                <Select
                   size="large"
                   className="[&_.ant-select-selector]:bg-white [&_.ant-select-selector]:dark:bg-gray-700 [&_.ant-select-selector]:border-gray-300 [&_.ant-select-selector]:dark:border-gray-600 [&_.ant-select-selection-item]:text-gray-900 [&_.ant-select-selection-item]:dark:text-gray-100"
                   dropdownClassName="bg-white dark:bg-gray-800 [&_.ant-select-item]:text-gray-900 [&_.ant-select-item]:dark:text-gray-100 [&_.ant-select-item-option-selected]:bg-blue-50 [&_.ant-select-item-option-selected]:dark:bg-gray-600"
                 >
-                  <Option value="ANNOUNCEMENT">Announcement</Option>
-                  <Option value="GUIDE">Guide</Option>
-                  <Option value="NEWS">News</Option>
+                  <Option value="ANNOUNCEMENT">Thông báo</Option>
+                  <Option value="GUIDE">Hướng dẫn</Option>
+                  <Option value="NEWS">Tin tức</Option>
                 </Select>
               </Form.Item>
 
               <Form.Item
                 label={
                   <span className="text-gray-900 dark:text-gray-100">
-                    Status
+                    Trạng thái
                   </span>
                 }
                 name="status"
                 rules={[{ required: true, message: "Please select status!" }]}
               >
-                <Select 
+                <Select
                   size="large"
                   className="[&_.ant-select-selector]:bg-white [&_.ant-select-selector]:dark:bg-gray-700 [&_.ant-select-selector]:border-gray-300 [&_.ant-select-selector]:dark:border-gray-600 [&_.ant-select-selection-item]:text-gray-900 [&_.ant-select-selection-item]:dark:text-gray-100"
                   dropdownClassName="bg-white dark:bg-gray-800 [&_.ant-select-item]:text-gray-900 [&_.ant-select-item]:dark:text-gray-100 [&_.ant-select-item-option-selected]:bg-blue-50 [&_.ant-select-item-option-selected]:dark:bg-gray-600"
                 >
-                  <Option value="DRAFT">Draft</Option>
-                  <Option value="PUBLISHED">Published</Option>
+                  <Option value="DRAFT">Bản nháp</Option>
+                  <Option value="PUBLISHED">Đã xuất bản</Option>
                 </Select>
               </Form.Item>
 
@@ -318,7 +321,7 @@ const EditBlogPage = () => {
                 <Form.Item
                   label={
                     <span className="text-gray-900 dark:text-gray-100">
-                      Current Thumbnail
+                      Ảnh đại diện hiện tại
                     </span>
                   }
                 >
@@ -329,7 +332,7 @@ const EditBlogPage = () => {
                       className="w-full h-32 object-cover rounded border border-gray-200 dark:border-gray-600"
                     />
                     <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-                      Thumbnail is managed by backend
+                      Ảnh đại diện được quản lý bởi backend
                     </p>
                   </div>
                 </Form.Item>
@@ -340,14 +343,14 @@ const EditBlogPage = () => {
                   level={5}
                   className="text-green-700 dark:!text-green-400 mb-2"
                 >
-                  ✏️ Editing Tips
+                  Mẹo chỉnh sửa
                 </Title>
                 <ul className="text-sm text-green-600 dark:text-green-300 space-y-1">
-                  <li>• Changes are saved immediately</li>
-                  <li>• Images uploaded remain in content</li>
-                  <li>• Preview changes before saving</li>
-                  <li>• Slug affects the blog URL</li>
-                  <li>• Status controls visibility</li>
+                  <li>• Các thay đổi được lưu ngay lập tức</li>
+                  <li>• Hình ảnh tải lên vẫn giữ trong nội dung</li>
+                  <li>• Xem trước thay đổi trước khi lưu</li>
+                  <li>• Slug ảnh hưởng đến URL blog</li>
+                  <li>• Trạng thái kiểm soát khả năng hiển thị</li>
                 </ul>
               </div>
 
@@ -361,7 +364,7 @@ const EditBlogPage = () => {
                   loading={updateBlogMutation.isPending}
                   className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
                 >
-                  Update Blog
+                  Cập nhật Blog
                 </Button>
               </Form.Item>
             </Col>
@@ -375,17 +378,20 @@ const EditBlogPage = () => {
           <div className="bg-white dark:bg-gray-800 rounded-lg w-full max-w-5xl h-5/6 flex flex-col shadow-2xl">
             {/* Modal Header */}
             <div className="flex justify-between items-center p-6 border-b border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 rounded-t-lg">
-              <Title level={3} className="text-gray-900 dark:!text-gray-100 m-0">
-                Content Preview
+              <Title
+                level={3}
+                className="text-gray-900 dark:!text-gray-100 m-0"
+              >
+                Xem trước nội dung
               </Title>
-              <Button 
+              <Button
                 onClick={() => setShowPreview(false)}
                 className="bg-gray-100 dark:bg-gray-600 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-500 hover:bg-gray-200 dark:hover:bg-gray-500"
               >
-                Close
+                Đóng
               </Button>
             </div>
-            
+
             {/* Modal Content */}
             <div className="flex-1 overflow-auto p-6 bg-white dark:bg-gray-800">
               <div

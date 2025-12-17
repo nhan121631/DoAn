@@ -17,7 +17,7 @@ const ManageAccountPage = () => {
       }}
     >
       <h2 className="mb-4 text-2xl font-semibold dark:text-white">
-        Account Management
+        Quản Lý Tài Khoản Người Dùng
       </h2>
       <TableManageAccount />
     </Content>

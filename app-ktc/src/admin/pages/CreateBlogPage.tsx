@@ -41,17 +41,17 @@ const CreateBlogPage = () => {
   const createBlogMutation = useCreateBlog({
     mutationConfig: {
       onSuccess: () => {
-        message.success("Blog created successfully!");
+        message.success("Blog đã được tạo thành công!");
         navigate("/admin/manage-blogs");
       },
       onError: (error: any) => {
-        console.error("🔥 Create blog error in component:", error);
+        console.error("Create blog error in component:", error);
 
-        let errorMessage = "Failed to create blog";
+        let errorMessage = "Đã xảy ra lỗi khi tạo blog.";
 
         if (error?.response?.data) {
           const serverError = error.response.data;
-          console.error("📊 Server error details:", serverError);
+          console.error("Chi tiết lỗi từ server:", serverError);
 
           if (serverError.message) {
             errorMessage = serverError.message;
@@ -60,13 +60,13 @@ const CreateBlogPage = () => {
           } else if (typeof serverError === "string") {
             errorMessage = serverError;
           } else {
-            errorMessage = `Server error (${error.response.status})`;
+            errorMessage = `Lỗi server (${error.response.status})`;
           }
         } else if (error?.message) {
           errorMessage = error.message;
         }
 
-        message.error(`Failed to create blog: ${errorMessage}`);
+        message.error(`Không thể tạo blog: ${errorMessage}`);
       },
     },
   });
@@ -89,31 +89,31 @@ const CreateBlogPage = () => {
 
   const handleSubmit = (values: BlogFormData) => {
     if (!loggedInUser?.id) {
-      message.error("Unable to identify user!");
+      message.error("Không thể xác định người dùng!");
       return;
     }
 
-    console.log("📝 Form values submitted:", values);
-    console.log("👤 Current user ID:", loggedInUser.id);
+    console.log("Form values submitted:", values);
+    console.log("Current user ID:", loggedInUser.id);
 
     // Validate form data before sending
     if (!values.title?.trim()) {
-      message.error("Title is required and cannot be empty!");
+      message.error("Tiêu đề là bắt buộc và không được để trống!");
       return;
     }
 
     if (!values.slug?.trim()) {
-      message.error("Slug is required and cannot be empty!");
+      message.error("Slug là bắt buộc và không được để trống!");
       return;
     }
 
     if (!values.content?.trim()) {
-      message.error("Content is required and cannot be empty!");
+      message.error("Nội dung là bắt buộc và không được để trống!");
       return;
     }
 
     if (!values.category) {
-      message.error("Category is required!");
+      message.error("Danh mục là bắt buộc!");
       return;
     }
 
@@ -121,7 +121,7 @@ const CreateBlogPage = () => {
     const slugRegex = /^[a-z0-9-]+$/;
     if (!slugRegex.test(values.slug)) {
       message.error(
-        "Slug can only contain lowercase letters, numbers, and hyphens!"
+        "Slug chỉ được chứa các chữ cái thường, số và dấu gạch ngang!"
       );
       return;
     }
@@ -133,7 +133,7 @@ const CreateBlogPage = () => {
       category: values.category,
     };
 
-    console.log("🚀 Sending blog creation request:", request);
+    console.log("Sending blog creation request:", request);
 
     createBlogMutation.mutate({
       request,
@@ -152,7 +152,7 @@ const CreateBlogPage = () => {
       <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
         <div className="flex justify-between items-center mb-6">
           <Title level={2} className="text-gray-900 dark:!text-gray-100">
-            Create New Blog
+            Tạo Blog Mới
           </Title>
           <div className="space-x-2">
             <Button
@@ -160,13 +160,13 @@ const CreateBlogPage = () => {
               icon={<EyeOutlined />}
               className="bg-gray-100 dark:bg-gray-600 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-500"
             >
-              Preview
+              Xem trước
             </Button>
             <Button
               onClick={() => navigate("/admin/manage-blogs")}
               className="bg-gray-100 dark:bg-gray-600 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-500"
             >
-              Cancel
+              Hủy
             </Button>
           </div>
         </div>
@@ -184,17 +184,20 @@ const CreateBlogPage = () => {
               <Form.Item
                 label={
                   <span className="text-gray-900 dark:text-gray-100">
-                    Title
+                    Tiêu đề
                   </span>
                 }
                 name="title"
                 rules={[
-                  { required: true, message: "Please enter title!" },
-                  { max: 255, message: "Title cannot exceed 255 characters!" },
+                  { required: true, message: "Vui lòng nhập tiêu đề!" },
+                  {
+                    max: 255,
+                    message: "Tiêu đề không được vượt quá 255 ký tự!",
+                  },
                 ]}
               >
                 <Input
-                  placeholder="Enter blog title..."
+                  placeholder="Nhập tiêu đề blog..."
                   size="large"
                   onChange={handleTitleChange}
                   className="bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100"
@@ -207,8 +210,8 @@ const CreateBlogPage = () => {
                 }
                 name="slug"
                 rules={[
-                  { required: true, message: "Please enter slug!" },
-                  { max: 255, message: "Slug cannot exceed 255 characters!" },
+                  { required: true, message: "Vui lòng nhập slug!" },
+                  { max: 255, message: "Slug không được vượt quá 255 ký tự!" },
                   {
                     pattern: /^[a-z0-9-]+$/,
                     message:
@@ -226,16 +229,16 @@ const CreateBlogPage = () => {
               <Form.Item
                 label={
                   <span className="text-gray-900 dark:text-gray-100">
-                    Content
+                    Nội dung Blog
                   </span>
                 }
                 name="content"
-                rules={[{ required: true, message: "Please enter content!" }]}
+                rules={[{ required: true, message: "Vui lòng nhập nội dung!" }]}
               >
                 <TinyMCEEditor
                   value={form.getFieldValue("content") || ""}
                   onChange={(content) => form.setFieldValue("content", content)}
-                  placeholder="Enter your blog content here..."
+                  placeholder="Nhập nội dung blog của bạn ở đây..."
                 />
               </Form.Item>
             </Col>
@@ -244,20 +247,20 @@ const CreateBlogPage = () => {
               <Form.Item
                 label={
                   <span className="text-gray-900 dark:text-gray-100">
-                    Category
+                    Danh mục
                   </span>
                 }
                 name="category"
-                rules={[{ required: true, message: "Please select category!" }]}
+                rules={[{ required: true, message: "Vui lòng chọn danh mục!" }]}
               >
                 <Select
                   size="large"
                   className="bg-white dark:bg-gray-700"
                   dropdownClassName="bg-white dark:bg-gray-800"
                 >
-                  <Option value="ANNOUNCEMENT">Announcement</Option>
-                  <Option value="GUIDE">Guide</Option>
-                  <Option value="NEWS">News</Option>
+                  <Option value="ANNOUNCEMENT">Thông báo</Option>
+                  <Option value="GUIDE">Hướng dẫn</Option>
+                  <Option value="NEWS">Tin tức</Option>
                 </Select>
               </Form.Item>
 
@@ -266,14 +269,16 @@ const CreateBlogPage = () => {
                   level={5}
                   className="text-blue-700 dark:text-blue-400 mb-2"
                 >
-                  📝 Blog Creation Tips
+                  Mẹo tạo Blog
                 </Title>
                 <ul className="text-sm text-blue-600 dark:text-blue-300 space-y-1">
-                  <li>• Use TinyMCE editor for rich formatting</li>
-                  <li>• Upload images directly in the editor</li>
-                  <li>• Images are automatically optimized</li>
-                  <li>• Slug is auto-generated from title</li>
-                  <li>• Preview before publishing</li>
+                  <li>
+                    • Sử dụng trình soạn thảo TinyMCE để định dạng phong phú
+                  </li>
+                  <li>• Tải hình ảnh trực tiếp trong trình soạn thảo</li>
+                  <li>• Hình ảnh được tối ưu hóa tự động</li>
+                  <li>• Slug được tạo tự động từ tiêu đề</li>
+                  <li>• Xem trước trước khi xuất bản</li>
                 </ul>
               </div>
 
@@ -287,7 +292,7 @@ const CreateBlogPage = () => {
                   loading={createBlogMutation.isPending}
                   className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
                 >
-                  Create Blog
+                  Tạo Blog
                 </Button>
               </Form.Item>
             </Col>
@@ -301,13 +306,13 @@ const CreateBlogPage = () => {
           <div className="bg-white dark:bg-gray-800 rounded-lg w-3/4 h-3/4 overflow-auto p-6 border border-gray-200 dark:border-gray-700">
             <div className="flex justify-between items-center mb-4">
               <Title level={3} className="text-gray-900 dark:!text-gray-100">
-                Content Preview
+                Xem trước nội dung
               </Title>
               <Button
                 onClick={() => setShowPreview(false)}
                 className="bg-gray-100 dark:bg-gray-600 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-500"
               >
-                Close
+                Đóng
               </Button>
             </div>
             <div

@@ -26,12 +26,12 @@ export default function NotFound() {
         404
       </h1>
       <h2 style={{ fontSize: "2rem", fontWeight: 700, marginBottom: "1em" }}>
-        Page Not Found
+        Không tìm thấy trang
       </h2>
       <p style={{ fontSize: "1.2rem", marginBottom: "2em" }}>
-        Oops! The page you are looking for does not exist or has been moved.
+        Rất tiếc! Trang bạn đang tìm kiếm không tồn tại hoặc đã bị di chuyển.
         <br />
-        Please check the URL or return to the homepage.
+        Vui lòng kiểm tra lại URL hoặc quay về trang chủ.
       </p>
       <Link
         to="/"
@@ -48,7 +48,7 @@ export default function NotFound() {
           transition: "background 0.2s, color 0.2s",
         }}
       >
-        Go to Homepage
+        Đi đến trang home
       </Link>
       <div style={{ marginTop: "3em", opacity: 0.5 }}>
         <svg

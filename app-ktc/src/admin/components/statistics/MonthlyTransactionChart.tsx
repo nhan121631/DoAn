@@ -59,7 +59,7 @@ const MonthlyTransactionChart = ({
       <div className="flex items-center gap-2 mb-3">
         <FilterOutlined className="text-blue-500 dark:text-blue-400" />
         <span className="font-medium text-gray-700 dark:text-gray-300">
-          Chart Filters
+          Bộ lọc biểu đồ
         </span>
       </div>
       <Form
@@ -68,7 +68,7 @@ const MonthlyTransactionChart = ({
         initialValues={{ months: 6, landlordId: undefined }}
         className="flex items-center gap-3"
       >
-        <Form.Item name="months" label="Months" className="mb-0">
+        <Form.Item name="months" label="Số Tháng" className="mb-0">
           <Select placeholder="6" style={{ width: 70 }}>
             {Array.from({ length: 11 }, (_, i) => i + 2).map((month) => (
               <Select.Option key={month} value={month}>
@@ -77,9 +77,9 @@ const MonthlyTransactionChart = ({
             ))}
           </Select>
         </Form.Item>
-        <Form.Item name="landlordId" label="Select Landlord" className="mb-0">
+        <Form.Item name="landlordId" label="Chọn Chủ Nhà" className="mb-0">
           <Select
-            placeholder="All landlords"
+            placeholder="Tất cả chủ nhà"
             allowClear
             style={{ width: 170 }}
             showSearch
@@ -102,10 +102,10 @@ const MonthlyTransactionChart = ({
         <Form.Item className="mb-0">
           <Space size="small">
             <Button type="primary" size="small" onClick={handleApply}>
-              Apply
+              Áp dụng
             </Button>
             <Button size="small" onClick={handleReset}>
-              Reset
+              Đặt lại
             </Button>
           </Space>
         </Form.Item>
@@ -164,8 +164,8 @@ const MonthlyTransactionChart = ({
         <Card
           title={
             landlordId
-              ? "Monthly Transactions (Selected Landlord)"
-              : "Monthly Transactions (All)"
+              ? "Giao dịch hàng tháng (Chủ nhà đã chọn)"
+              : "Giao dịch hàng tháng (Tất cả)"
           }
           className="flex-1 flex flex-col dark:bg-[#171f2f] dark:border-gray-600"
           headStyle={{ color: "var(--text-color)" }}
@@ -201,8 +201,8 @@ const MonthlyTransactionChart = ({
         <Card
           title={
             landlordId
-              ? "Monthly Transactions (Selected Landlord)"
-              : "Monthly Transactions (All)"
+              ? "Giao dịch hàng tháng (Chủ nhà đã chọn)"
+              : "Giao dịch hàng tháng (Tất cả)"
           }
           className="flex-1 flex flex-col dark:bg-[#171f2f] dark:border-gray-600"
           headStyle={{ color: "var(--text-color)" }}
@@ -229,8 +229,8 @@ const MonthlyTransactionChart = ({
         <Card
           title={
             landlordId
-              ? "Monthly Transactions (Selected Landlord)"
-              : "Monthly Transactions (All)"
+              ? "Giao dịch hàng tháng (Chủ nhà đã chọn)"
+              : "Giao dịch hàng tháng (Tất cả)"
           }
           className="flex-1 flex flex-col dark:bg-[#171f2f] dark:border-gray-600"
           headStyle={{ color: "var(--text-color)" }}
@@ -242,7 +242,7 @@ const MonthlyTransactionChart = ({
           }}
         >
           <div className="flex-1 flex justify-center items-center">
-            <div className="text-gray-500">No transaction data available</div>
+            <div className="text-gray-500">Không có dữ liệu giao dịch</div>
           </div>
         </Card>
       </div>

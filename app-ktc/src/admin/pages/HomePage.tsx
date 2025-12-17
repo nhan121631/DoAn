@@ -15,7 +15,7 @@ function HomePage() {
         borderRadius: borderRadiusLG,
       }}
     >
-      Home Page
+      Trang Quản Trị Viên
     </Content>
   );
 }

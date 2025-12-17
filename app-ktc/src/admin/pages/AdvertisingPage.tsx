@@ -110,22 +110,22 @@ export default function AdvertisingPage() {
   const handleDelete = async (id: string) => {
     try {
       await deleteAdsMutation.mutateAsync(id);
-      messageApi.success("Advertisement deleted successfully");
+      messageApi.success("Xóa quảng cáo thành công");
       refetch();
     } catch (error) {
       console.error("Delete error:", error);
-      messageApi.error("Failed to delete advertisement");
+      messageApi.error("Không thể xóa quảng cáo");
     }
   };
 
   const handleToggleStatus = async (id: string) => {
     try {
       await toggleStatusMutation.mutateAsync(id);
-      messageApi.success("Advertisement status updated");
+      messageApi.success("Cập nhật trạng thái quảng cáo thành công");
       refetch();
     } catch (error) {
       console.error("Toggle status error:", error);
-      messageApi.error("Failed to update advertisement status");
+      messageApi.error("Không thể cập nhật trạng thái quảng cáo");
     }
   };
 
@@ -145,7 +145,7 @@ export default function AdvertisingPage() {
         ?.originFileObj as File;
 
       if (!editingAds && !imageFile) {
-        messageApi.error("Please upload an image");
+        messageApi.error("Vui lòng tải lên ảnh");
         return;
       }
 
@@ -173,9 +173,7 @@ export default function AdvertisingPage() {
           const conflictMessages = conflicts
             .map(
               (conflict) =>
-                `"${conflict.title}" (Priority: ${
-                  conflict.priority
-                }, ${new Date(
+                `"${conflict.title}" (Ưu tiên: ${conflict.priority}, ${new Date(
                   conflict.startDate
                 ).toLocaleDateString()} - ${new Date(
                   conflict.endDate
@@ -184,15 +182,15 @@ export default function AdvertisingPage() {
             .join(", ");
 
           messageApi.warning(
-            `⚠️ Conflict detected! This banner conflicts with: ${conflictMessages}. 
-            💡 Tip: Higher priority banners display first. Current priority: ${adsData.priority}`,
+            `Phát hiện xung đột! Banner này xung đột với: ${conflictMessages}. 
+            Mẹo: Banner có ưu tiên cao hơn sẽ hiển thị trước. Ưu tiên hiện tại: ${adsData.priority}`,
             6 // Show for 6 seconds
           );
 
           // Allow user to continue after warning
         }
       } catch (conflictError) {
-        console.warn("Could not check conflicts:", conflictError);
+        console.warn("Could not check xung đột:", conflictError);
       }
 
       if (editingAds) {
@@ -205,7 +203,7 @@ export default function AdvertisingPage() {
           data: updateData,
           imageFile: imageFile,
         });
-        messageApi.success("Advertisement updated successfully");
+        messageApi.success("Cập nhật quảng cáo thành công");
       } else {
         // Create
         const createData: CreateAdsRequest = adsData;
@@ -213,7 +211,7 @@ export default function AdvertisingPage() {
           data: createData,
           imageFile: imageFile!,
         });
-        messageApi.success("Advertisement created successfully");
+        messageApi.success("Tạo quảng cáo thành công");
       }
 
       setIsModalVisible(false);
@@ -222,9 +220,9 @@ export default function AdvertisingPage() {
       setConflictWarning("");
       refetch();
     } catch (error) {
-      console.error("Submit error:", error);
+      console.error("Lỗi khi gửi dữ liệu:", error);
       messageApi.error(
-        "Failed to save advertisement. Please check all required fields."
+        "Không thể lưu quảng cáo. Vui lòng kiểm tra tất cả các trường bắt buộc."
       );
     }
   };
@@ -241,7 +239,7 @@ export default function AdvertisingPage() {
 
   const columns: ColumnsType<AdsResponse> = [
     {
-      title: "Image",
+      title: "Ảnh",
       dataIndex: "imageUrl",
       key: "imageUrl",
       width: 100,
@@ -258,20 +256,20 @@ export default function AdvertisingPage() {
       ),
     },
     {
-      title: "Title",
+      title: "Tiêu đề",
       dataIndex: "title",
       key: "title",
       width: 200,
     },
     {
-      title: "Position",
+      title: "Vị trí",
       dataIndex: "position",
       key: "position",
       width: 100,
       render: (position: string) => <Tag color="blue">{position}</Tag>,
     },
     {
-      title: "Date Range",
+      title: "Khoảng thời gian",
       key: "dateRange",
       width: 200,
       render: (record: AdsResponse) => (
@@ -282,22 +280,22 @@ export default function AdvertisingPage() {
       ),
     },
     {
-      title: "Status",
+      title: "Trạng thái",
       key: "status",
       width: 120,
       render: (record: AdsResponse) => (
         <Space direction="vertical" size="small">
           <Tag color={record.isActive ? "green" : "red"}>
-            {record.isActive ? "Active" : "Inactive"}
+            {record.isActive ? "Hoạt động" : "Không hoạt động"}
           </Tag>
           <Tag color={record.isCurrentlyActive ? "cyan" : "orange"}>
-            {record.isCurrentlyActive ? "Live" : "Scheduled"}
+            {record.isCurrentlyActive ? "Đang phát" : "Đã lên lịch"}
           </Tag>
         </Space>
       ),
     },
     {
-      title: "Priority",
+      title: "Ưu tiên",
       dataIndex: "priority",
       key: "priority",
       width: 100,
@@ -318,7 +316,7 @@ export default function AdvertisingPage() {
       ),
     },
     {
-      // title: "Actions",
+      title: "Hành động",
       key: "actions",
       width: 200,
       render: (record: AdsResponse) => (
@@ -329,8 +327,8 @@ export default function AdvertisingPage() {
             // icon={<EyeInvisibleOutlined />}
             onClick={() => handleToggleStatus(record.id)}
           >
-            {record.isActive ? <EyeOutlined /> : <EyeInvisibleOutlined />}{" "}
-            {record.isActive ? "Deactivate" : "Activate"}
+            {record.isActive ? <EyeOutlined /> : <EyeInvisibleOutlined />}
+            {record.isActive ? "Hủy kích hoạt" : "Kích hoạt"}
           </Button>
           <Button
             type="default"
@@ -338,13 +336,13 @@ export default function AdvertisingPage() {
             icon={<EditOutlined />}
             onClick={() => handleEdit(record)}
           >
-            Edit
+            Chỉnh sửa
           </Button>
           <Popconfirm
-            title="Are you sure you want to delete this advertisement?"
+            title="Bạn có chắc chắn muốn xóa quảng cáo này không?"
             onConfirm={() => handleDelete(record.id)}
-            okText="Yes"
-            cancelText="No"
+            okText="Có"
+            cancelText="Không"
           >
             <Button
               type="primary"
@@ -352,7 +350,7 @@ export default function AdvertisingPage() {
               size="small"
               icon={<DeleteOutlined />}
             >
-              Delete
+              Xóa
             </Button>
           </Popconfirm>
         </Space>
@@ -366,7 +364,7 @@ export default function AdvertisingPage() {
       position: AdsPosition,
       dateRange: [Dayjs | null, Dayjs | null] | null
     ) => {
-      console.log("🔍 Checking conflicts:", { position, dateRange });
+      console.log("Checking conflicts:", { position, dateRange });
 
       if (!position || !dateRange || !dateRange[0] || !dateRange[1]) {
         setConflictWarning("");
@@ -393,7 +391,7 @@ export default function AdvertisingPage() {
           }
         );
 
-        console.log("🔍 Conflicts found:", conflicts);
+        console.log("Conflicts found:", conflicts);
 
         if (conflicts.length > 0) {
           const conflictMessages = conflicts
@@ -407,7 +405,7 @@ export default function AdvertisingPage() {
             )
             .join(", ");
 
-          setConflictWarning(`⚠️ Conflicts detected with: ${conflictMessages}`);
+          setConflictWarning(`Phát hiện xung đột với: ${conflictMessages}`);
         } else {
           setConflictWarning("");
         }
@@ -427,7 +425,7 @@ export default function AdvertisingPage() {
 
   // Debug log
   useEffect(() => {
-    console.log("📝 Form values changed:", {
+    console.log("Form values changed:", {
       position,
       dateRange,
       isModalVisible,
@@ -449,14 +447,14 @@ export default function AdvertisingPage() {
               }}
             >
               <h2 className="text-2xl font-semibold dark:text-white">
-                Advertisement Management
+                Quản lý Quảng cáo
               </h2>
               <Button
                 type="primary"
                 icon={<PlusOutlined />}
                 onClick={handleCreate}
               >
-                Create Advertisement
+                Tạo Quảng cáo Mới
               </Button>
             </div>
 

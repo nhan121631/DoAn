@@ -38,7 +38,7 @@ function StatisticPage() {
       {/* Header */}
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-          Statistics Dashboard
+          Thống Kê Tổng Quan
         </h1>
       </div>
       {/* Quick Stats Cards */}
@@ -53,7 +53,7 @@ function StatisticPage() {
           <div className="flex justify-between items-center">
             <div className="flex flex-col justify-between gap-y-4">
               <span className="text-lg font-medium text-gray-600 dark:text-gray-300">
-                Active Users
+                Người dùng hoạt động
               </span>
               <span className="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white">
                 {activeUsersCount?.data || activeUsersCount || 0}
@@ -75,7 +75,7 @@ function StatisticPage() {
           <div className="flex justify-between items-center">
             <div className="flex flex-col justify-between gap-y-4">
               <span className="text-lg font-medium text-gray-600 dark:text-gray-300">
-                Approved Posts
+                Bài đăng đã duyệt
               </span>
               <span className="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white">
                 {acceptedRoomsCount || 0}
@@ -97,7 +97,7 @@ function StatisticPage() {
           <div className="flex justify-between items-center">
             <div className="flex flex-col justify-between gap-y-4">
               <span className="text-lg font-medium text-gray-600 dark:text-gray-300">
-                Pending Posts
+                Bài đăng đang chờ duyệt
               </span>
               <span className="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white">
                 {pendingRoomsCount || 0}
@@ -119,7 +119,7 @@ function StatisticPage() {
           <div className="flex justify-between items-center">
             <div className="flex flex-col justify-between gap-y-4">
               <span className="text-lg font-medium text-gray-600 dark:text-gray-300">
-                Total Posts
+                Tổng số bài đăng
               </span>
               <span className="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white">
                 {totalRoomsCount || 0}

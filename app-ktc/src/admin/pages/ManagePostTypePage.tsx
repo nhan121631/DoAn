@@ -51,7 +51,7 @@ const ManagePostTypePage = () => {
     mutationConfig: {
       onSuccess: () => {
         messageApi.success({
-          content: "You created a post type successfully!",
+          content: "Bạn đã tạo loại bài đăng mới thành công!",
           duration: 3,
         });
         form.resetFields();
@@ -60,8 +60,7 @@ const ManagePostTypePage = () => {
       onError: (error: any) => {
         messageApi.error({
           content:
-            error?.response?.data?.message?.join(", ") ||
-            "An error has occurred!",
+            error?.response?.data?.message?.join(", ") || "Đã có lỗi xảy ra!",
           duration: 3,
         });
       },
@@ -93,7 +92,7 @@ const ManagePostTypePage = () => {
     mutationConfig: {
       onSuccess: () => {
         messageApi.success({
-          content: "You updated a post type successfully!",
+          content: "Bạn đã cập nhật loại bài đăng thành công!",
           duration: 3,
         });
         form.resetFields();
@@ -102,8 +101,7 @@ const ManagePostTypePage = () => {
       onError: (error: any) => {
         messageApi.error({
           content:
-            error?.response?.data?.message?.join(", ") ||
-            "An error has occurred!",
+            error?.response?.data?.message?.join(", ") || "Đã có lỗi xảy ra!",
           duration: 3,
         });
       },
@@ -159,10 +157,10 @@ const ManagePostTypePage = () => {
       {contextHolder}
 
       <h2 className="text-2xl font-semibold mb-4 dark:text-white">
-        Post Type Management
+        Quản Lý Loại Bài Đăng
       </h2>
       <Button type="primary" className="mb-4" onClick={() => setOpen(true)}>
-        Create Post Type
+        Tạo Loại Bài Đăng
       </Button>
       <TableManagePostType messageApi={messageApi} handleUpdate={handleEdit} />
       <ModelCreatePostType

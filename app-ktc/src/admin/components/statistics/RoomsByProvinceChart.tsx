@@ -47,7 +47,7 @@ const RoomsByProvinceChart = () => {
   if (isLoading) {
     return (
       <Card
-        title="Rooms by Province"
+        title="Phòng theo Tỉnh Thành"
         className="h-full flex flex-col"
         headStyle={{ color: "var(--text-color)" }}
         bodyStyle={{
@@ -100,7 +100,7 @@ const RoomsByProvinceChart = () => {
 
   return (
     <Card
-      title="Rooms Distribution by Province"
+      title="Phòng theo Tỉnh Thành"
       className="h-full flex flex-col"
       headStyle={{ color: "var(--text-color)" }}
       bodyStyle={{
@@ -128,7 +128,7 @@ const RoomsByProvinceChart = () => {
               ))}
             </Pie>
             <Tooltip
-              formatter={(value) => [value, "Rooms"]}
+              formatter={(value) => [value, "Số phòng"]}
               contentStyle={{
                 backgroundColor: "rgba(255, 255, 255, 0.95)",
                 border: "none",
@@ -136,7 +136,7 @@ const RoomsByProvinceChart = () => {
                 boxShadow: "0 4px 16px rgba(0, 0, 0, 0.1)",
                 color: "#000",
               }}
-            //   wrapperClassName="!dark:[&>div]:!bg-gray-800 !dark:[&>div]:!text-white !dark:[&>div]:!border-gray-600"
+              //   wrapperClassName="!dark:[&>div]:!bg-gray-800 !dark:[&>div]:!text-white !dark:[&>div]:!border-gray-600"
             />
             <Legend wrapperStyle={{ color: "var(--text-color)" }} />
           </PieChart>

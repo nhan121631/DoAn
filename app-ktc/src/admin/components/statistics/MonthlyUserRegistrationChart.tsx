@@ -47,7 +47,7 @@ const MonthlyUserRegistrationChart = ({
       <div className="flex items-center gap-2 mb-3">
         <FilterOutlined className="text-blue-500 dark:text-blue-400" />
         <span className="font-medium text-gray-700 dark:text-gray-300">
-          Chart Filters
+          Bộ lọc thống kê
         </span>
       </div>
       <Form
@@ -56,7 +56,7 @@ const MonthlyUserRegistrationChart = ({
         initialValues={{ months: 6 }}
         className="flex items-center gap-3"
       >
-        <Form.Item name="months" label="Months" className="mb-0">
+        <Form.Item name="months" label="Số Tháng" className="mb-0">
           <Select placeholder="6" style={{ width: 70 }}>
             {Array.from({ length: 11 }, (_, i) => i + 2).map((month) => (
               <Select.Option key={month} value={month}>
@@ -68,10 +68,10 @@ const MonthlyUserRegistrationChart = ({
         <Form.Item className="mb-0">
           <Space size="small">
             <Button type="primary" size="small" onClick={handleApply}>
-              Apply
+              Áp dụng
             </Button>
             <Button size="small" onClick={handleReset}>
-              Reset
+              Đặt lại
             </Button>
           </Space>
         </Form.Item>
@@ -105,10 +105,10 @@ const MonthlyUserRegistrationChart = ({
       <div className="h-full flex flex-col">
         {controlsPanel}
         <Card
-          title={`Monthly User Registrations ${
+          title={`Đăng ký người dùng hàng tháng ${
             isConnectionError
-              ? "(Demo Data - Backend Offline)"
-              : "(Error - Using Demo Data)"
+              ? "(Dữ liệu demo - Backend không hoạt động)"
+              : "(Lỗi - Sử dụng dữ liệu demo  )"
           }`}
           className="flex-1 flex flex-col"
           headStyle={{ color: "var(--text-color)" }}
@@ -125,8 +125,8 @@ const MonthlyUserRegistrationChart = ({
             }`}
           >
             {isConnectionError
-              ? "⚠️ Backend server is not running. Showing demo data."
-              : "❌ API Error: Using demo data. Check console for details."}
+              ? "Backend không phản hồi. Hiển thị dữ liệu demo."
+              : "Lỗi API: Sử dụng dữ liệu demo. Kiểm tra console để biết chi tiết."}
           </div>
           <div className="flex-1 min-h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
@@ -209,7 +209,7 @@ const MonthlyUserRegistrationChart = ({
       <div className="h-full flex flex-col">
         {controlsPanel}
         <Card
-          title="Monthly User Registrations"
+          title="Đăng ký người dùng hàng tháng"
           className="flex-1 flex flex-col"
           headStyle={{ color: "var(--text-color)" }}
           bodyStyle={{
@@ -239,7 +239,7 @@ const MonthlyUserRegistrationChart = ({
     <div className="h-full flex flex-col">
       {controlsPanel}
       <Card
-        title="Monthly User Registrations"
+        title="Đăng ký người dùng hàng tháng"
         className="flex-1 flex flex-col"
         headStyle={{ color: "var(--text-color)" }}
         bodyStyle={{
@@ -282,7 +282,7 @@ const MonthlyUserRegistrationChart = ({
                 className="!dark:stroke-gray-400"
               />
               <Tooltip
-                formatter={(value) => [value, "New Users"]}
+                formatter={(value) => [value, "Người dùng mới"]}
                 labelFormatter={(label) => {
                   const date = new Date(label + "-01");
                   return date.toLocaleDateString("vi-VN", {

@@ -54,12 +54,12 @@ const ManageBlogPage = () => {
     mutationConfig: {
       onSuccess: () => {
         console.log("Blog deleted successfully!");
-        message.success("Blog deleted successfully!");
+        message.success("Xóa blog thành công!");
       },
       onError: (error: any) => {
         console.error("Delete error:", error);
         message.error(
-          `Failed to delete blog: ${error?.message || "Unknown error"}`
+          `Không thể xóa blog: ${error?.message || "Lỗi không xác định"}`
         );
       },
     },
@@ -78,7 +78,7 @@ const ManageBlogPage = () => {
 
   const columns = [
     {
-      title: "Title",
+      title: "Tiêu đề",
       dataIndex: "title",
       key: "title",
       render: (title: string) => (
@@ -98,7 +98,7 @@ const ManageBlogPage = () => {
       ),
     },
     {
-      title: "Category",
+      title: "Danh mục",
       dataIndex: "category",
       key: "category",
       render: (category: BlogCategory) => {
@@ -124,13 +124,17 @@ const ManageBlogPage = () => {
             color={colorConfig[category].color}
             className={colorConfig[category].className}
           >
-            {category}
+            {category === "ANNOUNCEMENT"
+              ? "Thông báo"
+              : category === "GUIDE"
+              ? "Hướng dẫn"
+              : "Tin tức"}
           </Tag>
         );
       },
     },
     {
-      title: "Status",
+      title: "Trạng thái",
       dataIndex: "status",
       key: "status",
       render: (status: BlogStatus) => (
@@ -142,12 +146,12 @@ const ManageBlogPage = () => {
               : "bg-orange-50 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 border-orange-200 dark:border-orange-700"
           }
         >
-          {status}
+          {status === "PUBLISHED" ? "Đã xuất bản" : "Bản nháp"}
         </Tag>
       ),
     },
     {
-      title: "Created At",
+      title: "Ngày Tạo",
       dataIndex: "createdAt",
       key: "createdAt",
       render: (date: string) => (
@@ -239,7 +243,7 @@ const ManageBlogPage = () => {
             level={2}
             className="text-gray-900 dark:!text-gray-100 !text-2xl !font-semibold !mb-0"
           >
-            Blog Management
+            Quản lý Blog
           </Title>
           <Button
             type="primary"
@@ -247,14 +251,14 @@ const ManageBlogPage = () => {
             onClick={() => navigate("/admin/manage-blogs/create")}
             className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
           >
-            Create New Blog
+            Tạo mới blog
           </Button>
         </div>
 
         {/* Filters */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
           <Input
-            placeholder="Search by title..."
+            placeholder="Tìm kiếm theo tiêu đề..."
             prefix={
               <SearchOutlined className="text-gray-400 dark:text-gray-500" />
             }
@@ -264,33 +268,33 @@ const ManageBlogPage = () => {
             className="bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 [&_.ant-input]:bg-white [&_.ant-input]:dark:bg-gray-700 [&_.ant-input]:text-gray-900 [&_.ant-input]:dark:text-gray-100 [&_.ant-input]:placeholder:text-gray-500 [&_.ant-input]:dark:placeholder:text-gray-400"
           />
           <Select
-            placeholder="Filter by status"
+            placeholder="Lọc theo trạng thái"
             value={filterStatus}
             onChange={setFilterStatus}
             allowClear
             className="[&_.ant-select-selector]:bg-white [&_.ant-select-selector]:dark:bg-gray-700 [&_.ant-select-selector]:border-gray-300 [&_.ant-select-selector]:dark:border-gray-600 [&_.ant-select-selection-placeholder]:text-gray-500 [&_.ant-select-selection-placeholder]:dark:text-gray-400 [&_.ant-select-selection-item]:text-gray-900 [&_.ant-select-selection-item]:dark:text-gray-100"
             dropdownClassName="bg-white dark:bg-gray-800 [&_.ant-select-item]:text-gray-900 [&_.ant-select-item]:dark:text-gray-100 [&_.ant-select-item-option-selected]:bg-blue-50 [&_.ant-select-item-option-selected]:dark:bg-gray-600"
           >
-            <Option value="DRAFT">Draft</Option>
-            <Option value="PUBLISHED">Published</Option>
+            <Option value="DRAFT">Bản nháp</Option>
+            <Option value="PUBLISHED">Đã xuất bản</Option>
           </Select>
           <Select
-            placeholder="Filter by category"
+            placeholder="Lọc theo danh mục"
             value={filterCategory}
             onChange={setFilterCategory}
             allowClear
             className="[&_.ant-select-selector]:bg-white [&_.ant-select-selector]:dark:bg-gray-700 [&_.ant-select-selector]:border-gray-300 [&_.ant-select-selector]:dark:border-gray-600 [&_.ant-select-selection-placeholder]:text-gray-500 [&_.ant-select-selection-placeholder]:dark:text-gray-400 [&_.ant-select-selection-item]:text-gray-900 [&_.ant-select-selection-item]:dark:text-gray-100"
             dropdownClassName="bg-white dark:bg-gray-800 [&_.ant-select-item]:text-gray-900 [&_.ant-select-item]:dark:text-gray-100 [&_.ant-select-item-option-selected]:bg-blue-50 [&_.ant-select-item-option-selected]:dark:bg-gray-600"
           >
-            <Option value="ANNOUNCEMENT">Announcement</Option>
-            <Option value="GUIDE">Guide</Option>
-            <Option value="NEWS">News</Option>
+            <Option value="ANNOUNCEMENT">Thông báo</Option>
+            <Option value="GUIDE">Hướng dẫn</Option>
+            <Option value="NEWS">Tin tức</Option>
           </Select>
           <Button
             onClick={handleClearFilters}
             className="bg-gray-100 dark:bg-gray-600 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-500 hover:bg-gray-200 dark:hover:bg-gray-500 hover:text-gray-800 dark:hover:text-gray-200"
           >
-            Clear Filters
+            Xóa bộ lọc
           </Button>
         </div>
 
