@@ -263,7 +263,7 @@ export default function ManageChatPage() {
           showSidebar ? "block" : "hidden md:flex"
         }`}
       >
-        <div className="p-6">
+        <div className="p-6 flex-shrink-0">
           <div className="mb-6">
             <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
               Conversations
@@ -278,22 +278,24 @@ export default function ManageChatPage() {
               </div>
             </div>
           )}
-          {isLoading ? (
-            <div className="space-y-4">
-              {[...Array(5)].map((_, i) => (
-                <div key={i} className="animate-pulse">
-                  <div className="flex items-center space-x-3 p-4 rounded-xl bg-slate-100 dark:bg-gray-800">
-                    <div className="w-12 h-12 bg-slate-200 dark:bg-gray-700 rounded-full" />
-                    <div className="flex-1 space-y-2">
-                      <div className="h-4 bg-slate-200 dark:bg-gray-700 rounded w-3/4" />
-                      <div className="h-3 bg-slate-200 dark:bg-gray-700 rounded w-1/2" />
-                    </div>
+        </div>
+        {isLoading ? (
+          <div className="space-y-4 px-6">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="animate-pulse">
+                <div className="flex items-center space-x-3 p-4 rounded-xl bg-slate-100 dark:bg-gray-800">
+                  <div className="w-12 h-12 bg-slate-200 dark:bg-gray-700 rounded-full" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-4 bg-slate-200 dark:bg-gray-700 rounded w-3/4" />
+                    <div className="h-3 bg-slate-200 dark:bg-gray-700 rounded w-1/2" />
                   </div>
                 </div>
-              ))}
-            </div>
-          ) : (
-            <div className="space-y-3 flex-1 overflow-y-auto scrollbar-none">
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="flex-1 min-h-0 overflow-y-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-slate-200 dark:scrollbar-thumb-gray-700 px-6 pb-6">
+            <div className="space-y-3">
               {sortedUserList.length === 0 && (
                 <div className="text-center py-12 animate-fade-in">
                   <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-slate-200 to-slate-300 dark:from-gray-800 dark:to-gray-700 flex items-center justify-center">
@@ -430,8 +432,8 @@ export default function ManageChatPage() {
                 );
               })}
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
       {/* Chat Area */}
@@ -528,6 +530,26 @@ export default function ManageChatPage() {
           -ms-overflow-style: none;
           scrollbar-width: none;
         }
+        .scrollbar-thin::-webkit-scrollbar {
+          width: 6px;
+        }
+        .scrollbar-track-transparent::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .scrollbar-thumb-slate-200::-webkit-scrollbar-thumb {
+          background-color: rgb(226 232 240);
+          border-radius: 3px;
+        }
+        .scrollbar-thumb-slate-200::-webkit-scrollbar-thumb:hover {
+          background-color: rgb(203 213 225);
+        }
+        .dark .scrollbar-thumb-gray-700::-webkit-scrollbar-thumb {
+          background-color: rgb(55 65 81);
+          border-radius: 3px;
+        }
+        .dark .scrollbar-thumb-gray-700::-webkit-scrollbar-thumb:hover {
+          background-color: rgb(75 85 99);
+        }
         @keyframes fade-in-up {
           from {
             opacity: 0;
@@ -551,19 +573,6 @@ export default function ManageChatPage() {
         }
         .animate-fade-in {
           animation: fade-in 0.3s ease-out forwards;
-        }
-        .scrollbar-thin::-webkit-scrollbar {
-          width: 6px;
-        }
-        .scrollbar-track-transparent::-webkit-scrollbar-track {
-          background: transparent;
-        }
-        .scrollbar-thumb-slate-200::-webkit-scrollbar-thumb {
-          background-color: rgb(226 232 240);
-          border-radius: 3px;
-        }
-        .scrollbar-thumb-slate-200::-webkit-scrollbar-thumb:hover {
-          background-color: rgb(203 213 225);
         }
       `}</style>
     </div>
