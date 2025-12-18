@@ -61,7 +61,7 @@ const TableManageAccount: React.FC = () => {
   });
 
   const toggleStatus = (record: UserResponseDto) => {
-    const newStatus = record.status === "Active" ? 1 : 0;
+    const newStatus = record.status === "Hoạt động" ? 1 : 0;
     updateStatusMutation.mutate({ id: record.id, status: newStatus });
   };
 
@@ -125,7 +125,17 @@ const TableManageAccount: React.FC = () => {
       dataIndex: "status",
       key: "status",
       render: (status) => (
-        <Tag color={status === "Active" ? "green" : "red"}>{status}</Tag>
+        <Tag
+          color={
+            status === "Active" || status === "Hoạt động" ? "green" : "red"
+          }
+        >
+          {status === "Active"
+            ? "Hoạt động"
+            : status === "Inactive"
+            ? "Vô hiệu hóa"
+            : status}
+        </Tag>
       ),
     },
     {
@@ -133,7 +143,7 @@ const TableManageAccount: React.FC = () => {
       key: "action",
       width: "15%",
       render: (_, record) =>
-        record.status === "Active" ? (
+        record.status === "Active" || record.status === "Hoạt động" ? (
           <Popconfirm
             title="Vô hiệu hóa tài khoản này?"
             onConfirm={() => toggleStatus(record)}

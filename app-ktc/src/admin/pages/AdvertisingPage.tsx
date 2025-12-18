@@ -482,7 +482,7 @@ export default function AdvertisingPage() {
       </Row>
 
       <Modal
-        title={editingAds ? "Edit Advertisement" : "Create Advertisement"}
+        title={editingAds ? "Chỉnh sửa Quảng cáo" : "Tạo Quảng cáo Mới"}
         open={isModalVisible}
         onCancel={() => {
           setIsModalVisible(false);
@@ -499,7 +499,7 @@ export default function AdvertisingPage() {
               const firstErrorField = info.errorFields?.[0];
               if (firstErrorField) {
                 messageApi.error(
-                  `Please fill in required field: ${firstErrorField.name[0]}`
+                  `Vui lòng điền trường bắt buộc: ${firstErrorField.name[0]}`
                 );
               }
             });
@@ -520,14 +520,14 @@ export default function AdvertisingPage() {
           }}
         >
           <div style={{ fontWeight: "bold", marginBottom: 4 }}>
-            📋 How Priority Works:
+            📋 Cách hoạt động của Ưu tiên:
           </div>
           <div>
-            • When multiple banners compete for the same position and time,{" "}
-            <strong>higher priority wins</strong>
+            • Khi nhiều banner cạnh tranh cùng vị trí và thời gian,{" "}
+            <strong>ưu tiên cao hơn sẽ hiển thị trước</strong>
           </div>
-          <div>• Priority 999 = displays first, Priority 0 = displays last</div>
-          <div>• If priorities are equal, newer banners display first</div>
+          <div>• Ưu tiên 999 = hiển thị đầu, Ưu tiên 0 = hiển thị cuối</div>
+          <div>• Nếu ưu tiên bằng nhau, banner mới hơn sẽ hiển thị trước</div>
         </div>
         <Form
           form={form}
@@ -541,46 +541,46 @@ export default function AdvertisingPage() {
         >
           <Form.Item
             name="title"
-            label="Title"
+            label="Tiêu đề"
             rules={[
-              { required: true, message: "Title is required" },
-              { min: 3, message: "Title must be at least 3 characters" },
-              { max: 100, message: "Title must not exceed 100 characters" },
+              { required: true, message: "Tiêu đề là bắt buộc" },
+              { min: 3, message: "Tiêu đề tối thiểu 3 ký tự" },
+              { max: 100, message: "Tiêu đề tối đa 100 ký tự" },
             ]}
           >
-            <Input placeholder="Enter advertisement title" />
+            <Input placeholder="Nhập tiêu đề quảng cáo" />
           </Form.Item>
 
           <Form.Item
             name="description"
-            label="Description"
+            label="Mô tả"
             rules={[
               {
                 max: 500,
-                message: "Description must not exceed 500 characters",
+                message: "Mô tả tối đa 500 ký tự",
               },
             ]}
           >
-            <TextArea rows={3} placeholder="Enter advertisement description" />
+            <TextArea rows={3} placeholder="Nhập mô tả quảng cáo" />
           </Form.Item>
 
           <Form.Item
             name="linkUrl"
-            label="Link URL"
-            rules={[{ type: "url", message: "Please enter a valid URL" }]}
-            tooltip="Optional: When users click on the banner, they will be redirected to this URL"
+            label="Liên kết URL"
+            rules={[{ type: "url", message: "Vui lòng nhập URL hợp lệ" }]}
+            tooltip="Không bắt buộc: Khi người dùng click vào banner sẽ chuyển đến URL này"
           >
-            <Input placeholder="Enter target URL (optional)" />
+            <Input placeholder="Nhập URL đích (không bắt buộc)" />
           </Form.Item>
 
           <Form.Item
             name="position"
-            label="Position"
-            rules={[{ required: true, message: "Position is required" }]}
-            tooltip="Choose where the banner will appear on the page. Multiple banners in the same position and time range will compete for display."
+            label="Vị trí"
+            rules={[{ required: true, message: "Vị trí là bắt buộc" }]}
+            tooltip="Chọn vị trí banner sẽ xuất hiện. Nhiều banner cùng vị trí và thời gian sẽ cạnh tranh hiển thị."
           >
             <Select
-              placeholder="Select position"
+              placeholder="Chọn vị trí"
               onChange={(value) => {
                 // Check conflicts khi thay đổi position (nếu đã có dateRange)
                 const currentDateRange = form.getFieldValue("dateRange");
@@ -594,24 +594,26 @@ export default function AdvertisingPage() {
                 }
               }}
             >
-              <Option value="LEFT">Left Sidebar</Option>
-              <Option value="RIGHT">Right Sidebar</Option>
-              {/* <Option value="TOP">Top Banner</Option>
-              <Option value="BOTTOM">Bottom Banner</Option>
-              <Option value="CENTER">Center</Option> */}
+              <Option value="LEFT">Thanh bên trái</Option>
+              <Option value="RIGHT">Thanh bên phải</Option>
+              {/* <Option value="TOP">Banner trên</Option>
+              <Option value="BOTTOM">Banner dưới</Option>
+              <Option value="CENTER">Giữa trang</Option> */}
             </Select>
           </Form.Item>
 
           <Form.Item
             name="dateRange"
-            label="Date Range"
-            rules={[{ required: true, message: "Date range is required" }]}
+            label="Khoảng thời gian"
+            rules={[
+              { required: true, message: "Khoảng thời gian là bắt buộc" },
+            ]}
           >
             <RangePicker
               style={{ width: "100%" }}
               showTime
               format="DD/MM/YYYY HH:mm"
-              placeholder={["Start date", "End date"]}
+              placeholder={["Ngày bắt đầu", "Ngày kết thúc"]}
               onOk={(dates) => {
                 // Chỉ check conflicts khi user click OK trên date picker
                 if (dates && dates.length === 2 && dates[0] && dates[1]) {
@@ -650,7 +652,7 @@ export default function AdvertisingPage() {
                 color: "#1677ff",
               }}
             >
-              🔍 Checking for conflicts...
+              🔍 Đang kiểm tra xung đột...
             </div>
           )}
 
@@ -673,12 +675,12 @@ export default function AdvertisingPage() {
                   marginBottom: 4,
                 }}
               >
-                ⚠️ Scheduling Conflict Detected
+                ⚠️ Phát hiện xung đột lịch hiển thị
               </div>
               <div style={{ color: "#8c5803" }}>{conflictWarning}</div>
               <div style={{ color: "#8c5803", marginTop: 4 }}>
-                � Tip: Consider adjusting the priority or time range to avoid
-                conflicts.
+                💡 Mẹo: Hãy cân nhắc điều chỉnh ưu tiên hoặc thời gian để tránh
+                xung đột.
               </div>
             </div>
           )}
@@ -687,42 +689,46 @@ export default function AdvertisingPage() {
             <Col span={12}>
               <Form.Item
                 name="priority"
-                label="Priority"
-                tooltip="Higher priority numbers display first when multiple banners compete for the same position and time. Range: 0-999 (999 = highest priority)"
+                label="Ưu tiên"
+                tooltip="Ưu tiên cao sẽ hiển thị trước khi nhiều banner cạnh tranh cùng vị trí và thời gian. Khoảng: 0-999 (999 = ưu tiên cao nhất)"
                 rules={[
                   {
                     type: "number",
                     min: 0,
                     max: 999,
-                    message: "Priority must be between 0-999",
+                    message: "Ưu tiên phải từ 0-999",
                   },
                 ]}
               >
                 <InputNumber
                   style={{ width: "100%" }}
-                  placeholder="0 = lowest, 999 = highest"
+                  placeholder="0 = thấp nhất, 999 = cao nhất"
                   min={0}
                   max={999}
-                  addonAfter="priority"
+                  addonAfter="ưu tiên"
                 />
               </Form.Item>
             </Col>
             <Col span={12}>
-              <Form.Item name="isActive" label="Active" valuePropName="checked">
-                <Switch />
+              <Form.Item
+                name="isActive"
+                label="Kích hoạt"
+                valuePropName="checked"
+              >
+                <Switch checkedChildren="Bật" unCheckedChildren="Tắt" />
               </Form.Item>
             </Col>
           </Row>
 
           <Form.Item
-            label="Image"
+            label="Ảnh"
             required={!editingAds}
-            tooltip="Upload an image for the banner. If you also provide a Link URL, clicking the image will redirect to that URL."
+            tooltip="Tải lên ảnh cho banner. Nếu có Liên kết URL, click vào ảnh sẽ chuyển đến URL đó."
             rules={[
               {
                 validator: () => {
                   if (!editingAds && fileList.length === 0) {
-                    return Promise.reject(new Error("Image is required"));
+                    return Promise.reject(new Error("Ảnh là bắt buộc"));
                   }
                   return Promise.resolve();
                 },
@@ -731,15 +737,14 @@ export default function AdvertisingPage() {
           >
             <Upload {...uploadProps}>
               <Button icon={<UploadOutlined />}>
-                {editingAds ? "Change Image" : "Upload Image"}
+                {editingAds ? "Đổi ảnh" : "Tải ảnh lên"}
               </Button>
             </Upload>
             {fileList.length > 0 && (
               <div style={{ marginTop: 8, fontSize: 12, color: "#666" }}>
-                💡 Tip: The uploaded image will be displayed as a clickable
-                banner
+                💡 Mẹo: Ảnh tải lên sẽ hiển thị dưới dạng banner có thể click
                 {form.getFieldValue("linkUrl")
-                  ? " that redirects to your specified URL"
+                  ? " và chuyển hướng đến URL bạn nhập"
                   : ""}
                 .
               </div>

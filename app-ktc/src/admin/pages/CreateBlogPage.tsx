@@ -220,7 +220,7 @@ const CreateBlogPage = () => {
                 ]}
               >
                 <Input
-                  placeholder="blog-slug-example"
+                  placeholder="blog-slug mẫu"
                   size="large"
                   className="bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100"
                 />
