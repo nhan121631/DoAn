@@ -310,7 +310,7 @@ export default function AdvertisingPage() {
             {priority}
           </Tag>
           <div style={{ fontSize: 10, color: "#666" }}>
-            {priority >= 500 ? "High" : priority >= 100 ? "Medium" : "Low"}
+            {priority >= 500 ? "Cao" : priority >= 100 ? "Trung bình" : "Thấp"}
           </div>
         </div>
       ),
