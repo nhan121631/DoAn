@@ -41,7 +41,7 @@ export default function RoomCartActions({
   const handleCompare = () => {
     if (items.length >= 2) {
       messageApi.warning({
-        content: "You can only compare up to 2 rooms.",
+        content: "Bạn chỉ có thể so sánh tối đa 2 phòng cùng lúc.",
         duration: 1.5,
       });
       return;
@@ -63,13 +63,13 @@ export default function RoomCartActions({
       router.push("/auth/login");
       return;
     }
-    
-    const wasFavorite = isFavorite; 
-    
+
+    const wasFavorite = isFavorite;
+
     if (wasFavorite) {
       removeFavorite(room.id);
       if (onFavoriteChange) onFavoriteChange(room.id);
-      setFavoriteCount((prevCount) => prevCount > 0 ? prevCount - 1 : 0);
+      setFavoriteCount((prevCount) => (prevCount > 0 ? prevCount - 1 : 0));
     } else {
       addFavorite(room.id);
       setFavoriteCount((prevCount) => prevCount + 1);
@@ -83,26 +83,27 @@ export default function RoomCartActions({
       });
 
       if (!res.ok) {
-        throw new Error("Failed to update favorite status on the server.");
+        throw new Error("Lỗi khi cập nhật trạng thái yêu thích trên máy chủ.");
       }
-      
-      messageApi.success(wasFavorite ? "Removed from favorites" : "Added to favorites");
-  
-  } catch (err) { 
-    console.error("Failed to update favorite status:", err);
-    
-    if (wasFavorite) {
-      addFavorite(room.id); 
-      setFavoriteCount((prevCount) => prevCount + 1);
-    } else {
-      removeFavorite(room.id);
-      setFavoriteCount((prevCount) => prevCount > 0 ? prevCount - 1 : 0);
+
+      messageApi.success(
+        wasFavorite ? "Đã bỏ yêu thích" : "Đã thêm vào yêu thích"
+      );
+    } catch (err) {
+      console.error("Failed to update favorite status:", err);
+
+      if (wasFavorite) {
+        addFavorite(room.id);
+        setFavoriteCount((prevCount) => prevCount + 1);
+      } else {
+        removeFavorite(room.id);
+        setFavoriteCount((prevCount) => (prevCount > 0 ? prevCount - 1 : 0));
+      }
+      messageApi.error("Lỗi khi cập nhật trạng thái yêu thích.");
+    } finally {
+      setLoadingFavorite(false);
     }
-    messageApi.error("Failed to update favorite status.");
-  } finally {
-    setLoadingFavorite(false);
-  }
-};
+  };
   if (showHeartOnly) {
     return (
       <>
@@ -172,12 +173,10 @@ export default function RoomCartActions({
           disabled={isCompared}
           type="button"
         >
-          {isCompared ? <FaRegCheckCircle /> : <IoIosAddCircleOutline />}{" "}
-          Compare
+          {isCompared ? <FaRegCheckCircle /> : <IoIosAddCircleOutline />} So
+          sánh
         </button>
       </div>
     </>
   );
 }
-
-
