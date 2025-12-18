@@ -151,14 +151,15 @@ public class ReportLogController {
             slackMessage.put("channel", SLACK_CHANNEL_ID);
 
             String messageText = "🚨 *New Room Report*\n\n";
-            messageText += "*Timestamp:* " + timestamp + "\n";
-            messageText += "*Reporter:* " + reportData.getContactName() + "\n";
-            messageText += "*Phone:* " + reportData.getContactPhone() + "\n";
-            messageText += "*Post URL:* " + (reportData.getPostUrl() != null ? reportData.getPostUrl() : "N/A") + "\n";
-            messageText += "*Reason:* " + reportData.getReason() + "\n";
+            messageText += "*Thời gian:* " + timestamp + "\n";
+            messageText += "*Người báo cáo:* " + reportData.getContactName() + "\n";
+            messageText += "*Số điện thoại:* " + reportData.getContactPhone() + "\n";
+            messageText += "*URL bài đăng:* " + (reportData.getPostUrl() != null ? reportData.getPostUrl() : "N/A")
+                    + "\n";
+            messageText += "*Lý do:* " + reportData.getReason() + "\n";
 
             if (reportData.getDescription() != null && !reportData.getDescription().trim().isEmpty()) {
-                messageText += "*Additional Details:* " + reportData.getDescription() + "\n";
+                messageText += "*Chi tiết bổ sung:* " + reportData.getDescription() + "\n";
             }
 
             messageText += "\n_Report ID: " + System.currentTimeMillis() + "_";

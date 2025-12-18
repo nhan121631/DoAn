@@ -516,7 +516,7 @@ export default function HeaderUserDashboard({
                   className="flex items-center gap-2 px-3 py-2 text-gray-700 font-medium transition-all duration-300 rounded-lg hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 hover:text-blue-600 hover:scale-105 group"
                 >
                   <span className="hidden sm:inline transition-all duration-300 group-hover:tracking-wide">
-                    Bảng điều khiển
+                    Dashboard
                   </span>
                 </Link>
 
