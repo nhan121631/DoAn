@@ -2,17 +2,17 @@ import React from "react";
 import { BsCheckCircleFill, BsXCircleFill } from "react-icons/bs";
 
 const convenients = [
-  { label: "furnished", displayName: "Fully Furnished", enabled: false },
-  { label: "washing_machine", displayName: "Washing Machine", enabled: false },
-  { label: "no_curfew", displayName: "No Curfew", enabled: false },
-  { label: "mezzanine", displayName: "Mezzanine/Loft", enabled: false },
-  { label: "fridge", displayName: "Refrigerator", enabled: false },
-  { label: "kitchen_shelf", displayName: "Kitchen Cabinet", enabled: false },
-  { label: "aircon", displayName: "Air Conditioning", enabled: false },
-  { label: "private_entry", displayName: "Private Entrance", enabled: false },
-  { label: "elevator", displayName: "Elevator", enabled: false },
-  { label: "security_24h", displayName: "24/7 Security", enabled: false },
-  { label: "garage", displayName: "Parking/Garage", enabled: false },
+  { label: "furnished", displayName: "Đầy đủ nội thất", enabled: false },
+  { label: "washing_machine", displayName: "Máy giặt", enabled: false },
+  { label: "no_curfew", displayName: "Không giới nghiêm", enabled: false },
+  { label: "mezzanine", displayName: "Gác lửng", enabled: false },
+  { label: "fridge", displayName: "Tủ lạnh", enabled: false },
+  { label: "kitchen_shelf", displayName: "Tủ bếp", enabled: false },
+  { label: "aircon", displayName: "Điều hòa", enabled: false },
+  { label: "private_entry", displayName: "Lối vào riêng", enabled: false },
+  { label: "elevator", displayName: "Thang máy", enabled: false },
+  { label: "security_24h", displayName: "Bảo vệ 24/7", enabled: false },
+  { label: "garage", displayName: "Bãi đậu xe/Garage", enabled: false },
 ];
 
 interface Feature {
@@ -36,7 +36,7 @@ export default function Convenient({ features }: ConvenientProps) {
     <div className="mb-8">
       <h3 className="flex items-center gap-2 mb-4 text-xl font-bold text-gray-800 dark:text-white">
         <BsCheckCircleFill className="w-5 h-5 text-blue-600" />
-        Conveniences
+        Tiện nghi
       </h3>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
         {convenientFeatures.map((feature) => (

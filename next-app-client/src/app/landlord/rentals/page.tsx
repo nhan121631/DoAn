@@ -51,7 +51,7 @@ export default function RentalsPage() {
     return {
       key: booking.bookingId,
       name_tenant: booking.user.fullName,
-      phone_tenant: booking.user.phoneNumber || "Phone not updated",
+      phone_tenant: booking.user.phoneNumber || "Số điện thoại trống",
       imageProof: booking.imageProof || "",
       room: booking.room.title,
       address: fullAddress,
@@ -151,7 +151,7 @@ export default function RentalsPage() {
     try {
       await updateBookingStatus(String(bookingId), newStatus);
       messageApi.success({
-        content: `Booking ${actionName} successfully!`,
+        content: `Đặt phòng ${actionName} thành công!`,
         duration: 2,
       });
       // Refresh data after update
@@ -160,12 +160,12 @@ export default function RentalsPage() {
       await bookingConfirmationNotification(
         session?.user.id,
         userId,
-        `Your booking has been ${actionName} by the landlord at room ${nameRoom}.`
+        `Đặt phòng của bạn đã được ${actionName} bởi chủ nhà tại phòng ${nameRoom}.`
       );
     } catch (error) {
       console.error("Failed to update booking status:", error);
       messageApi.error({
-        content: `Failed to ${actionName.toLowerCase()} booking`,
+        content: `Không thể ${actionName.toLowerCase()} đặt phòng`,
         duration: 2,
       });
     }
@@ -176,13 +176,13 @@ export default function RentalsPage() {
       const idStr = String(bookingId);
       if (!idStr || idStr === "0") {
         console.error("Attempted to delete with invalid bookingId:", bookingId);
-        messageApi.error({ content: "Invalid booking id", duration: 2 });
+        messageApi.error({ content: "ID đặt phòng không hợp lệ", duration: 2 });
         return;
       }
       // Pass raw id string; BookingService.deleteBooking will encode it once when building the request URL.
       await deleteBooking(idStr);
       messageApi.success({
-        content: "Booking removed successfully!",
+        content: "Đặt phòng đã được xóa thành công!",
         duration: 2,
       });
       await fetchTableData(pagination.current, pagination.pageSize);
@@ -190,7 +190,7 @@ export default function RentalsPage() {
       console.error("Failed to delete booking:", error);
       const errMsg = error instanceof Error ? error.message : String(error);
       messageApi.error({
-        content: `Failed to remove booking: ${errMsg}`,
+        content: `Không thể xóa đặt phòng: ${errMsg}`,
         duration: 4,
       });
     }
@@ -208,50 +208,50 @@ export default function RentalsPage() {
 
   const columns = [
     {
-      title: "Tenant Name",
+      title: "Tên người thuê",
       dataIndex: "name_tenant",
       sorter: (a: RentalData, b: RentalData) =>
         a.name_tenant.localeCompare(b.name_tenant),
     },
     {
-      title: "Tenant Phone",
+      title: "Số điện thoại",
       dataIndex: "phone_tenant",
       align: "right" as const,
       sorter: (a: RentalData, b: RentalData) =>
         a.phone_tenant.localeCompare(b.phone_tenant),
     },
     {
-      title: "Room Name",
+      title: "Tên phòng",
       dataIndex: "room",
       sorter: (a: RentalData, b: RentalData) => a.room.localeCompare(b.room),
     },
     {
-      title: "Address",
+      title: "Địa chỉ",
       dataIndex: "address",
       sorter: (a: RentalData, b: RentalData) =>
         a.address.localeCompare(b.address),
     },
     {
-      title: "Rental Date",
+      title: "Ngày thuê",
       dataIndex: "rentalDate",
       sorter: (a: RentalData, b: RentalData) =>
         new Date(a.rentalDate).getTime() - new Date(b.rentalDate).getTime(),
     },
     {
-      title: "Expires",
+      title: "Hết hạn",
       dataIndex: "expires",
       sorter: (a: RentalData, b: RentalData) =>
         new Date(a.expires).getTime() - new Date(b.expires).getTime(),
     },
     {
-      title: "Image Proof",
+      title: "Ảnh chứng minh",
       dataIndex: "imageProof",
       align: "center" as const,
       render: (text: string) => {
         if (!text) {
           return (
             <div className="w-16 h-16 bg-gray-200 flex items-center justify-center rounded text-gray-500 text-xs">
-              No Image
+              Không có ảnh
             </div>
           );
         }
@@ -262,7 +262,7 @@ export default function RentalsPage() {
           >
             <Image
               src={`${URL_IMAGE}${text}`}
-              alt="Bill Transfer"
+              alt="Ảnh chứng minh"
               width={64}
               height={64}
               className="object-cover rounded border border-gray-300"
@@ -273,13 +273,13 @@ export default function RentalsPage() {
       },
     },
     {
-      title: "Num of Tenants",
+      title: "Số lượng người thuê",
       dataIndex: "tenants",
       align: "right" as const,
       sorter: (a: RentalData, b: RentalData) => a.tenants - b.tenants,
     },
     {
-      title: "Total",
+      title: "Tổng cộng",
       dataIndex: "total",
       align: "right" as const,
       sorter: (a: RentalData, b: RentalData) => {
@@ -288,7 +288,7 @@ export default function RentalsPage() {
       },
     },
     {
-      title: "Status",
+      title: "Trạng thái",
       key: "status",
       sorter: (a: RentalData, b: RentalData) => a.status - b.status,
       render: (_: any, record: RentalData) => {
@@ -297,8 +297,8 @@ export default function RentalsPage() {
             return (
               <Space>
                 <Popconfirm
-                  title="Accept this booking?"
-                  description="Are you sure you want to accept this booking request?"
+                  title="Chấp nhận đặt phòng này?"
+                  description="Bạn có chắc chắn muốn chấp nhận yêu cầu đặt phòng này không?"
                   onConfirm={() =>
                     handleUpdateBookingStatus(
                       record.key,
@@ -307,8 +307,8 @@ export default function RentalsPage() {
                       record.userId
                     )
                   }
-                  okText="Yes"
-                  cancelText="No"
+                  okText="Có"
+                  cancelText="Không"
                 >
                   <Button
                     type="primary"
@@ -320,12 +320,12 @@ export default function RentalsPage() {
                       fontWeight: 400,
                     }}
                   >
-                    Accept
+                    Chấp nhận
                   </Button>
                 </Popconfirm>
                 <Popconfirm
-                  title="Reject this booking?"
-                  description="Are you sure you want to reject this booking request?"
+                  title="Từ chối đặt phòng này?"
+                  description="Bạn có chắc chắn muốn từ chối yêu cầu đặt phòng này không?"
                   onConfirm={() =>
                     handleUpdateBookingStatus(
                       record.key,
@@ -334,8 +334,8 @@ export default function RentalsPage() {
                       record.userId
                     )
                   }
-                  okText="Yes"
-                  cancelText="No"
+                  okText="Có"
+                  cancelText="Không"
                 >
                   <Button
                     type="primary"
@@ -348,7 +348,7 @@ export default function RentalsPage() {
                       fontWeight: 400,
                     }}
                   >
-                    Reject
+                    Từ chối
                   </Button>
                 </Popconfirm>
               </Space>
@@ -356,20 +356,20 @@ export default function RentalsPage() {
           case 1:
             return (
               <Tag color="orange" style={{ fontWeight: 400 }}>
-                Not deposited
+                Chưa đặt cọc
               </Tag>
             );
           case 2:
             return (
               <Tag color="red" style={{ fontWeight: 400 }}>
-                Rejected
+                Đã từ chối
               </Tag>
             );
           case 3:
             return (
               <Popconfirm
-                title="Confirm deposit received?"
-                description="Are you sure the tenant has made the deposit payment?"
+                title="Xác nhận đã nhận đặt cọc?"
+                description="Bạn có chắc chắn rằng người thuê đã thanh toán đặt cọc không?"
                 onConfirm={() =>
                   handleUpdateBookingStatus(
                     record.key,
@@ -378,8 +378,8 @@ export default function RentalsPage() {
                     record.userId
                   )
                 }
-                okText="Yes"
-                cancelText="No"
+                okText="Có"
+                cancelText="Không"
               >
                 <Button
                   type="primary"
@@ -391,7 +391,7 @@ export default function RentalsPage() {
                     fontWeight: 400,
                   }}
                 >
-                  Confirm deposit
+                  Xác nhận đã nhận đặt cọc
                 </Button>
               </Popconfirm>
             );
@@ -402,20 +402,20 @@ export default function RentalsPage() {
             if (today < rentalDate) {
               return (
                 <Tag color="green" style={{ fontWeight: 400 }}>
-                  Deposited
+                  Đã đặt cọc
                 </Tag>
               );
             } else {
               if (today > expiresDate) {
                 return (
                   <Tag color="red" style={{ fontWeight: 400 }}>
-                    Expired
+                    Hết hạn
                   </Tag>
                 );
               }
               return (
                 <Tag color="green" style={{ fontWeight: 400 }}>
-                  Renting
+                  Đang thuê
                 </Tag>
               );
             }
@@ -426,19 +426,19 @@ export default function RentalsPage() {
       },
     },
     {
-      title: "Removed",
+      title: "Đã xóa",
       dataIndex: "isRemoved",
       // Use full record so we can access the booking id (key)
       render: (_: any, record: RentalData) =>
         record.isRemoved === 1 ? (
-          <Tag color="red">Removed</Tag>
+          <Tag color="red">Đã xóa</Tag>
         ) : (
           <Popconfirm
-            title="Remove this booking?"
-            description="Are you sure you want to remove this booking?"
+            title="Xóa đặt phòng này?"
+            description="Bạn có chắc chắn muốn xóa đặt phòng này không?"
             onConfirm={() => handleDeleteBooking(record.key)}
-            okText="Yes"
-            cancelText="No"
+            okText="Có"
+            cancelText="Không"
           >
             <Button
               type="primary"
@@ -450,7 +450,7 @@ export default function RentalsPage() {
                 fontWeight: 400,
               }}
             >
-              Remove
+              Xóa
             </Button>
           </Popconfirm>
         ),
@@ -463,9 +463,9 @@ export default function RentalsPage() {
       <div style={{ padding: 24 }}>
         <div className="mb-4">
           <h2 className="text-2xl font-semibold dark:!text-white">
-            Rental Management
+            Quản lý thuê phòng
           </h2>
-          <p className="text-lg text-gray-500">Room Rental Management.</p>
+          <p className="text-lg text-gray-500">Quản lý thuê phòng.</p>
         </div>
         <Table
           columns={columns}

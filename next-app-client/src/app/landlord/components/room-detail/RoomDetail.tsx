@@ -38,8 +38,8 @@ const RoomDetail: React.FC<RoomDetailProps> = ({ id }) => {
   }, [id]);
 
   if (!id) return null;
-  if (loading) return <div>Loading...</div>;
-  if (error || !room) return <div>{error || "Room not found"}</div>;
+  if (loading) return <div>Đang tải...</div>;
+  if (error || !room) return <div>{error || "Không tìm thấy phòng"}</div>;
 
   return (
     <div className="max-w-[900px] mx-auto my-8 bg-white dark:bg-[#181f2b] rounded-xl shadow-lg p-6 dark:text-white">
@@ -72,7 +72,7 @@ const RoomDetail: React.FC<RoomDetailProps> = ({ id }) => {
               : ""}
           </span>
           <span className="text-[#e53935] font-semibold text-xl mr-2 dark:text-[#ff6b6b]">
-            {room.title || "Room for rent"}
+            {room.title || "Phòng cho thuê"}
           </span>
         </div>
         <div className="flex items-center gap-4 mb-2">
@@ -90,27 +90,27 @@ const RoomDetail: React.FC<RoomDetailProps> = ({ id }) => {
                             </div>
         </div>
         <div className="text-gray-700 dark:text-gray-200 text-[15px] mb-1 flex justify-start">
-          <span className="w-1/5">Ward</span>
+          <span className="w-1/5">Xã/Phường:</span>
           <span className="w-4/5 ml-1">{room.address?.ward?.name || ""}</span>
         </div>
         <div className="text-gray-700 dark:text-gray-200 text-[15px] mb-1 flex justify-start">
-          <span className="w-1/5">District:</span>
+          <span className="w-1/5">Quận/Huyện:</span>
           <span className="w-4/5 ml-1">
             {room.address?.ward?.district?.name || ""}
           </span>
         </div>
         <div className="text-gray-700 dark:text-gray-200 text-[15px] mb-1 flex justify-start">
-          <span className="w-1/5">City/Province:</span>
+          <span className="w-1/5">Tỉnh/Thành phố:</span>
           <span className="w-4/5 ml-1">
             {room.address?.ward?.district?.province?.name || ""}
           </span>
         </div>
         <div className="text-gray-700 dark:text-gray-200 text-[15px] mb-1 flex justify-start">
-          <span className="w-1/5">Address:</span>
+          <span className="w-1/5">Địa chỉ:</span>
           <span className="w-4/5 ml-1">{room.address?.street || ""}</span>
         </div>
         <div className="text-gray-700 dark:text-gray-200 text-[15px] mb-1 flex justify-start">
-          <span className="w-1/5">Post Start Date:</span>
+          <span className="w-1/5">Ngày bắt đầu đăng:</span>
           <span className="ml-1">
             {room.postStartDate
               ? new Date(room.postStartDate).toLocaleString()
@@ -118,7 +118,7 @@ const RoomDetail: React.FC<RoomDetailProps> = ({ id }) => {
           </span>
         </div>
         <div className="text-gray-700 dark:text-gray-200 text-[15px] mb-1 flex justify-start">
-          <span className="w-1/5">Post End Date:</span>
+          <span className="w-1/5">Ngày kết thúc đăng:</span>
           <span className="ml-1">
             {room.postEndDate
               ? new Date(room.postEndDate).toLocaleString()
@@ -133,7 +133,7 @@ const RoomDetail: React.FC<RoomDetailProps> = ({ id }) => {
         <hr className="my-5 text-gray-300 dark:text-gray-600" />
 
         <h2 className="mb-2 text-lg font-bold text-gray-800 dark:text-white">
-          Description
+          Mô tả
         </h2>
         <div className="list-disc pl-5 space-y-1 text-gray-700 dark:text-gray-200 text-[15px]">
           {room.description ? (
@@ -141,7 +141,7 @@ const RoomDetail: React.FC<RoomDetailProps> = ({ id }) => {
               .split("\n")
               .map((line, idx) => <p key={idx}>{line}</p>)
           ) : (
-            <p>No description</p>
+            <p>Không có mô tả</p>
           )}
         </div>
         <Convenient features={room.convenients} />

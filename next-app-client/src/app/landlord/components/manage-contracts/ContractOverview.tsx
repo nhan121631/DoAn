@@ -1,34 +1,28 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import React, { useState, useEffect, useCallback } from "react";
-import {
-  Descriptions,
-  Tag,
-  Button,
-  Modal,
-  Form,
-  Input,
-  DatePicker,
-  InputNumber,
-  Select,
-  message,
-  Space,
-  Upload,
-  Image,
-} from "antd";
-import {
-  EditOutlined,
-  CloudUploadOutlined,
-  FileOutlined,
-} from "@ant-design/icons";
-import { ContractData } from "@/types/types";
 import { ContractService } from "@/services/ContractService";
+import { ContractData } from "@/types/types";
 import {
-  formatCloudinaryUrl,
   formatCloudinaryThumbnail,
+  formatCloudinaryUrl,
   resolveCloudinaryUrl,
 } from "@/utils/cloudinaryUtils";
+import { CloudUploadOutlined, FileOutlined } from "@ant-design/icons";
+import {
+  Button,
+  DatePicker,
+  Descriptions,
+  Form,
+  Input,
+  InputNumber,
+  Modal,
+  Select,
+  Space,
+  Tag,
+  Upload,
+} from "antd";
 import dayjs from "dayjs";
+import { useCallback, useEffect, useState } from "react";
 
 interface ContractOverviewProps {
   contract: ContractData;
@@ -38,10 +32,10 @@ interface ContractOverviewProps {
 }
 
 const statusMap: Record<number, { text: string; color: string }> = {
-  0: { text: "Active", color: "green" },
-  1: { text: "Terminated", color: "red" },
-  2: { text: "Expired", color: "orange" },
-  3: { text: "Pending", color: "blue" },
+  0: { text: "Hoạt động", color: "green" },
+  1: { text: "Đã chấm dứt", color: "red" },
+  2: { text: "Hết hạn", color: "orange" },
+  3: { text: "Đang chờ", color: "blue" },
 };
 
 export default function ContractOverview({
@@ -140,14 +134,14 @@ export default function ContractOverview({
       ];
 
       if (!allowedTypes.includes(file.type)) {
-        messageApi.error("Only PDF, DOC, and DOCX files are allowed!");
+        messageApi.error("Chỉ cho phép các tệp PDF, DOC và DOCX!");
         return false;
       }
 
       // Validate file size (optional - max 10MB)
       const maxSize = 10 * 1024 * 1024; // 10MB
       if (file.size > maxSize) {
-        messageApi.error("File size must be less than 10MB!");
+        messageApi.error("Kích thước tệp phải nhỏ hơn 10MB!");
         return false;
       }
 
@@ -161,10 +155,10 @@ export default function ContractOverview({
         onContractUpdate(updatedContract);
       }
 
-      messageApi.success("Contract file uploaded successfully!");
+      messageApi.success("Tệp hợp đồng đã được tải lên thành công!");
     } catch (error) {
       console.error("Upload file error:", error);
-      messageApi.error("Failed to upload contract file!");
+      messageApi.error("Không thể tải lên tệp hợp đồng!");
     } finally {
       setUploadLoading(false);
     }
@@ -195,11 +189,11 @@ export default function ContractOverview({
         onContractUpdate(updatedContract);
       }
 
-      messageApi.success("Contract updated successfully!");
+      messageApi.success("Cập nhật hợp đồng thành công!");
       setEditModalOpen(false);
     } catch (error) {
       console.error("Update contract error:", error);
-      messageApi.error("Failed to update contract!");
+      messageApi.error("Không thể cập nhật hợp đồng!");
     } finally {
       setLoading(false);
     }
@@ -209,7 +203,7 @@ export default function ContractOverview({
     <div className="p-6 bg-white dark:bg-transparent transition-colors duration-300">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-          Contract Information
+          Thông tin hợp đồng
         </h3>
         <Upload
           accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
@@ -223,43 +217,45 @@ export default function ContractOverview({
             loading={uploadLoading}
             disabled={contract.status !== 0} // Only allow uploading if contract status is Active
           >
-            Upload Contract File (PDF, DOC, DOCX)
+            Tải lên tệp hợp đồng (PDF, DOC, DOCX)
           </Button>
         </Upload>
       </div>
 
       <Descriptions bordered column={2} size="middle">
-        <Descriptions.Item label="Contract Name">
+        <Descriptions.Item label="Tên hợp đồng">
           {contract.contractName}
         </Descriptions.Item>
-        <Descriptions.Item label="Room">{contract.roomTitle}</Descriptions.Item>
-        <Descriptions.Item label="Tenant">
+        <Descriptions.Item label="Phòng">
+          {contract.roomTitle}
+        </Descriptions.Item>
+        <Descriptions.Item label="Người thuê">
           {contract.tenantName}
         </Descriptions.Item>
-        <Descriptions.Item label="Phone">
+        <Descriptions.Item label="Số điện thoại">
           {contract.tenantPhone}
         </Descriptions.Item>
-        <Descriptions.Item label="Landlord">
+        <Descriptions.Item label="Chủ nhà">
           {contract.landlordName}
         </Descriptions.Item>
-        <Descriptions.Item label="Start Date">
+        <Descriptions.Item label="Ngày bắt đầu">
           {new Date(contract.startDate).toLocaleDateString()}
         </Descriptions.Item>
-        <Descriptions.Item label="End Date">
+        <Descriptions.Item label="Ngày kết thúc">
           {new Date(contract.endDate).toLocaleDateString()}
         </Descriptions.Item>
-        <Descriptions.Item label="Deposit">
+        <Descriptions.Item label="Tiền đặt cọc">
           {contract.depositAmount?.toLocaleString()} đ
         </Descriptions.Item>
-        <Descriptions.Item label="Rent">
-          {contract.monthlyRent?.toLocaleString()} đ / month
+        <Descriptions.Item label="Tiền thuê hàng tháng">
+          {contract.monthlyRent?.toLocaleString()} đ / tháng
         </Descriptions.Item>
-        <Descriptions.Item label="Status">
+        <Descriptions.Item label="Trạng thái">
           <Tag color={statusMap[contract.status]?.color}>
             {statusMap[contract.status]?.text}
           </Tag>
         </Descriptions.Item>
-        <Descriptions.Item label="Contract File" span={2}>
+        <Descriptions.Item label="Tệp hợp đồng" span={2}>
           {contract.contractImage ? (
             <div className="flex flex-col gap-3">
               {/* File info - click to open in Google Docs Viewer */}
@@ -301,13 +297,13 @@ export default function ContractOverview({
                     })()}
                   </a>
                   <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                    Click to view file in new tab
+                    Nhấp để xem tệp trong tab mới
                   </div>
                 </div>
               </div>
             </div>
           ) : (
-            <span className="text-gray-500">No file uploaded</span>
+            <span className="text-gray-500">Chưa tải tệp lên</span>
           )}
         </Descriptions.Item>
       </Descriptions>
@@ -327,9 +323,9 @@ export default function ContractOverview({
         <Form form={form} layout="vertical" onFinish={handleSubmit}>
           <div className="mb-4 p-3 bg-blue-50 dark:bg-[#22304a] border-l-4 border-blue-400 dark:border-blue-300 rounded transition-colors duration-300">
             <p className="text-sm text-blue-700 dark:text-blue-300">
-              <strong>Note:</strong> Only Status, Start Date, End Date, Deposit
-              Amount, and Monthly Rent can be edited. Other fields are read-only
-              for data integrity.
+              <strong>Note:</strong> Chỉ các trường Ngày bắt đầu, Ngày kết thúc,
+              Tiền đặt cọc, Tiền thuê hàng tháng và Trạng thái có thể được chỉnh
+              sửa. Các trường khác là chỉ đọc.
             </p>
           </div>
 
@@ -339,30 +335,32 @@ export default function ContractOverview({
             </Form.Item>
 
             <Form.Item
-              label="Status"
+              label="Trạng thái"
               name="status"
               rules={[{ required: true, message: "Please select status!" }]}
             >
               <Select placeholder="Select status" disabled>
-                <Select.Option value={0}>Active</Select.Option>
-                <Select.Option value={1}>Terminated</Select.Option>
-                <Select.Option value={2}>Expired</Select.Option>
-                <Select.Option value={3}>Pending</Select.Option>
+                <Select.Option value={0}>Đang hoạt động</Select.Option>
+                <Select.Option value={1}>Chấm dứt</Select.Option>
+                <Select.Option value={2}>Hết hạn</Select.Option>
+                <Select.Option value={3}>Đang chờ xử lý</Select.Option>
               </Select>
             </Form.Item>
 
-            <Form.Item label="Tenant Name" name="tenantName">
-              <Input placeholder="Enter tenant name" disabled />
+            <Form.Item label="Tên người thuê" name="tenantName">
+              <Input placeholder="Nhập tên người thuê" disabled />
             </Form.Item>
 
-            <Form.Item label="Phone" name="tenantPhone">
-              <Input placeholder="Enter phone number" maxLength={11} disabled />
+            <Form.Item label="Số điện thoại" name="tenantPhone">
+              <Input placeholder="Nhập số điện thoại" maxLength={11} disabled />
             </Form.Item>
 
             <Form.Item
-              label="Start Date"
+              label="Ngày bắt đầu"
               name="startDate"
-              rules={[{ required: true, message: "Please select start date!" }]}
+              rules={[
+                { required: true, message: "Vui lòng chọn ngày bắt đầu!" },
+              ]}
             >
               <DatePicker
                 style={{ width: "100%" }}
@@ -372,9 +370,11 @@ export default function ContractOverview({
             </Form.Item>
 
             <Form.Item
-              label="End Date"
+              label="Ngày kết thúc"
               name="endDate"
-              rules={[{ required: true, message: "Please select end date!" }]}
+              rules={[
+                { required: true, message: "Vui lòng chọn ngày kết thúc!" },
+              ]}
             >
               <DatePicker
                 style={{ width: "100%" }}
@@ -384,20 +384,20 @@ export default function ContractOverview({
             </Form.Item>
 
             <Form.Item
-              label="Deposit Amount"
+              label="Tiền đặt cọc"
               name="depositAmount"
               rules={[
-                { required: true, message: "Please enter deposit amount!" },
+                { required: true, message: "Vui lòng nhập tiền đặt cọc!" },
                 {
                   type: "number",
                   min: 0,
-                  message: "Deposit must be positive!",
+                  message: "Tiền đặt cọc phải là số dương!",
                 },
               ]}
             >
               <InputNumber
                 style={{ width: "100%" }}
-                placeholder="Enter deposit amount"
+                placeholder="Nhập tiền đặt cọc"
                 formatter={(value) =>
                   `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
                 }
@@ -408,16 +408,23 @@ export default function ContractOverview({
             </Form.Item>
 
             <Form.Item
-              label="Monthly Rent"
+              label="Tiền thuê hàng tháng"
               name="monthlyRent"
               rules={[
-                { required: true, message: "Please enter monthly rent!" },
-                { type: "number", min: 0, message: "Rent must be positive!" },
+                {
+                  required: true,
+                  message: "Vui lòng nhập tiền thuê hàng tháng!",
+                },
+                {
+                  type: "number",
+                  min: 0,
+                  message: "Tiền thuê phải là số dương!",
+                },
               ]}
             >
               <InputNumber
                 style={{ width: "100%" }}
-                placeholder="Enter monthly rent"
+                placeholder="Nhập tiền thuê hàng tháng"
                 formatter={(value) =>
                   `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
                 }
@@ -439,7 +446,7 @@ export default function ContractOverview({
                 Cancel
               </Button>
               <Button type="primary" htmlType="submit" loading={loading}>
-                Update Contract
+                Cập nhật hợp đồng
               </Button>
             </Space>
           </Form.Item>
@@ -448,7 +455,7 @@ export default function ContractOverview({
 
       {/* PDF Preview Modal */}
       <Modal
-        title="PDF Preview"
+        title="Xem trước PDF"
         open={pdfPreviewOpen}
         onCancel={() => setPdfPreviewOpen(false)}
         footer={null}
@@ -457,11 +464,11 @@ export default function ContractOverview({
         {fileUrl ? (
           <iframe
             src={fileUrl}
-            title="PDF Preview"
+            title="Xem trước PDF"
             style={{ width: "100%", height: "80vh", border: "none" }}
           />
         ) : (
-          <div className="p-4">No preview available</div>
+          <div className="p-4">Không có bản xem trước</div>
         )}
       </Modal>
     </div>

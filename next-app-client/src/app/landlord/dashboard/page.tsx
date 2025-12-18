@@ -1,78 +1,64 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import React, { useState, useEffect } from "react";
-import {
-  Card,
-  Row,
-  Col,
-  Statistic,
-  Table,
-  Button,
-  Tag,
-  Input,
-  Select,
-  Modal,
-  Form,
-  DatePicker,
-  message,
-  Space,
-  Dropdown,
-  Tooltip,
-  Progress,
-  Avatar,
-  Typography,
-  Empty,
-  Spin,
-  Drawer,
-  Popconfirm,
-} from "antd";
-import {
-  PlusOutlined,
-  SearchOutlined,
-  FilterOutlined,
-  CalendarOutlined,
-  UserOutlined,
-  EditOutlined,
-  DeleteOutlined,
-  CheckCircleOutlined,
-  ClockCircleOutlined,
-  ExclamationCircleOutlined,
-  PlayCircleOutlined,
-  MoreOutlined,
-  EyeOutlined,
-  FlagOutlined,
-  HomeOutlined,
-  FileTextOutlined,
-  ToolOutlined,
-  MessageOutlined,
-  BellOutlined,
-  ArrowRightOutlined,
-  DollarOutlined,
-} from "@ant-design/icons";
-import { useSession } from "next-auth/react";
-import dayjs from "dayjs";
-import "dayjs/locale/en";
+import { landlordFetchBookings } from "@/services/BookingService";
+import { listenForUnreadCount } from "@/services/ChatService";
+import { ContractService } from "@/services/ContractService";
 import { LandlordTaskService } from "@/services/LandlordTaskService";
+import { getRequestsByLandlordId } from "@/services/Requirements";
 import {
   LandlordTaskCreateDto,
   LandlordTaskResponseDto,
   LandlordTaskUpdateDto,
 } from "@/types/types";
 import {
-  userFetchBookings,
-  landlordFetchBookings,
-} from "@/services/BookingService";
-import { getRequestsByLandlordId } from "@/services/Requirements";
-import { ContractService } from "@/services/ContractService";
-import { BillService } from "@/services/BillService";
+  ArrowRightOutlined,
+  BellOutlined,
+  CalendarOutlined,
+  CheckCircleOutlined,
+  ClockCircleOutlined,
+  DeleteOutlined,
+  DollarOutlined,
+  EditOutlined,
+  ExclamationCircleOutlined,
+  EyeOutlined,
+  FileTextOutlined,
+  FlagOutlined,
+  HomeOutlined,
+  MessageOutlined,
+  MoreOutlined,
+  PlayCircleOutlined,
+  PlusOutlined,
+  SearchOutlined,
+} from "@ant-design/icons";
 import {
-  listenForConversations,
-  listenForUnreadCount,
-} from "@/services/ChatService";
+  Button,
+  Card,
+  Col,
+  DatePicker,
+  Drawer,
+  Dropdown,
+  Empty,
+  Form,
+  Input,
+  message,
+  Modal,
+  Popconfirm,
+  Progress,
+  Row,
+  Select,
+  Space,
+  Spin,
+  Table,
+  Tag,
+  Tooltip,
+  Typography,
+} from "antd";
+import dayjs from "dayjs";
+import "dayjs/locale/en";
+import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { db } from "@/lib/firebase";
-import { collection, query, where, onSnapshot } from "firebase/firestore";
+import { useEffect, useState } from "react";
 const { Title, Text } = Typography;
 const { TextArea } = Input;
 const { Option } = Select;
@@ -87,22 +73,22 @@ const priorityConfig = {
 const statusConfig = {
   PENDING: {
     color: "default",
-    label: "Pending",
+    label: "Đang chờ",
     icon: <ClockCircleOutlined />,
   },
   IN_PROGRESS: {
     color: "processing",
-    label: "In Progress",
+    label: "Đang tiến hành",
     icon: <PlayCircleOutlined />,
   },
   COMPLETED: {
     color: "success",
-    label: "Completed",
+    label: "Hoàn thành",
     icon: <CheckCircleOutlined />,
   },
   CANCELLED: {
     color: "error",
-    label: "Cancelled",
+    label: "Đã hủy",
     icon: <ExclamationCircleOutlined />,
   },
 };
@@ -182,7 +168,7 @@ export default function LandlordDashboardPage() {
       calculateStats(fetchedTasks);
     } catch (error) {
       console.error("Error fetching tasks:", error);
-      messageApi.error("Failed to fetch tasks");
+      messageApi.error("Không thể tải nhiệm vụ");
     } finally {
       setLoading(false);
     }
@@ -259,17 +245,17 @@ export default function LandlordDashboardPage() {
               ).length;
               totalConfirmingBills += confirmingBillsForContract;
             } else {
-              console.log(`Contract ${contract.id}: No bills data available`);
+              console.log(`Hợp đồng ${contract.id}: Không có dữ liệu hóa đơn`);
             }
           } catch (error) {
-            console.error(`Error processing contract ${contract.id}:`, error);
+            console.error(`Lỗi khi xử lý hợp đồng ${contract.id}:`, error);
             // Continue to next contract
           }
         }
 
         confirmingBills = totalConfirmingBills;
       } catch (error) {
-        console.error("Error fetching confirming bills:", error);
+        console.error("Lỗi khi tải hóa đơn đang chờ xác nhận:", error);
         // Set default value if everything fails
         confirmingBills = 0;
       }
@@ -352,26 +338,26 @@ export default function LandlordDashboardPage() {
     try {
       // Validate required fields
       if (!values.title?.trim()) {
-        messageApi.error("Task title is required");
+        messageApi.error("Tiêu đề nhiệm vụ là bắt buộc");
         setIsSubmittingCreate(false);
         return;
       }
 
       if (!session?.user?.id) {
-        messageApi.error("User session not found");
+        messageApi.error("Không tìm thấy phiên người dùng");
         setIsSubmittingCreate(false);
         return;
       }
 
       // Additional validation for dates
       if (values.startDate && dayjs(values.startDate).isBefore(dayjs())) {
-        messageApi.error("Start date must be in the future");
+        messageApi.error("Ngày bắt đầu phải là tương lai");
         setIsSubmittingCreate(false);
         return;
       }
 
       if (values.dueDate && dayjs(values.dueDate).isBefore(dayjs())) {
-        messageApi.error("Due date must be in the future");
+        messageApi.error("Ngày kết thúc phải là tương lai");
         setIsSubmittingCreate(false);
         return;
       }
@@ -381,7 +367,7 @@ export default function LandlordDashboardPage() {
         values.dueDate &&
         dayjs(values.dueDate).isBefore(dayjs(values.startDate))
       ) {
-        messageApi.error("Due date must be after or equal to start date");
+        messageApi.error("Ngày kết thúc phải sau hoặc bằng ngày bắt đầu");
         setIsSubmittingCreate(false);
         return;
       }
@@ -405,21 +391,21 @@ export default function LandlordDashboardPage() {
       console.log("Creating task with formatted data:", taskData);
 
       await LandlordTaskService.createTask(taskData);
-      messageApi.success("Task created successfully!");
+      messageApi.success("Tạo nhiệm vụ thành công!");
       setIsCreateModalOpen(false);
       createForm.resetFields();
       fetchTasks();
     } catch (error) {
       console.error("Error creating task:", error);
-      let errorMessage = "Failed to create task";
+      let errorMessage = "Không thể tạo nhiệm vụ";
       if (error instanceof Error) {
         errorMessage = error.message;
         // Try to extract more specific error from API response
         if (error.message.includes("400")) {
           errorMessage =
-            "Invalid data provided. Please check your input and try again.";
+            "Dữ liệu không hợp lệ. Vui lòng kiểm tra lại và thử lại.";
         } else if (error.message.includes("500")) {
-          errorMessage = "Server error occurred. Please try again later.";
+          errorMessage = "Lỗi máy chủ xảy ra. Vui lòng thử lại sau.";
         }
       }
       messageApi.error(errorMessage);
@@ -431,7 +417,7 @@ export default function LandlordDashboardPage() {
   // Handle task update
   const handleUpdateTask = async (values: LandlordTaskUpdateDto) => {
     if (!selectedTask) {
-      messageApi.error("No task selected for update");
+      messageApi.error("Không có nhiệm vụ nào được chọn để cập nhật");
       return;
     }
 
@@ -439,7 +425,7 @@ export default function LandlordDashboardPage() {
     try {
       await editForm.validateFields();
     } catch (errorInfo) {
-      console.log("Validation failed:", errorInfo);
+      console.log("Xác thực không thành công:", errorInfo);
       return; // Don't proceed if validation fails
     }
 
@@ -447,20 +433,20 @@ export default function LandlordDashboardPage() {
     try {
       // Validate required fields
       if (!values.title?.trim()) {
-        messageApi.error("Task title is required");
+        messageApi.error("Tiêu đề nhiệm vụ là bắt buộc");
         setIsSubmittingEdit(false);
         return;
       }
 
       // Additional validation for dates
       if (values.startDate && dayjs(values.startDate).isBefore(dayjs())) {
-        messageApi.error("Start date must be in the future");
+        messageApi.error("Ngày bắt đầu phải là tương lai");
         setIsSubmittingEdit(false);
         return;
       }
 
       if (values.dueDate && dayjs(values.dueDate).isBefore(dayjs())) {
-        messageApi.error("Due date must be in the future");
+        messageApi.error("Ngày kết thúc phải là tương lai");
         setIsSubmittingEdit(false);
         return;
       }
@@ -470,7 +456,7 @@ export default function LandlordDashboardPage() {
         values.dueDate &&
         dayjs(values.dueDate).isBefore(dayjs(values.startDate))
       ) {
-        messageApi.error("Due date must be after or equal to start date");
+        messageApi.error("Ngày kết thúc phải sau hoặc bằng ngày bắt đầu");
         setIsSubmittingEdit(false);
         return;
       }
@@ -493,24 +479,24 @@ export default function LandlordDashboardPage() {
       console.log("Selected task ID:", selectedTask.id);
 
       await LandlordTaskService.updateTask(selectedTask.id, updateData);
-      messageApi.success("Task updated successfully!");
+      messageApi.success("Cập nhật nhiệm vụ thành công!");
       setIsEditModalOpen(false);
       setSelectedTask(null);
       editForm.resetFields();
       fetchTasks();
     } catch (error) {
       console.error("Error updating task:", error);
-      let errorMessage = "Failed to update task";
+      let errorMessage = "Không thể cập nhật nhiệm vụ";
       if (error instanceof Error) {
         errorMessage = error.message;
         // Try to extract more specific error from API response
         if (error.message.includes("400")) {
           errorMessage =
-            "Invalid data provided. Please check your input and try again.";
+            "Dữ liệu không hợp lệ. Vui lòng kiểm tra lại và thử lại.";
         } else if (error.message.includes("500")) {
-          errorMessage = "Server error occurred. Please try again later.";
+          errorMessage = "Lỗi máy chủ xảy ra. Vui lòng thử lại sau.";
         } else if (error.message.includes("404")) {
-          errorMessage = "Task not found. It may have been deleted.";
+          errorMessage = "Nhiệm vụ không tìm thấy. Có thể đã bị xóa.";
         }
       }
       messageApi.error(errorMessage);
@@ -523,11 +509,11 @@ export default function LandlordDashboardPage() {
   const handleDeleteTask = async (taskId: string) => {
     try {
       await LandlordTaskService.deleteTask(taskId);
-      messageApi.success("Task deleted successfully!");
+      messageApi.success("Xóa nhiệm vụ thành công!");
       fetchTasks();
     } catch (error) {
       console.error("Error deleting task:", error);
-      messageApi.error("Failed to delete task");
+      messageApi.error("Không thể xóa nhiệm vụ");
     }
   };
 
@@ -537,11 +523,11 @@ export default function LandlordDashboardPage() {
       await LandlordTaskService.updateTask(taskId, {
         status: newStatus as any,
       });
-      messageApi.success("Task status updated!");
+      messageApi.success("Cập nhật trạng thái nhiệm vụ thành công!");
       fetchTasks();
     } catch (error) {
       console.error("Error updating status:", error);
-      messageApi.error("Failed to update status");
+      messageApi.error("Không thể cập nhật trạng thái nhiệm vụ");
     }
   };
 
@@ -553,10 +539,10 @@ export default function LandlordDashboardPage() {
 
   // Open edit modal
   const openEditModal = (task: LandlordTaskResponseDto) => {
-    console.log("Opening edit modal for task:", task);
+    console.log("Mở modal chỉnh sửa cho nhiệm vụ:", task);
 
     if (!task || !task.id) {
-      messageApi.error("Invalid task data");
+      messageApi.error("Dữ liệu nhiệm vụ không hợp lệ");
       return;
     }
 
@@ -572,7 +558,7 @@ export default function LandlordDashboardPage() {
       dueDate: task.dueDate ? dayjs(task.dueDate) : null,
     };
 
-    console.log("Setting form values:", formValues);
+    console.log("Đang thiết lập giá trị biểu mẫu:", formValues);
     editForm.setFieldsValue(formValues);
     setIsEditModalOpen(true);
   };
@@ -599,12 +585,15 @@ export default function LandlordDashboardPage() {
   useEffect(() => {
     if (!session?.user?.id) return;
 
-    console.log("Dashboard: Starting to listen for unread messages");
+    console.log("Dashboard: Bắt đầu lắng nghe tin nhắn chưa đọc");
 
     const unsubscribe = listenForUnreadCount(
       session.user.id,
       (totalUnreadMessages) => {
-        console.log("Dashboard: Received unread count:", totalUnreadMessages);
+        console.log(
+          "Dashboard: Đã nhận được số lượng tin nhắn chưa đọc:",
+          totalUnreadMessages
+        );
 
         // Update count based on actual unread messages
         setPersistentMessageCount(totalUnreadMessages);
@@ -618,7 +607,7 @@ export default function LandlordDashboardPage() {
     );
 
     return () => {
-      console.log("Dashboard: Cleaning up unread message listener");
+      console.log("Dashboard: Đang dọn dẹp trình nghe tin nhắn chưa đọc");
       unsubscribe();
     };
   }, [session?.user?.id]);
@@ -627,13 +616,13 @@ export default function LandlordDashboardPage() {
   // No longer needed as count will be automatically synced with actual unread messages
   const resetMessageCount = () => {
     // Count will be automatically updated by the chat listener
-    console.log("Navigating to chat - count will be updated automatically");
+    console.log("Điều hướng đến chat - số lượng sẽ được cập nhật tự động");
   };
 
   // Table columns
   const columns = [
     {
-      title: "Title",
+      title: "Tiêu đề",
       dataIndex: "title",
       key: "title",
       width: 250,
@@ -645,12 +634,12 @@ export default function LandlordDashboardPage() {
           <div className="flex flex-wrap gap-1 mt-1">
             {record.contract && (
               <Tag className="text-xs" color="blue">
-                Contract: {record.contract.contractName}
+                Hợp đồng: {record.contract.contractName}
               </Tag>
             )}
             {record.room && (
               <Tag className="text-xs" color="green">
-                Room: {record.room.title}
+                Phòng: {record.room.title}
               </Tag>
             )}
           </div>
@@ -658,7 +647,7 @@ export default function LandlordDashboardPage() {
       ),
     },
     {
-      title: "Description",
+      title: "Mô tả",
       dataIndex: "description",
       key: "description",
       width: 300,
@@ -671,12 +660,12 @@ export default function LandlordDashboardPage() {
           </div>
         ) : (
           <Text type="secondary" className="text-xs">
-            No description
+            Không có mô tả
           </Text>
         ),
     },
     {
-      title: "Priority",
+      title: "Ưu tiên",
       dataIndex: "priority",
       key: "priority",
       render: (priority: string) => (
@@ -689,7 +678,7 @@ export default function LandlordDashboardPage() {
       ),
     },
     {
-      title: "Status",
+      title: "Trạng thái",
       dataIndex: "status",
       key: "status",
       render: (status: string) => {
@@ -702,12 +691,12 @@ export default function LandlordDashboardPage() {
       },
     },
     {
-      title: "Start Date",
+      title: "Ngày bắt đầu",
       dataIndex: "startDate",
       key: "startDate",
       render: (startDate: string) => {
-        if (!startDate) return <Text type="secondary">No start date</Text>;
-
+        if (!startDate)
+          return <Text type="secondary">Không có ngày bắt đầu</Text>;
         const date = dayjs(startDate);
         return (
           <div>
@@ -718,12 +707,12 @@ export default function LandlordDashboardPage() {
       },
     },
     {
-      title: "Due Date",
+      title: "Ngày đến hạn",
       dataIndex: "dueDate",
       key: "dueDate",
       render: (dueDate: string) => {
-        if (!dueDate) return <Text type="secondary">No due date</Text>;
-
+        if (!dueDate)
+          return <Text type="secondary">Không có ngày đến hạn</Text>;
         const date = dayjs(dueDate);
         const now = dayjs();
         const isOverdue = date.isBefore(now) && dueDate;
@@ -734,7 +723,7 @@ export default function LandlordDashboardPage() {
             {date.format("MMM DD, YYYY HH:mm")}
             {isOverdue && (
               <Text type="danger" className="ml-2">
-                (Overdue)
+                (Quá hạn)
               </Text>
             )}
           </div>
@@ -742,7 +731,7 @@ export default function LandlordDashboardPage() {
       },
     },
     {
-      title: "Actions",
+      title: "Hành động",
       key: "actions",
       render: (record: LandlordTaskResponseDto) => {
         const statusMenuItems = Object.entries(statusConfig)
@@ -759,7 +748,7 @@ export default function LandlordDashboardPage() {
 
         return (
           <Space>
-            <Tooltip title="View Details">
+            <Tooltip title="Xem chi tiết">
               <Button
                 type="text"
                 size="small"
@@ -780,7 +769,7 @@ export default function LandlordDashboardPage() {
               />
             </Tooltip>
 
-            <Tooltip title="Edit Task">
+            <Tooltip title="Chỉnh sửa nhiệm vụ">
               <Button
                 type="text"
                 size="small"
@@ -794,7 +783,7 @@ export default function LandlordDashboardPage() {
                 items: [
                   {
                     key: "status",
-                    label: "Change Status",
+                    label: "Thay đổi trạng thái",
                     children: statusMenuItems,
                   },
                   {
@@ -804,17 +793,17 @@ export default function LandlordDashboardPage() {
                     key: "delete",
                     label: (
                       <Popconfirm
-                        title="Delete Task"
-                        description="Are you sure you want to delete this task?"
+                        title="Xóa nhiệm vụ"
+                        description="Bạn có chắc chắn muốn xóa nhiệm vụ này không?"
                         onConfirm={() => handleDeleteTask(record.id)}
-                        okText="Delete"
-                        cancelText="Cancel"
+                        okText="Xóa"
+                        cancelText="Hủy"
                         okType="danger"
                         placement="topRight"
                       >
                         <span className="text-red-500 hover:text-red-700">
                           <DeleteOutlined className="mr-2" />
-                          Delete Task
+                          Xóa nhiệm vụ
                         </span>
                       </Popconfirm>
                     ),
@@ -846,10 +835,10 @@ export default function LandlordDashboardPage() {
           level={1}
           className="!text-gray-900 dark:!text-white !mb-4 !text-4xl"
         >
-          Landlord Dashboard
+          Bảng điều khiển chủ nhà
         </Title>
         <Text className="text-xl text-gray-600 dark:text-gray-300 font-medium">
-          Manage your properties, bookings, and tenant requests efficiently
+          Quản lý tài sản, đặt phòng và yêu cầu của người thuê một cách hiệu quả
         </Text>
         <div className="mt-4 h-1 w-24 bg-gradient-to-r from-blue-500 to-green-500 mx-auto rounded-full"></div>
 
@@ -858,7 +847,7 @@ export default function LandlordDashboardPage() {
             <div>
               <Spin size="small" />
               <Text className="ml-2 text-gray-500 dark:text-gray-400">
-                Loading notifications...
+                Đang tải thông báo...
               </Text>
             </div>
           )}
@@ -871,7 +860,7 @@ export default function LandlordDashboardPage() {
             disabled={loadingStats}
             className="text-gray-600 dark:text-gray-300"
           >
-            Refresh Notifications
+            Làm mới thông báo
           </Button>
         </div>
       </div>
@@ -885,7 +874,7 @@ export default function LandlordDashboardPage() {
                 level={4}
                 className="!text-gray-900 dark:!text-white !mb-0 flex items-center"
               >
-                🏠 Property Management Center
+                Trung tâm Quản lý
               </Title>
               <Text className="text-gray-500 dark:text-gray-400 text-sm">
                 {dayjs().format("dddd, MMMM DD, YYYY")}
@@ -911,7 +900,7 @@ export default function LandlordDashboardPage() {
                     )}
                   </div>
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                    Rental Management
+                    Quản lý cho thuê
                   </h3>
                   <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
                     {notificationStats.newBookings > 0
@@ -919,7 +908,7 @@ export default function LandlordDashboardPage() {
                       : "No pending bookings"}
                   </p>
                   <div className="flex items-center text-blue-600 dark:text-blue-400 text-sm font-medium">
-                    Manage Bookings <ArrowRightOutlined className="ml-2" />
+                    Quản lý đặt phòng <ArrowRightOutlined className="ml-2" />
                   </div>
                 </div>
               </Col>
@@ -942,7 +931,7 @@ export default function LandlordDashboardPage() {
                     )}
                   </div>
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                    Request Management
+                    Quản lý yêu cầu
                   </h3>
                   <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
                     {notificationStats.newRequirements > 0
@@ -950,7 +939,7 @@ export default function LandlordDashboardPage() {
                       : "No pending requirements"}
                   </p>
                   <div className="flex items-center text-orange-600 dark:text-orange-400 text-sm font-medium">
-                    View Requests <ArrowRightOutlined className="ml-2" />
+                    Xem Yêu cầu <ArrowRightOutlined className="ml-2" />
                   </div>
                 </div>
               </Col>
@@ -973,7 +962,7 @@ export default function LandlordDashboardPage() {
                     )}
                   </div>
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                    Payment Confirmation
+                    Xác nhận thanh toán
                   </h3>
                   <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
                     {notificationStats.confirmingBills > 0
@@ -981,7 +970,7 @@ export default function LandlordDashboardPage() {
                       : "No bills awaiting confirmation"}
                   </p>
                   <div className="flex items-center text-green-600 dark:text-green-400 text-sm font-medium">
-                    Confirm Payments <ArrowRightOutlined className="ml-2" />
+                    Xác nhận thanh toán <ArrowRightOutlined className="ml-2" />
                   </div>
                 </div>
               </Col>
@@ -1007,7 +996,7 @@ export default function LandlordDashboardPage() {
                     )}
                   </div>
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                    Messages
+                    Tin nhắn
                   </h3>
                   <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
                     {persistentMessageCount > 0
@@ -1015,7 +1004,7 @@ export default function LandlordDashboardPage() {
                       : "No new messages"}
                   </p>
                   <div className="flex items-center text-purple-600 dark:text-purple-400 text-sm font-medium">
-                    Open Chat <ArrowRightOutlined className="ml-2" />
+                    Mở Trò chuyện <ArrowRightOutlined className="ml-2" />
                   </div>
                 </div>
               </Col>
@@ -1029,7 +1018,7 @@ export default function LandlordDashboardPage() {
         <Col span={24}>
           <Card className="shadow-lg bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-800 border-l-4 border-l-indigo-500">
             <Title level={4} className="!text-gray-900 dark:!text-white !mb-6">
-              � Task Overview
+              Tổng quan về công việc
             </Title>
             <Row gutter={[20, 20]}>
               <Col xs={24} sm={12} lg={6}>
@@ -1039,7 +1028,7 @@ export default function LandlordDashboardPage() {
                     {taskStats.total}
                   </div>
                   <div className="text-sm text-gray-600 dark:text-gray-300">
-                    Total Tasks
+                    Tổng số công việc
                   </div>
                 </div>
               </Col>
@@ -1051,7 +1040,7 @@ export default function LandlordDashboardPage() {
                     {taskStats.pending}
                   </div>
                   <div className="text-sm text-gray-600 dark:text-gray-300">
-                    Pending
+                    Đang chờ xử lý
                   </div>
                 </div>
               </Col>
@@ -1063,7 +1052,7 @@ export default function LandlordDashboardPage() {
                     {taskStats.completed}
                   </div>
                   <div className="text-sm text-gray-600 dark:text-gray-300">
-                    Completed
+                    Đã hoàn thành
                   </div>
                 </div>
               </Col>
@@ -1075,7 +1064,7 @@ export default function LandlordDashboardPage() {
                     {taskStats.overdue}
                   </div>
                   <div className="text-sm text-gray-600 dark:text-gray-300">
-                    Overdue
+                    Quá hạn
                   </div>
                 </div>
               </Col>
@@ -1089,7 +1078,7 @@ export default function LandlordDashboardPage() {
         <Col span={24}>
           <Card className="shadow-lg bg-white dark:bg-[#22304a] border border-gray-200 dark:border-gray-600 min-h-[200px]">
             <Title level={4} className="!text-gray-900 dark:!text-white !mb-6">
-              📊 Task Completion Progress
+              Tiến độ hoàn thành công việc
             </Title>
             <Progress
               percent={Math.round(completionRate)}
@@ -1101,7 +1090,7 @@ export default function LandlordDashboardPage() {
               size={{ height: 16 }}
               format={(percent) => (
                 <span className="text-gray-900 dark:text-white font-bold">
-                  {percent}% Complete
+                  {percent}% Hoàn thành
                 </span>
               )}
               className="mb-4"
@@ -1109,8 +1098,8 @@ export default function LandlordDashboardPage() {
 
             {/* Debug info */}
             <div className="text-xs text-gray-500 mb-2">
-              Progress: {taskStats.completed} completed out of {taskStats.total}{" "}
-              total tasks
+              Tiến độ: {taskStats.completed} đã hoàn thành trong tổng số{" "}
+              {taskStats.total} công việc
             </div>
             <div className="mt-6 grid grid-cols-2 gap-4">
               <div className="text-center p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
@@ -1118,7 +1107,7 @@ export default function LandlordDashboardPage() {
                   {taskStats.completed}
                 </div>
                 <div className="text-sm text-gray-600 dark:text-gray-300">
-                  Completed
+                  Đã hoàn thành
                 </div>
               </div>
               <div className="text-center p-3 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
@@ -1126,7 +1115,7 @@ export default function LandlordDashboardPage() {
                   {taskStats.total - taskStats.completed}
                 </div>
                 <div className="text-sm text-gray-600 dark:text-gray-300">
-                  Remaining
+                  Còn lại
                 </div>
               </div>
             </div>
@@ -1143,9 +1132,9 @@ export default function LandlordDashboardPage() {
               level={3}
               className="!mb-0 !text-gray-900 dark:!text-white flex items-center"
             >
-              📝 Task Management
+              Quản lý công việc
               <span className="text-sm font-normal text-gray-500 dark:text-gray-400 ml-2">
-                (Completed tasks hidden by default)
+                (Các công việc đã hoàn thành mặc định bị ẩn)
               </span>
             </Title>
             <Button
@@ -1155,7 +1144,7 @@ export default function LandlordDashboardPage() {
               size="large"
               className="shadow-md"
             >
-              Create New Task
+              Tạo công việc mới
             </Button>
           </div>
         }
@@ -1163,7 +1152,7 @@ export default function LandlordDashboardPage() {
         {/* Filters */}
         <div className="mb-6 flex flex-wrap gap-4 justify-end">
           <Input
-            placeholder="Search tasks..."
+            placeholder="Tìm kiếm công việc..."
             prefix={<SearchOutlined />}
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
@@ -1172,7 +1161,7 @@ export default function LandlordDashboardPage() {
           />
 
           <Select
-            placeholder="Active Tasks Only"
+            placeholder="Chỉ công việc đang hoạt động"
             value={statusFilter || undefined}
             onChange={(value) => setStatusFilter(value || "")}
             style={{ width: 200 }}
@@ -1181,7 +1170,7 @@ export default function LandlordDashboardPage() {
           >
             <Option key="ALL" value="ALL">
               <span className="flex items-center gap-2">
-                <span className="text-gray-900">All Tasks</span>
+                <span className="text-gray-900">Tất cả công việc</span>
               </span>
             </Option>
             {Object.entries(statusConfig).map(([key, config]) => (
@@ -1195,7 +1184,7 @@ export default function LandlordDashboardPage() {
           </Select>
 
           <Select
-            placeholder="All Priority"
+            placeholder="Tất cả mức độ ưu tiên"
             value={priorityFilter || undefined}
             onChange={(value) => setPriorityFilter(value || "")}
             style={{ width: 180 }}
@@ -1224,12 +1213,12 @@ export default function LandlordDashboardPage() {
               showSizeChanger: true,
               showQuickJumper: true,
               showTotal: (total, range) =>
-                `${range[0]}-${range[1]} of ${total} tasks`,
+                `${range[0]}-${range[1]} trong tổng số ${total} công việc`,
             }}
             locale={{
               emptyText: (
                 <Empty
-                  description="No tasks found"
+                  description="Không tìm thấy công việc"
                   image={Empty.PRESENTED_IMAGE_SIMPLE}
                 />
               ),
@@ -1240,7 +1229,7 @@ export default function LandlordDashboardPage() {
 
       {/* Create Task Modal */}
       <Modal
-        title="Create New Task"
+        title="Tạo công việc mới"
         open={isCreateModalOpen}
         onCancel={() => {
           setIsCreateModalOpen(false);
@@ -1259,22 +1248,22 @@ export default function LandlordDashboardPage() {
         >
           <Form.Item
             name="title"
-            label="Task Title"
+            label="Tiêu đề công việc"
             rules={[
-              { required: true, message: "Task title is required" },
+              { required: true, message: "Tiêu đề công việc là bắt buộc" },
               {
                 min: 3,
-                message: "Task title must be at least 3 characters long",
+                message: "Tiêu đề công việc phải có ít nhất 3 ký tự",
               },
-              { max: 100, message: "Task title cannot exceed 100 characters" },
+              { max: 100, message: "Tiêu đề công việc không được vượt quá 100 ký tự" },
               {
                 whitespace: true,
-                message: "Task title cannot be empty spaces",
+                message: "Tiêu đề công việc không được để trống",
               },
             ]}
           >
             <Input
-              placeholder="Enter task title (3-100 characters)"
+              placeholder="Nhập tiêu đề công việc (3-100 ký tự)"
               showCount
               maxLength={100}
             />
@@ -1282,14 +1271,14 @@ export default function LandlordDashboardPage() {
 
           <Form.Item
             name="description"
-            label="Description"
+            label="Mô tả"
             rules={[
-              { max: 500, message: "Description cannot exceed 500 characters" },
+              { max: 500, message: "Mô tả không được vượt quá 500 ký tự" },
             ]}
           >
             <TextArea
               rows={3}
-              placeholder="Enter task description (optional, max 500 characters)"
+              placeholder="Nhập mô tả công việc (tùy chọn, tối đa 500 ký tự)"
               showCount
               maxLength={500}
             />
@@ -1299,13 +1288,13 @@ export default function LandlordDashboardPage() {
             <Col span={12}>
               <Form.Item
                 name="startDate"
-                label="Start Date"
+                label="Ngày bắt đầu"
                 rules={[
                   {
                     validator: (_, value) => {
                       if (value && dayjs(value).isBefore(dayjs())) {
                         return Promise.reject(
-                          new Error("Start date and time must be in the future")
+                          new Error("Ngày bắt đầu phải là thời gian trong tương lai")
                         );
                       }
                       return Promise.resolve();
@@ -1315,7 +1304,7 @@ export default function LandlordDashboardPage() {
               >
                 <DatePicker
                   style={{ width: "100%" }}
-                  placeholder="Select start date (optional)"
+                  placeholder="Chọn ngày bắt đầu (tùy chọn)"
                   showTime={{
                     format: "HH:mm",
                     defaultValue: dayjs().hour(18).minute(0), // Default 18:00
@@ -1335,13 +1324,13 @@ export default function LandlordDashboardPage() {
             <Col span={12}>
               <Form.Item
                 name="dueDate"
-                label="Due Date"
+                label="Ngày kết thúc"
                 rules={[
                   {
                     validator: (_, value) => {
                       if (value && dayjs(value).isBefore(dayjs())) {
                         return Promise.reject(
-                          new Error("Due date and time must be in the future")
+                          new Error("Ngày kết thúc phải là thời gian trong tương lai")
                         );
                       }
                       const startDate = createForm.getFieldValue("startDate");
@@ -1352,7 +1341,7 @@ export default function LandlordDashboardPage() {
                       ) {
                         return Promise.reject(
                           new Error(
-                            "Due date must be after or equal to start date"
+                            "Ngày kết thúc phải sau hoặc bằng ngày bắt đầu"
                           )
                         );
                       }
@@ -1363,7 +1352,7 @@ export default function LandlordDashboardPage() {
               >
                 <DatePicker
                   style={{ width: "100%" }}
-                  placeholder="Select due date (optional)"
+                  placeholder="Chọn ngày kết thúc (tùy chọn)"
                   showTime={{
                     format: "HH:mm",
                     defaultValue: dayjs().hour(18).minute(0), // Default 18:00
@@ -1388,13 +1377,13 @@ export default function LandlordDashboardPage() {
             <Col span={12}>
               <Form.Item
                 name="priority"
-                label="Priority"
+                label="Mức độ ưu tiên"
                 initialValue="MEDIUM"
                 rules={[
-                  { required: true, message: "Please select a priority level" },
+                  { required: true, message: "Vui lòng chọn mức độ ưu tiên" },
                 ]}
               >
-                <Select placeholder="Select priority level">
+                <Select placeholder="Chọn mức độ ưu tiên">
                   {Object.entries(priorityConfig).map(([key, config]) => (
                     <Option key={key} value={key}>
                       <span className="flex items-center gap-2">
@@ -1416,7 +1405,7 @@ export default function LandlordDashboardPage() {
                 loading={isSubmittingCreate}
                 disabled={isSubmittingCreate}
               >
-                {isSubmittingCreate ? "Creating..." : "Create Task"}
+                {isSubmittingCreate ? "Đang tạo..." : "Tạo công việc"}
               </Button>
               <Button
                 onClick={() => setIsCreateModalOpen(false)}
@@ -1431,7 +1420,7 @@ export default function LandlordDashboardPage() {
 
       {/* Edit Task Modal */}
       <Modal
-        title="Edit Task"
+        title="Chỉnh sửa công việc"
         open={isEditModalOpen}
         onCancel={() => {
           setIsEditModalOpen(false);
@@ -1451,22 +1440,22 @@ export default function LandlordDashboardPage() {
         >
           <Form.Item
             name="title"
-            label="Task Title"
+            label="Tiêu đề công việc"
             rules={[
-              { required: true, message: "Task title is required" },
+              { required: true, message: "Tiêu đề công việc là bắt buộc" },
               {
                 min: 3,
-                message: "Task title must be at least 3 characters long",
+                message: "Tiêu đề công việc phải có ít nhất 3 ký tự",
               },
-              { max: 100, message: "Task title cannot exceed 100 characters" },
+              { max: 100, message: "Tiêu đề công việc không được vượt quá 100 ký tự" },
               {
                 whitespace: true,
-                message: "Task title cannot be empty spaces",
+                message: "Tiêu đề công việc không được để trống",
               },
             ]}
           >
             <Input
-              placeholder="Enter task title (3-100 characters)"
+              placeholder="Nhập tiêu đề công việc (3-100 ký tự)"
               showCount
               maxLength={100}
             />
@@ -1474,14 +1463,14 @@ export default function LandlordDashboardPage() {
 
           <Form.Item
             name="description"
-            label="Description"
+            label="Mô tả"
             rules={[
-              { max: 500, message: "Description cannot exceed 500 characters" },
+              { max: 500, message: "Mô tả không được vượt quá 500 ký tự" },
             ]}
           >
             <TextArea
               rows={3}
-              placeholder="Enter task description (optional, max 500 characters)"
+              placeholder="Nhập mô tả công việc (tùy chọn, tối đa 500 ký tự)"
               showCount
               maxLength={500}
             />
@@ -1491,14 +1480,14 @@ export default function LandlordDashboardPage() {
             <Col span={12}>
               <Form.Item
                 name="startDate"
-                label="Start Date"
+                label="Ngày bắt đầu"
                 validateTrigger={["onChange", "onBlur"]}
                 rules={[
                   {
                     validator: (_, value) => {
                       if (value && dayjs(value).isBefore(dayjs())) {
                         return Promise.reject(
-                          new Error("Start date and time must be in the future")
+                          new Error("Ngày bắt đầu và thời gian phải là tương lai")
                         );
                       }
                       return Promise.resolve();
@@ -1508,7 +1497,7 @@ export default function LandlordDashboardPage() {
               >
                 <DatePicker
                   style={{ width: "100%" }}
-                  placeholder="Select start date (optional)"
+                  placeholder="Chọn ngày bắt đầu (tùy chọn)"
                   showTime={{ format: "HH:mm" }}
                   format="YYYY-MM-DD HH:mm"
                   onChange={(value) => {
@@ -1524,13 +1513,13 @@ export default function LandlordDashboardPage() {
             <Col span={12}>
               <Form.Item
                 name="dueDate"
-                label="Due Date"
+                label="Ngày kết thúc"
                 rules={[
                   {
                     validator: (_, value) => {
                       if (value && dayjs(value).isBefore(dayjs())) {
                         return Promise.reject(
-                          new Error("Due date and time must be in the future")
+                          new Error("Ngày kết thúc và thời gian phải là tương lai")
                         );
                       }
                       // Validate due date is after start date
@@ -1542,7 +1531,7 @@ export default function LandlordDashboardPage() {
                       ) {
                         return Promise.reject(
                           new Error(
-                            "Due date must be after or equal to start date"
+                            "Ngày kết thúc phải sau hoặc bằng ngày bắt đầu"
                           )
                         );
                       }
@@ -1553,7 +1542,7 @@ export default function LandlordDashboardPage() {
               >
                 <DatePicker
                   style={{ width: "100%" }}
-                  placeholder="Select due date (optional)"
+                  placeholder="Chọn ngày kết thúc (tùy chọn)"
                   showTime={{ format: "HH:mm" }}
                   format="YYYY-MM-DD HH:mm"
                   onChange={() => {
@@ -1569,12 +1558,12 @@ export default function LandlordDashboardPage() {
             <Col span={8}>
               <Form.Item
                 name="priority"
-                label="Priority"
+                label="Mức độ ưu tiên"
                 rules={[
-                  { required: true, message: "Please select a priority level" },
+                  { required: true, message: "Vui lòng chọn mức độ ưu tiên" },
                 ]}
               >
-                <Select placeholder="Select priority level">
+                <Select placeholder="Chọn mức độ ưu tiên">
                   {Object.entries(priorityConfig).map(([key, config]) => (
                     <Option key={key} value={key}>
                       <Tag color={config.color}>{config.label}</Tag>
@@ -1587,10 +1576,10 @@ export default function LandlordDashboardPage() {
             <Col span={8}>
               <Form.Item
                 name="status"
-                label="Status"
-                rules={[{ required: true, message: "Please select a status" }]}
+                label="Trạng thái"
+                rules={[{ required: true, message: "Vui lòng chọn trạng thái" }]}
               >
-                <Select placeholder="Select status">
+                <Select placeholder="Chọn trạng thái">
                   {Object.entries(statusConfig).map(([key, config]) => (
                     <Option key={key} value={key}>
                       <Tag color={config.color}>{config.label}</Tag>
@@ -1609,13 +1598,13 @@ export default function LandlordDashboardPage() {
                 loading={isSubmittingEdit}
                 disabled={isSubmittingEdit}
               >
-                {isSubmittingEdit ? "Updating..." : "Update Task"}
+                {isSubmittingEdit ? "Đang cập nhật..." : "Cập nhật công việc"}
               </Button>
               <Button
                 onClick={() => setIsEditModalOpen(false)}
                 disabled={isSubmittingEdit}
               >
-                Cancel
+                Hủy
               </Button>
             </Space>
           </Form.Item>
@@ -1625,7 +1614,7 @@ export default function LandlordDashboardPage() {
       <Drawer
         title={
           <div className="flex items-center justify-between">
-            <span className="text-lg font-semibold">Task Details</span>
+            <span className="text-lg font-semibold">Chi tiết công việc</span>
             {selectedTask && (
               <Button
                 type="text"
@@ -1636,7 +1625,7 @@ export default function LandlordDashboardPage() {
                   openEditModal(selectedTask);
                 }}
               >
-                Edit
+                Chỉnh sửa
               </Button>
             )}
           </div>
@@ -1701,11 +1690,11 @@ export default function LandlordDashboardPage() {
               {/* Description */}
               <div>
                 <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Description
+                  Mô tả
                 </h3>
                 <div className="text-gray-900 dark:text-white">
                   {selectedTask.description || (
-                    <Text type="secondary">No description provided</Text>
+                    <Text type="secondary">Không có mô tả</Text>
                   )}
                 </div>
               </div>
@@ -1714,7 +1703,7 @@ export default function LandlordDashboardPage() {
               {selectedTask.startDate && (
                 <div>
                   <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Start Date
+                    Ngày bắt đầu
                   </h3>
                   <div className="flex items-center text-gray-900 dark:text-white">
                     <CalendarOutlined className="mr-2" />
@@ -1729,7 +1718,7 @@ export default function LandlordDashboardPage() {
               {selectedTask.dueDate && (
                 <div>
                   <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Due Date
+                    Ngày kết thúc
                   </h3>
                   <div className="flex items-center text-gray-900 dark:text-white">
                     <CalendarOutlined className="mr-2" />
@@ -1737,7 +1726,7 @@ export default function LandlordDashboardPage() {
                     {dayjs(selectedTask.dueDate).isBefore(dayjs()) &&
                       selectedTask.status !== "COMPLETED" && (
                         <Tag color="red" className="ml-2">
-                          Overdue
+                          Quá hạn
                         </Tag>
                       )}
                   </div>
@@ -1748,12 +1737,12 @@ export default function LandlordDashboardPage() {
               {(selectedTask.contract || selectedTask.room) && (
                 <div>
                   <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Related Information
+                    Thông tin liên quan
                   </h3>
                   <div className="space-y-2">
                     {selectedTask.contract && (
                       <div className="flex items-center text-gray-900 dark:text-white">
-                        <span className="font-medium mr-2">Contract:</span>
+                        <span className="font-medium mr-2">Hợp đồng:</span>
                         <Tag color="blue">
                           {selectedTask.contract.contractName}
                         </Tag>
@@ -1761,7 +1750,7 @@ export default function LandlordDashboardPage() {
                     )}
                     {selectedTask.room && (
                       <div className="flex items-center text-gray-900 dark:text-white">
-                        <span className="font-medium mr-2">Room:</span>
+                        <span className="font-medium mr-2">Phòng:</span>
                         <Tag color="green">{selectedTask.room.title}</Tag>
                       </div>
                     )}
@@ -1772,11 +1761,11 @@ export default function LandlordDashboardPage() {
               {/* Timestamps */}
               <div>
                 <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Timeline
+                  Dòng thời gian
                 </h3>
                 <div className="text-sm text-gray-600 dark:text-gray-400">
                   <div>
-                    Last Updated:{" "}
+                    Cập nhật lần cuối:{" "}
                     {dayjs(selectedTask.updatedAt).format("MMM DD, YYYY HH:mm")}
                   </div>
                 </div>
@@ -1785,13 +1774,13 @@ export default function LandlordDashboardPage() {
               {/* Quick Actions */}
               <div>
                 <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                  Quick Actions
+                  Hành động nhanh
                 </h3>
 
                 {/* Status Change Actions */}
                 <div className="mb-4">
                   <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wider">
-                    Change Status
+                    Thay đổi trạng thái
                   </h4>
                   <div className="space-y-2">
                     {Object.entries(statusConfig)
@@ -1808,7 +1797,7 @@ export default function LandlordDashboardPage() {
                               setIsDetailDrawerOpen(false);
                             }}
                           >
-                            Mark as {config.label}
+                            Đánh dấu là {config.label}
                           </Button>
                         </div>
                       ))}
@@ -1818,22 +1807,22 @@ export default function LandlordDashboardPage() {
                 {/* Danger Zone */}
                 <div>
                   <h4 className="text-xs font-medium text-red-500 dark:text-red-400 mb-2 uppercase tracking-wider">
-                    Danger Zone
+                    Vùng nguy hiểm
                   </h4>
                   <Popconfirm
-                    title="Delete Task"
-                    description="Are you sure you want to delete this task?"
+                    title="Xóa công việc"
+                    description="Bạn có chắc chắn muốn xóa công việc này không?"
                     onConfirm={() => {
                       handleDeleteTask(selectedTask.id);
                       setIsDetailDrawerOpen(false);
                     }}
-                    okText="Delete"
-                    cancelText="Cancel"
+                    okText="Xóa"
+                    cancelText="Hủy"
                     okType="danger"
                     placement="topLeft"
                   >
                     <Button block size="small" danger icon={<DeleteOutlined />}>
-                      Delete Task
+                      Xóa công việc
                     </Button>
                   </Popconfirm>
                 </div>

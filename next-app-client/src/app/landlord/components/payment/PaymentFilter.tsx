@@ -30,7 +30,7 @@ export default function PaymentFilter({
       const end = new Date(endDate);
       if (end < start) {
         messageApi.error({
-          content: "End date must be after or equal to start date!",
+          content: "Ngày kết thúc phải sau hoặc bằng ngày bắt đầu!",
           duration: 3,
         });
         return;
@@ -66,7 +66,7 @@ export default function PaymentFilter({
         </div>
         <div className="flex gap-2 items-center flex-wrap">
           <label className="text-sm font-medium text-gray-700 dark:!text-white">
-            Start date
+            Ngày bắt đầu
           </label>
           <input
             type="date"
@@ -74,7 +74,7 @@ export default function PaymentFilter({
             onChange={(e) => setStartDate(e.target.value)}
             className="border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white text-gray-700 dark:!bg-[#22304a] dark:!text-white"
           />
-          <label className="text-sm font-medium text-gray-700 dark:!text-white">End date</label>
+          <label className="text-sm font-medium text-gray-700 dark:!text-white">Ngày kết thúc</label>
           <input
             type="date"
             value={endDate}
@@ -89,7 +89,7 @@ export default function PaymentFilter({
             }}  
             className="ml-2 px-3 py-2 rounded bg-gray-200 text-gray-700 hover:bg-gray-300 font-medium border border-gray-300 dark:!bg-[#2c3e50] dark:!text-white dark:!hover:bg-[#34495e] transition-colors duration-150"
           >
-            Reset
+            Đặt lại
           </button>
         </div>
       </div>

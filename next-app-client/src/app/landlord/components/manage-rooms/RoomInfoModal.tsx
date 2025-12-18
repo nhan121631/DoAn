@@ -16,7 +16,7 @@ const RoomInfoModal: React.FC<RoomInfoModalProps> = ({
   return (
     <Modal
       title={
-        <span style={{ fontSize: 28, fontWeight: 700 }}>Room Details</span>
+        <span style={{ fontSize: 28, fontWeight: 700 }}>Chi Tiết Phòng</span>
       }
       open={open}
       onCancel={onClose}

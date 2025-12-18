@@ -54,7 +54,7 @@ export const FormModal: React.FC<FormModalProps> = ({
 
   return (
     <Modal
-      title={initialData ? "Edit Maintenance" : "Add New Maintenance"}
+      title={initialData ? "Sửa yêu cầu bảo trì" : "Thêm yêu cầu bảo trì"}
       open={isOpen}
       onCancel={onClose}
       footer={null}
@@ -71,12 +71,12 @@ export const FormModal: React.FC<FormModalProps> = ({
       >
         <div className="max-h-[400px] overflow-y-auto pr-4">
           <Form.Item
-            label="Room Name"
+            label="Tên phòng"
             name="roomId"
-            rules={[{ required: true, message: "Please select a room!" }]}
+            rules={[{ required: true, message: "Vui lòng chọn phòng!" }]}
           >
             <Select
-              placeholder="Select a room"
+              placeholder="Chọn phòng"
               showSearch
               optionFilterProp="children"
               filterOption={(input, option) =>
@@ -95,39 +95,41 @@ export const FormModal: React.FC<FormModalProps> = ({
           </Form.Item>
 
           <Form.Item
-            label="Problem"
+            label="Vấn đề"
             name="problem"
             rules={[
               {
                 required: true,
-                message: "Please enter a problem description!",
+                message: "Vui lòng nhập mô tả vấn đề!",
               },
             ]}
           >
             <Input.TextArea
               rows={4}
-              placeholder="For example: Broken faucet, power outage..."
+              placeholder="Ví dụ: Vòi nước hỏng, mất điện..."
             />
           </Form.Item>
 
           <Form.Item
-            label="Cost"
+            label="Chi phí"
             name="cost"
-            rules={[{ required: true, message: "Please enter a cost!" }]}
+            rules={[{ required: true, message: "Vui lòng nhập chi phí!" }]}
           >
-            <Input type="number" placeholder="For example: 150000" />
+            <Input type="number" placeholder="Ví dụ: 150000" />
           </Form.Item>
 
           {initialData && (
             <Form.Item
-              label="Status"
+              label="Trạng thái"
               name="status"
-              rules={[{ required: true, message: "Please select a status!" }]}
+              rules={[{ required: true, message: "Vui lòng chọn trạng thái!" }]}
             >
-              <Select placeholder="Select a status">
-                <Option value={RequestStatus.PENDING}>Pending</Option>
-                <Option value={RequestStatus.IN_PROGRESS}>In Progress</Option>
-                <Option value={RequestStatus.COMPLETED}>Completed</Option>
+              <Select placeholder="Chọn trạng thái">
+                <Option value={RequestStatus.PENDING}>Đang chờ</Option>
+                <Option value={RequestStatus.IN_PROGRESS}>
+                  Đang tiến hành
+                </Option>
+                <Option value={RequestStatus.COMPLETED}>Hoàn thành</Option>
               </Select>
             </Form.Item>
           )}
@@ -136,10 +138,10 @@ export const FormModal: React.FC<FormModalProps> = ({
         <Form.Item>
           <div className="flex justify-end gap-2 mt-4">
             <Button onClick={onClose} disabled={loading}>
-              Cancel
+              Hủy
             </Button>
             <Button type="primary" htmlType="submit" loading={loading}>
-              {initialData ? "Update" : "Create"}
+              {initialData ? "Cập nhật" : "Thêm"}
             </Button>
           </div>
         </Form.Item>

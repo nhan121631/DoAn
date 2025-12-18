@@ -48,8 +48,8 @@ export default function VnpayResult({
         }`}
       >
         {transactionStatus.success
-          ? "✅ Payment successful!"
-          : "❌ Payment failed!"}
+          ? "✅ Thanh toán thành công!"
+          : "❌ Thanh toán không thành công!"}
       </h2>
       <div
         className={`inline-block px-4 py-2 rounded font-semibold mb-4 ${
@@ -63,48 +63,52 @@ export default function VnpayResult({
       <table className="w-full text-sm mt-4 border-collapse">
         <tbody>
           <tr>
-            <th className="text-left py-2 pr-4 font-semibold">Order ID</th>
+            <th className="text-left py-2 pr-4 font-semibold">Mã đơn hàng</th>
             <td>{vnp_TxnRef}</td>
           </tr>
           <tr>
-            <th className="text-left py-2 pr-4 font-semibold">Amount</th>
+            <th className="text-left py-2 pr-4 font-semibold">Số tiền</th>
             <td>{formatCurrency(amount)}</td>
           </tr>
           <tr>
-            <th className="text-left py-2 pr-4 font-semibold">Order Info</th>
+            <th className="text-left py-2 pr-4 font-semibold">
+              Thông tin đơn hàng
+            </th>
             <td>{vnp_OrderInfo}</td>
           </tr>
           <tr>
             <th className="text-left py-2 pr-4 font-semibold">
-              VNPay Transaction No
+              Mã giao dịch VNPay
             </th>
             <td>{vnp_TransactionNo || "N/A"}</td>
           </tr>
           <tr>
             <th className="text-left py-2 pr-4 font-semibold">
-              Bank Transaction No
+              Mã giao dịch ngân hàng
             </th>
             <td>{vnp_BankTranNo || "N/A"}</td>
           </tr>
           <tr>
-            <th className="text-left py-2 pr-4 font-semibold">Bank</th>
+            <th className="text-left py-2 pr-4 font-semibold">Ngân hàng</th>
             <td>{vnp_BankCode}</td>
           </tr>
           <tr>
-            <th className="text-left py-2 pr-4 font-semibold">Card Type</th>
+            <th className="text-left py-2 pr-4 font-semibold">Loại thẻ</th>
             <td>{vnp_CardType}</td>
           </tr>
           <tr>
-            <th className="text-left py-2 pr-4 font-semibold">Payment Time</th>
+            <th className="text-left py-2 pr-4 font-semibold">
+              Thời gian thanh toán
+            </th>
             <td>{formatDate(vnp_PayDate)}</td>
           </tr>
           <tr>
-            <th className="text-left py-2 pr-4 font-semibold">Response Code</th>
+            <th className="text-left py-2 pr-4 font-semibold">Mã phản hồi</th>
             <td>{vnp_ResponseCode}</td>
           </tr>
           <tr>
             <th className="text-left py-2 pr-4 font-semibold">
-              Transaction Status
+              Trạng thái giao dịch
             </th>
             <td>{vnp_TransactionStatus}</td>
           </tr>
@@ -115,13 +119,13 @@ export default function VnpayResult({
           href="/landlord/profile"
           className="inline-block px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
         >
-          ← Back to Profile
+          ← Quay lại trang cá nhân
         </a>
         <a
           href="/landlord/payment-history"
           className="inline-block px-6 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition"
         >
-          📋 View Payment History
+          Xem lịch sử thanh toán
         </a>
       </div>
     </div>

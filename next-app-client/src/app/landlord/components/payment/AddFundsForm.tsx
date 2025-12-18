@@ -35,7 +35,7 @@ export default function AddFundsForm({ onSuccess }: AddFundsFormProps) {
     const amountNumber = Number(amount);
 
     if (amountNumber < 5000) {
-      return messageApi.error("Minimum amount is 5,000 VND");
+      return messageApi.error("Số tiền phải lớn hơn hoặc bằng 5,000 VND");
     }
 
     setLoading(true);
@@ -43,8 +43,7 @@ export default function AddFundsForm({ onSuccess }: AddFundsFormProps) {
     try {
       const payload = {
         amount: amountNumber,
-        description:
-          orderInfo || `Add ${formatCurrency(amountNumber)} to wallet`,
+        description: orderInfo || `Nạp ${formatCurrency(amountNumber)} vào ví`,
         userId,
       };
 
@@ -53,7 +52,7 @@ export default function AddFundsForm({ onSuccess }: AddFundsFormProps) {
       if (paymentMethod === "vnpay") {
         data = await createPayment(payload);
 
-        if (!data.paymentUrl) throw new Error("No payment URL received");
+        if (!data.paymentUrl) throw new Error("Không nhận được URL thanh toán");
 
         window.location.href = data.paymentUrl;
       }
@@ -61,13 +60,13 @@ export default function AddFundsForm({ onSuccess }: AddFundsFormProps) {
       if (paymentMethod === "paypal") {
         data = await createPaymentPaypal(payload);
 
-        if (!data.approveUrl) throw new Error("No approval URL received");
+        if (!data.approveUrl) throw new Error("Không nhận được URL phê duyệt");
 
         window.location.href = data.approveUrl;
       }
     } catch (err: any) {
       console.error("Payment error:", err);
-      messageApi.error(err.message || "Payment failed");
+      messageApi.error(err.message || "Thanh toán thất bại");
     } finally {
       setLoading(false);
     }
@@ -85,7 +84,7 @@ export default function AddFundsForm({ onSuccess }: AddFundsFormProps) {
       >
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2 dark:!text-white">
-            Amount <span className="text-red-500">*</span>
+            Số Tiền <span className="text-red-500">*</span>
           </label>
           <input
             type="number"
@@ -98,7 +97,7 @@ export default function AddFundsForm({ onSuccess }: AddFundsFormProps) {
             required
           />
           <p className="text-sm text-gray-500 mt-1  dark:!text-white">
-            Amount:{" "}
+            Số Tiền:{" "}
             <span className="font-semibold text-blue-700">
               {formatCurrency(Number(amount))}
             </span>
@@ -106,7 +105,7 @@ export default function AddFundsForm({ onSuccess }: AddFundsFormProps) {
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2  dark:!text-white">
-            Payment description
+            Mô Tả Thanh Toán
           </label>
           <input
             type="text"
@@ -118,7 +117,7 @@ export default function AddFundsForm({ onSuccess }: AddFundsFormProps) {
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2  dark:!text-white">
-            Payment method
+            Phương Thức Thanh Toán
           </label>
           <div className="flex items-center gap-4">
             <label className="inline-flex items-center cursor-pointer">
@@ -212,13 +211,13 @@ export default function AddFundsForm({ onSuccess }: AddFundsFormProps) {
                   d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                 ></path>
               </svg>
-              Processing...
+              Đang xử lý...
             </>
           ) : (
             <div className="text-white flex items-center justify-center">
               {paymentMethod === "paypal"
-                ? "Pay with PayPal"
-                : "Pay with VNPay"}
+                ? "Thanh toán với PayPal"
+                : "Thanh toán với VNPay"}
             </div>
           )}
         </button>
@@ -227,12 +226,12 @@ export default function AddFundsForm({ onSuccess }: AddFundsFormProps) {
             href="/transactions"
             className="text-blue-600 hover:text-blue-800 text-sm underline"
           >
-            🔍 Transaction lookup
+            Tra cứu giao dịch
           </a>
         </div>
         <div className="text-center pt-2">
           <p className="text-xs text-gray-500">
-            Secured by VNPay - Vietnam's leading payment gateway
+            Bảo mật bởi VNPay - Cổng thanh toán hàng đầu Việt Nam
           </p>
         </div>
       </form>

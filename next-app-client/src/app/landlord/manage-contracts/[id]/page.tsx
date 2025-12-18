@@ -34,7 +34,7 @@ export default function LandlordContractDetail() {
         setContract(data);
       } catch (err: any) {
         setError("Cannot load contract");
-        messageApi.error("Cannot load contract");
+        messageApi.error("Không thể tải hợp đồng.");
       } finally {
         setLoading(false);
       }
@@ -59,7 +59,7 @@ export default function LandlordContractDetail() {
       <div className="flex flex-col justify-center items-center h-full bg-white dark:bg-[#001529] transition-colors duration-300">
         <Spin size="large" />
         <span className="mt-3 text-center whitespace-nowrap text-gray-900 dark:text-white">
-          Loading contracts...
+          Đang tải hợp đồng...
         </span>
       </div>
     );
@@ -68,7 +68,7 @@ export default function LandlordContractDetail() {
   if (error || !contract) {
     return (
       <div className="text-center text-red-500 dark:text-red-400 bg-white dark:bg-[#001529] p-8 transition-colors duration-300">
-        {error || "Contract not found"}
+        {error || "Không tìm thấy hợp đồng"}
       </div>
     );
   }
@@ -78,7 +78,7 @@ export default function LandlordContractDetail() {
       key: "overview",
       label: (
         <span>
-          <FileTextOutlined /> Overview
+          <FileTextOutlined /> Tổng quan
         </span>
       ),
       children: (
@@ -119,10 +119,10 @@ export default function LandlordContractDetail() {
             onClick={() => router.push("/landlord/manage-contracts")}
             className="mb-4 !bg-sky-600 dark:!bg-[#171f2f] !text-white"
           >
-            Go Back
+            Quay lại
           </Button>
           <h2 className="text-xl font-bold mb-6 text-gray-900 dark:text-white">
-            Contract Management
+            Quản lý hợp đồng
           </h2>
         </div>
 

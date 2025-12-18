@@ -90,7 +90,7 @@ export default function Images({ images, indexImg, onClose }: any) {
             )
           ) : (
             <div className="w-full h-[300px] flex items-center justify-center bg-gray-200 text-gray-500">
-              No image available
+              Không có ảnh hoặc video hiển thị
             </div>
           )}
         </div>

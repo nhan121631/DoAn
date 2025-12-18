@@ -132,7 +132,7 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
                 <FaChartLine />
               </span>
             ),
-            label: <Link href="/landlord/statistics">Statistics</Link>,
+            label: <Link href="/landlord/statistics">Thống kê</Link>,
           },
           {
             key: "3",
@@ -148,7 +148,7 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
                 <ImProfile />
               </span>
             ),
-            label: <Link href="/landlord/profile">Profile</Link>,
+            label: <Link href="/landlord/profile">Hồ sơ</Link>,
           },
           {
             key: "4",
@@ -164,7 +164,7 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
                 <RiHotelLine />
               </span>
             ),
-            label: <Link href="/landlord/manage-rooms">Rooms Management</Link>,
+            label: <Link href="/landlord/manage-rooms">Quản lý phòng</Link>,
           },
           {
             key: "5",
@@ -180,7 +180,7 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
                 <LuBookCheck />
               </span>
             ),
-            label: <Link href="/landlord/rentals">Rentals Management</Link>,
+            label: <Link href="/landlord/rentals">Quản lý cho thuê</Link>,
           },
           {
             key: "6",
@@ -197,7 +197,7 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
               </span>
             ),
             label: (
-              <Link href="/landlord/manage-contracts">Contract Management</Link>
+              <Link href="/landlord/manage-contracts">Quản lý hợp đồng</Link>
             ),
           },
           {
@@ -215,7 +215,7 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
               </span>
             ),
             label: (
-              <Link href="/landlord/manage-residents">Residents Management</Link>
+              <Link href="/landlord/manage-residents">Quản lý tạm trú</Link>
             ),
           },
           {
@@ -233,7 +233,7 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
               </span>
             ),
             label: (
-              <Link href="/landlord/manage-requests">Request Management</Link>
+              <Link href="/landlord/manage-requests">Quản lý yêu cầu</Link>
             ),
           },
           {
@@ -251,9 +251,7 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
               </span>
             ),
             label: (
-              <Link href="/landlord/manage-maintain">
-                Maintenance Management
-              </Link>
+              <Link href="/landlord/manage-maintain">Quản lý bảo trì</Link>
             ),
           },
           {
@@ -271,7 +269,7 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
               </span>
             ),
             label: (
-              <Link href="/landlord/manage-comments">Feedback Management</Link>
+              <Link href="/landlord/manage-comments">Quản lý phản hồi</Link>
             ),
           },
           {
@@ -288,7 +286,7 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
                 <PiHandDepositLight />
               </span>
             ),
-            label: <Link href="/landlord/add-funds">Deposit Management</Link>,
+            label: <Link href="/landlord/add-funds">Quản lý thêm tiền</Link>,
           },
           {
             key: "12",
@@ -305,7 +303,7 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
               </span>
             ),
             label: (
-              <Link href="/landlord/payment-history">Transaction History</Link>
+              <Link href="/landlord/payment-history">Lịch sử giao dịch</Link>
             ),
           },
           {
@@ -322,7 +320,7 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
                 <ImProfile />
               </span>
             ),
-            label: <Link href="/landlord/manage-chat">Chat Management</Link>,
+            label: <Link href="/landlord/manage-chat">Quản lý Tin Nhắn</Link>,
           },
         ]}
       />

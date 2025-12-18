@@ -185,7 +185,7 @@ export default function ManageChatPage() {
       const isAdmin = adminIds.has(user.id);
       if (isAdmin && !isLandlord) {
         // Simple UI feedback; replace with message API if available
-        alert("Only landlords can start a conversation with Admin.");
+        alert("Chỉ chủ nhà mới có thể trò chuyện với quản trị viên.");
         return;
       }
 
@@ -202,7 +202,7 @@ export default function ManageChatPage() {
       try {
         await markConversationAsRead(landlordId, user.id);
         console.log(
-          `ManageChat: Successfully marked conversation with ${user.id} as read`
+          `ManageChat: Đã đánh dấu cuộc trò chuyện với ${user.id} là đã đọc`
         );
 
         // Remove protection after a delay to allow Firebase to propagate
@@ -211,7 +211,7 @@ export default function ManageChatPage() {
         }, 2000); // 2 seconds should be enough for Firebase to sync
       } catch (error) {
         console.error(
-          "ManageChat: Failed to mark conversation as read:",
+          "ManageChat: Không thể đánh dấu cuộc trò chuyện là đã đọc:",
           error
         );
         // Remove protection and revert the optimistic update if marking as read failed
@@ -266,7 +266,7 @@ export default function ManageChatPage() {
         <div className="p-6 flex-shrink-0">
           <div className="mb-6">
             <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              Conversations
+              Cuộc trò chuyện
             </h2>
             <div className="mt-2 h-1 w-12 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full dark:bg-gradient-to-r dark:from-blue-600 dark:to-purple-600" />
           </div>
@@ -314,10 +314,10 @@ export default function ManageChatPage() {
                     </svg>
                   </div>
                   <p className="text-slate-500 dark:text-gray-300 font-medium">
-                    No conversations yet
+                    Chưa có cuộc trò chuyện nào
                   </p>
                   <p className="text-slate-400 dark:text-gray-500 text-sm mt-1">
-                    Start chatting to see messages here
+                    Bắt đầu trò chuyện để xem tin nhắn tại đây
                   </p>
                 </div>
               )}
@@ -462,7 +462,7 @@ export default function ManageChatPage() {
                   d="M15 19l-7-7 7-7"
                 />
               </svg>
-              <span className="font-medium">Back to Conversations</span>
+              <span className="font-medium">Quay lại Cuộc trò chuyện</span>
             </button>
           </div>
         )}
@@ -486,7 +486,7 @@ export default function ManageChatPage() {
             <div className="flex flex-col items-center justify-center">
               <div className="w-16 h-16 border-4 border-blue-200 border-t-blue-500 rounded-full animate-spin" />
               <p className="text-slate-600 font-medium mt-4">
-                Loading conversations...
+                Đang tải các cuộc trò chuyện...
               </p>
             </div>
           ) : (
@@ -511,10 +511,10 @@ export default function ManageChatPage() {
               </div>
               <div className="text-center mt-6">
                 <h3 className="text-xl font-semibold text-slate-700 mb-2">
-                  Welcome to Chat Management
+                  Chào mừng đến với Hệ thống Chat!
                 </h3>
                 <p className="text-slate-500">
-                  Select a conversation from the sidebar to start chatting
+                  Vui lòng chọn một cuộc trò chuyện từ thanh bên để bắt đầu
                 </p>
               </div>
             </div>

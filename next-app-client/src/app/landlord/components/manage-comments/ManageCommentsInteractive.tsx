@@ -60,26 +60,26 @@ const ManageCommentsInteractive: React.FC = () => {
 
   const columns: ColumnsType<RatingResponseDto> = [
     {
-      title: "Room",
+      title: "Tên phòng",
       dataIndex: "roomTitle",
       key: "roomTitle",
       sorter: (a, b) => a.roomTitle.localeCompare(b.roomTitle),
     },
     {
-      title: "User",
+      title: "Người dùng",
       dataIndex: "userName",
       key: "userName",
       sorter: (a, b) => a.userName.localeCompare(b.userName),
     },
     {
-      title: "Score",
+      title: "Điểm",
       dataIndex: "score",
       key: "score",
       align: "right" as const,
       sorter: (a, b) => a.score - b.score,
     },
     {
-      title: "Comment",
+      title: "Bình luận",
       dataIndex: "comment",
       key: "comment",
       ellipsis: true,
@@ -93,27 +93,27 @@ const ManageCommentsInteractive: React.FC = () => {
       ),
     },
     {
-      title: "Date Rated",
+      title: "Ngày đánh giá",
       dataIndex: "dateRated",
       key: "dateRated",
       sorter: (a, b) =>
         new Date(a.dateRated).getTime() - new Date(b.dateRated).getTime(),
     },
     {
-      title: "Status",
+      title: "Trạng thái",
       key: "status",
       render: (_, record) => {
         const hasReply = !!record.reply;
         return (
           <Tag color={hasReply ? "green" : "volcano"}>
-            {hasReply ? "Responded" : "New"}
+            {hasReply ? "Đã phản hồi" : "Mới"}
           </Tag>
         );
       },
       sorter: (a, b) => Number(!!a.reply) - Number(!!b.reply),
     },
     {
-      title: "Actions",
+      title: "Hành động",
       key: "actions",
       render: (_, record) => (
         <Space size="middle">
@@ -122,7 +122,7 @@ const ManageCommentsInteractive: React.FC = () => {
             size="small"
             onClick={() => handleReplyComment(record)}
           >
-            Reply
+            Phản hồi
           </Button>
         </Space>
       ),

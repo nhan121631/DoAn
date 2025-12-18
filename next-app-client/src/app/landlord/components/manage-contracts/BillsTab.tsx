@@ -45,10 +45,10 @@ interface BillsTabProps {
 }
 
 const billStatusMap: Record<string, { text: string; color: string }> = {
-  PENDING: { text: "Pending", color: "orange" },
-  CONFIRMING: { text: "Confirming Payment", color: "blue" },
-  PAID: { text: "Paid", color: "green" },
-  OVERDUE: { text: "Overdue", color: "red" },
+  PENDING: { text: "Đang chờ", color: "orange" },
+  CONFIRMING: { text: "Đang xác nhận", color: "blue" },
+  PAID: { text: "Đã thanh toán", color: "green" },
+  OVERDUE: { text: "Quá hạn", color: "red" },
 };
 
 export default function BillsTab({
@@ -85,7 +85,7 @@ export default function BillsTab({
           const room = await getRoomById(contract.roomId);
           setRoomData(room);
         } catch (error) {
-          console.error("Failed to fetch room data:", error);
+          console.error("Không thể lấy dữ liệu phòng:", error);
         }
       }
     };
@@ -120,10 +120,10 @@ export default function BillsTab({
       setLoading(true);
       const updatedContract = await ContractService.getById(contract.id);
       onContractUpdate(updatedContract);
-      messageApi.success("Bill data refreshed!");
+      messageApi.success("Dữ liệu hóa đơn đã được làm mới!");
     } catch (error) {
-      console.error("Failed to refresh contract data:", error);
-      messageApi.error("Failed to refresh bill data");
+      console.error("Không thể làm mới dữ liệu hợp đồng:", error);
+      messageApi.error("Không thể làm mới dữ liệu hóa đơn");
     } finally {
       setLoading(false);
     }
@@ -236,13 +236,13 @@ export default function BillsTab({
         waterPrice: roomData?.waterPrice,
       };
       await BillService.updateBill(contract.id, editBill.id, billData);
-      messageApi.success("Bill updated!");
+      messageApi.success("Hóa đơn đã được cập nhật!");
       setEditBill(null);
       editForm.resetFields();
       const data = await ContractService.getById(contract.id);
       onContractUpdate(data);
     } catch (_) {
-      messageApi.error("Update bill failed!");
+      messageApi.error("Cập nhật hóa đơn thất bại!");
     } finally {
       setLoading(false);
     }
@@ -273,9 +273,9 @@ export default function BillsTab({
         contract.landlordId,
         contract.tenantId,
         contract.id,
-        "New bill added to your contract. Please check and make payment on time."
+        "Hóa đơn mới đã được thêm vào hợp đồng của bạn. Vui lòng kiểm tra và thanh toán đúng hạn."
       );
-      messageApi.success("Bill added!");
+      messageApi.success("Hóa đơn đã được thêm!");
       setAddBillOpen(false);
       addForm.resetFields();
       // Reset form with default values
@@ -293,7 +293,7 @@ export default function BillsTab({
       const data = await ContractService.getById(contract.id);
       onContractUpdate(data);
     } catch (_) {
-      messageApi.error("Add bill failed!");
+      messageApi.error("Thêm hóa đơn thất bại!");
     } finally {
       setLoading(false);
     }
@@ -304,11 +304,11 @@ export default function BillsTab({
     try {
       setLoading(true);
       await BillService.deleteBill(contract.id, billId);
-      messageApi.success("Bill deleted!");
+      messageApi.success("Hóa đơn đã được xóa!");
       const data = await ContractService.getById(contract.id);
       onContractUpdate(data);
     } catch (_) {
-      messageApi.error("Delete bill failed!");
+      messageApi.error("Xóa hóa đơn thất bại!");
     } finally {
       setLoading(false);
     }
@@ -320,13 +320,13 @@ export default function BillsTab({
       setLoading(true);
       // Update bill status to PAID
       await BillService.updateBillStatus(contract.id, bill.id, "PAID");
-      messageApi.success("Payment confirmed successfully!");
+      messageApi.success("Xác nhận thanh toán thành công!");
       // Reload contract data to get updated bills
       const data = await ContractService.getById(contract.id);
       onContractUpdate(data);
     } catch (err) {
-      console.error("Confirm payment failed:", err);
-      messageApi.error("Failed to confirm payment!");
+      console.error("Xác nhận thanh toán thất bại:", err);
+      messageApi.error("Xác nhận thanh toán thất bại!");
     } finally {
       setLoading(false);
     }
@@ -344,7 +344,7 @@ export default function BillsTab({
       const toMonth = values.toMonth.format("YYYY-MM");
 
       if (dayjs(fromMonth).isAfter(dayjs(toMonth))) {
-        messageApi.error("From month cannot be later than to month!");
+        messageApi.error("Tháng bắt đầu không thể sau tháng kết thúc!");
         return;
       }
 
@@ -363,12 +363,12 @@ export default function BillsTab({
       a.remove();
       window.URL.revokeObjectURL(url);
 
-      messageApi.success("Bills exported successfully!");
+      messageApi.success("Xuất hóa đơn thành công!");
       setExportModalOpen(false);
       exportForm.resetFields();
     } catch (error) {
-      console.error("Export failed:", error);
-      messageApi.error("Failed to export bills. Please try again.");
+      console.error("Xuất hóa đơn thất bại:", error);
+      messageApi.error("Xuất hóa đơn thất bại! Vui lòng thử lại.");
     } finally {
       setExportLoading(false);
     }
@@ -386,7 +386,7 @@ export default function BillsTab({
 
   const billColumns = [
     {
-      title: "Month",
+      title: "Tháng",
       dataIndex: "month",
       width: "90px",
       key: "month",
@@ -396,7 +396,7 @@ export default function BillsTab({
       sorter: (a: BillData, b: BillData) => a.month.localeCompare(b.month),
     },
     {
-      title: "Electricity",
+      title: "Điện",
       dataIndex: "electricityFee",
       key: "electricityFee",
       align: "right" as const,
@@ -443,7 +443,7 @@ export default function BillsTab({
           <div className="font-medium">{v?.toLocaleString("vi-VN")}đ</div>
           {record.damageFee != null && record.damageFee > 0 && (
             <div className="text-xs text-red-500">
-              + Other Fee: {record.damageFee.toLocaleString("vi-VN")}đ
+              + Phí khác: {record.damageFee.toLocaleString("vi-VN")}đ
               {record.note && (
                 <div className="text-xs text-gray-500 italic">
                   ({record.note})
@@ -457,7 +457,7 @@ export default function BillsTab({
         (a.serviceFee || 0) - (b.serviceFee || 0),
     },
     {
-      title: "Total",
+      title: "Tổng cộng",
       dataIndex: "totalAmount",
       key: "totalAmount",
       width: "130px",
@@ -467,7 +467,7 @@ export default function BillsTab({
         (a.totalAmount || 0) - (b.totalAmount || 0),
     },
     {
-      title: "Status",
+      title: "Trạng thái",
       dataIndex: "status",
       key: "status",
       render: (status: string, record: BillData) => {
@@ -489,10 +489,10 @@ export default function BillsTab({
         return <Tag color={statusInfo.color}>{statusInfo.text}</Tag>;
       },
       filters: [
-        { text: "Pending", value: "PENDING" },
-        { text: "Confirming Payment", value: "CONFIRMING" },
-        { text: "Paid", value: "PAID" },
-        { text: "Overdue", value: "OVERDUE" },
+        { text: "Chưa thanh toán", value: "PENDING" },
+        { text: "Đang xác nhận thanh toán", value: "CONFIRMING" },
+        { text: "Đã thanh toán", value: "PAID" },
+        { text: "Quá hạn", value: "OVERDUE" },
       ],
       onFilter: (value: boolean | Key, record: BillData): boolean => {
         const actualStatus =
@@ -506,14 +506,14 @@ export default function BillsTab({
       },
     },
     {
-      title: "Image Proof",
+      title: "Ảnh chứng từ",
       dataIndex: "imageProof",
       align: "center" as const,
       render: (text: string, record: BillData) => {
         if (!text || text === null || text === undefined) {
           return (
             <div className="w-16 h-16 bg-gray-200 flex items-center justify-center rounded text-gray-500 text-xs">
-              No Image
+              Không có ảnh
             </div>
           );
         }
@@ -524,7 +524,7 @@ export default function BillsTab({
           >
             <Image
               src={`${URL_IMAGE}${text}`}
-              alt="Payment Proof"
+              alt="Ảnh chứng từ"
               width={64}
               height={64}
               className="object-cover rounded border border-gray-300"
@@ -535,7 +535,7 @@ export default function BillsTab({
       },
     },
     {
-      title: "Action",
+      title: "Hành động",
       key: "action",
       render: (_: unknown, record: BillData) => {
         const actualStatus =
@@ -545,14 +545,14 @@ export default function BillsTab({
 
         return (
           <div className="flex gap-2">
-            <Tooltip title="Details">
+            <Tooltip title="Chi tiết">
               <Button
                 type="default"
                 icon={<EyeOutlined />}
                 onClick={() => setSelectedBill(record)}
               />
             </Tooltip>
-            <Tooltip title="Edit">
+            <Tooltip title="Chỉnh sửa">
               <Button
                 icon={<EditOutlined />}
                 onClick={() => setEditBill(record)}
@@ -560,26 +560,26 @@ export default function BillsTab({
               />
             </Tooltip>
             {isConfirming && (
-              <Tooltip title="Confirm payment received">
+              <Tooltip title="Xác nhận đã nhận thanh toán">
                 <Popconfirm
-                  title="Confirm Payment"
-                  description="Have you received the payment for this bill?"
+                  title="Xác nhận thanh toán"
+                  description="Bạn đã nhận được thanh toán cho hóa đơn này chưa?"
                   onConfirm={() => handleConfirmPayment(record)}
-                  okText="Yes, Confirm"
-                  cancelText="Not Yet"
+                  okText="Có, xác nhận"
+                  cancelText="Chưa xác nhận"
                 >
                   <Button type="primary" size="small">
-                    Confirm
+                    Xác nhận
                   </Button>
                 </Popconfirm>
               </Tooltip>
             )}
-            <Tooltip title="Delete">
+            <Tooltip title="Xóa">
               <Popconfirm
-                title="Are you sure you want to delete this bill?"
+                title="Bạn có chắc chắn muốn xóa hóa đơn này không?"
                 onConfirm={() => handleDeleteBill(record.id)}
-                okText="Delete"
-                cancelText="Cancel"
+                okText="Xóa"
+                cancelText="Hủy"
               >
                 <Button danger icon={<DeleteOutlined />} disabled={isPaid} />
               </Popconfirm>

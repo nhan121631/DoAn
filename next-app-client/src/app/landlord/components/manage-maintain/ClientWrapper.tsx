@@ -5,7 +5,7 @@ import {
   createMaintenance,
   updateMaintenance,
   deleteMaintenance,
-  getAvailableRooms
+  getAvailableRooms,
 } from "@/services/MaintenanceService";
 import { Button, message, Popconfirm, Space, Table, Tag } from "antd";
 import type { ColumnsType, TablePaginationConfig } from "antd/es/table";
@@ -13,17 +13,17 @@ import { useEffect, useState, useCallback } from "react";
 import { AiOutlineDelete, AiOutlinePlus } from "react-icons/ai";
 import { FaRegEdit } from "react-icons/fa";
 import { Maintenance, RequestStatus, Room } from "@/types/types";
-import { FormModal } from "./FormModal"; 
+import { FormModal } from "./FormModal";
 import dayjs from "dayjs";
 
 const getStatusTag = (status: RequestStatus) => {
   switch (status) {
     case RequestStatus.PENDING:
-      return <Tag color="orange">Pending</Tag>;
+      return <Tag color="orange">Đang chờ</Tag>;
     case RequestStatus.IN_PROGRESS:
-      return <Tag color="blue">In Progress</Tag>;
+      return <Tag color="blue">Đang tiến hành</Tag>;
     case RequestStatus.COMPLETED:
-      return <Tag color="green">Completed</Tag>;
+      return <Tag color="green">Hoàn thành</Tag>;
   }
 };
 
@@ -41,33 +41,37 @@ function ClientWrapper() {
 
   // State cho modal
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [currentMaintenance, setCurrentMaintenance] = useState<Maintenance | null>(null);
+  const [currentMaintenance, setCurrentMaintenance] =
+    useState<Maintenance | null>(null);
 
-  const fetchData = useCallback(async (page = 0, size = 7) => {
-    setLoading(true);
-    try {
-      const [maintenancesRes, roomsRes] = await Promise.all([
-        getMaintenances(page, size, null),
-        getAvailableRooms(), 
-      ]);
+  const fetchData = useCallback(
+    async (page = 0, size = 7) => {
+      setLoading(true);
+      try {
+        const [maintenancesRes, roomsRes] = await Promise.all([
+          getMaintenances(page, size, null),
+          getAvailableRooms(),
+        ]);
 
-      setData(maintenancesRes.data || []);
-      setRooms(roomsRes || []);
-      setPagination({
-        current: (maintenancesRes.page ?? 0) + 1,
-        pageSize: maintenancesRes.size ?? size,
-        total: maintenancesRes.totalElements ?? 0,
-      });
-    } catch (error: any) {
-      messageApi.error({
-        content: error.message || "Failed to fetch data",
-        duration: 3,
-      });
-      console.error("Error fetching data:", error.message);
-    } finally {
-      setLoading(false);
-    }
-  }, [messageApi]);
+        setData(maintenancesRes.data || []);
+        setRooms(roomsRes || []);
+        setPagination({
+          current: (maintenancesRes.page ?? 0) + 1,
+          pageSize: maintenancesRes.size ?? size,
+          total: maintenancesRes.totalElements ?? 0,
+        });
+      } catch (error: any) {
+        messageApi.error({
+          content: error.message || "Không thể tải dữ liệu",
+          duration: 3,
+        });
+        console.error("Error fetching data:", error.message);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [messageApi]
+  );
 
   useEffect(() => {
     fetchData();
@@ -93,22 +97,22 @@ function ClientWrapper() {
       const { requestDate, ...rest } = values;
       const formattedValues = {
         ...rest,
-        requestDate: dayjs(requestDate).format("YYYY-MM-DDTHH:mm:ss.SSS[Z]"), 
+        requestDate: dayjs(requestDate).format("YYYY-MM-DDTHH:mm:ss.SSS[Z]"),
       };
 
       if (currentMaintenance) {
         // Cập nhật yêu cầu bảo trì
         await updateMaintenance(currentMaintenance.id!, formattedValues);
-        messageApi.success("Update request successfully!");
+        messageApi.success("Cập nhật yêu cầu thành công!");
       } else {
         // Thêm yêu cầu bảo trì mới
         await createMaintenance(formattedValues);
-        messageApi.success("Add request successfully!");
+        messageApi.success("Thêm yêu cầu thành công!");
       }
       handleCloseModal();
       fetchData(pagination.current - 1, pagination.pageSize); // Reload data
     } catch (error: any) {
-      messageApi.error("Failed: " + (error.message || "An error occurred"));
+      messageApi.error("Thất bại: " + (error.message || "Đã xảy ra lỗi"));
     } finally {
       setModalLoading(false);
     }
@@ -118,10 +122,10 @@ function ClientWrapper() {
     setLoading(true);
     try {
       await deleteMaintenance(record.id!);
-      messageApi.success("Delete request successfully!");
+      messageApi.success("Xóa yêu cầu thành công!");
       fetchData(pagination.current - 1, pagination.pageSize); // Reload data
     } catch (error: any) {
-      messageApi.error("Failed: " + (error.message || "An error occurred"));
+      messageApi.error("Thất bại: " + (error.message || "Đã xảy ra lỗi"));
     } finally {
       setLoading(false);
     }
@@ -129,24 +133,24 @@ function ClientWrapper() {
 
   const columns: ColumnsType<Maintenance> = [
     {
-      title: "Room Name",
+      title: "Tên phòng",
       dataIndex: ["room", "title"],
       key: "room",
     },
     {
-      title: "Problem",
+      title: "Vấn đề",
       dataIndex: "problem",
       key: "problem",
     },
     {
-      title: "Cost",
+      title: "Chi phí",
       dataIndex: "cost",
       key: "cost",
       align: "right" as const,
       render: (cost) => cost.toLocaleString("vi-VN") + " ₫",
     },
     {
-      title: "Date",
+      title: "Ngày",
       dataIndex: "requestDate",
       key: "requestDate",
       render: (date) =>
@@ -159,13 +163,13 @@ function ClientWrapper() {
           : "-",
     },
     {
-      title: "Status",
+      title: "Trạng thái",
       dataIndex: "status",
       key: "status",
       render: getStatusTag,
     },
     {
-      title: "Actions",
+      title: "Hành động",
       key: "actions",
       render: (_, record) => (
         <Space>
@@ -175,13 +179,12 @@ function ClientWrapper() {
             onClick={() => handleOpenModal(record)}
           />
           <Popconfirm
-            title="Are you sure you want to delete this request?"
+            title="Bạn có chắc chắn muốn xóa yêu cầu này?"
             onConfirm={() => handleDeleteClick(record)}
-            okText="Yes"
-            cancelText="No"
+            okText="Có"
+            cancelText="Không"
           >
             <Button type="text" danger icon={<AiOutlineDelete size={18} />} />
-
           </Popconfirm>
         </Space>
       ),
@@ -198,7 +201,7 @@ function ClientWrapper() {
             icon={<AiOutlinePlus size={18} />}
             onClick={() => handleOpenModal()}
           >
-            Add Maintenance
+            Thêm yêu cầu bảo trì
           </Button>
         </div>
       </div>

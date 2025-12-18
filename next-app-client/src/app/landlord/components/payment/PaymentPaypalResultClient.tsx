@@ -39,7 +39,7 @@ export default function PaymentPaypalResultClient() {
           mappedData = {
             transactionStatus: {
               success: false,
-              message: raw.message || "Payment failed",
+              message: raw.message || "Thanh toán không thành công",
             },
             paypalOrderId: raw.orderId || "",
             amount: raw.amount || 0,
@@ -48,7 +48,10 @@ export default function PaymentPaypalResultClient() {
         } else {
           const tx = raw.transaction;
           mappedData = {
-            transactionStatus: { success: true, message: "Payment successful" },
+            transactionStatus: {
+              success: true,
+              message: "Thanh toán thành công",
+            },
             paypalOrderId: tx.transactionCode || tx.paypalOrderId || "",
             amount: tx.amount,
             description: tx.description || "",
@@ -61,7 +64,7 @@ export default function PaymentPaypalResultClient() {
 
         setPaymentData(mappedData);
       } catch (err) {
-        setError("An error occurred while processing the payment result");
+        setError("Đã xảy ra lỗi trong quá trình xử lý kết quả thanh toán");
         console.error("PayPal Payment confirm error:", err);
       } finally {
         setLoading(false);
@@ -71,7 +74,7 @@ export default function PaymentPaypalResultClient() {
     if (searchParams?.toString()) {
       fetchPaymentResult();
     } else {
-      setError("No payment information found");
+      setError("Không tìm thấy thông tin thanh toán");
       setLoading(false);
     }
   }, [searchParams]);
@@ -81,7 +84,7 @@ export default function PaymentPaypalResultClient() {
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Processing payment result...</p>
+          <p className="mt-4 text-gray-600">Đang xử lý kết quả thanh toán...</p>
         </div>
       </div>
     );
@@ -94,14 +97,14 @@ export default function PaymentPaypalResultClient() {
           <div className="text-center">
             <div className="text-red-500 text-6xl mb-4">❌</div>
             <h2 className="text-2xl font-bold text-gray-900 mb-2">
-              An error occurred
+              Đã xảy ra lỗi
             </h2>
             <p className="text-gray-600 mb-6">{error}</p>
             <a
               href="/landlord/add-funds"
               className="inline-block px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
             >
-              ← Back to Add Funds
+              ← Quay lại trang Nạp tiền
             </a>
           </div>
         </div>
@@ -113,7 +116,7 @@ export default function PaymentPaypalResultClient() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
-          <p className="text-gray-600">No payment data found</p>
+          <p className="text-gray-600">Không tìm thấy thông tin thanh toán</p>
         </div>
       </div>
     );
@@ -150,32 +153,38 @@ export default function PaymentPaypalResultClient() {
             <td>{paymentData.paypalOrderId}</td>
           </tr>
           <tr>
-            <th className="text-left py-2 pr-4 font-semibold">Amount</th>
+            <th className="text-left py-2 pr-4 font-semibold">Số tiền</th>
             <td>{formatCurrency(paymentData.amount)}</td>
           </tr>
           <tr>
-            <th className="text-left py-2 pr-4 font-semibold">Description</th>
+            <th className="text-left py-2 pr-4 font-semibold">Mô tả</th>
             <td>{paymentData.description}</td>
           </tr>
           <tr>
-            <th className="text-left py-2 pr-4 font-semibold">Payer Name</th>
+            <th className="text-left py-2 pr-4 font-semibold">
+              Tên người thanh toán
+            </th>
             <td>{paymentData.payerName || "N/A"}</td>
           </tr>
           <tr>
-            <th className="text-left py-2 pr-4 font-semibold">Payer Email</th>
+            <th className="text-left py-2 pr-4 font-semibold">
+              Email người thanh toán
+            </th>
             <td>{paymentData.payerEmail || "N/A"}</td>
           </tr>
           <tr>
-            <th className="text-left py-2 pr-4 font-semibold">Payment Time</th>
+            <th className="text-left py-2 pr-4 font-semibold">
+              Thời gian thanh toán
+            </th>
             <td>{paymentData.paymentTime || "N/A"}</td>
           </tr>
           <tr>
-            <th className="text-left py-2 pr-4 font-semibold">Status</th>
+            <th className="text-left py-2 pr-4 font-semibold">Trạng thái</th>
             <td>
               {paymentData.status ||
                 (paymentData.transactionStatus.success
-                  ? "COMPLETED"
-                  : "FAILED")}
+                  ? "HOÀN THÀNH"
+                  : "THẤT BẠI")}
             </td>
           </tr>
         </tbody>
@@ -185,13 +194,13 @@ export default function PaymentPaypalResultClient() {
           href="/landlord/profile"
           className="inline-block px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
         >
-          ← Back to Profile
+          ← Quay lại trang Hồ sơ
         </a>
         <a
           href="/landlord/payment-history"
           className="inline-block px-6 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition"
         >
-          📋 View Payment History
+          Xem Lịch Sử Thanh Toán
         </a>
       </div>
     </div>

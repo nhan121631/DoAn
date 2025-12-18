@@ -473,7 +473,7 @@ export default function MapSection({
   return (
     <div className="mt-8">
       <h2 className="mb-2 text-lg font-bold text-gray-800 dark:text-white">
-        Location on Map
+        Địa chỉ trên bản đồ
       </h2>
       <div className="text-sm text-gray-700 mb-2 flex items-center dark:!text-gray-300">
         <FaMapMarkerAlt className="mr-2 text-red-500" />
@@ -485,7 +485,7 @@ export default function MapSection({
         rel="noopener noreferrer"
         className="inline-block mb-4 text-sm text-blue-600 underline"
       >
-        View larger map
+        Xem bản đồ lớn hơn
       </a>
       {/* Map */}
       <div className="w-full h-[350px] mb-6">
@@ -507,14 +507,14 @@ export default function MapSection({
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-3">
           <h3 className="text-base font-medium text-gray-800 dark:text-white mb-3 flex items-center">
             <FaMapMarkerAlt className="mr-2 text-red-500 w-4 h-4" />
-            Nearby Places
+            Địa điểm gần đây
           </h3>
 
           {loading ? (
             <div className="flex items-center justify-center py-8">
               <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
               <span className="ml-3 text-gray-600 dark:text-gray-400">
-                Searching for places...
+                Đang tìm kiếm địa điểm...
               </span>
             </div>
           ) : nearbyPlaces.length > 0 ? (
@@ -594,7 +594,7 @@ export default function MapSection({
                         onClick={() => toggleCategory(type)}
                         className="w-full text-center py-1.5 text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
                       >
-                        +{places.length - 1} more
+                        +{places.length - 1} thêm
                       </button>
                     )}
                   </div>
@@ -605,11 +605,11 @@ export default function MapSection({
               <div className="mt-3 p-2 bg-blue-50 dark:bg-blue-900/20 rounded text-center">
                 <div className="text-xs text-blue-700 dark:text-blue-300">
                   <span className="font-medium">
-                    {nearbyPlaces.length} places
+                    {nearbyPlaces.length} địa điểm
                   </span>
                   <span className="mx-2">•</span>
                   <span>
-                    Nearest:{" "}
+                    Gần nhất:{" "}
                     {formatDistance(
                       Math.min(...nearbyPlaces.map((p) => p.distance))
                     )}
@@ -620,9 +620,9 @@ export default function MapSection({
           ) : (
             <div className="text-center py-8 text-gray-500 dark:text-gray-400">
               <FaSearch className="text-4xl mb-4 mx-auto text-gray-300" />
-              <p>No nearby places found</p>
+              <p>Không tìm thấy địa điểm gần đây</p>
               <p className="text-sm mt-1">
-                Address may be inaccurate or area data unavailable
+                Địa chỉ có thể không chính xác hoặc dữ liệu khu vực không có sẵn
               </p>
             </div>
           )}

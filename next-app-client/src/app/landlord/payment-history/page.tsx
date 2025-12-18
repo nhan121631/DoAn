@@ -119,7 +119,7 @@ export default function PaymentHistoryPage() {
         <div className="bg-white rounded-lg shadow-lg p-6 mb-6 dark:!bg-[#22304a]">
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-2xl font-bold text-gray-900 dark:!text-white">
-              Payment History
+              Lịch sử thanh toán
             </h1>
           </div>
 

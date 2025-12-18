@@ -630,7 +630,7 @@ const EditPostModal: React.FC<EditPostModalProps> = ({
 
           messageApi.open({
             type: "loading",
-            content: `Uploading video: ${videoFile.name}...`,
+            content: `Đang tải video: ${videoFile.name}...`,
             duration: 0,
             key: `uploading_${videoFile.name}`,
           });
@@ -647,7 +647,7 @@ const EditPostModal: React.FC<EditPostModalProps> = ({
           await upload(roomId!, videoFile);
           messageApi.open({
             type: "success",
-            content: `Video ${videoFile.name} uploaded successfully!`,
+            content: `Video ${videoFile.name} tải lên thành công!`,
             duration: 1.5,
             key: `uploading_${videoFile.name}`,
           });
@@ -655,7 +655,7 @@ const EditPostModal: React.FC<EditPostModalProps> = ({
           allVideoSuccess = false;
           messageApi.open({
             type: "error",
-            content: `Failed to upload video: ${videoFile.name}`,
+            content: `Tải video thất bại: ${videoFile.name}`,
             duration: 2,
             key: `uploading_${videoFile.name}`,
           });
@@ -667,18 +667,20 @@ const EditPostModal: React.FC<EditPostModalProps> = ({
       if (videoFiles.length > 0) {
         if (allVideoSuccess) {
           messageApi.success({
-            content: "Room updated & all videos uploaded successfully!",
+            content:
+              "Phòng đã được cập nhật & tất cả video tải lên thành công!",
             duration: 2,
           });
         } else {
           messageApi.warning({
-            content: "Room updated, but some videos failed to upload.",
+            content:
+              "Phòng đã được cập nhật, nhưng một số video tải lên thất bại.",
             duration: 2,
           });
         }
       } else {
         messageApi.success({
-          content: "Room updated successfully!",
+          content: "Phòng đã được cập nhật thành công!",
           duration: 2,
         });
       }
@@ -696,7 +698,7 @@ const EditPostModal: React.FC<EditPostModalProps> = ({
       }
     } catch (error: any) {
       messageApi.error({
-        content: error.message || "Failed to update room",
+        content: error.message || "Cập nhật phòng thất bại",
         duration: 3,
       });
     }
@@ -723,7 +725,19 @@ const EditPostModal: React.FC<EditPostModalProps> = ({
     abortRef.current.aborted = true;
     onClose();
   };
-
+  const allPossibleConvenients = [
+    { key: "furnished", label: "Đầy đủ tiện nghi" },
+    { key: "washing_machine", label: "Máy giặt" },
+    { key: "no_curfew", label: "Không giới nghiêm" },
+    { key: "mezzanine", label: "Gác lửng" },
+    { key: "fridge", label: "Tủ lạnh" },
+    { key: "kitchen_shelf", label: "Tủ bếp" },
+    { key: "aircon", label: "Điều hòa" },
+    { key: "private_entry", label: "Lối vào riêng" },
+    { key: "elevator", label: "Thang máy" },
+    { key: "security_24h", label: "An ninh 24/7" },
+    { key: "garage", label: "Bãi đậu xe/Garage" },
+  ];
   return (
     <>
       {contextHolder}
@@ -740,7 +754,7 @@ const EditPostModal: React.FC<EditPostModalProps> = ({
       >
         {loading ? (
           <div className="flex justify-center items-center h-40">
-            <div>Loading room data...</div>
+            <div>Đang tải dữ liệu phòng...</div>
           </div>
         ) : (
           <Form
@@ -752,10 +766,10 @@ const EditPostModal: React.FC<EditPostModalProps> = ({
               {/* Left Column - Room Information */}
               <div className="flex-1 bg-white dark:bg-[#232b3b] rounded-none p-4 shadow-none flex flex-col gap-2">
                 <h3 className="font-semibold text-base mb-2">
-                  Room Information
+                  Thông tin phòng
                 </h3>
 
-                <Form.Item label="Room Images">
+                <Form.Item label="Hình ảnh phòng">
                   <Upload
                     listType="picture-card"
                     fileList={fileList}
@@ -770,33 +784,36 @@ const EditPostModal: React.FC<EditPostModalProps> = ({
                     {fileList.length >= 8 ? null : (
                       <div>
                         <PlusOutlined />
-                        <div style={{ marginTop: 8 }}>Upload</div>
+                        <div style={{ marginTop: 8 }}>Tải lên</div>
                       </div>
                     )}
                   </Upload>
                 </Form.Item>
 
                 <Form.Item
-                  label="Room Name"
+                  label="Tên phòng"
                   name="name"
                   rules={[
-                    { required: true, message: "Please enter room name" },
+                    { required: true, message: "Vui lòng nhập tên phòng" },
                   ]}
                 >
-                  <Input placeholder="Enter room name" />
+                  <Input placeholder="Nhập tên phòng" />
                 </Form.Item>
 
                 <div className="flex gap-2 justify-between">
                   <Form.Item
-                    label="Province/City"
+                    label="Tỉnh/Thành phố"
                     name="province"
                     rules={[
-                      { required: true, message: "Select province/city" },
+                      {
+                        required: true,
+                        message: "Vui lòng chọn tỉnh/thành phố",
+                      },
                     ]}
                   >
                     <Select
                       showSearch
-                      placeholder="Select province/city"
+                      placeholder="Chọn tỉnh/thành phố"
                       options={provinces}
                       optionFilterProp="label"
                       filterOption={(input, option) =>
@@ -808,12 +825,14 @@ const EditPostModal: React.FC<EditPostModalProps> = ({
                     />
                   </Form.Item>
                   <Form.Item
-                    label="District"
+                    label="Quận/Huyện"
                     name="district"
-                    rules={[{ required: true, message: "Select district" }]}
+                    rules={[
+                      { required: true, message: "Vui lòng chọn quận/huyện" },
+                    ]}
                   >
                     <Select
-                      placeholder="Select district"
+                      placeholder="Chọn quận/huyện"
                       options={districts}
                       disabled={!selectedProvince}
                       loading={loadingDistricts}
@@ -828,12 +847,14 @@ const EditPostModal: React.FC<EditPostModalProps> = ({
                     />
                   </Form.Item>
                   <Form.Item
-                    label="Ward"
+                    label="Phường/Xã"
                     name="ward"
-                    rules={[{ required: true, message: "Select ward" }]}
+                    rules={[
+                      { required: true, message: "Vui lòng chọn phường/xã" },
+                    ]}
                   >
                     <Select
-                      placeholder="Select ward"
+                      placeholder="Chọn phường/xã"
                       options={wards}
                       disabled={!selectedDistrict}
                       loading={loadingWards}
@@ -849,20 +870,25 @@ const EditPostModal: React.FC<EditPostModalProps> = ({
                 </div>
 
                 <Form.Item
-                  label="Address"
+                  label="Địa chỉ"
                   name="address"
-                  rules={[{ required: true, message: "Enter address" }]}
+                  rules={[{ required: true, message: "Vui lòng nhập địa chỉ" }]}
                 >
-                  <Input placeholder="Enter address" />
+                  <Input placeholder="Nhập địa chỉ" />
                 </Form.Item>
 
                 {/* Length & Width presets + free input (AutoComplete) */}
                 <div className="flex gap-2">
                   <Form.Item
-                    label="Length (m)"
+                    label="Chiều dài (m)"
                     name="roomLength"
                     className="flex-1"
-                    rules={[{ required: true, message: "Enter room length" }]}
+                    rules={[
+                      {
+                        required: true,
+                        message: "Vui lòng nhập chiều dài phòng",
+                      },
+                    ]}
                   >
                     <AutoComplete
                       options={lengthPresets.map((v) => ({ value: String(v) }))}
@@ -881,16 +907,21 @@ const EditPostModal: React.FC<EditPostModalProps> = ({
                     >
                       <Input
                         addonAfter="m"
-                        placeholder="e.g. 4 or choose preset"
+                        placeholder="e.g. 4 hoặc chọn giá trị có sẵn"
                       />
                     </AutoComplete>
                   </Form.Item>
 
                   <Form.Item
-                    label="Width (m)"
+                    label="Chiều rộng (m)"
                     name="roomWidth"
                     className="flex-1"
-                    rules={[{ required: true, message: "Enter room width" }]}
+                    rules={[
+                      {
+                        required: true,
+                        message: "Vui lòng nhập chiều rộng phòng",
+                      },
+                    ]}
                   >
                     <AutoComplete
                       options={widthPresets.map((v) => ({ value: String(v) }))}
@@ -909,7 +940,7 @@ const EditPostModal: React.FC<EditPostModalProps> = ({
                     >
                       <Input
                         addonAfter="m"
-                        placeholder="e.g. 5 or choose preset"
+                        placeholder="e.g. 5 hoặc chọn giá trị có sẵn"
                       />
                     </AutoComplete>
                   </Form.Item>
@@ -917,7 +948,7 @@ const EditPostModal: React.FC<EditPostModalProps> = ({
 
                 <div className="flex gap-2">
                   <Form.Item
-                    label="Monthly Price"
+                    label="Giá thuê tháng"
                     name="priceMonth"
                     className="flex-1"
                     rules={[
@@ -925,7 +956,7 @@ const EditPostModal: React.FC<EditPostModalProps> = ({
                         required: true,
                         type: "number",
                         min: 1000,
-                        message: "Enter monthly price",
+                        message: "Vui lòng nhập giá thuê tháng",
                       },
                     ]}
                   >
@@ -940,7 +971,7 @@ const EditPostModal: React.FC<EditPostModalProps> = ({
                     />
                   </Form.Item>
                   <Form.Item
-                    label="Deposit Price"
+                    label="Giá đặt cọc"
                     name="priceDeposit"
                     className="flex-1"
                     rules={[
@@ -948,7 +979,7 @@ const EditPostModal: React.FC<EditPostModalProps> = ({
                         required: true,
                         type: "number",
                         min: 1000,
-                        message: "Enter deposit price",
+                        message: "Vui lòng nhập giá đặt cọc",
                       },
                     ]}
                   >
@@ -967,19 +998,21 @@ const EditPostModal: React.FC<EditPostModalProps> = ({
 
               {/* Right Column - Convenients & Post Info */}
               <div className="flex-1 bg-white dark:bg-[#232b3b] rounded-none p-4 shadow-none flex flex-col gap-2">
-                <h3 className="font-semibold text-base mb-2">
-                  Convenient Part
-                </h3>
+                <h3 className="font-semibold text-base mb-2">Phần Tiện Nghi</h3>
                 <Form.Item
-                  label="Convenients"
+                  label="Tiện Nghi"
                   name="convenients"
-                  rules={[{ required: true, message: "Select convenients" }]}
+                  rules={[
+                    { required: true, message: "Vui lòng chọn tiện nghi" },
+                  ]}
                 >
                   <Select
                     mode="multiple"
-                    placeholder="Select convenients"
+                    placeholder="Chọn tiện nghi"
                     options={convenients.map((c) => ({
-                      label: c.name,
+                      label:
+                        allPossibleConvenients.find((apc) => apc.key === c.name)
+                          ?.label || c.key,
                       value: c.id,
                     }))}
                     style={{ width: "100%" }}
@@ -987,11 +1020,11 @@ const EditPostModal: React.FC<EditPostModalProps> = ({
                 </Form.Item>
 
                 <h3 className="font-semibold text-base mb-2">
-                  Post Information (Read Only)
+                  Thông Tin Bài Đăng (Chỉ Đọc)
                 </h3>
 
                 {/* Post Type Information - Read Only */}
-                <Form.Item label="Post Type">
+                <Form.Item label="Loại Bài Đăng">
                   <div className="flex items-center p-3 border border-gray-300 rounded-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600">
                     <span className="text-white font-bold text-sm mr-2 bg-red-500 px-2 py-1 rounded">
                       {roomData?.typepost
@@ -1013,7 +1046,7 @@ const EditPostModal: React.FC<EditPostModalProps> = ({
                                 )}₫/day`
                               : roomData.typepost;
                           })()
-                        : "Loading..."}
+                        : "Đang tải..."}
                     </span>
                   </div>
                 </Form.Item>
@@ -1021,14 +1054,14 @@ const EditPostModal: React.FC<EditPostModalProps> = ({
                 {/* Post Dates - Read Only */}
                 <div className="flex gap-2">
                   <Form.Item
-                    label="Start Date"
+                    label="Ngày Bắt Đầu"
                     name="postStartDate"
                     className="flex-1"
                   >
                     <Input type="date" disabled className="w-full" />
                   </Form.Item>
                   <Form.Item
-                    label="End Date"
+                    label="Ngày Kết Thúc"
                     name="postEndDate"
                     className="flex-1"
                   >
@@ -1057,11 +1090,11 @@ const EditPostModal: React.FC<EditPostModalProps> = ({
                 {/* Additional utilities and max people */}
                 <div className="mt-4 bg-white dark:bg-[#232b3b] border border-gray-200 dark:border-gray-700 rounded-lg p-4 shadow-sm">
                   <h4 className="font-semibold text-base bg-gray-50 dark:bg-[#1b2636] p-2 rounded-md mb-3">
-                    Utilities & Occupancy
+                    Tiện Nghi & Số Người Tối Đa
                   </h4>
                   <div className="flex gap-2">
                     <Form.Item
-                      label="Electricity Price"
+                      label="Giá Điện"
                       name="elecPrice"
                       className="flex-1"
                       rules={[{ required: true, type: "number" }]}
@@ -1077,7 +1110,7 @@ const EditPostModal: React.FC<EditPostModalProps> = ({
                       />
                     </Form.Item>
                     <Form.Item
-                      label="Water Price"
+                      label="Giá Nước"
                       name="waterPrice"
                       className="flex-1"
                       rules={[{ required: true, type: "number" }]}
@@ -1093,12 +1126,17 @@ const EditPostModal: React.FC<EditPostModalProps> = ({
                       />
                     </Form.Item>
                     <Form.Item
-                      label="Max People"
+                      label="Số Người Tối Đa"
                       name="maxPeople"
                       className="w-40"
-                      rules={[{ required: true, message: "Select max people" }]}
+                      rules={[
+                        {
+                          required: true,
+                          message: "Vui lòng chọn số người tối đa",
+                        },
+                      ]}
                     >
-                      <Select placeholder="Max people">
+                      <Select placeholder="Số người tối đa">
                         {[1, 2, 3, 4, 5, 6, 7, 8].map((n) => (
                           <Select.Option key={n} value={n}>
                             {n}
@@ -1113,22 +1151,22 @@ const EditPostModal: React.FC<EditPostModalProps> = ({
 
             <div className="flex-1 bg-white dark:bg-[#232b3b] rounded-none p-4 shadow-none flex flex-col gap-2">
               <Form.Item
-                label="Description"
+                label="Mô Tả"
                 name="description"
                 rules={[
                   {
                     max: 2000,
-                    message: "Description must be at most 2000 characters.",
+                    message: "Mô tả phải có tối đa 2000 ký tự.",
                   },
                 ]}
               >
-                <Input.TextArea rows={4} placeholder="Description (optional)" />
+                <Input.TextArea rows={4} placeholder="Mô tả (tùy chọn)" />
               </Form.Item>
 
               {/* Footer Buttons */}
               <div className="flex gap-4 justify-end">
                 <Button onClick={handleClose} size="large">
-                  Cancel
+                  Hủy
                 </Button>
                 <Button
                   type="primary"
@@ -1136,7 +1174,7 @@ const EditPostModal: React.FC<EditPostModalProps> = ({
                   size="large"
                   style={{ minWidth: "120px" }}
                 >
-                  Update Room
+                  Cập Nhật Phòng
                 </Button>
               </div>
             </div>

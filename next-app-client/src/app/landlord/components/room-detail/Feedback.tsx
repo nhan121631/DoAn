@@ -76,15 +76,15 @@ const Feedback: React.FC<FeedbackProps> = ({ roomId }) => {
       </div>
       {showFeedback && (
         <div className="feedback-layout p-4 bg-gray-50 border-l-4 border-yellow-400 rounded-xl mb-6 mt-4">
-          <h2 className="text-lg font-bold text-yellow-700 mb-2">Feedback</h2>
+          <h2 className="text-lg font-bold text-yellow-700 mb-2">Phản hồi</h2>
           <p className="text-sm text-gray-600 mt-4 mb-4">
-            Please leave your feedback to improve our service!
+            Vui lòng để lại phản hồi của bạn để cải thiện dịch vụ của chúng tôi!
           </p>
           {/* Form khách hàng comment và chọn rating */}
           {access === FeedbackAccess.CAN_RATE && (
             <div className="flex flex-col gap-2 mt-4 items-center">
               <div className="flex items-center gap-2 mb-2 w-full">
-                <span>Rate for service: </span>
+                <span>Đánh giá dịch vụ: </span>
                 <Rate value={newScore} onChange={setNewScore} />
               </div>
               <div className="flex items-center gap-2 mb-2 w-full">
@@ -108,12 +108,12 @@ const Feedback: React.FC<FeedbackProps> = ({ roomId }) => {
           )}
           {access === FeedbackAccess.ALREADY_RATED && (
             <div className="text-green-600 mb-4">
-              You have already submitted feedback for this room. Thank you!
+              Bạn đã gửi phản hồi cho phòng này. Cảm ơn bạn!
             </div>
           )}
           {access === FeedbackAccess.NOT_USED && (
             <div className="text-red-600 mb-4">
-              You need to stay in this room before leaving feedback.
+              Bạn cần ở trong phòng này trước khi để lại phản hồi.
             </div>
           )}
 
@@ -123,7 +123,7 @@ const Feedback: React.FC<FeedbackProps> = ({ roomId }) => {
               <Spin />
             ) : feedbacks.length === 0 ? (
               <p className="text-gray-500">
-                No feedback available for this room.
+                Không có phản hồi cho phòng này.
               </p>
             ) : (
               <div className="space-y-3 max-h-96 overflow-y-auto pr-2">

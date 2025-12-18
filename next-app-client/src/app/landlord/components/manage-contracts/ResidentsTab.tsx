@@ -88,7 +88,7 @@ export default function ResidentsTab({
       setResidents(data);
     } catch (error) {
       console.error("Failed to load residents:", error);
-      messageApi.error("Failed to load residents!");
+      messageApi.error("Lỗi tải danh sách tạm trú!");
     } finally {
       setLoading(false);
     }
@@ -152,13 +152,13 @@ export default function ResidentsTab({
         backImageFile || undefined
       );
 
-      messageApi.success("Resident added successfully!");
+      messageApi.success("Thêm tạm trú thành công!");
       setAddResidentOpen(false);
       resetForm();
       loadResidents(); // Reload data
     } catch (error) {
-      console.error("Failed to add resident:", error);
-      messageApi.error("Failed to add resident!");
+      console.error("Lỗi khi thêm tạm trú:", error);
+      messageApi.error("Lỗi khi thêm tạm trú!");
     } finally {
       setLoading(false);
     }
@@ -186,13 +186,13 @@ export default function ResidentsTab({
         backImageFile || undefined
       );
 
-      messageApi.success("Resident updated successfully!");
+      messageApi.success("Cập nhật tạm trú thành công!");
       setEditResident(null);
       resetForm();
       loadResidents(); // Reload data
     } catch (error) {
-      console.error("Failed to update resident:", error);
-      messageApi.error("Failed to update resident!");
+      console.error("Lỗi khi cập nhật tạm trú:", error);
+      messageApi.error("Lỗi khi cập nhật tạm trú!");
     } finally {
       setLoading(false);
     }
@@ -202,11 +202,11 @@ export default function ResidentsTab({
     try {
       setLoading(true);
       await ResidentService.deleteResident(contract.id, residentId);
-      messageApi.success("Resident deleted successfully!");
+      messageApi.success("Xóa tạm trú thành công!");
       loadResidents(); // Reload data
     } catch (error) {
-      console.error("Failed to delete resident:", error);
-      messageApi.error("Failed to delete resident!");
+      console.error("Lỗi khi xóa tạm trú:", error);
+      messageApi.error("Lỗi khi xóa tạm trú!");
     } finally {
       setLoading(false);
     }
@@ -219,7 +219,7 @@ export default function ResidentsTab({
       const preview = await ResidentService.fileToBase64(file);
       setFrontImagePreview(preview);
     } catch (error) {
-      messageApi.error("Failed to process image!");
+      messageApi.error("Lỗi khi xử lý ảnh!");
     }
     return false; // Prevent auto upload
   };
@@ -231,7 +231,7 @@ export default function ResidentsTab({
       const preview = await ResidentService.fileToBase64(file);
       setBackImagePreview(preview);
     } catch (error) {
-      messageApi.error("Failed to process image!");
+      messageApi.error("Lỗi khi xử lý ảnh!");
     }
     return false; // Prevent auto upload
   };
@@ -240,7 +240,7 @@ export default function ResidentsTab({
   const validateEndDateAdd = (_: any, value: any) => {
     const startDate = addForm.getFieldValue("startDate");
     if (value && startDate && value.isBefore(startDate)) {
-      return Promise.reject(new Error("End date must be after start date!"));
+      return Promise.reject(new Error("Ngày kết thúc phải sau ngày bắt đầu!"));
     }
     return Promise.resolve();
   };
@@ -248,7 +248,9 @@ export default function ResidentsTab({
   const validateStartDateAdd = (_: any, value: any) => {
     const endDate = addForm.getFieldValue("endDate");
     if (value && endDate && value.isAfter(endDate)) {
-      return Promise.reject(new Error("Start date must be before end date!"));
+      return Promise.reject(
+        new Error("Ngày bắt đầu phải trước ngày kết thúc!")
+      );
     }
     return Promise.resolve();
   };
@@ -257,7 +259,7 @@ export default function ResidentsTab({
   const validateEndDateEdit = (_: any, value: any) => {
     const startDate = editForm.getFieldValue("startDate");
     if (value && startDate && value.isBefore(startDate)) {
-      return Promise.reject(new Error("End date must be after start date!"));
+      return Promise.reject(new Error("Ngày kết thúc phải sau ngày bắt đầu!"));
     }
     return Promise.resolve();
   };
@@ -265,7 +267,9 @@ export default function ResidentsTab({
   const validateStartDateEdit = (_: any, value: any) => {
     const endDate = editForm.getFieldValue("endDate");
     if (value && endDate && value.isAfter(endDate)) {
-      return Promise.reject(new Error("Start date must be before end date!"));
+      return Promise.reject(
+        new Error("Ngày bắt đầu phải trước ngày kết thúc!")
+      );
     }
     return Promise.resolve();
   };
@@ -292,7 +296,7 @@ export default function ResidentsTab({
 
   const columns = [
     {
-      title: "Full Name",
+      title: "Họ và tên",
       dataIndex: "fullName",
       key: "fullName",
       render: (name: string) => (
@@ -305,18 +309,18 @@ export default function ResidentsTab({
       ),
     },
     {
-      title: "ID Number",
+      title: "Số CMND/CCCD",
       dataIndex: "idNumber",
       key: "idNumber",
     },
     {
-      title: "Relationship",
+      title: "Mối quan hệ",
       dataIndex: "relationship",
       key: "relationship",
       render: (relationship: string) => <Tag color="blue">{relationship}</Tag>,
     },
     {
-      title: "Period",
+      title: "Thời gian",
       key: "period",
       render: (_: any, record: ResidentData) => (
         <div>
@@ -330,35 +334,35 @@ export default function ResidentsTab({
       ),
     },
     {
-      title: "Note",
+      title: "Ghi chú",
       dataIndex: "note",
       key: "note",
       ellipsis: true,
     },
     {
-      title: "Action",
+      title: "Hành động",
       key: "action",
       render: (_: any, record: ResidentData) => (
         <Space>
-          <Tooltip title="View Details">
+          <Tooltip title="Xem chi tiết">
             <Button
               type="default"
               icon={<EyeOutlined />}
               onClick={() => setSelectedResident(record)}
             />
           </Tooltip>
-          <Tooltip title="Edit">
+          <Tooltip title="Chỉnh sửa">
             <Button
               icon={<EditOutlined />}
               onClick={() => setEditResident(record)}
             />
           </Tooltip>
-          <Tooltip title="Delete">
+          <Tooltip title="Xóa">
             <Popconfirm
-              title="Are you sure you want to delete this resident?"
+              title="Bạn có chắc chắn muốn xóa người cư trú này?"
               onConfirm={() => handleDeleteResident(record.id)}
-              okText="Delete"
-              cancelText="Cancel"
+              okText="Xóa"
+              cancelText="Hủy"
             >
               <Button danger icon={<DeleteOutlined />} />
             </Popconfirm>
@@ -372,14 +376,14 @@ export default function ResidentsTab({
     <Card
       title={
         <h3 className="text-lg font-semibold m-0 text-gray-900 dark:text-white transition-colors duration-300">
-          Residents Management
+          Quản lý tạm trú
         </h3>
       }
       className="shadow-sm bg-white dark:bg-[#17223b] border-gray-200 dark:border-gray-600 transition-colors duration-300"
       extra={
         <div className="flex items-center gap-3">
           <Input
-            placeholder="Search residents..."
+            placeholder="Tìm kiếm tạm trú..."
             prefix={<SearchOutlined />}
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
@@ -390,7 +394,7 @@ export default function ResidentsTab({
             placeholder={
               <div className="flex items-center gap-1">
                 <FilterOutlined />
-                <span>Relationship</span>
+                <span>Mối quan hệ</span>
               </div>
             }
             value={relationshipFilter}
@@ -401,7 +405,7 @@ export default function ResidentsTab({
           />
           {(searchText || relationshipFilter) && (
             <Button onClick={clearFilters} size="small">
-              Clear filters
+              Xóa bộ lọc
             </Button>
           )}
           <Button
@@ -409,7 +413,7 @@ export default function ResidentsTab({
             icon={<PlusOutlined />}
             onClick={() => setAddResidentOpen(true)}
           >
-            Add Resident
+            Thêm tạm trú
           </Button>
         </div>
       }
@@ -432,7 +436,7 @@ export default function ResidentsTab({
 
       {/* Resident Detail Modal */}
       <Modal
-        title="Resident Details"
+        title="Chi tiết người cư trú"
         open={!!selectedResident}
         onCancel={() => setSelectedResident(null)}
         footer={null}
@@ -443,29 +447,29 @@ export default function ResidentsTab({
             <Card className="bg-white dark:bg-[#22304a] border-gray-200 dark:border-gray-600 transition-colors duration-300">
               <div className="grid grid-cols-2 gap-4">
                 <div className="dark:text-gray-300 transition-colors duration-300">
-                  <strong className="dark:text-white">Full Name:</strong>{" "}
+                  <strong className="dark:text-white">Họ và tên:</strong>{" "}
                   {selectedResident.fullName}
                 </div>
                 <div className="dark:text-gray-300 transition-colors duration-300">
-                  <strong className="dark:text-white">ID Number:</strong>{" "}
+                  <strong className="dark:text-white">Số CMND/CCCD:</strong>{" "}
                   {selectedResident.idNumber}
                 </div>
                 <div className="dark:text-gray-300 transition-colors duration-300">
-                  <strong className="dark:text-white">Relationship:</strong>
+                  <strong className="dark:text-white">Mối quan hệ:</strong>
                   <Tag color="blue" className="ml-2">
                     {selectedResident.relationship}
                   </Tag>
                 </div>
                 <div className="dark:text-gray-300 transition-colors duration-300">
-                  <strong className="dark:text-white">Start Date:</strong>{" "}
+                  <strong className="dark:text-white">Ngày bắt đầu:</strong>{" "}
                   {new Date(selectedResident.startDate).toLocaleDateString()}
                 </div>
                 <div className="dark:text-gray-300 transition-colors duration-300">
-                  <strong className="dark:text-white">End Date:</strong>{" "}
+                  <strong className="dark:text-white">Ngày kết thúc:</strong>{" "}
                   {new Date(selectedResident.endDate).toLocaleDateString()}
                 </div>
                 <div className="col-span-2 dark:text-gray-300 transition-colors duration-300">
-                  <strong className="dark:text-white">Note:</strong>{" "}
+                  <strong className="dark:text-white">Ghi chú:</strong>{" "}
                   {selectedResident.note}
                 </div>
               </div>
@@ -476,7 +480,7 @@ export default function ResidentsTab({
               <Card
                 title={
                   <span className="dark:text-white transition-colors duration-300">
-                    ID Card Images
+                    Hình ảnh CMND/CCCD
                   </span>
                 }
                 className="bg-white dark:bg-[#22304a] border-gray-200 dark:border-gray-600 transition-colors duration-300"
@@ -485,11 +489,11 @@ export default function ResidentsTab({
                   {selectedResident.idCardFrontUrl && (
                     <div>
                       <p className="mb-2 font-medium dark:text-white transition-colors duration-300">
-                        Front
+                        Mặt trước
                       </p>
                       <Image
                         src={getCloudinaryUrl(selectedResident.idCardFrontUrl)}
-                        alt="ID Card Front"
+                        alt="Mặt trước CMND/CCCD"
                         width={200}
                         height={120}
                         style={{ objectFit: "cover" }}
@@ -499,11 +503,11 @@ export default function ResidentsTab({
                   {selectedResident.idCardBackUrl && (
                     <div>
                       <p className="mb-2 font-medium dark:text-white transition-colors duration-300">
-                        Back
+                        Mặt sau
                       </p>
                       <Image
                         src={getCloudinaryUrl(selectedResident.idCardBackUrl)}
-                        alt="ID Card Back"
+                        alt="Mặt sau CMND/CCCD"
                         width={200}
                         height={120}
                         style={{ objectFit: "cover" }}
@@ -520,7 +524,11 @@ export default function ResidentsTab({
       {/* Add/Edit Resident Modal */}
       <Modal
         key={editResident ? `edit-${editResident.id}` : "add-new"}
-        title={editResident ? "Edit Resident" : "Add Resident"}
+        title={
+          editResident
+            ? "Chỉnh sửa thông tin tạm trú"
+            : "Thêm người thông tin tạm trú"
+        }
         open={addResidentOpen || !!editResident}
         onCancel={() => {
           setAddResidentOpen(false);
@@ -536,41 +544,44 @@ export default function ResidentsTab({
           onFinish={editResident ? handleEditResident : handleAddResident}
         >
           <Form.Item
-            label="Full Name"
+            label="Họ và tên"
             name="fullName"
-            rules={[{ required: true, message: "Please enter full name!" }]}
+            rules={[{ required: true, message: "Vui lòng nhập họ và tên!" }]}
           >
-            <Input placeholder="Enter full name" />
+            <Input placeholder="Nhập họ và tên" />
           </Form.Item>
 
           <Form.Item
-            label="ID Number"
+            label="Số CMND/CCCD"
             name="idNumber"
             rules={[
-              { required: true, message: "Please enter ID number!" },
-              { len: 12, message: "ID number must be 12 digits!" },
+              { required: true, message: "Vui lòng nhập số CMND/CCCD!" },
+              { len: 12, message: "Số CMND/CCCD phải có 12 chữ số!" },
             ]}
           >
-            <Input placeholder="Enter 12-digit ID number" maxLength={12} />
+            <Input
+              placeholder="Nhập số CMND/CCCD gồm 12 chữ số"
+              maxLength={12}
+            />
           </Form.Item>
 
           <Form.Item
-            label="Relationship"
+            label="Mối quan hệ"
             name="relationship"
-            rules={[{ required: true, message: "Please select relationship!" }]}
+            rules={[{ required: true, message: "Vui lòng chọn mối quan hệ!" }]}
           >
             <Select
-              placeholder="Select relationship"
+              placeholder="Chọn mối quan hệ"
               options={relationshipOptions}
             />
           </Form.Item>
 
           <div className="grid grid-cols-2 gap-4">
             <Form.Item
-              label="Start Date"
+              label="Ngày bắt đầu"
               name="startDate"
               rules={[
-                { required: true, message: "Please select start date!" },
+                { required: true, message: "Vui lòng chọn ngày bắt đầu!" },
                 {
                   validator: editResident
                     ? validateStartDateEdit
@@ -582,10 +593,10 @@ export default function ResidentsTab({
             </Form.Item>
 
             <Form.Item
-              label="End Date"
+              label="Ngày kết thúc"
               name="endDate"
               rules={[
-                { required: true, message: "Please select end date!" },
+                { required: true, message: "Vui lòng chọn ngày kết thúc!" },
                 {
                   validator: editResident
                     ? validateEndDateEdit
@@ -597,25 +608,25 @@ export default function ResidentsTab({
             </Form.Item>
           </div>
 
-          <Form.Item label="Note" name="note">
-            <Input.TextArea placeholder="Enter additional notes" rows={3} />
+          <Form.Item label="Ghi chú" name="note">
+            <Input.TextArea placeholder="Nhập ghi chú bổ sung" rows={3} />
           </Form.Item>
 
           {/* ID Card Images Upload */}
           <div className="grid grid-cols-2 gap-4">
-            <Form.Item label="ID Card Front Image">
+            <Form.Item label="Ảnh mặt trước CMND/CCCD">
               <Upload
                 beforeUpload={handleFrontImageChange}
                 showUploadList={false}
                 accept="image/*"
               >
-                <Button icon={<UploadOutlined />}>Select Front Image</Button>
+                <Button icon={<UploadOutlined />}>Chọn ảnh mặt trước</Button>
               </Upload>
               {frontImagePreview && (
                 <div className="mt-2">
                   <Image
                     src={frontImagePreview}
-                    alt="Front Preview"
+                    alt="Ảnh mặt trước"
                     width={100}
                     height={60}
                     style={{ objectFit: "cover" }}
@@ -624,19 +635,19 @@ export default function ResidentsTab({
               )}
             </Form.Item>
 
-            <Form.Item label="ID Card Back Image">
+            <Form.Item label="Ảnh mặt sau CMND/CCCD">
               <Upload
                 beforeUpload={handleBackImageChange}
                 showUploadList={false}
                 accept="image/*"
               >
-                <Button icon={<UploadOutlined />}>Select Back Image</Button>
+                <Button icon={<UploadOutlined />}>Chọn ảnh mặt sau</Button>
               </Upload>
               {backImagePreview && (
                 <div className="mt-2">
                   <Image
                     src={backImagePreview}
-                    alt="Back Preview"
+                    alt="Ảnh mặt sau"
                     width={100}
                     height={60}
                     style={{ objectFit: "cover" }}
@@ -655,10 +666,10 @@ export default function ResidentsTab({
                   resetForm();
                 }}
               >
-                Cancel
+                Hủy
               </Button>
               <Button type="primary" htmlType="submit" loading={loading}>
-                {editResident ? "Update" : "Add"} Resident
+                {editResident ? "Cập nhật" : "Thêm"} Người cư trú
               </Button>
             </Space>
           </Form.Item>

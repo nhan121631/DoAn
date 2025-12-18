@@ -91,7 +91,7 @@ export default function ButtonEditProfile({
       const data = await res.json();
       if (res.ok) {
         messageApi.success({
-          content: "Profile updated successfully",
+          content: "Cập nhật hồ sơ thành công!",
           duration: 1.5,
         });
         form.resetFields();
@@ -102,7 +102,7 @@ export default function ButtonEditProfile({
           data?.message?.[0] ||
           data?.errors?.[0] ||
           data?.error ||
-          "Upload failed";
+          "Tải lên thất bại";
         messageApi.error({
           content: msg,
           duration: 2,
@@ -110,7 +110,7 @@ export default function ButtonEditProfile({
       }
     } catch (err) {
       messageApi.error({
-        content: "Error: " + (err as any)?.message,
+        content: "Lỗi: " + (err as any)?.message,
         duration: 2,
       });
     } finally {
@@ -124,7 +124,7 @@ export default function ButtonEditProfile({
         onClick={() => setOpen(true)}
         className="bg-blue-600 hover:bg-blue-700 !text-white font-semibold px-6 py-2 rounded transition-colors duration-200 dark:bg-blue-800 dark:hover:bg-blue-900"
       >
-        Edit Profile
+        Chỉnh sửa hồ sơ
       </button>
       <ModalProfile
         open={open}
