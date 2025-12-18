@@ -287,9 +287,10 @@ export default function ContractOverview({
                       if (!fileUrl) return "contract-file";
                       try {
                         const urlPath = new URL(fileUrl).pathname;
-                        const filename = decodeURIComponent(
-                          urlPath.split("/").pop() || "contract-file"
-                        );
+                        // const filename = decodeURIComponent(
+                        //   urlPath.split("/").pop() || "contract-file"
+                        // );
+                        const filename = "Hợp đồng thuê phòng";
                         return filename;
                       } catch {
                         return "contract-file";
