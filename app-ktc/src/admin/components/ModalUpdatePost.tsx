@@ -21,20 +21,20 @@ const ModelUpdatePostType: React.FC<ModelUpdatePostTypeProps> = ({
 }) => {
   return (
     <Modal
-      title="Update Post Type"
+      title="Cập nhật loại bài đăng"
       open={open}
       onOk={handleUpdate}
       onCancel={() => setOpen(false)}
-      okText="Update"
+      okText="Cập nhật"
     >
       {errorMessage && (
         <div style={{ color: "red", marginBottom: 12 }}>{errorMessage}</div>
       )}
       <Form form={form} layout="vertical">
         <Form.Item
-          label="Code"
+          label="Mã"
           name="code"
-          rules={[{ required: true, message: "Please input code!" }]}
+          rules={[{ required: true, message: "Vui lòng nhập mã!" }]}
           initialValue={data?.code}
         >
           <Input
@@ -44,25 +44,25 @@ const ModelUpdatePostType: React.FC<ModelUpdatePostTypeProps> = ({
           />
         </Form.Item>
         <Form.Item
-          label="Name"
+          label="Tên"
           name="name"
-          rules={[{ required: true, message: "Please input name!" }]}
+          rules={[{ required: true, message: "Vui lòng nhập tên!" }]}
           initialValue={data?.name}
         >
           <Input />
         </Form.Item>
         <Form.Item
-          label="Price Per Day"
+          label="Giá mỗi ngày"
           name="pricePerDay"
-          rules={[{ required: true, message: "Please input price!" }]}
+          rules={[{ required: true, message: "Vui lòng nhập giá!" }]}
           initialValue={data?.pricePerDay}
         >
           <InputNumber min={0} style={{ width: "100%" }} />
         </Form.Item>
         <Form.Item
-          label="Description"
+          label="Mô tả"
           name="description"
-          rules={[{ required: true, message: "Please input description!" }]}
+          rules={[{ required: true, message: "Vui lòng nhập mô tả!" }]}
           initialValue={data?.description}
         >
           <Input.TextArea rows={3} />

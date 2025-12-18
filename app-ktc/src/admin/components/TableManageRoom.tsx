@@ -45,22 +45,21 @@ const TableManageRoom: React.FC = () => {
       onSuccess: () => {
         refetch();
         messageApi.success({
-          content: "You updated the room approval status successfully!",
+          content: "Bạn đã cập nhật trạng thái phê duyệt phòng thành công!",
           duration: 3,
         });
       },
       onError: (error: any) => {
         messageApi.error({
           content:
-            error?.response?.data?.message?.join(", ") ||
-            "An error has occurred!",
+            error?.response?.data?.message?.join(", ") || "Đã xảy ra lỗi!",
           duration: 3,
         });
       },
     },
   });
   const updateApproval = (record: RoomResponseDto, value: 1 | 2) => {
-    console.log("Updating approval for room:", record.id, "to status:", value);
+    console.log("Updating approval for phòng:", record.id, "to status:", value);
     updateApprovalMutation.mutate({
       roomId: record.id,
       status: value,
@@ -76,23 +75,22 @@ const TableManageRoom: React.FC = () => {
         messageApi.success({
           content:
             variables && variables.isRemoved === 0
-              ? "Post is now recovered."
-              : "You removed the room successfully!",
+              ? "Bài đăng đã được khôi phục."
+              : "Bạn đã xóa phòng thành công!",
           duration: 3,
         });
       },
       onError: (error: any) => {
         messageApi.error({
           content:
-            error?.response?.data?.message?.join(", ") ||
-            "An error has occurred!",
+            error?.response?.data?.message?.join(", ") || "Đã xảy ra lỗi!",
           duration: 3,
         });
       },
     },
   });
   const toggleRemove = (record: RoomResponseDto) => {
-    console.log("Removing room:", record.id);
+    console.log("Removing phòng:", record.id);
     deleteMutation.mutate({
       roomId: record.id,
       isRemoved: record.isRemoved === 1 ? 0 : 1,
@@ -113,13 +111,13 @@ const TableManageRoom: React.FC = () => {
 
   const columns: ColumnsType<RoomResponseDto> = [
     {
-      title: "Room Name",
+      title: "Tên phòng",
       dataIndex: "title",
       key: "title",
       sorter: true,
     },
     {
-      title: "Description",
+      title: "Mô tả",
       dataIndex: "description",
       key: "description",
       width: 250,
@@ -128,13 +126,13 @@ const TableManageRoom: React.FC = () => {
       ),
     },
     {
-      title: "Owner Name",
+      title: "Tên chủ nhà",
       dataIndex: "landlordFullName",
       key: "landlordFullName",
       render: (text) => <span>{text}</span>,
     },
     {
-      title: "Address",
+      title: "Địa chỉ",
       key: "address",
       render: (_, record) => {
         const addr = record.address;
@@ -147,7 +145,7 @@ const TableManageRoom: React.FC = () => {
       },
     },
     {
-      title: "Price/month",
+      title: "Giá/tháng",
       dataIndex: "priceMonth",
       key: "priceMonth",
       sorter: true,
@@ -155,81 +153,81 @@ const TableManageRoom: React.FC = () => {
         priceMonth ? priceMonth.toLocaleString() + " ₫" : "N/A",
     },
     {
-      title: "Available",
+      title: "Tình trạng",
       dataIndex: "available",
       key: "available",
       render: (available: number) => {
-        const label = available === 1 ? "Rented" : "Available";
+        const label = available === 1 ? "Đã thuê" : "Còn trống";
         const color = available === 1 ? "green" : "blue";
         return <Tag color={color}>{label}</Tag>;
       },
       sorter: true,
     },
     {
-      title: "Approval",
+      title: "Phê duyệt",
       key: "approval",
       sorter: true,
       render: (_, record) => {
         if (record.isRemoved === 1) {
-          return <Tag color="red">Post Removed</Tag>;
+          return <Tag color="red">Bài đăng đã bị xóa</Tag>;
         } else if (record.approval === 0) {
           return (
             <Space>
               <Popconfirm
-                title="Are you sure to approve this room?"
+                title="Bạn có chắc chắn muốn phê duyệt phòng này?"
                 onConfirm={() => updateApproval(record, 1)}
-                okText="Yes"
-                cancelText="No"
+                okText="Có"
+                cancelText="Không"
               >
                 <Button size="small" type="primary">
-                  Apply
+                  Phê duyệt
                 </Button>
               </Popconfirm>
               <Popconfirm
-                title="Are you sure to reject this room?"
+                title="Bạn có chắc chắn muốn từ chối phòng này?"
                 onConfirm={() => updateApproval(record, 2)}
-                okText="Yes"
-                cancelText="No"
+                okText="Có"
+                cancelText="Không"
               >
                 <Button size="small" danger>
-                  Reject
+                  Từ chối
                 </Button>
               </Popconfirm>
             </Space>
           );
         } else if (record.approval === 1) {
-          return <Tag color="green">Applied</Tag>;
+          return <Tag color="green">Đã phê duyệt</Tag>;
         } else {
-          return <Tag color="red">Rejected</Tag>;
+          return <Tag color="red">Đã từ chối</Tag>;
         }
       },
     },
     {
-      title: "Remove Post",
+      title: "Xóa bài đăng",
       key: "remove",
       render: (_, record) => (
         <Popconfirm
           title={
             record.isRemoved === 1
-              ? "Do you want to show this post again?"
-              : "Are you sure to remove this post?"
+              ? "Bạn có muốn hiển thị lại bài đăng này?"
+              : "Bạn có chắc chắn muốn xóa bài đăng này?"
           }
           onConfirm={() => toggleRemove(record)}
-          okText="Yes"
-          cancelText="No"
+          okText="Có"
+          cancelText="Không"
         >
           <Button
             size="small"
             danger={record.isRemoved === 0}
             type={record.isRemoved === 1 ? "default" : "primary"}
           >
-            {record.isRemoved === 1 ? "Removed" : "Remove"}
+            {record.isRemoved === 1 ? "Đã xóa" : "Xóa"}
           </Button>
         </Popconfirm>
       ),
     },
     {
-      title: "Actions",
+      title: "Hành động",
       key: "actions",
       render: (_, record) => (
         <Space>

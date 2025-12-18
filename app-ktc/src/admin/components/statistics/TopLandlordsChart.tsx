@@ -36,7 +36,7 @@ const TopLandlordsChart = ({
       <div className="flex items-center gap-2 mb-3">
         <FilterOutlined className="text-blue-500 dark:text-blue-400" />
         <span className="font-medium text-gray-700 dark:text-gray-300">
-          Chart Filters
+          Bộ Lọc
         </span>
       </div>
       <Form
@@ -45,7 +45,7 @@ const TopLandlordsChart = ({
         initialValues={{ limit: 8 }}
         className="flex items-center gap-3"
       >
-        <Form.Item name="limit" label="Top Count" className="mb-0">
+        <Form.Item name="limit" label="Số lượng hàng đầu" className="mb-0">
           <Select placeholder="8" style={{ width: 70 }}>
             {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((count) => (
               <Select.Option key={count} value={count}>
@@ -57,10 +57,10 @@ const TopLandlordsChart = ({
         <Form.Item className="mb-0">
           <Space size="small">
             <Button type="primary" size="small" onClick={handleApply}>
-              Apply
+              Áp dụng
             </Button>
             <Button size="small" onClick={handleReset}>
-              Reset
+              Đặt lại
             </Button>
           </Space>
         </Form.Item>
@@ -72,7 +72,7 @@ const TopLandlordsChart = ({
     return (
       <div>
         {controlsPanel}
-        <Card title="Top Landlords" className="h-96">
+        <Card title="Top Chủ Nhà" className="h-96">
           <div className="flex justify-center items-center h-full">
             <Spin size="large" />
           </div>
@@ -83,7 +83,7 @@ const TopLandlordsChart = ({
 
   const columns: ColumnsType<TopLandlord> = [
     {
-      title: "Rank",
+      title: "Hạng",
       key: "rank",
       width: 60,
       render: (_, __, index) => (
@@ -91,7 +91,7 @@ const TopLandlordsChart = ({
       ),
     },
     {
-      title: "Landlord Name",
+      title: "Tên Chủ Nhà",
       dataIndex: "landlordName",
       key: "landlordName",
       render: (text) => (
@@ -107,18 +107,18 @@ const TopLandlordsChart = ({
       ),
     },
     {
-      title: "Room Count",
+      title: "Số Phòng",
       dataIndex: "roomCount",
       key: "roomCount",
       sorter: (a, b) => a.roomCount - b.roomCount,
       render: (count) => (
         <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded dark:bg-blue-900 dark:text-blue-200">
-          {count} rooms
+          {count} phòng
         </span>
       ),
     },
     {
-      title: "Wallet Cash Flow",
+      title: "Dòng tiền ví",
       dataIndex: "totalRevenue",
       key: "totalRevenue",
       sorter: (a, b) => a.totalRevenue - b.totalRevenue,
@@ -137,7 +137,7 @@ const TopLandlordsChart = ({
     <div className="h-full flex flex-col">
       {controlsPanel}
       <Card
-        title="Top Landlords by Room Count"
+        title="Top Chủ Nhà theo Số Phòng"
         className="dark:bg-[#171f2f] dark:border-gray-600 flex-1 flex flex-col"
         headStyle={{ color: "var(--text-color)" }}
         bodyStyle={{

@@ -37,14 +37,12 @@ export default function ChatPage() {
 
   // Debug: Log admin ID
   useEffect(() => {
-    console.log("🔍 ChatPage Debug:");
+    console.log("ChatPage Debug:");
     console.log("  - Admin ID:", adminId);
     console.log("  - Firebase DB:", db);
 
     if (!adminId) {
-      console.error(
-        "❌ No admin ID found in auth storage. Please login first."
-      );
+      console.error("No admin ID found in auth storage. Please login first.");
       setError("Please login to access chat");
       setIsLoading(false);
     }
@@ -57,11 +55,11 @@ export default function ChatPage() {
       try {
         const ids = await fetchLandlordIdsFromFirestore();
         if (mounted) {
-          console.log("✅ ChatPage: Loaded landlord IDs:", ids);
+          console.log("ChatPage: Loaded landlord IDs:", ids);
           setLandlordIds(ids);
         }
       } catch (err) {
-        console.error("❌ ChatPage: Failed to load landlord IDs:", err);
+        console.error("ChatPage: Failed to load landlord IDs:", err);
       }
     })();
     return () => {
@@ -188,11 +186,7 @@ export default function ChatPage() {
 
       if (usersNeedingNames.length === 0) return;
 
-      console.log(
-        "🔄 Fetching names for",
-        usersNeedingNames.length,
-        "landlords"
-      );
+      console.log("Fetching names for", usersNeedingNames.length, "landlords");
 
       for (const user of usersNeedingNames) {
         try {
@@ -295,7 +289,7 @@ export default function ChatPage() {
         <div className="p-6 flex-shrink-0">
           <div className="mb-6">
             <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              Conversations
+              Đoạn chat Admin
             </h2>
             <div className="mt-2 h-1 w-12 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full dark:bg-gradient-to-r dark:from-blue-600 dark:to-purple-600" />
           </div>
@@ -343,10 +337,10 @@ export default function ChatPage() {
                     </svg>
                   </div>
                   <p className="text-slate-500 dark:text-gray-300 font-medium">
-                    No conversations yet
+                    Chưa có đoạn chat nào
                   </p>
                   <p className="text-slate-400 dark:text-gray-500 text-sm mt-1">
-                    Start chatting to see messages here
+                    Bắt đầu trò chuyện để xem tin nhắn ở đây
                   </p>
                 </div>
               )}
@@ -479,7 +473,7 @@ export default function ChatPage() {
                   d="M15 19l-7-7 7-7"
                 />
               </svg>
-              <span className="font-medium">Back to Conversations</span>
+              <span className="font-medium">Quay lại đoạn chat</span>
             </button>
           </div>
         )}
@@ -503,7 +497,7 @@ export default function ChatPage() {
             <div className="flex flex-col items-center justify-center">
               <div className="w-16 h-16 border-4 border-blue-200 border-t-blue-500 rounded-full animate-spin" />
               <p className="text-slate-600 dark:text-gray-300 font-medium mt-4">
-                Loading conversations...
+                Đang tải đoạn chat...
               </p>
             </div>
           ) : (
@@ -528,10 +522,10 @@ export default function ChatPage() {
               </div>
               <div className="text-center mt-6">
                 <h3 className="text-xl font-semibold text-slate-700 dark:text-gray-300 mb-2">
-                  Welcome to Admin Chat
+                  Chào mừng đến với Đoạn chat Admin
                 </h3>
                 <p className="text-slate-500 dark:text-gray-400">
-                  Select a conversation from the sidebar to start chatting
+                  Chọn một cuộc trò chuyện từ thanh bên để bắt đầu nhắn tin
                 </p>
               </div>
             </div>

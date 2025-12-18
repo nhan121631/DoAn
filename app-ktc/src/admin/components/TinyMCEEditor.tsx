@@ -15,7 +15,7 @@ const TinyMCEEditor: React.FC<TinyMCEEditorProps> = ({
   value,
   onChange,
   height = 400,
-  placeholder = "Enter your content here...",
+  placeholder = "Nhập nội dung ở đây...",
 }) => {
   const uploadImageMutation = useUploadImageForTinyMCE();
 
@@ -34,26 +34,26 @@ const TinyMCEEditor: React.FC<TinyMCEEditorProps> = ({
               // Use utility function to format the URL properly
               const imageUrl = formatTinyMCEImageUrl(data);
 
-              console.log("🖼️ Image uploaded successfully:", {
+              console.log("Ảnh đã được tải lên thành công:", {
                 originalResponse: data,
                 formattedUrl: imageUrl,
               });
 
               resolve(imageUrl);
             } catch (error) {
-              console.error("❌ Failed to format image URL:", error);
-              message.error("Failed to process uploaded image");
+              console.error("Failed to format image URL:", error);
+              message.error("Không thể xử lý ảnh đã tải lên");
               reject(error);
             }
           },
           onError: (error: any) => {
-            console.error("❌ Image upload failed:", error);
+            console.error("Image upload failed:", error);
 
-            let errorMessage = "Failed to upload image";
+            let errorMessage = "Không thể tải lên ảnh";
             if (error?.message) {
-              errorMessage = `Upload failed: ${error.message}`;
+              errorMessage = `Tải lên thất bại: ${error.message}`;
             } else if (error?.response?.data) {
-              errorMessage = `Upload failed: ${JSON.stringify(
+              errorMessage = `Tải lên thất bại: ${JSON.stringify(
                 error.response.data
               )}`;
             }

@@ -32,7 +32,7 @@ function AppHeader({ collapsed, toggleCollapsed }: AppHeaderProps) {
             navigate("/login");
           }}
         >
-          <IoIosLogOut className="text-2xl" /> Logout
+          <IoIosLogOut className="text-2xl" /> Đăng xuất
         </button>
       ),
     },
@@ -60,7 +60,7 @@ function AppHeader({ collapsed, toggleCollapsed }: AppHeaderProps) {
           <div className="flex items-center gap-2 cursor-pointer">
             <Avatar src="https://i.pravatar.cc/40" alt="User Avatar" />
             <span className="font-semibold dark:text-white">
-              Hi, {userName}
+              Xin chào, {userName}
             </span>
           </div>
         </Dropdown>

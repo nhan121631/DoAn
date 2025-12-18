@@ -17,7 +17,7 @@ function ManageRoom() {
       }}
     >
       <h2 className="text-2xl font-semibold mb-4 dark:text-white">
-        Room Management
+        Quản Lý Phòng
       </h2>
 
       <TableManageRoom />

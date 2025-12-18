@@ -35,7 +35,7 @@ const TableManagePostType: React.FC<{
     mutationConfig: {
       onSuccess: () => {
         messageApi.success({
-          content: "You deleted a post type successfully!",
+          content: "Bạn đã xóa loại bài đăng thành công!",
           duration: 3,
         });
       },
@@ -47,31 +47,31 @@ const TableManagePostType: React.FC<{
   };
   const columns: TableColumnsType<IPostType> = [
     {
-      title: "Name",
+      title: "Tên",
       dataIndex: "name",
       width: "25%",
       sorter: (a, b) => a.name.localeCompare(b.name),
     },
     {
-      title: "Code",
+      title: "Mã",
       dataIndex: "code",
       width: "20%",
       sorter: (a, b) => a.code.localeCompare(b.code),
     },
     {
-      title: "Price Per Day",
+      title: "Giá mỗi ngày",
       dataIndex: "pricePerDay",
       width: "20%",
       sorter: (a, b) => a.pricePerDay - b.pricePerDay,
       render: (value: number) => `${value.toLocaleString("vi-VN")} đ`,
     },
     {
-      title: "Description",
+      title: "Mô tả",
       dataIndex: "description",
       width: "35%",
     },
     {
-      title: "Action",
+      title: "Hành động",
       key: "action",
       width: "10%",
       render: (_, record) => (
@@ -89,13 +89,13 @@ const TableManagePostType: React.FC<{
               handleUpdate(record);
             }}
           >
-            Edit
+            Chỉnh sửa
           </button>
           <Popconfirm
-            title="Are you sure you want to delete this post type?"
+            title="Bạn có chắc chắn muốn xóa loại bài đăng này?"
             onConfirm={() => handleDelete(record.id)}
-            okText="Yes"
-            cancelText="No"
+            okText="Có"
+            cancelText="Không"
           >
             <button
               style={{
@@ -107,7 +107,7 @@ const TableManagePostType: React.FC<{
                 cursor: "pointer",
               }}
             >
-              Delete
+              Xóa
             </button>
           </Popconfirm>
         </div>

@@ -48,7 +48,7 @@ const RoomDetailModal: React.FC<RoomDetailModalProps> = ({
 
   return (
     <Modal
-      title={<span>Room Details</span>}
+      title={<span>Chi tiết phòng</span>}
       open={open}
       onCancel={onCancel}
       footer={null}
@@ -99,29 +99,29 @@ const RoomDetailModal: React.FC<RoomDetailModalProps> = ({
               </span>
             </div>
             <div className="text-gray-700 dark:!text-gray-200 text-[15px] mb-1 flex justify-start">
-              <span className="w-1/5">Ward</span>
+              <span className="w-1/5">Phường/Xã:</span>
               <span className="w-4/5 ml-1">
                 {data.address?.ward?.name || ""}
               </span>
             </div>
             <div className="text-gray-700 dark:!text-gray-200 text-[15px] mb-1 flex justify-start">
-              <span className="w-1/5">District:</span>
+              <span className="w-1/5">Quận/Huyện:</span>
               <span className="w-4/5 ml-1">
                 {data.address?.ward?.district?.name || ""}
               </span>
             </div>
             <div className="text-gray-700 dark:!text-gray-200 text-[15px] mb-1 flex justify-start">
-              <span className="w-1/5">City/Province:</span>
+              <span className="w-1/5">Tỉnh/Thành phố:</span>
               <span className="w-4/5 ml-1">
                 {data.address?.ward?.district?.province?.name || ""}
               </span>
             </div>
             <div className="text-gray-700 dark:!text-gray-200 text-[15px] mb-1 flex justify-start">
-              <span className="w-1/5">Address:</span>
+              <span className="w-1/5">Địa chỉ:</span>
               <span className="w-4/5 ml-1">{data.address?.street || ""}</span>
             </div>
             <div className="text-gray-700 dark:!text-gray-200 text-[15px] mb-1 flex justify-start">
-              <span className="w-1/5">Post Start Date:</span>
+              <span className="w-1/5">Ngày bắt đầu đăng:</span>
               <span className="ml-1">
                 {data.postStartDate
                   ? new Date(data.postStartDate).toLocaleString()
@@ -129,7 +129,7 @@ const RoomDetailModal: React.FC<RoomDetailModalProps> = ({
               </span>
             </div>
             <div className="text-gray-700 dark:!text-gray-200 text-[15px] mb-1 flex justify-start">
-              <span className="w-1/5">Post End Date:</span>
+              <span className="w-1/5">Ngày kết thúc đăng:</span>
               <span className="ml-1">
                 {data.postEndDate
                   ? new Date(data.postEndDate).toLocaleString()
@@ -138,7 +138,7 @@ const RoomDetailModal: React.FC<RoomDetailModalProps> = ({
             </div>
             <hr className="my-5 text-gray-300 dark:!text-gray-600" />
             <h2 className="mb-2 text-lg font-bold text-gray-800 dark:!text-white">
-              Description
+              Mô tả
             </h2>
             <div className="list-disc pl-5 space-y-1 text-gray-700 dark:!text-gray-200 text-[15px]">
               {data.description ? (
@@ -146,11 +146,11 @@ const RoomDetailModal: React.FC<RoomDetailModalProps> = ({
                   .split("\n")
                   .map((line: string, idx: number) => <p key={idx}>{line}</p>)
               ) : (
-                <p>No description</p>
+                <p>Không có mô tả</p>
               )}
             </div>
             <div>
-              <span className="font-semibold">Convenients:</span>
+              <span className="font-semibold">Tiện nghi:</span>
               <div className="flex gap-2 flex-wrap mt-1">
                 {data.convenients && data.convenients.length > 0 ? (
                   <Convenient
@@ -182,7 +182,7 @@ const RoomDetailModal: React.FC<RoomDetailModalProps> = ({
           </div>
         </div>
       ) : (
-        <div>No data found.</div>
+        <div>Không tìm thấy dữ liệu.</div>
       )}
     </Modal>
   );

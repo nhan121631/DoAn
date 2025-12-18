@@ -24,11 +24,11 @@ const ModelCreatePostType: React.FC<ModelCreatePostTypeProps> = ({
   }, [open, form]);
   return (
     <Modal
-      title="Create Post Type"
+      title="Tạo loại bài đăng mới"
       open={open}
       onOk={handleCreate}
       onCancel={() => setOpen(false)}
-      okText="Create"
+      okText="Tạo mới"
     >
       {errorMessage && (
         <div style={{ color: "red", marginBottom: 12 }}>{errorMessage}</div>
@@ -44,9 +44,9 @@ const ModelCreatePostType: React.FC<ModelCreatePostTypeProps> = ({
         }}
       >
         <Form.Item
-          label="Code"
+          label="Mã"
           name="code"
-          rules={[{ required: true, message: "Please input code!" }]}
+          rules={[{ required: true, message: "Vui lòng nhập mã!" }]}
         >
           <Input
             onChange={(e) => {
@@ -55,23 +55,23 @@ const ModelCreatePostType: React.FC<ModelCreatePostTypeProps> = ({
           />
         </Form.Item>
         <Form.Item
-          label="Name"
+          label="Tên"
           name="name"
-          rules={[{ required: true, message: "Please input name!" }]}
+          rules={[{ required: true, message: "Vui lòng nhập tên!" }]}
         >
           <Input />
         </Form.Item>
         <Form.Item
-          label="Price Per Day"
+          label="Giá mỗi ngày"
           name="pricePerDay"
-          rules={[{ required: true, message: "Please input price!" }]}
+          rules={[{ required: true, message: "Vui lòng nhập giá!" }]}
         >
           <InputNumber min={0} style={{ width: "100%" }} />
         </Form.Item>
         <Form.Item
-          label="Description"
+          label="Mô tả"
           name="description"
-          rules={[{ required: true, message: "Please input description!" }]}
+          rules={[{ required: true, message: "Vui lòng nhập mô tả!" }]}
         >
           <Input.TextArea rows={3} />
         </Form.Item>

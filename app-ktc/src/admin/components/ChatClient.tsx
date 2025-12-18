@@ -215,7 +215,7 @@ export default function ChatClient({
             <h2 className="text-lg font-semibold">{defaultToUserName}</h2>
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-green-400" />
-              <span className="text-sm">Active now</span>
+              <span className="text-sm">Hoạt động</span>
             </div>
           </div>
         </div>
