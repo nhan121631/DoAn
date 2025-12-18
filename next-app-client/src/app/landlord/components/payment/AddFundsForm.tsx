@@ -112,7 +112,7 @@ export default function AddFundsForm({ onSuccess }: AddFundsFormProps) {
             value={orderInfo}
             onChange={(e) => setOrderInfo(e.target.value)}
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent "
-            placeholder="Enter payment description (optional)"
+            placeholder="Nhập mô tả thanh toán (tùy chọn)"
           />
         </div>
         <div>
@@ -222,12 +222,12 @@ export default function AddFundsForm({ onSuccess }: AddFundsFormProps) {
           )}
         </button>
         <div className="text-center pt-4">
-          <a
+          {/* <a
             href="/transactions"
             className="text-blue-600 hover:text-blue-800 text-sm underline"
           >
             Tra cứu giao dịch
-          </a>
+          </a> */}
         </div>
         <div className="text-center pt-2">
           <p className="text-xs text-gray-500">

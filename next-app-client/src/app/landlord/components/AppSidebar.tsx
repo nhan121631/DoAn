@@ -94,7 +94,8 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
     >
       <div className="flex items-center justify-center h-16 ">
         <h1 className="text-lg font-bold dark:text-white transition-all duration-300">
-          {collapsed ? "L" : "LandLord Panel"}
+          {/* {collapsed ? "L" : "LandLord Panel"} */}
+          {collapsed ? "C" : "Chủ Nhà"}
         </h1>
       </div>
       <Menu

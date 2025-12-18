@@ -95,7 +95,7 @@ export default function LandlordContractDetail() {
       label: (
         <span>
           <DollarOutlined />
-          Bills
+          Hóa đơn
         </span>
       ),
       children: (

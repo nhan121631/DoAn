@@ -555,7 +555,7 @@ export default function ManageResidentsPage() {
       <Card
         title={
           <h3 className="m-0 text-lg font-semibold text-gray-900 transition-colors duration-300 dark:text-white">
-            Quản lý cư dân
+            Quản lý tạm trú
           </h3>
         }
         className="shadow-sm bg-white dark:bg-[#17223b] border-gray-200 dark:border-gray-600 transition-colors duration-300"
@@ -592,7 +592,7 @@ export default function ManageResidentsPage() {
               icon={<PlusOutlined />}
               onClick={() => setAddResidentOpen(true)}
             >
-              Thêm cư dân
+              Thêm tạm trú
             </Button>
           </div>
         }
@@ -606,7 +606,7 @@ export default function ManageResidentsPage() {
             showSizeChanger: true,
             showQuickJumper: true,
             showTotal: (total, range) =>
-              `${range[0]}-${range[1]} của ${total} cư dân`,
+              `${range[0]}-${range[1]} của ${total} tạm trú`,
             pageSizeOptions: ["5", "10", "20", "50"],
           }}
           loading={loading}
@@ -616,7 +616,7 @@ export default function ManageResidentsPage() {
 
       {/* Resident Detail Modal */}
       <Modal
-        title="Chi tiết cư dân"
+        title="Chi tiết tạm trú"
         open={!!selectedResident}
         onCancel={() => setSelectedResident(null)}
         footer={null}

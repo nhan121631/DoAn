@@ -859,7 +859,7 @@ export default function TenantResidentsPage() {
                 Hủy
               </Button>
               <Button type="primary" htmlType="submit" loading={loading}>
-                Thêm cư dân
+                Thêm tạm trú
               </Button>
             </div>
           </Form.Item>
@@ -868,7 +868,7 @@ export default function TenantResidentsPage() {
 
       {/* Edit Resident Modal */}
       <Modal
-        title="Chỉnh sửa cư dân"
+        title="Chỉnh sửa tạm trú"
         open={!!editResident}
         onCancel={() => {
           setEditResident(null);
@@ -1000,7 +1000,7 @@ export default function TenantResidentsPage() {
                 Hủy
               </Button>
               <Button type="primary" htmlType="submit" loading={loading}>
-                Cập nhật cư dân
+                Cập nhật tạm trú
               </Button>
             </div>
           </Form.Item>
