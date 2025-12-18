@@ -620,7 +620,7 @@ export default function UserInfoCard({ id }: { id: string }) {
                     {landlord.amountPost}
                   </p>
                 </div>
-                <p className="text-xs font-medium text-gray-600">Listings</p>
+                <p className="text-xs font-medium text-gray-600">Tin đăng</p>
               </div>
 
               <div className="w-px h-8 bg-gray-200"></div>
@@ -628,10 +628,10 @@ export default function UserInfoCard({ id }: { id: string }) {
               <div className="flex-1 text-center">
                 <div className="flex items-center justify-center gap-1 mb-1">
                   <FaUserCheck className="w-3 h-3 text-blue-500" />
-                  <p className="text-sm font-bold text-gray-800">Member</p>
+                  <p className="text-sm font-bold text-gray-800">Thành viên</p>
                 </div>
                 <p className="text-xs font-medium text-gray-600">
-                  Since {landlord.createDate}
+                  Tham gia từ {landlord.createDate}
                 </p>
               </div>
             </div>
@@ -641,11 +641,11 @@ export default function UserInfoCard({ id }: { id: string }) {
           <div className="flex flex-wrap justify-center gap-2">
             <div className="flex items-center gap-1 px-3 py-1 text-green-700 border border-green-200 rounded-full bg-green-50">
               <MdVerified className="w-3 h-3" />
-              <span className="text-xs font-medium">Verified</span>
+              <span className="text-xs font-medium">Đã xác thực</span>
             </div>
             <div className="flex items-center gap-1 px-3 py-1 text-blue-700 border border-blue-200 rounded-full bg-blue-50">
               <BiShield className="w-3 h-3" />
-              <span className="text-xs font-medium">Trusted</span>
+              <span className="text-xs font-medium">Đáng tin cậy</span>
             </div>
           </div>
 
@@ -973,7 +973,7 @@ export default function UserInfoCard({ id }: { id: string }) {
                             rel="noreferrer"
                             className="underline"
                           >
-                            Privacy
+                            Bảo mật
                           </a>
                           <span>-</span>
                           <a
@@ -982,7 +982,7 @@ export default function UserInfoCard({ id }: { id: string }) {
                             rel="noreferrer"
                             className="underline"
                           >
-                            Terms
+                            Điều khoản
                           </a>
                         </div>
                       </div>

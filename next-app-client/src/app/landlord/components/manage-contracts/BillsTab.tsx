@@ -415,7 +415,7 @@ export default function BillsTab({
         (a.electricityFee || 0) - (b.electricityFee || 0),
     },
     {
-      title: "Water",
+      title: "Nước",
       dataIndex: "waterFee",
       key: "waterFee",
       align: "right" as const,
@@ -434,7 +434,7 @@ export default function BillsTab({
         (a.waterFee || 0) - (b.waterFee || 0),
     },
     {
-      title: "Service",
+      title: "Tiền phòng",
       dataIndex: "serviceFee",
       key: "serviceFee",
       align: "right" as const,
@@ -684,7 +684,7 @@ export default function BillsTab({
           <Statistic
             title={
               <span className="text-gray-600 dark:text-gray-300">
-                Total Bills
+                Tổng số hóa đơn
               </span>
             }
             value={totalBills}
@@ -701,7 +701,7 @@ export default function BillsTab({
           <Statistic
             title={
               <span className="text-gray-600 dark:text-gray-300">
-                Paid Bills
+                Hóa đơn đã thanh toán
               </span>
             }
             value={paidBills}
@@ -715,7 +715,7 @@ export default function BillsTab({
           <Statistic
             title={
               <span className="text-gray-600 dark:text-gray-300">
-                Pending Bills
+                Hóa đơn chưa thanh toán
               </span>
             }
             value={pendingBills}
@@ -729,7 +729,7 @@ export default function BillsTab({
           <Statistic
             title={
               <span className="text-gray-600 dark:text-gray-300">
-                Confirming
+                Đang xác nhận
               </span>
             }
             value={confirmingBills}
@@ -743,7 +743,7 @@ export default function BillsTab({
           <Statistic
             title={
               <span className="text-gray-600 dark:text-gray-300">
-                Unpaid Amount
+                Tổng tiền chưa thanh toán
               </span>
             }
             value={unpaidAmount}
@@ -756,14 +756,14 @@ export default function BillsTab({
       <Card
         title={
           <span className="text-gray-900 dark:text-white">
-            Bills Management
+            Quản lý hóa đơn
           </span>
         }
         className="shadow-sm bg-white dark:bg-[#17223b] border-gray-200 dark:border-gray-600 transition-colors duration-300"
         extra={
           <Space>
             <Input
-              placeholder="Search bills..."
+              placeholder="Tìm kiếm hóa đơn..."
               prefix={<SearchOutlined />}
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
@@ -771,7 +771,7 @@ export default function BillsTab({
               allowClear
             />
             <Select
-              placeholder="Filter by status"
+              placeholder="Lọc theo trạng thái"
               value={statusFilter}
               onChange={setStatusFilter}
               style={{ width: 180 }}
@@ -779,25 +779,25 @@ export default function BillsTab({
               suffixIcon={<FilterOutlined />}
             >
               <Select.Option value="PAID">
-                <Tag color="green">Paid</Tag>
+                <Tag color="green">Đã thanh toán</Tag>
               </Select.Option>
               <Select.Option value="PENDING">
-                <Tag color="orange">Pending</Tag>
+                <Tag color="orange">Chưa thanh toán</Tag>
               </Select.Option>
               <Select.Option value="CONFIRMING">
-                <Tag color="blue">Confirming</Tag>
+                <Tag color="blue">Đang xác nhận</Tag>
               </Select.Option>
               <Select.Option value="OVERDUE">
-                <Tag color="red">Overdue</Tag>
+                <Tag color="red">Quá hạn</Tag>
               </Select.Option>
             </Select>
             <Button
               icon={<ReloadOutlined />}
               onClick={handleManualRefresh}
               loading={loading}
-              title="Refresh bill data"
+              title="Làm mới dữ liệu hóa đơn"
             >
-              Refresh
+              Làm mới
             </Button>
             <Button
               type="primary"
@@ -819,14 +819,14 @@ export default function BillsTab({
                 });
               }}
             >
-              Add Bill
+              Thêm hóa đơn
             </Button>
             <Button
               type="default"
               icon={<ExportOutlined />}
               onClick={() => setExportModalOpen(true)}
             >
-              Export Bills
+              Xuất hóa đơn
             </Button>
           </Space>
         }
@@ -840,7 +840,7 @@ export default function BillsTab({
             showSizeChanger: true,
             showQuickJumper: true,
             showTotal: (total, range) =>
-              `${range[0]}-${range[1]} of ${total} bills`,
+              `${range[0]}-${range[1]} trong ${total} hóa đơn`,
             pageSizeOptions: ["5", "10", "20", "50"],
           }}
           scroll={{ y: 400 }}
@@ -859,7 +859,7 @@ export default function BillsTab({
 
       {/* Export Bills Modal */}
       <Modal
-        title="Export Bills"
+        title="Xuất hóa đơn"
         open={exportModalOpen}
         onCancel={() => {
           setExportModalOpen(false);
@@ -870,10 +870,10 @@ export default function BillsTab({
       >
         <Form form={exportForm} onFinish={handleExport} layout="vertical">
           <Form.Item
-            label="From Month"
+            label="Từ tháng"
             name="fromMonth"
             rules={[
-              { required: true, message: "Please select from month!" },
+              { required: true, message: "Vui lòng chọn tháng bắt đầu!" },
               ({ getFieldValue }) => ({
                 validator(_, value) {
                   if (!value || !getFieldValue("toMonth")) {
@@ -881,7 +881,7 @@ export default function BillsTab({
                   }
                   if (value.isAfter(getFieldValue("toMonth"))) {
                     return Promise.reject(
-                      new Error("From month must be before to month!")
+                      new Error("Tháng bắt đầu phải trước tháng kết thúc!")
                     );
                   }
                   return Promise.resolve();
@@ -891,7 +891,7 @@ export default function BillsTab({
           >
             <DatePicker
               picker="month"
-              placeholder="Select from month"
+              placeholder="Chọn tháng bắt đầu"
               style={{ width: "100%" }}
               format="YYYY-MM"
               onChange={() => {
@@ -901,10 +901,10 @@ export default function BillsTab({
           </Form.Item>
 
           <Form.Item
-            label="To Month"
+            label="Đến tháng"
             name="toMonth"
             rules={[
-              { required: true, message: "Please select to month!" },
+              { required: true, message: "Vui lòng chọn tháng kết thúc!" },
               ({ getFieldValue }) => ({
                 validator(_, value) {
                   if (!value || !getFieldValue("fromMonth")) {
@@ -912,7 +912,7 @@ export default function BillsTab({
                   }
                   if (value.isBefore(getFieldValue("fromMonth"))) {
                     return Promise.reject(
-                      new Error("To month must be after from month!")
+                      new Error("Tháng kết thúc phải sau tháng bắt đầu!")
                     );
                   }
                   return Promise.resolve();
@@ -922,7 +922,7 @@ export default function BillsTab({
           >
             <DatePicker
               picker="month"
-              placeholder="Select to month"
+              placeholder="Chọn tháng kết thúc"
               style={{ width: "100%" }}
               format="YYYY-MM"
               onChange={() => {
@@ -939,7 +939,7 @@ export default function BillsTab({
                   exportForm.resetFields();
                 }}
               >
-                Cancel
+                Hủy
               </Button>
               <Button
                 type="primary"
@@ -947,7 +947,7 @@ export default function BillsTab({
                 loading={exportLoading}
                 icon={<DownloadOutlined />}
               >
-                Export
+                Xuất file
               </Button>
             </Space>
           </Form.Item>
@@ -957,7 +957,7 @@ export default function BillsTab({
       {/* Modal Edit Bill */}
       <Modal
         open={!!editBill}
-        title={editBill ? `Edit Bill - ${editBill.month}` : "Edit Bill"}
+        title={editBill ? `Chỉnh sửa hóa đơn - ${editBill.month}` : "Chỉnh sửa hóa đơn"}
         onCancel={() => {
           setEditBill(null);
           editForm.resetFields();
@@ -1019,7 +1019,7 @@ export default function BillsTab({
               <InputNumber
                 min={0}
                 step={0.01}
-                placeholder="Enter electricity usage"
+                placeholder="Nhập số điện sử dụng"
                 style={{ width: "100%" }}
                 formatter={(value) =>
                   `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ".")
@@ -1042,7 +1042,7 @@ export default function BillsTab({
               <InputNumber
                 min={0}
                 step={0.01}
-                placeholder="Enter water usage"
+                placeholder="Nhập số nước sử dụng"
                 style={{ width: "100%" }}
                 formatter={(value) =>
                   `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ".")
@@ -1082,7 +1082,7 @@ export default function BillsTab({
             >
               <InputNumber
                 min={0}
-                placeholder="Enter damage fee"
+                placeholder="Nhập phí khác"
                 style={{ width: "100%" }}
                 formatter={(value) =>
                   `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ".")
@@ -1101,7 +1101,7 @@ export default function BillsTab({
               name="note"
             >
               <Input.TextArea
-                placeholder="Enter note for other fee (optional)"
+                placeholder="Nhập ghi chú cho phí khác (không bắt buộc)"
                 rows={2}
                 maxLength={500}
                 showCount
@@ -1170,7 +1170,7 @@ export default function BillsTab({
       {/* Modal Add Bill */}
       <Modal
         open={addBillOpen}
-        title="Add Bill"
+        title="Thêm hóa đơn"
         onCancel={() => {
           setAddBillOpen(false);
           addForm.resetFields();
@@ -1231,7 +1231,7 @@ export default function BillsTab({
             <InputNumber
               min={0}
               step={0.01}
-              placeholder="Enter electricity usage"
+              placeholder="Nhập số điện sử dụng"
               style={{ width: "100%" }}
               formatter={(value) =>
                 `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ".")
@@ -1254,7 +1254,7 @@ export default function BillsTab({
             <InputNumber
               min={0}
               step={0.01}
-              placeholder="Enter water usage"
+              placeholder="Nhập số nước sử dụng"
               style={{ width: "100%" }}
               formatter={(value) =>
                 `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ".")
@@ -1294,7 +1294,7 @@ export default function BillsTab({
           >
             <InputNumber
               min={0}
-              placeholder="Enter other fees"
+              placeholder="Nhập phí khác"
               style={{ width: "100%" }}
               formatter={(value) =>
                 `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ".")
@@ -1313,7 +1313,7 @@ export default function BillsTab({
             name="note"
           >
             <Input.TextArea
-              placeholder="Enter note for other fee (optional)"
+              placeholder="Nhập ghi chú cho phí khác (không bắt buộc)"
               rows={2}
               maxLength={500}
               showCount

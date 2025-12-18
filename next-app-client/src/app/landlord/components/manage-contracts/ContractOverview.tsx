@@ -310,7 +310,7 @@ export default function ContractOverview({
 
       {/* Edit Contract Modal */}
       <Modal
-        title="Edit Contract"
+        title="Chỉnh sửa hợp đồng"
         open={editModalOpen}
         onCancel={() => {
           setEditModalOpen(false);
@@ -330,14 +330,14 @@ export default function ContractOverview({
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <Form.Item label="Contract Name" name="contractName">
-              <Input placeholder="Enter contract name" disabled />
+            <Form.Item label="Tên hợp đồng" name="contractName">
+              <Input placeholder="Nhập tên hợp đồng" disabled />
             </Form.Item>
 
             <Form.Item
               label="Trạng thái"
               name="status"
-              rules={[{ required: true, message: "Please select status!" }]}
+              rules={[{ required: true, message: "Hãy chọn trạng thái!" }]}
             >
               <Select placeholder="Select status" disabled>
                 <Select.Option value={0}>Đang hoạt động</Select.Option>
@@ -443,7 +443,7 @@ export default function ContractOverview({
                   form.resetFields();
                 }}
               >
-                Cancel
+                Hủy
               </Button>
               <Button type="primary" htmlType="submit" loading={loading}>
                 Cập nhật hợp đồng

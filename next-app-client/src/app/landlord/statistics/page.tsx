@@ -269,7 +269,7 @@ export default function ChartsTemplate() {
 
         {/* KPI Cards */}
         <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <CardStatistics title="Total Rooms Posted" value={totalPostedRooms} />
+          <CardStatistics title="Tổng bài đã đăng" value={totalPostedRooms} />
           <CardStatistics
             title="Tổng phòng đã thuê"
             value={`${totalRentedRooms}`}

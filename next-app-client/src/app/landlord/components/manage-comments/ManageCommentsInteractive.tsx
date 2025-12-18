@@ -133,7 +133,7 @@ const ManageCommentsInteractive: React.FC = () => {
     <div className="flex flex-col flex-1">
       {contextHolder}
       <div className="flex justify-between items-center mt-2 mb-2">
-        <Input.Search placeholder="Search comments..." style={{ width: 250 }} />
+        <Input.Search placeholder="Tìm kiếm bình luận..." style={{ width: 250 }} />
       </div>
 
       <Table
