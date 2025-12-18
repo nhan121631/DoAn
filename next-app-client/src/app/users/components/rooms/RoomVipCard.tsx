@@ -78,6 +78,20 @@ export default function RoomVipCard({
   const mainVideoRef = useRef<HTMLVideoElement>(null);
   const [viewCount, setViewCount] = useState(room.viewCount ?? 0);
 
+  const allPossibleConvenients = [
+    { key: "furnished", label: "Đầy đủ tiện nghi" },
+    { key: "washing_machine", label: "Máy giặt" },
+    { key: "no_curfew", label: "Không giới nghiêm" },
+    { key: "mezzanine", label: "Gác lửng" },
+    { key: "fridge", label: "Tủ lạnh" },
+    { key: "kitchen_shelf", label: "Tủ bếp" },
+    { key: "aircon", label: "Điều hòa" },
+    { key: "private_entry", label: "Lối vào riêng" },
+    { key: "elevator", label: "Thang máy" },
+    { key: "security_24h", label: "An ninh 24/7" },
+    { key: "garage", label: "Bãi đậu xe/Garage" },
+  ];
+
   useEffect(() => {
     let timer: NodeJS.Timeout | null = null;
     const observer = new IntersectionObserver(([entry]) => {
@@ -429,7 +443,8 @@ export default function RoomVipCard({
                       key={idx}
                       className="inline-flex items-center px-2 py-0.5 sm:py-1 bg-indigo-50/70 text-indigo-700 text-sm rounded-full border border-indigo-100/80 backdrop-blur-sm"
                     >
-                      {item}
+                      {allPossibleConvenients.find((c) => c.key === item)
+                        ?.label || item}
                     </span>
                   ))}
                   {moreCount > 0 && (

@@ -558,7 +558,8 @@ export default function HeaderUserDashboard({
                     </div>
                     <div className="hidden md:block">
                       <span className="!text-sm !font-medium opacity-90 transition-all duration-300 group-hover:text-blue-600">
-                        Hi, {session.user?.userProfile?.fullName || "User"}
+                        Xin chào,{" "}
+                        {session.user?.userProfile?.fullName || "User"}
                       </span>
                     </div>
                   </div>
