@@ -68,18 +68,18 @@ function SendMailModal({
             }
           }}
         >
-          <Form.Item label="To">
+          <Form.Item label="Từ">
             <Input value={landlordEmail} disabled />
           </Form.Item>
           <Form.Item
-            label="Subject"
+            label="Chủ đề"
             name="subject"
             rules={[{ required: true, message: "Vui lòng nhập chủ đề email" }]}
           >
             <Input placeholder="Nhập chủ đề email" />
           </Form.Item>
           <Form.Item
-            label="Message"
+            label="Nội dung"
             name="message"
             rules={[
               { required: true, message: "Vui lòng nhập nội dung email" },

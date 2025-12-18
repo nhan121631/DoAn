@@ -253,7 +253,7 @@ const EditBlogPage = () => {
                 ]}
               >
                 <Input
-                  placeholder="blog-slug-example"
+                  placeholder="blog-slug mẫu"
                   size="large"
                   className="bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 [&_.ant-input]:bg-white [&_.ant-input]:dark:bg-gray-700 [&_.ant-input]:text-gray-900 [&_.ant-input]:dark:text-gray-100 [&_.ant-input]:placeholder:text-gray-500 [&_.ant-input]:dark:placeholder:text-gray-400"
                 />
