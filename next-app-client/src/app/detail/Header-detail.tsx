@@ -147,7 +147,7 @@ export default function HeaderUserDashboard() {
               <div className="flex items-center gap-2 cursor-pointer">
                 <Avatar src="https://i.pravatar.cc/40" alt="User Avatar" />
                 <span className="font-semibold text-white">
-                  Hi, {session.user?.userProfile?.fullName || "User"}
+                  Xin chào, {session.user?.userProfile?.fullName || "User"}
                 </span>
               </div>
             </Dropdown>

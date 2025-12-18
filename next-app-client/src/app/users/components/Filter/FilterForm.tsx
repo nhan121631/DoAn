@@ -434,7 +434,19 @@ export default function FilterForm() {
     // Use debounced version for convenients to avoid too many rapid calls
     triggerFilter(undefined, updated);
   };
-
+  const allPossibleConvenients = [
+    { key: "furnished", label: "Đầy đủ tiện nghi" },
+    { key: "washing_machine", label: "Máy giặt" },
+    { key: "no_curfew", label: "Không giới nghiêm" },
+    { key: "mezzanine", label: "Gác lửng" },
+    { key: "fridge", label: "Tủ lạnh" },
+    { key: "kitchen_shelf", label: "Tủ bếp" },
+    { key: "aircon", label: "Điều hòa" },
+    { key: "private_entry", label: "Lối vào riêng" },
+    { key: "elevator", label: "Thang máy" },
+    { key: "security_24h", label: "An ninh 24/7" },
+    { key: "garage", label: "Bãi đậu xe/Garage" },
+  ];
   return (
     <FilterLoadingOverlay isVisible={isLoading}>
       <div className="w-[320px] bg-gradient-to-br from-white via-slate-50/50 to-blue-50/30 backdrop-blur-lg border border-blue-100/50 rounded-3xl p-6 flex flex-col gap-6">
@@ -568,7 +580,10 @@ export default function FilterForm() {
                 >
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium capitalize">
-                      {convenient.name.replace(/_/g, " ")}
+                      {/* {convenient.name.replace(/_/g, " ")} */}
+                      {allPossibleConvenients.find(
+                        (c) => c.key === convenient.name
+                      )?.label || convenient.name}
                     </span>
                     <div
                       className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all duration-200 ${

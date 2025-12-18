@@ -568,7 +568,7 @@ public class ApprovalWorker {
             }
 
             // Gọi service trực tiếp thay vì HTTP call
-            String message = String.format("📋 Daily Room Approval Report - %d rooms processed on %s",
+            String message = String.format("Bản báo cáo hàng ngày - %d phòng đã xử lý vào ngày %s",
                     lineCount - 1,
                     LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
 

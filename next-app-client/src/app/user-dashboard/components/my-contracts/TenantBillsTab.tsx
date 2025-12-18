@@ -216,7 +216,7 @@ export default function TenantBillsTab({ contract }: TenantBillsTabProps) {
       dataIndex: "month",
       key: "month",
       render: (month: string) =>
-        new Date(month).toLocaleDateString("en-US", {
+        new Date(month).toLocaleDateString("vi-VN", {
           month: "long",
           year: "numeric",
         }),
@@ -266,7 +266,7 @@ export default function TenantBillsTab({ contract }: TenantBillsTabProps) {
           <div className="font-medium">{amount.toLocaleString()} đ</div>
           {record.damageFee != null && record.damageFee > 0 && (
             <div className="text-xs text-red-500">
-              + Phí hư hỏng: {record.damageFee.toLocaleString()} đ
+              + Phí khác: {record.damageFee.toLocaleString()} đ
             </div>
           )}
         </div>
@@ -523,7 +523,7 @@ export default function TenantBillsTab({ contract }: TenantBillsTabProps) {
       {/* Image Preview Modal */}
       <Modal
         open={imagePreviewOpen}
-        title="Bill Image Proof"
+        title="Xem ảnh xác nhận"
         footer={null}
         onCancel={() => setImagePreviewOpen(false)}
         width={800}

@@ -93,7 +93,7 @@ export default function LandlordListCard() {
           </div>
 
           <h2 className="mb-4 text-3xl font-bold text-gray-900 md:text-4xl">
-            Chủ nhà
+            Chủ nhà{" "}
             <span className="text-transparent bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text">
               uy tín
             </span>

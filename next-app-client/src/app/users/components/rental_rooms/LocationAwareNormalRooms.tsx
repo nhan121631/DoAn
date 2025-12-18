@@ -156,12 +156,12 @@ export default function LocationAwareNormalRooms({
     <div className="flex flex-col items-center justify-center w-full gap-4 px-2 sm:px-4 my-6 max-w-7xl">
       <div className="text-center space-y-6 mb-16">
         <h3 className="text-4xl font-bold bg-gradient-to-r from-gray-800 to-blue-600 bg-clip-text text-transparent">
-          Phòng nổi bật
+          Phòng thường khác
         </h3>
         {(hasGuestData || hasUserData) && location && (
           <div className="text-sm text-blue-600 mt-2 flex items-center justify-center gap-2">
             <span className="bg-blue-100 px-4 py-2 rounded-full font-medium">
-              📍 Sắp xếp theo khoảng cách từ: {location.address}
+              Sắp xếp theo khoảng cách từ: {location.address}
             </span>
           </div>
         )}

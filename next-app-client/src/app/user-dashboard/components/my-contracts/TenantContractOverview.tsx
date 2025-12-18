@@ -146,9 +146,10 @@ export default function TenantContractOverview({
                       if (!fileUrl) return "file-hop-dong";
                       try {
                         const urlPath = new URL(fileUrl).pathname;
-                        const filename = decodeURIComponent(
-                          urlPath.split("/").pop() || "file-hop-dong"
-                        );
+                        // const filename = decodeURIComponent(
+                        //   urlPath.split("/").pop() || "file-hop-dong"
+                        // );
+                        const filename = "Hợp đồng thuê phòng";
                         return filename;
                       } catch {
                         return "file-hop-dong";

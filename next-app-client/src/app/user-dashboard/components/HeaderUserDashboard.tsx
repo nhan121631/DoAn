@@ -516,7 +516,7 @@ export default function HeaderUserDashboard({
                   className="flex items-center gap-2 px-3 py-2 text-gray-700 font-medium transition-all duration-300 rounded-lg hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 hover:text-blue-600 hover:scale-105 group"
                 >
                   <span className="hidden sm:inline transition-all duration-300 group-hover:tracking-wide">
-                    Bảng điều khiển
+                    Dashboard
                   </span>
                 </Link>
 
@@ -558,7 +558,8 @@ export default function HeaderUserDashboard({
                     </div>
                     <div className="hidden md:block">
                       <span className="!text-sm !font-medium opacity-90 transition-all duration-300 group-hover:text-blue-600">
-                        Hi, {session.user?.userProfile?.fullName || "User"}
+                        Xin chào,{" "}
+                        {session.user?.userProfile?.fullName || "User"}
                       </span>
                     </div>
                   </div>
