@@ -5,7 +5,7 @@ import { URL_IMAGE } from "@/services/Constant";
 import { RoomInUser } from "@/types/types";
 import Link from "next/link";
 import { ButtonForVipCard } from "@/app/users/components/rooms/ButtonForVipCard";
-import { IoCameraOutline } from "react-icons/io5"; 
+import { IoCameraOutline } from "react-icons/io5";
 
 export interface RoomCardProps {
   room: RoomInUser;
@@ -14,17 +14,22 @@ export interface RoomCardProps {
 }
 
 const getAvatarSrc = (avatar?: string) => {
-  console.log('Avatar value:', avatar);
-  if (!avatar || avatar.trim() === '' || avatar === 'null' || avatar === 'undefined') {
+  console.log("Avatar value:", avatar);
+  if (
+    !avatar ||
+    avatar.trim() === "" ||
+    avatar === "null" ||
+    avatar === "undefined"
+  ) {
     return "/images/default/avatar.jpg";
   }
-  if (avatar.startsWith('/dmvvs0ags/')) {
+  if (avatar.startsWith("/dmvvs0ags/")) {
     return `https://res.cloudinary.com${avatar}`;
   }
-  if (avatar.startsWith('http') || avatar.startsWith('https://')) {
+  if (avatar.startsWith("http") || avatar.startsWith("https://")) {
     return avatar;
   }
-  if (avatar.startsWith('/')) {
+  if (avatar.startsWith("/")) {
     return avatar;
   }
   return "/images/avatar.jpg";
@@ -37,10 +42,11 @@ const FavoriteDashboardRoomCard: React.FC<RoomCardProps> = ({
   isFavorite,
   onFavoriteChange,
 }) => {
-  const [hoveredImageIndex, setHoveredImageIndex] = useState<number | null>(null);
+  const [hoveredImageIndex, setHoveredImageIndex] = useState<number | null>(
+    null
+  );
 
   const landlordAvatar = getAvatarSrc(room.landlord?.landlordProfile?.avatar);
-
 
   const conveniences =
     (room.conveniences || []).map((c: { name: string } | string) =>
@@ -52,19 +58,17 @@ const FavoriteDashboardRoomCard: React.FC<RoomCardProps> = ({
   const getContactInfo = () => {
     const phone = room.landlord?.landlordProfile?.phoneNumber;
     const email = room.landlord?.landlordProfile?.email;
-    
-    if (phone && phone.trim() !== '' && phone !== 'null') {
+
+    if (phone && phone.trim() !== "" && phone !== "null") {
       return phone;
     }
-    if (email && email.trim() !== '' && email !== 'null') {
+    if (email && email.trim() !== "" && email !== "null") {
       return email;
     }
-    return null; 
+    return null;
   };
 
   const contactInfo = getContactInfo();
-
-
 
   return (
     <motion.div
@@ -92,7 +96,7 @@ const FavoriteDashboardRoomCard: React.FC<RoomCardProps> = ({
                 hoveredImageIndex !== null ? "scale-105" : "hover:scale-105"
               }`}
               priority
-              style={{ borderRadius: '1rem' }}
+              style={{ borderRadius: "1rem" }}
             />
           </Link>
 
@@ -109,7 +113,7 @@ const FavoriteDashboardRoomCard: React.FC<RoomCardProps> = ({
                 const imageUrl = img?.url
                   ? URL_IMAGE + img.url
                   : "/images/room-placeholder.jpg";
-                
+
                 return (
                   <div
                     key={idx}
@@ -221,29 +225,31 @@ const FavoriteDashboardRoomCard: React.FC<RoomCardProps> = ({
         <div className="flex items-center justify-between gap-3 pt-4 mt-auto border-t border-gray-200">
           <div className="flex items-center gap-3">
             <div className="relative w-10 h-10 overflow-hidden bg-gray-200 rounded-full">
-  <Image
-    src={landlordAvatar}
-    alt={`${room.landlord.landlordProfile.fullName || 'Landlord'}'s avatar`}
-    width={40}
-    height={40}
-    className="object-cover w-full h-full"
-    onError={(e) => {
-      console.error('Avatar load error:', e);
-      e.currentTarget.src = "/images/default/avatar.jpg";
-    }}
-  />
-</div>
-            
+              <Image
+                src={landlordAvatar}
+                alt={`${
+                  room.landlord.landlordProfile.fullName || "Landlord"
+                }'s avatar`}
+                width={40}
+                height={40}
+                className="object-cover w-full h-full"
+                onError={(e) => {
+                  console.error("Avatar load error:", e);
+                  e.currentTarget.src = "/images/default/avatar.jpg";
+                }}
+              />
+            </div>
+
             <div>
-            <span className="font-semibold text-gray-800">
-              {room.landlord.landlordProfile.fullName}
-            </span>
-            {contactInfo && (
-              <div className="text-xs font-medium text-blue-600">
-                {contactInfo}
-              </div>
-            )}
-          </div>
+              <span className="font-semibold text-gray-800">
+                {room.landlord.landlordProfile.fullName}
+              </span>
+              {contactInfo && (
+                <div className="text-xs font-medium text-blue-600">
+                  {contactInfo}
+                </div>
+              )}
+            </div>
           </div>
           <div className="flex items-center gap-2">
             <ButtonForVipCard
@@ -256,7 +262,7 @@ const FavoriteDashboardRoomCard: React.FC<RoomCardProps> = ({
               href={`/detail/${room.id}`}
               className="px-4 py-2 text-sm font-semibold text-gray-700 transition-colors bg-white border border-gray-300 rounded-lg hover:bg-gray-100"
             >
-              See Detail
+              Xem chi tiết
             </Link>
           </div>
         </div>

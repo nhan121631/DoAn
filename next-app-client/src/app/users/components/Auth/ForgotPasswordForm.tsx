@@ -25,8 +25,8 @@ const schema = yup
     email: yup
       .string()
       .trim()
-      .email("Invalid email.")
-      .required("Please enter your email.")
+      .email("Email không hợp lệ.")
+      .required("Hãy nhập email.")
       .lowercase(),
   })
   .required();
@@ -63,11 +63,11 @@ export default function ForgotPasswordForm() {
     e.preventDefault();
     setPasswordError("");
     if (!newPassword || newPassword.length < 6) {
-      setPasswordError("Password must be at least 6 characters.");
+      setPasswordError("Mật khẩu phải có ít nhất 6 ký tự.");
       return;
     }
     if (newPassword !== repeatPassword) {
-      setPasswordError("Passwords do not match.");
+      setPasswordError("Mật khẩu không khớp.");
       return;
     }
     setResetting(true);
@@ -82,7 +82,7 @@ export default function ForgotPasswordForm() {
     try {
       await changePassword(resetEmail, newPassword, code);
       messageApi.success({
-        content: "Password has been reset successfully!",
+        content: "Mật khẩu đã được đặt lại thành công!",
         duration: 2,
       });
       setShowPasswordForm(false);
@@ -96,7 +96,7 @@ export default function ForgotPasswordForm() {
       console.error("Error resetting password:", error);
       messageApi.error({
         content:
-          error instanceof Error ? error.message : "Failed to reset password.",
+          error instanceof Error ? error.message : "Đặt lại mật khẩu thất bại.",
         duration: 3,
       });
     } finally {
@@ -107,18 +107,18 @@ export default function ForgotPasswordForm() {
   // Xử lý xác thực mã code
   const handleVerifyCode = async (code: string) => {
     if (!/^[0-9]{6}$/.test(code)) {
-      setCodeError("Please enter a valid 6-digit code.");
+      setCodeError("Hãy nhập mã gồm 6 chữ số hợp lệ.");
       return false;
     }
     setCodeError("");
     setVerifying(true);
     try {
       await verifyResetCode(resetEmail, code);
-      messageApi.success({ content: "Code verified!", duration: 2 });
+      messageApi.success({ content: "Mã xác thực hợp lệ!", duration: 2 });
       setShowPasswordForm(true);
     } catch (err: any) {
       messageApi.error({
-        content: err?.message || "Invalid code or email.",
+        content: err?.message || "Mã hoặc email không hợp lệ.",
         duration: 3,
       });
       console.error("Error verifying code:", err);
@@ -135,7 +135,7 @@ export default function ForgotPasswordForm() {
       await resetPassword(values.email);
       setResetEmail(values.email); // Lưu email để xác thực code
       messageApi.success({
-        content: "Password reset code sent to your email.",
+        content: "Mã đặt lại mật khẩu đã được gửi đến email của bạn.",
         duration: 3,
       });
       reset();
@@ -144,7 +144,7 @@ export default function ForgotPasswordForm() {
       console.error("Error resetting password:", error);
       messageApi.error({
         content:
-          error instanceof Error ? error.message : "Failed to reset password.",
+          error instanceof Error ? error.message : "Đặt lại mật khẩu thất bại.",
         duration: 3,
       });
     } finally {
@@ -158,10 +158,10 @@ export default function ForgotPasswordForm() {
       {!showCodeInput ? (
         <>
           <h2 className="mb-4 text-3xl font-bold text-white">
-            Recover Password
+            Khôi phục mật khẩu
           </h2>
           <p className="mb-6 text-gray-200">
-            Enter your email to receive a password reset code
+            Nhập email của bạn để nhận mã đặt lại mật khẩu
           </p>
           <form onSubmit={handleSubmit(onSubmit)}>
             <div className="mb-6">
@@ -174,7 +174,7 @@ export default function ForgotPasswordForm() {
                 className={`w-full p-3 border ${
                   errors.email ? "border-red-500" : "border-gray-300"
                 } rounded-md focus:outline-none focus:ring-2 focus:ring-white text-white`}
-                placeholder="Your email"
+                placeholder="Email của bạn"
                 {...register("email")}
               />
               {errors.email && (
@@ -213,11 +213,11 @@ export default function ForgotPasswordForm() {
                       d="M4 12a8 8 0 018-8v8z"
                     />
                   </svg>
-                  Sending...
+                  Đang gửi...
                 </span>
               ) : (
                 <>
-                  Send Password Reset Code{" "}
+                  Gửi mã đặt lại mật khẩu{" "}
                   <span className="text-xl">&rarr;</span>
                 </>
               )}
@@ -226,8 +226,8 @@ export default function ForgotPasswordForm() {
         </>
       ) : showPasswordForm ? (
         <>
-          <h2 className="mb-4 text-3xl font-bold text-white">Reset Password</h2>
-          <p className="mb-6 text-gray-200">Enter your new password below.</p>
+          <h2 className="mb-4 text-3xl font-bold text-white">Đặt lại mật khẩu</h2>
+          <p className="mb-6 text-gray-200">Nhập mật khẩu mới của bạn bên dưới.</p>
           <form onSubmit={handlePasswordResetSubmit}>
             <div className="mb-6">
               <input
@@ -284,10 +284,10 @@ export default function ForgotPasswordForm() {
                       d="M4 12a8 8 0 018-8v8z"
                     />
                   </svg>
-                  Resetting...
+                  Đang đặt lại mật khẩu...
                 </span>
               ) : (
-                "Reset Password"
+                "Đặt lại mật khẩu"
               )}
             </button>
           </form>
@@ -295,10 +295,10 @@ export default function ForgotPasswordForm() {
       ) : (
         <>
           <h2 className="mb-4 text-3xl font-bold text-white">
-            Enter Verification Code
+            Nhập mã xác thực
           </h2>
           <p className="mb-6 text-gray-200">
-            Please enter the 6-digit code sent to your email.
+            Hãy nhập mã 6 chữ số đã được gửi đến email của bạn.
           </p>
           <form
             onSubmit={(e) => {
@@ -410,10 +410,10 @@ export default function ForgotPasswordForm() {
                       d="M4 12a8 8 0 018-8v8z"
                     />
                   </svg>
-                  Verifying...
+                  Đang xác minh...
                 </span>
               ) : (
-                "Verify Code"
+                "Xác minh mã"
               )}
             </button>
           </form>
@@ -421,7 +421,7 @@ export default function ForgotPasswordForm() {
       )}
       <div className="mt-8 text-sm text-center text-gray-300">
         <p>
-          If you need support, please contact Phone/Zalo:{" "}
+          Nếu cần hỗ trợ, vui lòng liên hệ qua Điện thoại/Zalo:{" "}
           <span className="font-bold text-gray-200">0347 002 025</span>.
         </p>
       </div>
@@ -430,7 +430,7 @@ export default function ForgotPasswordForm() {
           href="/auth/login"
           className="text-sm text-gray-200 hover:underline"
         >
-          Back to Login
+          Quay lại trang đăng nhập
         </Link>
       </div>
     </div>

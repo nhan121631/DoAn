@@ -33,10 +33,10 @@ export default function FilterLoadingOverlay({
             {/* Text with gradient */}
             <div className="text-center">
               <h3 className="text-sm font-semibold bg-gradient-to-r from-blue-600 to-orange-600 bg-clip-text text-transparent">
-                Filtering Results...
+                Đang lọc kết quả...
               </h3>
               <p className="text-xs text-gray-500 mt-1 animate-pulse">
-                Please wait a moment
+                Vui lòng chờ trong giây lát
               </p>
             </div>
 

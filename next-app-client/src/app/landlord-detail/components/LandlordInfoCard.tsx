@@ -114,7 +114,9 @@ export default function LandlordInfoCard({
             {/* Online Status */}
             <div className="flex items-center justify-center gap-2 px-3 py-1 border rounded-full backdrop-blur-sm bg-green-400/20 border-green-300/30">
               <div className="w-2 h-2 bg-green-300 rounded-full animate-pulse"></div>
-              <p className="text-xs font-medium text-green-100">Online</p>
+              <p className="text-xs font-medium text-green-100">
+                Đang hoạt động
+              </p>
             </div>
           </div>
         </div>
@@ -132,7 +134,7 @@ export default function LandlordInfoCard({
                   {landlord.totalListings}
                 </p>
               </div>
-              <p className="text-xs font-medium text-gray-600">Listings</p>
+              <p className="text-xs font-medium text-gray-600">Bài đăng</p>
             </div>
 
             <div className="w-px h-8 bg-gray-200"></div>
@@ -140,10 +142,10 @@ export default function LandlordInfoCard({
             <div className="flex-1 text-center">
               <div className="flex items-center justify-center gap-1 mb-1">
                 <span className="text-blue-500">👤</span>
-                <p className="text-sm font-bold text-gray-800">Member</p>
+                <p className="text-sm font-bold text-gray-800">Thành viên</p>
               </div>
               <p className="text-xs font-medium text-gray-600">
-                Since {new Date(landlord.memberSince).getFullYear()}
+                Từ năm {new Date(landlord.memberSince).getFullYear()}
               </p>
             </div>
           </div>
@@ -153,11 +155,11 @@ export default function LandlordInfoCard({
         <div className="flex flex-wrap justify-center gap-2">
           <div className="flex items-center gap-1 px-3 py-1 text-green-700 border border-green-200 rounded-full bg-green-50">
             <MdVerified className="w-3 h-3" />
-            <span className="text-xs font-medium">Verified</span>
+            <span className="text-xs font-medium">Đã xác thực</span>
           </div>
           <div className="flex items-center gap-1 px-3 py-1 text-blue-700 border border-blue-200 rounded-full bg-blue-50">
             <BiShield className="w-3 h-3" />
-            <span className="text-xs font-medium">Trusted</span>
+            <span className="text-xs font-medium">Đáng tin cậy</span>
           </div>
         </div>
 
@@ -189,7 +191,7 @@ export default function LandlordInfoCard({
             <div className="absolute inset-0 transition-opacity duration-300 opacity-0 bg-gradient-to-r from-blue-600 to-indigo-700 group-hover:opacity-100"></div>
             <div className="relative flex items-center gap-3">
               <IoChatbubbleEllipsesOutline className="w-5 h-5" />
-              <span className="font-semibold">Start Conversation</span>
+              <span className="font-semibold">Bắt đầu trò chuyện</span>
             </div>
           </button>
         </div>

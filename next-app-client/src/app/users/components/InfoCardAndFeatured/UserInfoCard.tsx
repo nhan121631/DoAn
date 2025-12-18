@@ -51,11 +51,11 @@ export default function UserInfoCard({ id }: { id: string }) {
   const [reportDescription, setReportDescription] = useState("");
   // predefined reasons list
   const REPORT_REASONS = [
-    "Information has expired/no longer valid",
-    "Duplicate content",
-    "Unable to contact the listing owner",
-    "Information in the listing is inaccurate (price, area, images...)",
-    "Other reasons",
+    "Thông tin đã hết hạn/không còn hiệu lực",
+    "Nội dung bị trùng lặp",
+    "Không liên hệ được với chủ tin đăng",
+    "Thông tin trong tin đăng không chính xác (giá, diện tích, hình ảnh...)",
+    "Lý do khác",
   ];
   // v3 flow: we'll set verified flag after server verification
   const [isVerifiedHuman, setIsVerifiedHuman] = useState(false);
@@ -279,31 +279,31 @@ export default function UserInfoCard({ id }: { id: string }) {
   const handleSubmitReport = async () => {
     // Validate required fields
     if (!reportReason) {
-      messageApi.error("Please select a reason for reporting.");
+      messageApi.error("Vui lòng chọn lý do phản ánh.");
       return;
     }
 
     const nameTrim = contactName.trim();
     if (!nameTrim) {
-      messageApi.error("Please enter your full name.");
+      messageApi.error("Vui lòng nhập họ tên.");
       return;
     }
 
     // Name validation: no special characters and under 100 characters
     if (nameTrim.length >= 100) {
-      messageApi.error("Name must be under 100 characters.");
+      messageApi.error("Họ tên phải dưới 100 ký tự.");
       return;
     }
     // Check for special characters in name (allow only letters, numbers, and spaces)
     const nameRegex = /^[a-zA-ZÀ-ỹ0-9\s]+$/;
     if (!nameRegex.test(nameTrim)) {
-      messageApi.error("Name cannot contain special characters.");
+      messageApi.error("Họ tên không được chứa ký tự đặc biệt.");
       return;
     }
 
     const phoneTrim = contactPhone.trim();
     if (!phoneTrim) {
-      messageApi.error("Please enter your phone number.");
+      messageApi.error("Vui lòng nhập số điện thoại.");
       return;
     }
 
@@ -311,24 +311,22 @@ export default function UserInfoCard({ id }: { id: string }) {
     const phoneRegex = /^[0-9]{10}$/;
     if (!phoneRegex.test(phoneTrim)) {
       messageApi.error(
-        "Phone number must be exactly 10 digits and contain no special characters."
+        "Số điện thoại phải đúng 10 số và không chứa ký tự đặc biệt."
       );
       return;
     }
 
     // Validate description if "Other reasons" is selected
-    if (reportReason === "Other reasons") {
+    if (reportReason === "Lý do khác") {
       const descriptionTrim = reportDescription.trim();
       if (!descriptionTrim) {
-        messageApi.error(
-          "Please provide details when selecting 'Other reasons'."
-        );
+        messageApi.error("Vui lòng nhập chi tiết khi chọn 'Lý do khác'.");
         return;
       }
     }
 
     setReportSubmitting(true);
-    setReportStatus("Submitting report...");
+    setReportStatus("Đang gửi phản ánh...");
     try {
       // Prepare payload
       const payload: any = {
@@ -339,7 +337,7 @@ export default function UserInfoCard({ id }: { id: string }) {
       };
 
       // Add description if "Other reasons" is selected (already validated as required)
-      if (reportReason === "Other reasons") {
+      if (reportReason === "Lý do khác") {
         payload.description = reportDescription.trim();
       }
 
@@ -364,8 +362,8 @@ export default function UserInfoCard({ id }: { id: string }) {
       console.log("[UserInfoCard] 📥 Response data:", data);
 
       if (data.success) {
-        messageApi.success("Report submitted successfully!");
-        setReportStatus("Report submitted. Thank you!");
+        messageApi.success("Gửi phản ánh thành công!");
+        setReportStatus("Đã gửi phản ánh. Xin cảm ơn!");
 
         // Reset form
         setReportReason("");
@@ -382,11 +380,9 @@ export default function UserInfoCard({ id }: { id: string }) {
           setReportStatus(null);
         }, 1500);
       } else {
-        messageApi.error(
-          data.message || "An error occurred while submitting the report."
-        );
+        messageApi.error(data.message || "Có lỗi xảy ra khi gửi phản ánh.");
         setReportStatus(
-          "Error submitting report: " + (data.message || "Please try again.")
+          "Lỗi khi gửi phản ánh: " + (data.message || "Vui lòng thử lại.")
         );
       }
     } catch (err) {
@@ -397,8 +393,8 @@ export default function UserInfoCard({ id }: { id: string }) {
         type: typeof err,
         error: err,
       });
-      messageApi.error("Connection error. Please try again later.");
-      setReportStatus("Error submitting report. Please try again.");
+      messageApi.error("Lỗi kết nối. Vui lòng thử lại sau.");
+      setReportStatus("Lỗi khi gửi phản ánh. Vui lòng thử lại.");
     } finally {
       setReportSubmitting(false);
     }
@@ -407,7 +403,7 @@ export default function UserInfoCard({ id }: { id: string }) {
   // Explicit verification action invoked by user before submitting report
   const handleVerifyRecaptcha = async (): Promise<boolean> => {
     if (!SITE_KEY) {
-      setReportStatus("reCAPTCHA not configured.");
+      setReportStatus("Chưa cấu hình reCAPTCHA.");
       return false;
     }
 
@@ -457,7 +453,7 @@ export default function UserInfoCard({ id }: { id: string }) {
       if (!verifyRes.ok) {
         const text = await verifyRes.text();
         console.error("reCAPTCHA verify endpoint returned error", text);
-        setReportStatus("Error verifying reCAPTCHA: server returned error.");
+        setReportStatus("Lỗi xác thực reCAPTCHA. Vui lòng thử lại.");
         setIsVerifiedHuman(false);
         setVerifySubmitting(false);
         return false;
@@ -471,7 +467,7 @@ export default function UserInfoCard({ id }: { id: string }) {
       console.debug("reCAPTCHA verify response:", verifyData);
 
       if (!success || score < 0.5) {
-        setReportStatus("Verification failed — please try again.");
+        setReportStatus("Xác thực thất bại — vui lòng thử lại.");
         setIsVerifiedHuman(false);
         setVerifySubmitting(false);
         return false;
@@ -485,7 +481,7 @@ export default function UserInfoCard({ id }: { id: string }) {
       return true;
     } catch (err) {
       console.error("Error during reCAPTCHA verification", err);
-      setReportStatus("Error verifying reCAPTCHA. Please try again.");
+      setReportStatus("Lỗi xác thực reCAPTCHA. Vui lòng thử lại.");
       setIsVerifiedHuman(false);
       return false;
     } finally {
@@ -694,7 +690,7 @@ export default function UserInfoCard({ id }: { id: string }) {
               <div className="absolute inset-0 transition-opacity duration-300 opacity-0 bg-gradient-to-r from-blue-600 to-indigo-700 group-hover:opacity-100"></div>
               <div className="relative flex items-center gap-3">
                 <IoChatbubbleEllipsesOutline className="w-5 h-5" />
-                <span className="font-semibold">Start Conversation</span>
+                <span className="font-semibold">Bắt đầu trò chuyện</span>
               </div>
             </button>
           </div>
@@ -728,7 +724,7 @@ export default function UserInfoCard({ id }: { id: string }) {
 
             {/* Like và số gộp chung */}
             <span className="text-xs font-semibold">
-              {isFavorited ? "Favorites" : "Favorite"} {favoriteCount}
+              {isFavorited ? "Đã thích" : "Yêu thích"} {favoriteCount}
             </span>
           </button>
 
@@ -739,7 +735,7 @@ export default function UserInfoCard({ id }: { id: string }) {
             <div className="p-2 transition-colors bg-gray-100 rounded-lg group-hover:bg-emerald-100">
               <IoShareSocialOutline className="w-4 h-4" />
             </div>
-            <span className="text-xs font-semibold">Share</span>
+            <span className="text-xs font-semibold">Chia sẻ</span>
           </button>
 
           <button
@@ -749,7 +745,7 @@ export default function UserInfoCard({ id }: { id: string }) {
             <div className="p-2 transition-colors bg-gray-100 rounded-lg group-hover:bg-red-100">
               <IoWarningOutline className="w-4 h-4" />
             </div>
-            <span className="text-xs font-semibold">Report</span>
+            <span className="text-xs font-semibold">Báo cáo</span>
           </button>
         </div>
       </div>
@@ -762,11 +758,11 @@ export default function UserInfoCard({ id }: { id: string }) {
           </div>
           <div className="flex-1">
             <h4 className="mb-1 text-sm font-semibold text-gray-800">
-              Safety First
+              An toàn là trên hết
             </h4>
             <p className="text-xs leading-relaxed text-gray-600">
-              Always meet in public places and verify property details before
-              making any payments.
+              Luôn gặp mặt tại nơi công cộng và xác minh thông tin phòng trước
+              khi thanh toán.
             </p>
           </div>
         </div>
@@ -818,10 +814,10 @@ export default function UserInfoCard({ id }: { id: string }) {
                 <IoShareSocialOutline className="w-8 h-8 text-white" />
               </div>
               <h2 className="mb-2 text-2xl font-bold text-gray-800">
-                Share this listing
+                Chia sẻ tin đăng này
               </h2>
               <p className="text-gray-600">
-                Copy the link to share with others
+                Sao chép liên kết để chia sẻ với người khác
               </p>
             </div>
             <div className="flex items-center overflow-hidden transition-colors border-2 border-gray-200 shadow-sm rounded-xl hover:border-blue-300">
@@ -866,30 +862,30 @@ export default function UserInfoCard({ id }: { id: string }) {
                 <IoWarningOutline className="w-8 h-8 text-white" />
               </div>
               <h2 className="mb-2 text-2xl font-bold text-gray-800">
-                Report this listing
+                Báo cáo tin đăng này
               </h2>
               <p className="text-gray-600">
-                Help us keep the platform safe and reliable
+                Hãy giúp chúng tôi giữ nền tảng an toàn và tin cậy
               </p>
             </div>
 
             <div className="space-y-6">
               <div>
                 <h3 className="mb-3 text-sm font-semibold text-gray-800">
-                  Contact Information <span className="text-red-500">*</span>
+                  Thông tin liên hệ <span className="text-red-500">*</span>
                 </h3>
                 <div className="space-y-3 flex flex-col gap-3">
                   <Input
                     value={contactName}
                     onChange={(e) => setContactName(e.target.value)}
-                    placeholder="Your full name"
+                    placeholder="Họ và tên của bạn"
                     maxLength={100}
                     aria-required
                   />
                   <Input
                     value={contactPhone}
                     onChange={(e) => setContactPhone(e.target.value)}
-                    placeholder="Your phone number"
+                    placeholder="Số điện thoại của bạn"
                     maxLength={20}
                     aria-required
                   />
@@ -898,7 +894,7 @@ export default function UserInfoCard({ id }: { id: string }) {
 
               <div>
                 <h3 className="mb-3 text-sm font-semibold text-gray-800">
-                  Reason for reporting <span className="text-red-500">*</span>
+                  Lý do báo cáo <span className="text-red-500">*</span>
                 </h3>
                 <div className="space-y-2">
                   <Radio.Group
@@ -917,16 +913,16 @@ export default function UserInfoCard({ id }: { id: string }) {
               </div>
 
               {/* Additional details only visible when 'Other reasons' is selected */}
-              {reportReason === "Other reasons" && (
+              {reportReason === "Lý do khác" && (
                 <div>
                   <h3 className="mb-3 text-sm font-semibold text-gray-800">
-                    Additional details <span className="text-red-500">*</span>
+                    Thông tin bổ sung <span className="text-red-500">*</span>
                   </h3>
                   <Input.TextArea
                     value={reportDescription}
                     onChange={(e) => setReportDescription(e.target.value)}
                     rows={4}
-                    placeholder="Provide more details about the issue..."
+                    placeholder="Nhập chi tiết về vấn đề..."
                   />
                 </div>
               )}
@@ -965,7 +961,7 @@ export default function UserInfoCard({ id }: { id: string }) {
                         verifySubmitting ? "text-gray-500" : "text-gray-700"
                       }`}
                     >
-                      I&#39;m not a robot
+                      Tôi không phải là robot
                     </label>
                     <div className="ml-auto">
                       <div className="text-xs text-gray-500 flex flex-col items-end">
@@ -1013,7 +1009,7 @@ export default function UserInfoCard({ id }: { id: string }) {
                     : ""
                 } cursor-pointer bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white font-semibold py-4 rounded-xl transition-all duration-300 transform hover:scale-[1.02] shadow-lg hover:shadow-xl`}
               >
-                {reportSubmitting ? "Processing..." : "Submit Report"}
+                {reportSubmitting ? "Đang xử lý..." : "Gửi báo cáo"}
               </button>
             </div>
           </div>

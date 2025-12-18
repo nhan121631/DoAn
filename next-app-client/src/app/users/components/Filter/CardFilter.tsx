@@ -35,22 +35,22 @@ export default function CardFilter() {
   };
   // Price and area filter options
   const priceRanges = [
-    { label: "Under 1M", min: 0, max: 1000000 },
-    { label: "1-2M", min: 1000000, max: 2000000 },
-    { label: "2-3M", min: 2000000, max: 3000000 },
-    { label: "3-5M", min: 3000000, max: 5000000 },
-    { label: "5-7M", min: 5000000, max: 7000000 },
-    { label: "7-10M", min: 7000000, max: 10000000 },
-    { label: "10-15M", min: 10000000, max: 15000000 },
-    { label: "Above 15M", min: 15000000, max: undefined },
+    { label: "Dưới 1 triệu", min: 0, max: 1000000 },
+    { label: "1-2 triệu", min: 1000000, max: 2000000 },
+    { label: "2-3 triệu", min: 2000000, max: 3000000 },
+    { label: "3-5 triệu", min: 3000000, max: 5000000 },
+    { label: "5-7 triệu", min: 5000000, max: 7000000 },
+    { label: "7-10 triệu", min: 7000000, max: 10000000 },
+    { label: "10-15 triệu", min: 10000000, max: 15000000 },
+    { label: "Trên 15 triệu", min: 15000000, max: undefined },
   ];
   const areaRanges = [
-    { label: "Under 20m²", min: 0, max: 20 },
+    { label: "Dưới 20m²", min: 0, max: 20 },
     { label: "20-30m²", min: 20, max: 30 },
     { label: "30-50m²", min: 30, max: 50 },
     { label: "50-70m²", min: 50, max: 70 },
     { label: "70-90m²", min: 70, max: 90 },
-    { label: "Above 90m²", min: 90, max: undefined },
+    { label: "Trên 90m²", min: 90, max: undefined },
   ];
   return (
     <FilterLoadingOverlay isVisible={isLoading}>
@@ -58,10 +58,10 @@ export default function CardFilter() {
         {/* Header with gradient */}
         <div className="text-center pb-2 border-b border-gradient-to-r from-transparent via-blue-200/50 to-transparent">
           <h2 className="text-lg font-bold bg-gradient-to-r from-blue-700 via-indigo-700 to-purple-700 bg-clip-text text-transparent tracking-wide">
-            Advanced Filters
+            Bộ lọc nâng cao
           </h2>
           <p className="text-sm text-gray-500 mt-1">
-            Refine your search results
+            Lọc kết quả tìm kiếm của bạn
           </p>
         </div>
 
@@ -70,7 +70,7 @@ export default function CardFilter() {
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 bg-gradient-to-r from-orange-500 to-red-500 rounded-full"></div>
             <h3 className="font-bold text-base text-gray-800 tracking-wide">
-              Price Range
+              Khoảng giá
             </h3>
           </div>
           <div className="grid grid-cols-2 gap-x-4 gap-y-2">
@@ -146,7 +146,7 @@ export default function CardFilter() {
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 bg-gradient-to-r from-orange-500 to-red-500 rounded-full"></div>
             <h3 className="font-bold text-base text-gray-800 tracking-wide">
-              Area Range
+              Diện tích
             </h3>
           </div>
           <div className="grid grid-cols-2 gap-x-4 gap-y-2">

@@ -156,19 +156,19 @@ export default function LocationAwareNormalRooms({
     <div className="flex flex-col items-center justify-center w-full gap-4 px-2 sm:px-4 my-6 max-w-7xl">
       <div className="text-center space-y-6 mb-16">
         <h3 className="text-4xl font-bold bg-gradient-to-r from-gray-800 to-blue-600 bg-clip-text text-transparent">
-          Featured Properties
+          Phòng nổi bật
         </h3>
         {(hasGuestData || hasUserData) && location && (
           <div className="text-sm text-blue-600 mt-2 flex items-center justify-center gap-2">
             <span className="bg-blue-100 px-4 py-2 rounded-full font-medium">
-              📍 Sorted by distance from: {location.address}
+              📍 Sắp xếp theo khoảng cách từ: {location.address}
             </span>
           </div>
         )}
         <p className="text-xl text-gray-600 max-w-2xl mx-auto">
           {hasGuestData || hasUserData
-            ? "Quality rentals sorted by proximity to your selected location"
-            : "Discover our most popular and highly-rated rental properties"}
+            ? "Các phòng chất lượng được sắp xếp theo vị trí gần bạn nhất"
+            : "Khám phá các phòng trọ nổi bật và được đánh giá cao nhất"}
         </p>
       </div>
 
@@ -235,19 +235,19 @@ export default function LocationAwareNormalRooms({
                 className="transition-transform group-hover:-translate-x-1"
               />
             )}
-            <span className="hidden sm:inline font-medium">Previous</span>
+            <span className="hidden sm:inline font-medium">Trước</span>
           </button>
 
           {/* Page Info */}
           <div className="flex flex-col items-center px-6 py-2 bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/50 shadow-sm">
             <span className="text-lg font-bold bg-gradient-to-r from-blue-600 to-blue-700 bg-clip-text text-transparent">
-              Page {displayPage + 1} / {normalRooms.totalPages || 1}
+              Trang {displayPage + 1} / {normalRooms.totalPages || 1}
             </span>
             <span className="text-xs text-gray-500 font-medium">
-              {normalRooms.totalRecords || normalRooms.data.length} featured
-              rooms
-              {(hasGuestData || hasUserData) && " (location-sorted)"}
-              {isLoadingPage && " (loading...)"}
+              {normalRooms.totalRecords || normalRooms.data.length} phòng nổi
+              bật
+              {(hasGuestData || hasUserData) && " (sắp xếp theo vị trí)"}
+              {isLoadingPage && " (đang tải...)"}
             </span>
           </div>
 
@@ -267,7 +267,7 @@ export default function LocationAwareNormalRooms({
                 : "bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-blue-500/30"
             }`}
           >
-            <span className="hidden sm:inline font-medium">Next</span>
+            <span className="hidden sm:inline font-medium">Tiếp</span>
             {isLoadingPage &&
             optimisticPage ===
               Math.min((normalRooms.totalPages || 1) - 1, displayPage + 1) ? (

@@ -26,7 +26,7 @@ export default function LandlordListCard() {
       setLandlords(response.content);
       setPageData(response);
     } catch (err) {
-      setError("Failed to load landlords");
+      setError("Không thể tải danh sách chủ nhà");
       console.error("Error:", err);
     } finally {
       setLoading(false);
@@ -51,7 +51,7 @@ export default function LandlordListCard() {
         <div className="relative px-4 py-20 mx-auto max-w-7xl sm:px-6 lg:px-8">
           <div className="text-center">
             <div className="w-12 h-12 mx-auto border-b-2 border-blue-600 rounded-full animate-spin"></div>
-            <p className="mt-4 text-gray-600">Loading landlords...</p>
+            <p className="mt-4 text-gray-600">Đang tải danh sách chủ nhà...</p>
           </div>
         </div>
       </section>
@@ -68,7 +68,7 @@ export default function LandlordListCard() {
               onClick={() => fetchLandlords(currentPage)}
               className="px-4 py-2 mt-4 text-white bg-blue-600 rounded-lg hover:bg-blue-700"
             >
-              Try Again
+              Thử lại
             </button>
           </div>
         </div>
@@ -89,19 +89,19 @@ export default function LandlordListCard() {
         {/* Header Section */}
         <div className="max-w-3xl mx-auto mb-16 text-center">
           <div className="inline-flex items-center px-4 py-2 mb-6 text-sm font-medium text-blue-700 bg-blue-100 rounded-full">
-            👥 Our Partners
+            👥 Đối tác của chúng tôi
           </div>
 
           <h2 className="mb-4 text-3xl font-bold text-gray-900 md:text-4xl">
-            Trusted
+            Chủ nhà
             <span className="text-transparent bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text">
-              Landlords
+              uy tín
             </span>
           </h2>
 
           <p className="text-lg leading-relaxed text-gray-600">
-            Connect with verified property owners who provide quality
-            accommodations and exceptional service across Vietnam
+            Kết nối với các chủ nhà đã xác thực, cung cấp chỗ ở chất lượng và
+            dịch vụ tận tâm trên khắp Việt Nam
           </p>
         </div>
 
@@ -176,10 +176,10 @@ export default function LandlordListCard() {
         <div className="flex justify-center mt-8">
           <div className="inline-flex items-center gap-2 px-4 py-2 text-sm text-gray-600 bg-white border border-gray-200 rounded-full shadow-sm">
             <span>
-              Page {(pageData?.page || 0) + 1} of {pageData?.totalPages || 1}
+              Trang {(pageData?.page || 0) + 1} / {pageData?.totalPages || 1}
             </span>
             <span className="w-1 h-1 bg-gray-400 rounded-full"></span>
-            <span>{pageData?.totalElements || 0} landlords total</span>
+            <span>{pageData?.totalElements || 0} chủ nhà</span>
           </div>
         </div>
 
@@ -191,21 +191,21 @@ export default function LandlordListCard() {
                 {pageData?.totalElements || 0}+
               </div>
               <div className="text-sm font-medium text-gray-600">
-                Verified Landlords
+                Chủ nhà đã xác thực
               </div>
             </div>
 
             <div className="space-y-2">
               <div className="text-3xl font-bold text-purple-600">10K+</div>
               <div className="text-sm font-medium text-gray-600">
-                Available Properties
+                Bất động sản đang cho thuê
               </div>
             </div>
 
             <div className="space-y-2">
               <div className="text-3xl font-bold text-green-600">98%</div>
               <div className="text-sm font-medium text-gray-600">
-                Customer Satisfaction
+                Khách hàng hài lòng
               </div>
             </div>
           </div>
@@ -215,7 +215,7 @@ export default function LandlordListCard() {
         <div className="mt-16 text-center">
           <div className="inline-flex items-center gap-2 px-6 py-3 text-sm text-gray-500 border rounded-full shadow-sm bg-white/70 backdrop-blur-sm border-gray-200/50">
             <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-            All landlords are verified and background-checked
+            Tất cả chủ nhà đều đã xác thực và kiểm tra lý lịch
           </div>
         </div>
       </div>

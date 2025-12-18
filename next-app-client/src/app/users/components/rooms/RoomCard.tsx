@@ -59,7 +59,7 @@ const RoomCard: React.FC<RoomCardProps> = ({
   const handleCompare = () => {
     if (items.length >= 2) {
       messageApi.warning({
-        content: "You can only compare up to 2 rooms.",
+        content: "Bạn chỉ có thể so sánh tối đa 2 phòng.",
         duration: 1.5,
       });
       return;
@@ -271,12 +271,12 @@ const RoomCard: React.FC<RoomCardProps> = ({
           <div className="absolute z-30 flex gap-2 top-4 left-4">
             {isForSale && (
               <span className="px-3 py-1.5 text-xs font-bold text-white bg-gradient-to-r from-green-500 to-emerald-600 rounded-full shadow-lg backdrop-blur-sm border border-white/20">
-                FOR SALE
+                ĐANG BÁN
               </span>
             )}
             {isFeatured && (
               <span className="px-3 py-1.5 text-xs font-bold text-white bg-gradient-to-r from-amber-500 to-orange-500 rounded-full shadow-lg backdrop-blur-sm border border-white/20">
-                FEATURED
+                NỔI BẬT
               </span>
             )}
           </div>
@@ -309,7 +309,7 @@ const RoomCard: React.FC<RoomCardProps> = ({
           {/* Title */}
           <div>
             <h3 className="text-lg font-bold text-gray-900 transition-colors duration-300 line-clamp-2 group-hover:text-blue-600">
-              {room.title || "Beautiful Room Available"}
+              {room.title || "Phòng đẹp sẵn sàng cho thuê"}
             </h3>
           </div>
 
@@ -329,7 +329,7 @@ const RoomCard: React.FC<RoomCardProps> = ({
                   d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
                 />
               </svg>
-              <span>Available now</span>
+              <span>Có thể thuê ngay</span>
             </div>
             <div className="flex items-center gap-1">
               <PiRuler className="w-4 h-4" />
@@ -346,7 +346,7 @@ const RoomCard: React.FC<RoomCardProps> = ({
           {/* Price and CTA */}
           <div className="pt-2 space-y-3 border-t border-gray-100">
             <div>
-              <span className="text-sm text-gray-600">Price per month</span>
+              <span className="text-sm text-gray-600">Giá mỗi tháng</span>
               <div className="flex items-baseline gap-1">
                 <span className="text-2xl font-bold text-emerald-600">
                   {typeof room.priceMonth === "number"
@@ -363,7 +363,7 @@ const RoomCard: React.FC<RoomCardProps> = ({
                 onClick={handleViewRoom}
                 className="flex-1 px-4 py-2.5 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white text-sm font-semibold rounded-xl transition-all duration-300 hover:shadow-lg hover:scale-105 active:scale-95 shadow-orange-500/25"
               >
-                View room
+                Xem phòng
               </button>
 
               <button

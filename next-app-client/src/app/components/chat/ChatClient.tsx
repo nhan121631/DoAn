@@ -296,7 +296,7 @@ export default function ChatClient({
                 }`}
               />
               <span className="text-sm">
-                {isConnected ? "Active now" : "Offline"}
+                {isConnected ? "Đang hoạt động" : "Ngoại tuyến"}
               </span>
             </div>
           </div>
@@ -415,7 +415,7 @@ export default function ChatClient({
           ref={inputRef}
           disabled={sending || uploadingImage}
           onChange={(e) => setMsg(e.target.value)}
-          placeholder="Type a message..."
+          placeholder="Nhập tin nhắn..."
           onKeyDown={(e) => {
             if (e.key === "Enter") {
               e.preventDefault();
@@ -445,6 +445,7 @@ export default function ChatClient({
               strokeLinejoin="round"
             />
           </svg>
+          {/* <span className="sr-only">Gửi</span> */}
         </button>
       </div>
 

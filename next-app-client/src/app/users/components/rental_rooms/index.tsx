@@ -138,16 +138,16 @@ export default async function RentalRooms({
               <div className="flex flex-col items-center w-full gap-4 px-2 sm:px-4 my-8 bg-white max-w-7xl lg:px-0 lg:w-auto">
                 <div className="w-full text-center space-y-4">
                   <h1 className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-gray-900 via-blue-700 to-purple-700 bg-clip-text text-transparent leading-tight">
-                    Rooms You&#39;re Looking For
+                    Các phòng bạn đang tìm kiếm
                   </h1>
                   <div className="flex items-center justify-center gap-2 text-lg text-gray-600">
                     <HiLocationMarker className="text-blue-500" />
                     <span className="font-medium">
-                      Found{" "}
+                      Đã tìm thấy{" "}
                       <span className="text-blue-600 font-bold">
                         {filteredRooms.totalRecords}
                       </span>{" "}
-                      perfect matches
+                      kết quả phù hợp
                     </span>
                   </div>
                 </div>
@@ -181,18 +181,18 @@ export default async function RentalRooms({
                     aria-disabled={pageSearch === 0}
                   >
                     <BiChevronLeft size={20} />
-                    <span className="hidden sm:inline">Previous</span>
+                    <span className="hidden sm:inline">Trước</span>
                   </Link>
                   <div className="flex flex-col items-center px-4">
                     <span className="text-base font-semibold text-gray-700">
-                      Page{" "}
+                      Trang{" "}
                       <span className="text-blue-600">{pageSearch + 1}</span> /{" "}
                       <span className="text-blue-600">
                         {filteredRooms.totalPages}
                       </span>
                     </span>
                     <span className="text-xs text-gray-400">
-                      {filteredRooms.totalRecords} rooms found
+                      {filteredRooms.totalRecords} phòng được tìm thấy
                     </span>
                   </div>
                   <Link
@@ -205,7 +205,7 @@ export default async function RentalRooms({
                     scroll={false}
                     aria-disabled={pageSearch + 1 >= filteredRooms.totalPages}
                   >
-                    <span className="hidden sm:inline font-medium">Next</span>
+                    <span className="hidden sm:inline font-medium">Tiếp</span>
                     <BiChevronRight
                       size={22}
                       className="transition-transform group-hover:translate-x-1"

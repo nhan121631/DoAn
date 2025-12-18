@@ -57,24 +57,24 @@ function ModalPayment({
   // Handle confirm payment
   const handleConfirmPayment = async () => {
     if (!transferConfirmed) {
-      messageApi.warning("Please confirm that you have completed the transfer");
+      messageApi.warning("Vui lòng xác nhận bạn đã chuyển khoản");
       return;
     }
 
     // if (!uploadedImage) {
-    //   messageApi.warning("Please upload your bill transfer image first");
+    //   messageApi.warning("Vui lòng tải lên ảnh hóa đơn chuyển khoản trước");
     //   return;
     // }
 
     try {
       await updateBookingStatus(bookingId, 3); // Set status to "waiting for deposit confirmation"
-      messageApi.success("Payment confirmation submitted successfully!");
+      messageApi.success("Xác nhận thanh toán thành công!");
       onConfirm();
       setTransferConfirmed(false);
       setUploadedImage(null);
     } catch (error) {
       console.error("Failed to update booking status:", error);
-      messageApi.error("Failed to confirm payment");
+      messageApi.error("Xác nhận thanh toán thất bại");
     }
   };
 
@@ -89,7 +89,7 @@ function ModalPayment({
     setImageUploading(true);
     try {
       const result = await uploadBillTransferImage(bookingId, file);
-      messageApi.success("Bill transfer image uploaded successfully!");
+      messageApi.success("Hóa đơn chuyển khoản đã được tải lên thành công!");
 
       // Create upload file object for display
       const uploadFile: UploadFile = {
@@ -126,14 +126,14 @@ function ModalPayment({
   const copyBankNumber = () => {
     if (paymentInfo?.bankNumber) {
       navigator.clipboard.writeText(paymentInfo.bankNumber);
-      messageApi.success("Bank number copied to clipboard");
+      messageApi.success("Đã sao chép số tài khoản ngân hàng");
     }
   };
 
   if (loading) {
     return (
       <Modal open={open} onCancel={handleCancel} footer={null} centered>
-        <div className="text-center py-8">Loading payment information...</div>
+        <div className="text-center py-8">Đang tải thông tin thanh toán...</div>
       </Modal>
     );
   }
@@ -147,7 +147,7 @@ function ModalPayment({
       title={
         <div className="flex items-center gap-2">
           <BankOutlined className="text-blue-600" />
-          <span>Payment Information</span>
+          <span>Thông tin thanh toán</span>
         </div>
       }
       width={500}
@@ -158,27 +158,27 @@ function ModalPayment({
           {/* Payment Instructions */}
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
             <h3 className="text-lg font-semibold text-blue-800 mb-3">
-              Transfer Details
+              Chi tiết chuyển khoản
             </h3>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-gray-600">Bank Name:</span>
+                <span className="text-gray-600">Ngân hàng:</span>
                 <span className="font-semibold">{paymentInfo.bankName}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600">Account Holder:</span>
+                <span className="text-gray-600">Chủ tài khoản:</span>
                 <span className="font-semibold">
                   {paymentInfo.accountHolderName}
                 </span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-gray-600">Account Number:</span>
+                <span className="text-gray-600">Số tài khoản:</span>
                 <div className="flex items-center gap-2">
                   <span className="font-mono font-semibold text-blue-700">
                     {paymentInfo.bankNumber}
                   </span>
                   <Button size="small" onClick={copyBankNumber}>
-                    Copy
+                    Sao chép
                   </Button>
                 </div>
               </div>
@@ -195,18 +195,18 @@ function ModalPayment({
               className="border border-gray-300 rounded-lg"
             />
             <p className="text-sm text-gray-600 mt-2 text-center">
-              Scan QR code to pay deposit
+              Quét mã QR để thanh toán tiền cọc
             </p>
           </div>
 
           {/* Contact Info */}
           <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
             <h4 className="font-semibold text-gray-800 mb-2">
-              Contact Landlord:
+              Liên hệ chủ nhà:
             </h4>
             <div className="text-sm space-y-1">
               <div>
-                📞 Phone:{" "}
+                📞 SĐT:{" "}
                 <a
                   href={`tel:${paymentInfo.phoneNumber}`}
                   className="text-blue-600"
@@ -229,11 +229,11 @@ function ModalPayment({
           {/* Upload Bill Transfer Image */}
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
             <h4 className="font-semibold text-blue-700 mb-3">
-              Upload Bill Transfer Image
+              Tải lên ảnh hóa đơn chuyển khoản
             </h4>
             <p className="text-sm text-blue-600 mb-3">
-              Please upload a screenshot or photo of your bank transfer as proof
-              of payment.
+              Vui lòng tải lên ảnh chụp màn hình hoặc ảnh hóa đơn chuyển khoản
+              ngân hàng để xác nhận thanh toán.
             </p>
             <Upload {...uploadProps}>
               <Button
@@ -241,12 +241,12 @@ function ModalPayment({
                 loading={imageUploading}
                 className="w-full"
               >
-                {imageUploading ? "Uploading..." : "Select Image"}
+                {imageUploading ? "Đang tải lên..." : "Chọn ảnh"}
               </Button>
             </Upload>
             {/* {!uploadedImage && (
               <p className="text-xs text-red-600 mt-1">
-                * This field is required to confirm your payment
+                * Trường này là bắt buộc để xác nhận thanh toán
               </p>
             )} */}
           </div>
@@ -265,11 +265,13 @@ function ModalPayment({
                 htmlFor="transferConfirmed"
                 className="text-sm text-gray-700"
               >
-                <strong>I confirm that:</strong>
+                <strong>Tôi xác nhận rằng:</strong>
                 <ul className="list-disc list-inside mt-1 space-y-1">
-                  <li>I have completed the bank transfer</li>
-                  <li>I included the booking ID in the transfer description</li>
-                  <li>I will contact the landlord if needed</li>
+                  <li>Tôi đã hoàn thành chuyển khoản ngân hàng</li>
+                  <li>
+                    Tôi đã ghi rõ mã đặt phòng trong nội dung chuyển khoản
+                  </li>
+                  <li>Tôi sẽ liên hệ chủ nhà nếu cần thiết</li>
                 </ul>
               </label>
             </div>
@@ -278,14 +280,14 @@ function ModalPayment({
           {/* Action Buttons */}
           <div className="flex gap-3 mt-4">
             <Button onClick={handleCancel} className="flex-1">
-              Cancel
+              Hủy
             </Button>
             <Popconfirm
-              title="Confirm Payment Completion"
-              description="Are you sure you have completed the bank transfer? This will notify the landlord for confirmation."
+              title="Xác nhận đã chuyển khoản"
+              description="Bạn chắc chắn đã hoàn thành chuyển khoản? Thao tác này sẽ thông báo cho chủ nhà xác nhận."
               onConfirm={handleConfirmPayment}
-              okText="Yes, I've transferred"
-              cancelText="Not yet"
+              okText="Đã chuyển khoản"
+              cancelText="Chưa chuyển"
               okButtonProps={{ loading: confirmLoading }}
               disabled={!transferConfirmed}
             >
@@ -296,14 +298,14 @@ function ModalPayment({
                 // disabled={!transferConfirmed || !uploadedImage}
                 disabled={!transferConfirmed}
               >
-                Confirm Payment Sent
+                Xác nhận đã chuyển khoản
               </Button>
             </Popconfirm>
           </div>
         </div>
       ) : (
         <div className="text-center py-8 text-gray-500">
-          No payment information available
+          Không có thông tin thanh toán
         </div>
       )}
     </Modal>

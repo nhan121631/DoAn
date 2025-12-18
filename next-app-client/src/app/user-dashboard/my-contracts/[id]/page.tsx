@@ -60,7 +60,7 @@ export default function TenantContractDetail() {
       <div className="flex flex-col justify-center items-center h-full bg-white dark:bg-[#001529] transition-colors duration-300">
         <Spin size="large" />
         <span className="mt-3 text-center whitespace-nowrap text-gray-900 dark:text-white">
-          Loading contracts...
+          Đang tải hợp đồng...
         </span>
       </div>
     );
@@ -69,7 +69,7 @@ export default function TenantContractDetail() {
   if (error || !contract) {
     return (
       <div className="text-center text-red-500">
-        {error || "Contract not found"}
+        {error || "Không tìm thấy hợp đồng"}
       </div>
     );
   }
@@ -79,7 +79,7 @@ export default function TenantContractDetail() {
       key: "overview",
       label: (
         <span>
-          <FileTextOutlined /> Overview
+          <FileTextOutlined /> Tổng quan
         </span>
       ),
       children: (
@@ -94,7 +94,7 @@ export default function TenantContractDetail() {
       label: (
         <span>
           <DollarOutlined />
-          Bills
+          Hóa đơn
         </span>
       ),
       children: (
@@ -104,7 +104,6 @@ export default function TenantContractDetail() {
         />
       ),
     },
-    
   ];
 
   return (
@@ -116,9 +115,9 @@ export default function TenantContractDetail() {
             onClick={() => router.push("/user-dashboard/my-contracts")}
             className="mb-4 !bg-sky-600 dark:!bg-[#171f2f] !text-white"
           >
-            Go Back
+            Quay lại
           </Button>
-          <h2 className="text-xl font-bold mb-6">Contract Details</h2>
+          <h2 className="text-xl font-bold mb-6">Chi tiết hợp đồng</h2>
         </div>
         <Tabs
           activeKey={activeTab}

@@ -19,15 +19,15 @@ interface IChangePasswordInputs {
 }
 const schema = yup
   .object({
-    oldPassword: yup.string().required("Please enter your old password."),
+    oldPassword: yup.string().required("Vui lòng nhập mật khẩu cũ."),
     newPassword: yup
       .string()
-      .min(6, "New password must be at least 6 characters long.")
-      .required("Please enter your new password."),
+      .min(6, "Mật khẩu mới phải có ít nhất 6 ký tự.")
+      .required("Vui lòng nhập mật khẩu mới."),
     confirmNewPassword: yup
       .string()
-      .oneOf([yup.ref("newPassword")], "Confirm password does not match.")
-      .required("Please confirm your new password."),
+      .oneOf([yup.ref("newPassword")], "Xác nhận mật khẩu không khớp.")
+      .required("Vui lòng xác nhận mật khẩu mới."),
   })
   .required();
 
@@ -63,19 +63,19 @@ export default function ChangePasswordForm() {
     try {
       const response = await updatePassword(payload);
       if (response) {
-        messageApi.success("Password updated successfully");
+        messageApi.success("Đổi mật khẩu thành công");
         reset();
       }
     } catch (error: any) {
       // console.error("Error updating password:", error);
-      messageApi.error(error.message || "Failed to update password");
+      messageApi.error(error.message || "Đổi mật khẩu thất bại");
     }
   };
 
   return (
     <div className="p-6 mx-auto bg-white shadow-md w-130 rounded-xl">
       {contextHolder}
-      <h2 className="mb-6 text-2xl font-bold text-gray-800">Change Password</h2>
+      <h2 className="mb-6 text-2xl font-bold text-gray-800">Đổi mật khẩu</h2>
 
       <form onSubmit={handleSubmit(onSubmit)}>
         <div className="mb-4">
@@ -83,7 +83,7 @@ export default function ChangePasswordForm() {
             htmlFor="oldPassword"
             className="block mb-2 text-sm font-bold text-gray-700"
           >
-            Old Password
+            Mật khẩu cũ
           </label>
           <div className="relative">
             <input
@@ -92,7 +92,7 @@ export default function ChangePasswordForm() {
               className={`w-full p-3 border ${
                 errors.oldPassword ? "border-red-500" : "border-gray-300"
               } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800 pr-10`}
-              placeholder="Enter your old password"
+              placeholder="Nhập mật khẩu cũ"
               {...register("oldPassword")}
             />
             <span
@@ -113,7 +113,7 @@ export default function ChangePasswordForm() {
               href="/auth/forgot-password"
               className="text-sm text-blue-600 hover:underline"
             >
-              Forgot Password?
+              Quên mật khẩu?
             </Link>
           </div>
         </div>
@@ -123,7 +123,7 @@ export default function ChangePasswordForm() {
             htmlFor="newPassword"
             className="block mb-2 text-sm font-bold text-gray-700"
           >
-            New Password
+            Mật khẩu mới
           </label>
           <div className="relative">
             <input
@@ -132,7 +132,7 @@ export default function ChangePasswordForm() {
               className={`w-full p-3 border ${
                 errors.newPassword ? "border-red-500" : "border-gray-300"
               } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800 pr-10`}
-              placeholder="Enter your new password"
+              placeholder="Nhập mật khẩu mới"
               {...register("newPassword")}
             />
             <span
@@ -156,7 +156,7 @@ export default function ChangePasswordForm() {
             htmlFor="confirmNewPassword"
             className="block mb-2 text-sm font-bold text-gray-700"
           >
-            Confirm New Password
+            Xác nhận mật khẩu mới
           </label>
           <div className="relative">
             <input
@@ -165,7 +165,7 @@ export default function ChangePasswordForm() {
               className={`w-full p-3 border ${
                 errors.confirmNewPassword ? "border-red-500" : "border-gray-300"
               } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800 pr-10`}
-              placeholder="Enter your confirm new password"
+              placeholder="Nhập lại mật khẩu mới"
               {...register("confirmNewPassword")}
             />
             <span
@@ -188,7 +188,7 @@ export default function ChangePasswordForm() {
           type="submit"
           className="w-full py-3 text-lg font-semibold text-white transition duration-300 bg-blue-500 rounded-md hover:bg-blue-600"
         >
-          Save
+          Lưu
         </button>
       </form>
     </div>

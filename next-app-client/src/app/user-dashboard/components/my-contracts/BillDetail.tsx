@@ -35,40 +35,42 @@ export default function BillDetail({
           {/* Header hóa đơn */}
           <div className="text-center mb-6 border-b pb-4">
             <h2 className="text-2xl font-bold text-gray-800 mb-2">
-              RENTAL BILL
+              HÓA ĐƠN TIỀN PHÒNG
             </h2>
-            <p className="text-gray-600">RENTAL BILL</p>
+            <p className="text-gray-600">HÓA ĐƠN TIỀN PHÒNG</p>
             <div className="mt-3 text-sm text-gray-500">
-              <p>Date: {new Date().toLocaleDateString("vi-VN")}</p>
-              <p>Bill ID: #{selectedBill.id}</p>
+              <p>Ngày: {new Date().toLocaleDateString("vi-VN")}</p>
+              <p>Mã hóa đơn: #{selectedBill.id}</p>
             </div>
           </div>
 
           {/* Customer Information */}
           <div className="mb-6">
             <h3 className="text-lg font-semibold mb-3 text-gray-700">
-              CUSTOMER INFORMATION
+              THÔNG TIN KHÁCH HÀNG
             </h3>
             <div className="bg-gray-50 p-4 rounded-lg">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <span className="font-medium text-gray-600">Name: </span>
+                  <span className="font-medium text-gray-600">Họ tên: </span>
                   <p className="text-gray-800 font-bold text-lg">
                     {contract?.tenantName}
                   </p>
                 </div>
                 <div>
-                  <span className="font-medium text-gray-600">Phone:</span>
+                  <span className="font-medium text-gray-600">
+                    Số điện thoại:
+                  </span>
                   <p className="text-gray-800 font-bold text-lg">
                     {contract?.tenantPhone}
                   </p>
                 </div>
                 <div>
-                  <span className="font-medium text-gray-600">Room:</span>
+                  <span className="font-medium text-gray-600">Phòng:</span>
                   <p className="text-gray-800">{contract?.roomTitle}</p>
                 </div>
                 <div>
-                  <span className="font-medium text-gray-600">Month:</span>
+                  <span className="font-medium text-gray-600">Tháng:</span>
                   <p className="text-gray-800 font-semibold text-red-600">
                     {selectedBill.month}
                   </p>
@@ -80,24 +82,24 @@ export default function BillDetail({
           {/* Chi tiết hóa đơn */}
           <div className="mb-6">
             <h3 className="text-lg font-semibold mb-3 text-gray-700">
-              BILL DETAILS
+              CHI TIẾT HÓA ĐƠN
             </h3>
             <div className="border border-gray-200 rounded-lg overflow-hidden">
               <table className="w-full">
                 <thead className="bg-gray-100">
                   <tr>
                     <th className="text-left py-3 px-4 font-semibold text-gray-700">
-                      Item
+                      Khoản mục
                     </th>
                     <th className="text-right py-3 px-4 font-semibold text-gray-700">
-                      Amount
+                      Số tiền
                     </th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr className="border-t">
                     <td className="py-3 px-4 text-gray-700">
-                      <div>Electricity</div>
+                      <div>Tiền điện</div>
                       {selectedBill.electricityUsage &&
                         selectedBill.electricityPrice && (
                           <div className="text-xs text-gray-500 mt-1">
@@ -115,7 +117,7 @@ export default function BillDetail({
                   </tr>
                   <tr className="border-t bg-gray-50">
                     <td className="py-3 px-4 text-gray-700">
-                      <div>Water</div>
+                      <div>Tiền nước</div>
                       {selectedBill.waterUsage && selectedBill.waterPrice && (
                         <div className="text-xs text-gray-500 mt-1">
                           {selectedBill.waterUsage.toFixed(2)} m³ ×{" "}
@@ -128,7 +130,7 @@ export default function BillDetail({
                     </td>
                   </tr>
                   <tr className="border-t">
-                    <td className="py-3 px-4 text-gray-700">Service Fee</td>
+                    <td className="py-3 px-4 text-gray-700">Phí dịch vụ</td>
                     <td className="py-3 px-4 text-right text-gray-800">
                       {selectedBill.serviceFee?.toLocaleString("vi-VN")} đ
                     </td>
@@ -136,7 +138,7 @@ export default function BillDetail({
                   {selectedBill.damageFee != null &&
                     selectedBill.damageFee > 0 && (
                       <tr className="border-t bg-red-50">
-                        <td className="py-3 px-4 text-red-700">Other Fee</td>
+                        <td className="py-3 px-4 text-red-700">Phí khác</td>
                         <td className="py-3 px-4 text-right text-red-800">
                           {selectedBill.damageFee.toLocaleString("vi-VN")} đ
                         </td>
@@ -144,7 +146,7 @@ export default function BillDetail({
                     )}
                   <tr className="border-t border-gray-300 bg-blue-50">
                     <td className="py-4 px-4 font-bold text-lg text-gray-800">
-                      TOTAL
+                      TỔNG CỘNG
                     </td>
                     <td className="py-4 px-4 text-right font-bold text-lg text-blue-600">
                       {selectedBill.totalAmount?.toLocaleString("vi-VN")} đ
@@ -158,10 +160,10 @@ export default function BillDetail({
           {/* Footer */}
           <div className="text-center pt-4 border-t border-gray-200">
             <p className="text-sm text-gray-500 mb-2">
-              Thank you for trusting and using our services!
+              Cảm ơn bạn đã tin tưởng và sử dụng dịch vụ của chúng tôi!
             </p>
             <p className="text-xs text-gray-400">
-              Please pay on time. Contact: {contract?.landlordName}
+              Vui lòng thanh toán đúng hạn. Liên hệ: {contract?.landlordName}
             </p>
           </div>
         </div>

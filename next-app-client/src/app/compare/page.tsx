@@ -42,12 +42,12 @@ export default function ComparePage() {
                 <Scale className="w-6 h-6 text-white" />
               </div>
               <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                Room Comparison
+                So sánh phòng
               </h1>
             </div>
             <p className="text-gray-600 text-sm sm:text-base max-w-2xl mx-auto">
-              Compare room features, prices, and amenities side by side to make
-              the best choice for your needs.
+              So sánh các đặc điểm, giá cả và tiện nghi của phòng để lựa chọn
+              phù hợp nhất với nhu cầu của bạn.
             </p>
           </div>
 
@@ -58,21 +58,19 @@ export default function ComparePage() {
               className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors duration-200"
             >
               <ArrowLeft className="w-4 h-4" />
-              <span>Back to Search</span>
+              <span>Quay lại tìm kiếm</span>
             </button>
 
             {items.length > 0 && (
               <div className="flex items-center gap-2 text-sm text-gray-600">
                 <Home className="w-4 h-4" />
-                <span>
-                  {items.length} room{items.length !== 1 ? "s" : ""} selected
-                </span>
+                <span>Đã chọn {items.length} phòng</span>
                 {items.length > 0 && (
                   <button
                     onClick={clearItems}
                     className="ml-2 px-3 py-1 text-xs bg-red-100 text-red-600 rounded-full hover:bg-red-200 transition-colors duration-200"
                   >
-                    Clear All
+                    Xóa tất cả
                   </button>
                 )}
               </div>
@@ -86,17 +84,17 @@ export default function ComparePage() {
                 <Scale className="w-12 h-12 text-gray-400" />
               </div>
               <h2 className="text-2xl font-bold text-gray-800 mb-3">
-                No Rooms to Compare
+                Chưa có phòng để so sánh
               </h2>
               <p className="text-gray-600 text-center max-w-md mb-6">
-                Start by adding rooms to your comparison list while browsing.
-                You can compare up to 2 rooms at a time.
+                Hãy thêm phòng vào danh sách so sánh khi bạn duyệt. Bạn có thể
+                so sánh tối đa 2 phòng cùng lúc.
               </p>
               <button
                 onClick={() => router.push("/users")}
                 className="px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
               >
-                Browse Rooms
+                Xem danh sách phòng
               </button>
             </div>
           )}
@@ -110,11 +108,11 @@ export default function ComparePage() {
                     <Home className="w-5 h-5 text-amber-600" />
                   </div>
                   <h2 className="text-xl font-semibold text-amber-800">
-                    One Room Selected
+                    Đã chọn 1 phòng
                   </h2>
                 </div>
                 <p className="text-amber-700">
-                  Add one more room to start comparing features and prices.
+                  Hãy thêm 1 phòng nữa để bắt đầu so sánh đặc điểm và giá cả.
                 </p>
               </div>
               <div className="p-6">
@@ -125,14 +123,14 @@ export default function ComparePage() {
                     </h3>
                     <p className="text-gray-600 text-sm">
                       {items[0]?.room?.priceMonth?.toLocaleString("vi-VN")}{" "}
-                      VND/month
+                      VNĐ/tháng
                     </p>
                   </div>
                   <button
                     onClick={() => removeItem(items[0]?.room?.id)}
                     className="px-3 py-1 text-sm bg-red-100 text-red-600 rounded-full hover:bg-red-200 transition-colors duration-200"
                   >
-                    Remove
+                    Xóa
                   </button>
                 </div>
               </div>
@@ -157,13 +155,12 @@ export default function ComparePage() {
                   <Scale className="w-4 h-4" />
                 </div>
                 <p className="text-sm font-medium">
-                  You have {items.length - 2} more room
-                  {items.length - 2 !== 1 ? "s" : ""} in your comparison list.
+                  Bạn còn {items.length - 2} phòng nữa trong danh sách so sánh.
                 </p>
               </div>
               <p className="text-blue-600 text-xs mt-1 ml-7">
-                Only the first 2 rooms are shown in the comparison. Remove rooms
-                to compare different ones.
+                Chỉ hiển thị 2 phòng đầu tiên để so sánh. Hãy xóa bớt phòng để
+                so sánh phòng khác.
               </p>
             </div>
           )}

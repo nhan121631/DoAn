@@ -103,7 +103,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
         }`}
       >
         <span className={selectedOption ? "text-gray-900" : "text-gray-500"}>
-          {loading ? "Loading..." : selectedOption?.label || placeholder}
+          {loading ? "Đang tải..." : selectedOption?.label || placeholder}
         </span>
         <svg
           className={`absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 transition-all duration-300 text-gray-400 ${
@@ -128,7 +128,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
             <div className="relative">
               <input
                 type="text"
-                placeholder="Search..."
+                placeholder="Tìm kiếm..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full px-4 py-2.5 pl-10 text-sm border border-gray-200/60 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all duration-200 bg-white/80"
@@ -196,7 +196,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
                       d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-6-4h6M7 8a3 3 0 016 0M7 8H5a2 2 0 00-2 2v6a2 2 0 002 2h14a2 2 0 002-2V10a2 2 0 00-2-2h-2"
                     />
                   </svg>
-                  <span>No results found</span>
+                  <span>Không tìm thấy kết quả</span>
                 </div>
               </div>
             )}
@@ -339,8 +339,8 @@ function SuggestAddressBar({
       const target = event.target as Element;
       if (
         !target.closest(".tooltip-container") &&
-        !target.closest('button[title="Information"]') &&
-        !target.closest('button[title="Email Notifications"]')
+        !target.closest('button[title="Thông tin"]') &&
+        !target.closest('button[title="Thông báo qua Email"]')
       ) {
         setShowTooltip(false);
         setShowEmailTooltip(false);
@@ -423,10 +423,9 @@ function SuggestAddressBar({
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
-    if (!formData.province)
-      newErrors.province = "Please select a province/city";
-    if (!formData.district) newErrors.district = "Please select a district";
-    if (!formData.ward) newErrors.ward = "Please select a ward";
+    if (!formData.province) newErrors.province = "Vui lòng chọn tỉnh/thành phố";
+    if (!formData.district) newErrors.district = "Vui lòng chọn quận/huyện";
+    if (!formData.ward) newErrors.ward = "Vui lòng chọn phường/xã";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -604,7 +603,7 @@ function SuggestAddressBar({
 
   const handleSave = async () => {
     if (!validateForm()) {
-      showMessage("error", "Please fill in all address information!");
+      showMessage("error", "Vui lòng điền đầy đủ thông tin địa chỉ!");
       return;
     }
 
@@ -649,11 +648,11 @@ function SuggestAddressBar({
       }
 
       if (userId) {
-        showMessage("success", "Find room by your address successfully!");
+        showMessage("success", "Tìm phòng theo địa chỉ của bạn thành công!");
       }
     } catch (error) {
       console.error("Error saving address:", error);
-      showMessage("error", "An error occurred while saving the address!");
+      showMessage("error", "Đã xảy ra lỗi khi lưu địa chỉ!");
     } finally {
       setIsSaving(false);
     }
@@ -683,7 +682,7 @@ function SuggestAddressBar({
 
   const getCurrentLocation = async () => {
     if (!navigator.geolocation) {
-      showMessage("error", "Your browser does not support geolocation!");
+      showMessage("error", "Trình duyệt của bạn không hỗ trợ định vị địa lý!");
       return;
     }
 
@@ -694,7 +693,7 @@ function SuggestAddressBar({
     ) {
       showMessage(
         "error",
-        "Geolocation feature only works on HTTPS or localhost!"
+        "Tính năng định vị chỉ hoạt động trên HTTPS hoặc localhost!"
       );
       return;
     }
@@ -716,7 +715,7 @@ function SuggestAddressBar({
       const GOONG_API_KEY = process.env.NEXT_PUBLIC_GOONG_API_KEY;
 
       if (!GOONG_API_KEY) {
-        showMessage("error", "Missing API key for map service!");
+        showMessage("error", "Thiếu API key cho dịch vụ bản đồ!");
         return;
       }
 
@@ -726,7 +725,7 @@ function SuggestAddressBar({
 
       if (!response.ok) {
         throw new Error(
-          `Unable to get address information (Status: ${response.status})`
+          `Không thể lấy thông tin địa chỉ (Mã lỗi: ${response.status})`
         );
       }
 
@@ -764,7 +763,7 @@ function SuggestAddressBar({
       } else {
         showMessage(
           "warning",
-          "Unable to determine exact address from current location"
+          "Không thể xác định địa chỉ chính xác từ vị trí hiện tại"
         );
       }
     } catch (error: any) {
@@ -774,19 +773,19 @@ function SuggestAddressBar({
         error.code === 1 ||
         error.code === GeolocationPositionError.PERMISSION_DENIED
       ) {
-        showMessage("error", "You have denied location access permission.");
+        showMessage("error", "Bạn đã từ chối quyền truy cập vị trí.");
       } else if (
         error.code === 2 ||
         error.code === GeolocationPositionError.POSITION_UNAVAILABLE
       ) {
-        showMessage("error", "Unable to determine current location.");
+        showMessage("error", "Không thể xác định vị trí hiện tại.");
       } else if (
         error.code === 3 ||
         error.code === GeolocationPositionError.TIMEOUT
       ) {
-        showMessage("error", "Timeout while getting location.");
+        showMessage("error", "Hết thời gian khi lấy vị trí.");
       } else {
-        showMessage("error", "An error occurred while getting location.");
+        showMessage("error", "Đã xảy ra lỗi khi lấy vị trí.");
       }
     } finally {
       setIsGettingLocation(false);
@@ -842,11 +841,11 @@ function SuggestAddressBar({
 
       showMessage(
         "success",
-        `Email notifications ${enabled ? "enabled" : "disabled"} successfully!`
+        `Đã ${enabled ? "bật" : "tắt"} thông báo qua email thành công!`
       );
     } catch (error) {
       console.error("Error updating email notifications:", error);
-      showMessage("error", "Failed to update email notifications");
+      showMessage("error", "Không thể cập nhật thông báo qua email");
     } finally {
       setLoadingEmailNotifications(false);
     }
@@ -953,7 +952,7 @@ function SuggestAddressBar({
               </div>
               <div className="flex-1">
                 <span className="text-sm font-semibold text-blue-800">
-                  Current Search Area:
+                  Khu vực tìm kiếm hiện tại:
                 </span>
                 <p className="text-sm text-blue-700 font-medium mt-0.5 leading-relaxed">
                   {currentPreferences}
@@ -991,7 +990,7 @@ function SuggestAddressBar({
             <div className="relative flex-1">
               <input
                 type="text"
-                placeholder="Enter specific address (house number, street name)..."
+                placeholder="Nhập địa chỉ cụ thể (số nhà, tên đường)..."
                 value={formData.specificAddress}
                 onChange={(e) =>
                   handleInputChange("specificAddress", e.target.value)
@@ -1032,7 +1031,7 @@ function SuggestAddressBar({
                   e.currentTarget.style.background =
                     "linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)";
                 }}
-                title="Get Current Location"
+                title="Lấy vị trí hiện tại"
               >
                 {isGettingLocation ? (
                   <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
@@ -1097,7 +1096,7 @@ function SuggestAddressBar({
                       d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"
                     />
                   </svg>
-                  <span>View Map</span>
+                  <span>Xem bản đồ</span>
                 </button>
               </div>
             )}
@@ -1111,7 +1110,7 @@ function SuggestAddressBar({
                 options={provinces}
                 value={formData.province}
                 onChange={handleProvinceChange}
-                placeholder="Select Province/City"
+                placeholder="Chọn tỉnh/thành phố"
                 error={errors.province}
               />
             </div>
@@ -1122,7 +1121,7 @@ function SuggestAddressBar({
                 options={districts}
                 value={formData.district}
                 onChange={handleDistrictChange}
-                placeholder="Select District"
+                placeholder="Chọn quận/huyện"
                 disabled={districts.length === 0}
                 loading={loadingDistricts}
                 error={errors.district}
@@ -1135,7 +1134,7 @@ function SuggestAddressBar({
                 options={wards}
                 value={formData.ward}
                 onChange={(value) => handleInputChange("ward", value)}
-                placeholder="Select Ward"
+                placeholder="Chọn phường/xã"
                 disabled={wards.length === 0}
                 loading={loadingWards}
                 error={errors.ward}
@@ -1174,7 +1173,7 @@ function SuggestAddressBar({
                   {isSaving ? (
                     <>
                       <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                      <span>Searching...</span>
+                      <span>Đang tìm kiếm...</span>
                     </>
                   ) : (
                     <>
@@ -1191,7 +1190,7 @@ function SuggestAddressBar({
                           d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
                         />
                       </svg>
-                      <span>Search</span>
+                      <span>Tìm kiếm</span>
                     </>
                   )}
                 </button>
@@ -1202,7 +1201,7 @@ function SuggestAddressBar({
                 type="button"
                 onClick={() => setShowTooltip(!showTooltip)}
                 className="h-11 w-11 bg-gray-50/90 hover:bg-gray-100/90 text-gray-500 hover:text-gray-700 rounded-2xl transition-all duration-300 flex items-center justify-center shadow-md hover:shadow-lg backdrop-blur-sm active:scale-95 border border-gray-200/50"
-                title="Information"
+                title="Thông tin"
               >
                 <svg
                   className="w-5 h-5"
@@ -1225,7 +1224,7 @@ function SuggestAddressBar({
                   type="button"
                   onClick={() => setShowEmailTooltip(!showEmailTooltip)}
                   className="h-11 w-11 bg-gray-50/90 hover:bg-gray-100/90 text-gray-500 hover:text-gray-700 rounded-2xl transition-all duration-300 flex items-center justify-center shadow-md hover:shadow-lg backdrop-blur-sm active:scale-95 border border-gray-200/50"
-                  title="Email Notifications"
+                  title="Thông báo qua Email"
                 >
                   <svg
                     className="w-5 h-5"
@@ -1265,10 +1264,12 @@ function SuggestAddressBar({
                     </svg>
                   </button>
                   <div className="text-sm text-gray-700">
-                    <h4 className="font-semibold mb-2">Current Search Area</h4>
+                    <h4 className="font-semibold mb-2">
+                      Khu vực tìm kiếm hiện tại
+                    </h4>
                     <p className="mb-2">
-                      <strong>Your Search Address:</strong>{" "}
-                      {userPreferences?.searchAddress || "Not set"}
+                      <strong>Địa chỉ tìm kiếm của bạn:</strong>{" "}
+                      {userPreferences?.searchAddress || "Chưa thiết lập"}
                     </p>
                   </div>
                 </div>
@@ -1296,14 +1297,14 @@ function SuggestAddressBar({
                     </svg>
                   </button>
                   <div className="text-sm text-gray-700">
-                    <h4 className="font-semibold mb-2">Email Notifications</h4>
+                    <h4 className="font-semibold mb-2">Thông báo qua Email</h4>
                     <p className="mb-3">
-                      Receive room suggestions via email when new rooms match
-                      your preferences.
+                      Nhận gợi ý phòng qua email khi có phòng mới phù hợp với
+                      bạn.
                     </p>
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-medium text-gray-700">
-                        {emailNotifications ? "Enabled" : "Disabled"}
+                        {emailNotifications ? "Đã bật" : "Đã tắt"}
                       </span>
                       <div className="flex items-center gap-3">
                         {loadingEmailNotifications && (

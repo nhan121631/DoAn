@@ -149,11 +149,11 @@ export default function BlogsPage() {
               className="!text-white !mb-4 text-4xl md:text-5xl font-bold"
             >
               <FileTextOutlined className="mr-4" />
-              Blog & News
+              Blog & Tin tức
             </Title>
             <Paragraph className="!text-white/90 text-lg md:text-xl max-w-3xl mx-auto px-4">
-              Discover helpful articles about room rentals, guides and latest
-              news from Ants community
+              Khám phá các bài viết hữu ích về thuê phòng, hướng dẫn và tin tức
+              mới nhất từ cộng đồng Ants
             </Paragraph>
           </div>
         </div>
@@ -167,7 +167,7 @@ export default function BlogsPage() {
             className="inline-flex items-center text-gray-600 hover:text-blue-600 transition-colors duration-200"
           >
             <HomeOutlined className="mr-2 text-base" />
-            <Text className="text-base font-medium">Home</Text>
+            <Text className="text-base font-medium">Trang chủ</Text>
           </Link>
         </div>
 
@@ -176,7 +176,7 @@ export default function BlogsPage() {
           <Row gutter={[16, 16]} align="middle">
             <Col xs={24} sm={24} md={12} lg={10}>
               <Search
-                placeholder="Search articles..."
+                placeholder="Tìm kiếm bài viết..."
                 allowClear
                 enterButton={<SearchOutlined />}
                 size="large"
@@ -193,7 +193,7 @@ export default function BlogsPage() {
 
             <Col xs={24} sm={12} md={6} lg={6}>
               <Select
-                placeholder="Select category"
+                placeholder="Chọn danh mục"
                 allowClear
                 size="large"
                 className="w-full"
@@ -201,11 +201,9 @@ export default function BlogsPage() {
                 onChange={handleCategoryChange}
                 suffixIcon={<FilterOutlined />}
               >
-                <Option value={BlogCategory.ANNOUNCEMENT}>
-                  📢 Announcement
-                </Option>
-                <Option value={BlogCategory.GUIDE}>📖 Guide</Option>
-                <Option value={BlogCategory.NEWS}>📰 News</Option>
+                <Option value={BlogCategory.ANNOUNCEMENT}>📢 Thông báo</Option>
+                <Option value={BlogCategory.GUIDE}>📖 Hướng dẫn</Option>
+                <Option value={BlogCategory.NEWS}>📰 Tin tức</Option>
               </Select>
             </Col>
 
@@ -213,11 +211,11 @@ export default function BlogsPage() {
               <div className="flex justify-end">
                 <Space>
                   <Text type="secondary" className="text-lg">
-                    Total:{" "}
+                    Tổng số:{" "}
                     <Text strong className="text-blue-600">
                       {total}
                     </Text>{" "}
-                    articles
+                    bài viết
                   </Text>
                 </Space>
               </div>
@@ -231,7 +229,7 @@ export default function BlogsPage() {
             <Spin size="large" />
           </div>
         ) : blogs.length === 0 ? (
-          <Empty description="No articles found" className="py-20">
+          <Empty description="Không tìm thấy bài viết nào" className="py-20">
             <Button
               type="primary"
               size="large"
@@ -241,7 +239,7 @@ export default function BlogsPage() {
                 setCurrentPage(1);
               }}
             >
-              Clear filters
+              Xóa bộ lọc
             </Button>
           </Empty>
         ) : (
@@ -323,7 +321,7 @@ export default function BlogsPage() {
                             className="w-full border-2 font-semibold hover:bg-blue-50"
                             icon={<EyeOutlined />}
                           >
-                            Read more
+                            Xem chi tiết
                           </Button>
                         </Link>
                       </div>
@@ -346,7 +344,7 @@ export default function BlogsPage() {
               showSizeChanger={false}
               showQuickJumper
               showTotal={(total, range) =>
-                `${range[0]}-${range[1]} of ${total} articles`
+                `${range[0]}-${range[1]} trong tổng ${total} bài viết`
               }
               className="text-center"
             />

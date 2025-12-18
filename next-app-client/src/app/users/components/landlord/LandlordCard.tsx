@@ -29,7 +29,7 @@ export default function LandlordCard({ landlord }: LandLordInfoProps) {
                     ? URL_IMAGE + landlord.avatar
                     : "/images/default/avatar.jpg"
                 }
-                alt={`${landlord.fullName || "Landlord"}'s avatar`}
+                alt={`${landlord.fullName || "Chủ nhà"} avatar`}
                 width={80}
                 height={80}
                 className="object-cover w-full h-full transition-all duration-500 group-hover:scale-110 group-hover:rotate-2"
@@ -47,10 +47,10 @@ export default function LandlordCard({ landlord }: LandLordInfoProps) {
               <h3
                 className="flex-1 text-lg font-bold text-transparent truncate transition-all duration-300 bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 bg-clip-text group-hover:from-blue-600 group-hover:via-purple-600 group-hover:to-pink-600 dark:from-gray-100 dark:via-white dark:to-gray-100"
                 title={
-                  landlord.fullName || "Landlord Name"
+                  landlord.fullName || "Tên chủ nhà"
                 } /* ← Tooltip để xem tên đầy đủ */
               >
-                {landlord.fullName || "Landlord Name"}
+                {landlord.fullName || "Tên chủ nhà"}
               </h3>
               {/* Verified badge - Fixed size */}
               <div className="flex items-center justify-center flex-shrink-0 w-5 h-5 transition-transform duration-300 rounded-full shadow-lg bg-gradient-to-r from-blue-500 to-purple-600 group-hover:scale-110">
@@ -83,10 +83,10 @@ export default function LandlordCard({ landlord }: LandLordInfoProps) {
               <p
                 className="flex-1 transition-colors duration-300 group-hover:text-gray-900 dark:group-hover:text-white line-clamp-2"
                 title={
-                  landlord.address || "Property Address"
+                  landlord.address || "Địa chỉ bất động sản"
                 } /* ← Tooltip để xem địa chỉ đầy đủ */
               >
-                {landlord.address || "Property Address"}
+                {landlord.address || "Địa chỉ bất động sản"}
               </p>
             </div>
           </div>

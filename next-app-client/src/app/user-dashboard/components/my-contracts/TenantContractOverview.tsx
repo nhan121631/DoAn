@@ -14,10 +14,10 @@ interface TenantContractOverviewProps {
 }
 
 const statusMap: Record<number, { text: string; color: string }> = {
-  0: { text: "Active", color: "green" },
-  1: { text: "Terminated", color: "red" },
-  2: { text: "Expired", color: "orange" },
-  3: { text: "Pending", color: "blue" },
+  0: { text: "Đang hiệu lực", color: "green" },
+  1: { text: "Đã chấm dứt", color: "red" },
+  2: { text: "Hết hạn", color: "orange" },
+  3: { text: "Chờ duyệt", color: "blue" },
 };
 
 export default function TenantContractOverview({
@@ -75,44 +75,46 @@ export default function TenantContractOverview({
   return (
     <div className="p-6">
       <div className="mb-4">
-        <h3 className="text-lg font-semibold">Contract Information</h3>
+        <h3 className="text-lg font-semibold">Thông tin hợp đồng</h3>
         <p className="text-gray-600 text-sm">
-          View your contract details below
+          Xem chi tiết hợp đồng của bạn bên dưới
         </p>
       </div>
 
       <Descriptions bordered column={2} size="middle">
-        <Descriptions.Item label="Contract Name">
+        <Descriptions.Item label="Tên hợp đồng">
           {contract.contractName}
         </Descriptions.Item>
-        <Descriptions.Item label="Room">{contract.roomTitle}</Descriptions.Item>
-        <Descriptions.Item label="Tenant">
+        <Descriptions.Item label="Phòng">
+          {contract.roomTitle}
+        </Descriptions.Item>
+        <Descriptions.Item label="Người thuê">
           {contract.tenantName}
         </Descriptions.Item>
-        <Descriptions.Item label="Phone">
-          {contract.tenantPhone || "Not provided"}
+        <Descriptions.Item label="Số điện thoại">
+          {contract.tenantPhone || "Chưa cung cấp"}
         </Descriptions.Item>
-        <Descriptions.Item label="Landlord">
+        <Descriptions.Item label="Chủ trọ">
           {contract.landlordName}
         </Descriptions.Item>
-        <Descriptions.Item label="Start Date">
+        <Descriptions.Item label="Ngày bắt đầu">
           {new Date(contract.startDate).toLocaleDateString()}
         </Descriptions.Item>
-        <Descriptions.Item label="End Date">
+        <Descriptions.Item label="Ngày kết thúc">
           {new Date(contract.endDate).toLocaleDateString()}
         </Descriptions.Item>
-        <Descriptions.Item label="Deposit">
+        <Descriptions.Item label="Tiền cọc">
           {contract.depositAmount?.toLocaleString("vi-VN")} đ
         </Descriptions.Item>
-        <Descriptions.Item label="Monthly Rent">
-          {contract.monthlyRent?.toLocaleString("vi-VN")} đ / month
+        <Descriptions.Item label="Tiền thuê hàng tháng">
+          {contract.monthlyRent?.toLocaleString("vi-VN")} đ / tháng
         </Descriptions.Item>
-        <Descriptions.Item label="Status">
+        <Descriptions.Item label="Trạng thái">
           <Tag color={statusMap[contract.status]?.color}>
             {statusMap[contract.status]?.text}
           </Tag>
         </Descriptions.Item>
-        <Descriptions.Item label="Contract File" span={2}>
+        <Descriptions.Item label="File hợp đồng" span={2}>
           {contract.contractImage ? (
             <div className="flex flex-col gap-3">
               {/* File info - click to open in Google Docs Viewer */}
@@ -124,7 +126,7 @@ export default function TenantContractOverview({
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-[60px] h-[60px] flex items-center justify-center bg-gray-100 dark:bg-gray-800 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors cursor-pointer"
-                  title="Click to view file"
+                  title="Nhấn để xem file"
                 >
                   <FileOutlined
                     style={{ fontSize: "32px", color: "#2563eb" }}
@@ -141,39 +143,39 @@ export default function TenantContractOverview({
                     className="text-sm font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors"
                   >
                     {(() => {
-                      if (!fileUrl) return "contract-file";
+                      if (!fileUrl) return "file-hop-dong";
                       try {
                         const urlPath = new URL(fileUrl).pathname;
                         const filename = decodeURIComponent(
-                          urlPath.split("/").pop() || "contract-file"
+                          urlPath.split("/").pop() || "file-hop-dong"
                         );
                         return filename;
                       } catch {
-                        return "contract-file";
+                        return "file-hop-dong";
                       }
                     })()}
                   </a>
                   <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                    Click to view file in new tab
+                    Nhấn để xem file ở tab mới
                   </div>
                 </div>
               </div>
             </div>
           ) : (
-            <span className="text-gray-500">No contract file available</span>
+            <span className="text-gray-500">Không có file hợp đồng</span>
           )}
         </Descriptions.Item>
       </Descriptions>
 
       <div className="mt-6 p-4 bg-blue-50 border-l-4 border-blue-400 rounded">
         <h4 className="font-semibold text-blue-800 mb-2">
-          Important Information
+          Thông tin quan trọng
         </h4>
         <ul className="text-sm text-blue-700 space-y-1">
-          <li>• Please keep your contract information updated</li>
-          <li>• Contact your landlord for any changes needed</li>
-          <li>• Pay your bills on time to maintain good standing</li>
-          <li>• Report any issues with the property promptly</li>
+          <li>• Vui lòng cập nhật thông tin hợp đồng khi có thay đổi</li>
+          <li>• Liên hệ chủ trọ nếu cần chỉnh sửa hợp đồng</li>
+          <li>• Thanh toán hóa đơn đúng hạn để duy trì hợp đồng</li>
+          <li>• Báo ngay cho chủ trọ nếu có vấn đề về phòng</li>
         </ul>
       </div>
     </div>

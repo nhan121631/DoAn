@@ -23,7 +23,7 @@ export default async function LoginPage() {
       </div>
       {/* Container cho AuthForms, căn giữa màn hình */}
       <div className="relative z-20 mt-20">
-        <Suspense fallback={<div>Loading...</div>}>
+        <Suspense fallback={<div>Đang tải...</div>}>
           <AuthForms csrfToken={csrfToken} />
         </Suspense>
       </div>

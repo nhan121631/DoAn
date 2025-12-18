@@ -7,7 +7,6 @@ import type { UploadProps, UploadFile } from "antd";
 import { createRequestNotification } from "@/services/NotificationService";
 import { createRequest } from "@/services/Requirements";
 
-
 interface RequestModalProps {
   open: boolean;
   id: string | null;
@@ -44,11 +43,11 @@ const RequestModal: React.FC<RequestModalProps> = ({
   const handleFinish = async (values: any) => {
     try {
       if (!id) {
-        messageApi.error("Room ID is required");
+        messageApi.error("Cần chọn phòng");
         return;
       }
       if (!userId) {
-        messageApi.error("User ID is required");
+        messageApi.error("Cần có thông tin người dùng");
         return;
       }
 
@@ -68,32 +67,29 @@ const RequestModal: React.FC<RequestModalProps> = ({
       await createRequestNotification(
         id,
         userId,
-        "You have a new request from a tenant: " + values.requestDescription
+        "Bạn có một yêu cầu mới từ khách thuê: " + values.requestDescription
       );
       onFinish(result);
-      messageApi.success("Request created successfully!");
+      messageApi.success("Tạo yêu cầu thành công!");
       handleCancel();
     } catch (error) {
       console.error("Error creating request:", error);
-      messageApi.error("Failed to create request. Please try again.");
+      messageApi.error("Tạo yêu cầu thất bại. Vui lòng thử lại.");
     } finally {
       setLoading(false);
     }
   };
 
-  
-  
-
   const uploadProps: UploadProps = {
     beforeUpload: (file) => {
       const isImage = file.type.startsWith("image/");
       if (!isImage) {
-        messageApi.error("You can only upload image files!");
+        messageApi.error("Chỉ cho phép tải lên tệp hình ảnh!");
         return false;
       }
       const isLt10M = file.size / 1024 / 1024 < 10;
       if (!isLt10M) {
-        messageApi.error("Image must be smaller than 10MB!");
+        messageApi.error("Ảnh phải nhỏ hơn 10MB!");
         return false;
       }
       return false; // Prevent auto upload
@@ -114,7 +110,7 @@ const RequestModal: React.FC<RequestModalProps> = ({
 
   return (
     <Modal
-      title={modalType === "edit" ? "Edit Request" : "Add New Request"}
+      title={modalType === "edit" ? "Chỉnh sửa yêu cầu" : "Thêm yêu cầu mới"}
       open={open}
       onCancel={handleCancel}
       footer={null}
@@ -125,53 +121,50 @@ const RequestModal: React.FC<RequestModalProps> = ({
       <Form form={form} layout="vertical" onFinish={handleFinish}>
         <div className="max-h-[400px] overflow-y-auto pr-4">
           <Form.Item
-            label="Room Name"
+            label="Tên phòng"
             name="roomName"
-            rules={[{ required: true, message: "Please select a room!" }]}
+            rules={[{ required: true, message: "Vui lòng chọn phòng!" }]}
           >
-            <Input disabled placeholder="Room name" />
+            <Input disabled placeholder="Tên phòng" />
           </Form.Item>
 
           <Form.Item
-            label="Request Description"
+            label="Mô tả yêu cầu"
             name="requestDescription"
             rules={[
-              { required: true, message: "Please enter request description!" },
+              { required: true, message: "Vui lòng nhập mô tả yêu cầu!" },
               {
                 min: 5,
-                message: "Description must be at least 5 characters long!",
+                message: "Mô tả phải có ít nhất 5 ký tự!",
               },
               {
                 max: 500,
-                message: "Description must not exceed 500 characters!",
+                message: "Mô tả không vượt quá 500 ký tự!",
               },
             ]}
           >
             <Input.TextArea
               rows={4}
-              placeholder="e.g., Yêu cầu sửa chữa điện nước"
+              placeholder="VD: Yêu cầu sửa chữa điện nước"
               showCount
               maxLength={500}
             />
           </Form.Item>
-        <Form.Item
-  label="Upload Image (Optional)"
-  name="image"
->
-  <Upload {...uploadProps}>
-    <Button icon={<UploadOutlined />}>Select Image</Button>
-  </Upload>
-</Form.Item>
-<div className="mt-1 text-sm text-gray-500">
-  Upload an image to help describe your request (Max: 10MB)
-</div>
-</div>
+          <Form.Item label="Tải ảnh lên (Không bắt buộc)" name="image">
+            <Upload {...uploadProps}>
+              <Button icon={<UploadOutlined />}>Chọn ảnh</Button>
+            </Upload>
+          </Form.Item>
+          <div className="mt-1 text-sm text-gray-500">
+            Tải lên ảnh để mô tả rõ hơn yêu cầu của bạn (Tối đa: 10MB)
+          </div>
+        </div>
 
         <Form.Item>
           <div className="flex justify-end gap-2 mt-4">
-            <Button onClick={handleCancel}>Cancel</Button>
+            <Button onClick={handleCancel}>Hủy</Button>
             <Button type="primary" htmlType="submit" loading={loading}>
-              {modalType === "edit" ? "Update Request" : "Add Request"}
+              {modalType === "edit" ? "Cập nhật yêu cầu" : "Thêm yêu cầu"}
             </Button>
           </div>
         </Form.Item>
@@ -188,10 +181,3 @@ const RequestModal: React.FC<RequestModalProps> = ({
 };
 
 export default RequestModal;
-
-
-
-
-
-
-

@@ -1,20 +1,35 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { getRequestsByUser, updateRequest, updateRequirementWithImage, uploadRequirementImage } from "@/services/Requirements";
+import {
+  getRequestsByUser,
+  updateRequest,
+  updateRequirementWithImage,
+  uploadRequirementImage,
+} from "@/services/Requirements";
 import {
   PaginatedResponse,
   RequirementDetail,
   UpdateRequestRoomDto,
 } from "@/types/types";
-import { Button, Form, Input, message, Modal, Space, Table, Tag, Image, Upload } from "antd";
+import {
+  Button,
+  Form,
+  Input,
+  message,
+  Modal,
+  Space,
+  Table,
+  Tag,
+  Image,
+  Upload,
+} from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { useSession } from "next-auth/react";
 import React, { useCallback, useEffect, useState } from "react";
 import { AiOutlineEdit } from "react-icons/ai";
 import { UploadOutlined, EyeOutlined, EditOutlined } from "@ant-design/icons";
 import CompletionViewModal from "./CompletionViewModal";
-
 
 export type RequestFormValues = {
   roomName: string;
@@ -23,9 +38,11 @@ export type RequestFormValues = {
 const RequestEditModalContent: React.FC<{
   open: boolean;
   onCancel: () => void;
-  onSubmit: (values: RequestFormValues, imageFile?: File) => void; 
+  onSubmit: (values: RequestFormValues, imageFile?: File) => void;
   editingRequest: RequirementDetail | null;
-  setData: React.Dispatch<React.SetStateAction<PaginatedResponse<RequirementDetail>>>;
+  setData: React.Dispatch<
+    React.SetStateAction<PaginatedResponse<RequirementDetail>>
+  >;
 }> = ({ open, onCancel, onSubmit, editingRequest, setData }) => {
   const [form] = Form.useForm();
   const [fileList, setFileList] = useState<any[]>([]);
@@ -35,7 +52,7 @@ const RequestEditModalContent: React.FC<{
     if (open && editingRequest) {
       form.setFieldsValue({
         roomName: editingRequest.roomTitle,
-        requestDescription: editingRequest.description, 
+        requestDescription: editingRequest.description,
       });
       setFileList([]);
       setSelectedFile(null);
@@ -45,7 +62,6 @@ const RequestEditModalContent: React.FC<{
   }, [editingRequest, form, open]);
 
   const handleFinish = (values: RequestFormValues) => {
-
     onSubmit(values, selectedFile || undefined);
   };
 
@@ -53,15 +69,15 @@ const RequestEditModalContent: React.FC<{
     beforeUpload: (file: File) => {
       const isImage = file.type.startsWith("image/");
       if (!isImage) {
-        message.error("You can only upload image files!");
+        message.error("Bạn chỉ có thể tải lên các tệp hình ảnh!");
         return false;
       }
       const isLt10M = file.size / 1024 / 1024 < 10;
       if (!isLt10M) {
-        message.error("Image must be smaller than 10MB!");
+        message.error("Hình ảnh phải nhỏ hơn 10MB!");
         return false;
       }
-      
+
       setSelectedFile(file);
       return false; // Prevent auto upload
     },
@@ -75,7 +91,7 @@ const RequestEditModalContent: React.FC<{
 
   return (
     <Modal
-      title={"Edit Request"}
+      title={"Chỉnh sửa yêu cầu"}
       open={open}
       onCancel={onCancel}
       footer={null}
@@ -84,39 +100,39 @@ const RequestEditModalContent: React.FC<{
     >
       <Form form={form} layout="vertical" onFinish={handleFinish}>
         <div className="max-h-[400px] overflow-y-auto pr-4">
-          <Form.Item label="Room Name" name="roomName">
+          <Form.Item label="Tên phòng" name="roomName">
             <Input
               disabled
               placeholder={
-                editingRequest ? editingRequest.roomTitle : "Room name"
+                editingRequest ? editingRequest.roomTitle : "Tên phòng"
               }
             />
           </Form.Item>
 
           <Form.Item
-            label="Request Description"
+            label="Mô tả yêu cầu"
             name="requestDescription"
             rules={[
-              { required: true, message: "Please enter request description!" },
-              { min: 5, message: "Request description must be at least 5 characters." },
-              { max: 500, message: "Request description cannot exceed 500 characters." },
+              { required: true, message: "Vui lòng nhập mô tả yêu cầu!" },
+              { min: 5, message: "Mô tả yêu cầu phải có ít nhất 5 ký tự." },
+              { max: 500, message: "Mô tả yêu cầu không vượt quá 500 ký tự." },
             ]}
           >
             <Input.TextArea
               rows={4}
-              placeholder="Enter request description"
+              placeholder="Nhập mô tả yêu cầu"
               showCount
               maxLength={500}
             />
           </Form.Item>
 
-          <Form.Item label="Update Image (Optional)">
+          <Form.Item label="Cập nhật ảnh (Không bắt buộc)">
             <Upload {...uploadProps}>
-              <Button icon={<UploadOutlined />}>Select New Image</Button>
+              <Button icon={<UploadOutlined />}>Chọn ảnh mới</Button>
             </Upload>
             {editingRequest?.imageUrl && !selectedFile && (
               <div style={{ marginTop: 8 }}>
-                <p style={{ fontSize: 12, color: '#666' }}>Current image:</p>
+                <p style={{ fontSize: 12, color: "#666" }}>Ảnh hiện tại:</p>
                 <img
                   src={`https://res.cloudinary.com${editingRequest.imageUrl}`}
                   alt="Current"
@@ -126,8 +142,10 @@ const RequestEditModalContent: React.FC<{
             )}
             {selectedFile && (
               <div style={{ marginTop: 8 }}>
-                <p style={{ fontSize: 12, color: '#666' }}>New image selected:</p>
-                <p style={{ fontSize: 12, color: '#1890ff' }}>{selectedFile.name}</p>
+                <p style={{ fontSize: 12, color: "#666" }}>Ảnh mới đã chọn:</p>
+                <p style={{ fontSize: 12, color: "#1890ff" }}>
+                  {selectedFile.name}
+                </p>
               </div>
             )}
           </Form.Item>
@@ -135,9 +153,9 @@ const RequestEditModalContent: React.FC<{
 
         <Form.Item>
           <div className="flex justify-end gap-2 mt-4">
-            <Button onClick={onCancel}>Cancel</Button>
+            <Button onClick={onCancel}>Hủy</Button>
             <Button type="primary" htmlType="submit">
-              Update Request
+              Cập nhật yêu cầu
             </Button>
           </div>
         </Form.Item>
@@ -161,11 +179,13 @@ const RequestStatusInteractive: React.FC = () => {
   const [requests, setRequests] = useState<RequirementDetail[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
-  const [editingRequest, setEditingRequest] = useState<RequirementDetail | null>(null);
+  const [editingRequest, setEditingRequest] =
+    useState<RequirementDetail | null>(null);
   const [messageApi, contextHolder] = message.useMessage();
 
   const [completionViewModalOpen, setCompletionViewModalOpen] = useState(false);
-  const [viewingRequest, setViewingRequest] = useState<RequirementDetail | null>(null);
+  const [viewingRequest, setViewingRequest] =
+    useState<RequirementDetail | null>(null);
 
   const fetchData = useCallback(
     async (page = 0, size = 5) => {
@@ -195,7 +215,7 @@ const RequestStatusInteractive: React.FC = () => {
   );
 
   const handleTableChange = (pagination: any) => {
-    const page = pagination.current - 1 || 0; 
+    const page = pagination.current - 1 || 0;
     const size = pagination.pageSize || 5;
     fetchData(page, size);
   };
@@ -204,7 +224,6 @@ const RequestStatusInteractive: React.FC = () => {
     if (!session?.user) return;
     fetchData(0, 5);
   }, [session?.user, fetchData]);
-
 
   const handleViewCompletion = (record: RequirementDetail) => {
     setViewingRequest(record);
@@ -224,49 +243,52 @@ const RequestStatusInteractive: React.FC = () => {
   //   }
   // };
   const getStatusDisplay = (status: 0 | 1 | 2, record: RequirementDetail) => {
-  switch (status) {
-    case 0:
-      return <Tag color="orange">Not Processed</Tag>;
-    case 1:
-      return (
-        <div className="flex items-center gap-2">
-          <Tag color="green">Completed</Tag>
-          <Button
-            type="text"
-            icon={<EyeOutlined />}
-            size="small"
-            onClick={() => handleViewCompletion(record)}
-            className="text-blue-500 hover:text-blue-700"
-            title="View completion details"
-          />
-        </div>
+    switch (status) {
+      case 0:
+        return <Tag color="orange">Chưa xử lý</Tag>;
+      case 1:
+        return (
+          <div className="flex items-center gap-2">
+            <Tag color="green">Đã hoàn thành</Tag>
+            <Button
+              type="text"
+              icon={<EyeOutlined />}
+              size="small"
+              onClick={() => handleViewCompletion(record)}
+              className="text-blue-500 hover:text-blue-700"
+              title="Xem chi tiết hoàn thành"
+            />
+          </div>
+        );
+      case 2:
+        return <Tag color="red">Từ chối</Tag>;
+      default:
+        return <Tag color="default">Không xác định</Tag>;
+    }
+  };
+
+  const handleFormSubmit = async (
+    values: RequestFormValues,
+    imageFile?: File
+  ) => {
+    if (!editingRequest) return;
+
+    try {
+      await updateRequirementWithImage(
+        editingRequest.id,
+        values.requestDescription,
+        imageFile
       );
-    case 2:
-      return <Tag color="red">Rejected</Tag>;
-    default:
-      return <Tag color="default">Unknown</Tag>;
-  }
-};
+      await fetchData(data.page || 0, data.size || 5);
 
-  const handleFormSubmit = async (values: RequestFormValues, imageFile?: File) => {
-  if (!editingRequest) return;
+      messageApi.success("Cập nhật yêu cầu thành công!");
+    } catch (error: any) {
+      messageApi.error("Cập nhật yêu cầu thất bại.");
+    }
 
-  try {
-    await updateRequirementWithImage(
-      editingRequest.id,
-      values.requestDescription,
-      imageFile
-    );
-    await fetchData(data.page || 0, data.size || 5);
-
-    messageApi.success("Request updated successfully!");
-  } catch (error: any) {
-    messageApi.error("Failed to update request.");
-  }
-
-  setIsFormModalOpen(false);
-  setEditingRequest(null);
-};
+    setIsFormModalOpen(false);
+    setEditingRequest(null);
+  };
 
   const handleEditRequest = (record: RequirementDetail) => {
     setEditingRequest(record);
@@ -288,7 +310,7 @@ const RequestStatusInteractive: React.FC = () => {
         (data?.page ?? 0) * (data?.size ?? 5) + index + 1,
     },
     {
-      title: "Image",
+      title: "Ảnh",
       dataIndex: "imageUrl",
       key: "imageUrl",
       width: 100,
@@ -304,7 +326,7 @@ const RequestStatusInteractive: React.FC = () => {
         return imageUrl ? (
           <Image
             src={getImageUrl(imageUrl)}
-            alt="Request image"
+            alt="Ảnh yêu cầu"
             width={60}
             height={60}
             style={{ objectFit: "cover", borderRadius: "4px" }}
@@ -312,18 +334,18 @@ const RequestStatusInteractive: React.FC = () => {
           />
         ) : (
           <div className="w-[60px] h-[60px] bg-gray-200 rounded flex items-center justify-center text-gray-400 text-xs">
-            No Image
+            Không có ảnh
           </div>
         );
       },
     },
     {
-      title: "Room Name",
+      title: "Tên phòng",
       dataIndex: "roomTitle",
       key: "roomTitle",
     },
     {
-      title: "Customer Name",
+      title: "Tên khách hàng",
       dataIndex: "userName",
       key: "userName",
     },
@@ -333,7 +355,7 @@ const RequestStatusInteractive: React.FC = () => {
       key: "email",
     },
     {
-      title: "Request Description",
+      title: "Mô tả yêu cầu",
       dataIndex: "description",
       key: "description",
       render: (text: string) => (
@@ -343,7 +365,7 @@ const RequestStatusInteractive: React.FC = () => {
       ),
     },
     {
-      title: "Created Date",
+      title: "Ngày tạo",
       dataIndex: "createdDate",
       key: "createdDate",
       width: 120,
@@ -359,36 +381,36 @@ const RequestStatusInteractive: React.FC = () => {
         new Date(a.createdDate).getTime() - new Date(b.createdDate).getTime(),
     },
     {
-      title: "Status",
+      title: "Trạng thái",
       dataIndex: "status",
       key: "status",
       render: (status: 0 | 1 | 2, record: RequirementDetail) => {
         switch (status) {
           case 0:
-            return <Tag color="orange">Not Processed</Tag>;
+            return <Tag color="orange">Chưa xử lý</Tag>;
           case 1:
             return (
               <div className="flex items-center gap-2">
-                <Tag color="green">Completed</Tag>
+                <Tag color="green">Đã hoàn thành</Tag>
                 <Button
                   type="text"
                   icon={<EyeOutlined />}
                   size="small"
                   onClick={() => handleViewCompletion(record)}
                   className="text-blue-500 hover:text-blue-700"
-                  title="View completion details"
+                  title="Xem chi tiết hoàn thành"
                 />
               </div>
             );
           case 2:
-            return <Tag color="red">Rejected</Tag>;
+            return <Tag color="red">Từ chối</Tag>;
           default:
-            return <Tag color="default">Unknown</Tag>;
+            return <Tag color="default">Không xác định</Tag>;
         }
       },
     },
     {
-      title: "Actions",
+      title: "Thao tác",
       key: "actions",
       render: (_, record: RequirementDetail) => (
         <Button
@@ -397,61 +419,65 @@ const RequestStatusInteractive: React.FC = () => {
           onClick={() => handleEditRequest(record)}
           className="text-blue-500 hover:text-blue-700"
           disabled={record.status !== 0}
-          title={record.status !== 0 ? "Cannot edit processed requests" : "Edit request"}
+          title={
+            record.status !== 0
+              ? "Không thể sửa yêu cầu đã xử lý"
+              : "Chỉnh sửa yêu cầu"
+          }
         />
       ),
     },
   ];
 
   return (
-  <div className="p-4">
-    {contextHolder}
-    <div className="mb-4">
-      <h2 className="text-2xl font-semibold dark:!text-white">
-        Request Management
-      </h2>
+    <div className="p-4">
+      {contextHolder}
+      <div className="mb-4">
+        <h2 className="text-2xl font-semibold dark:!text-white">
+          Quản lý yêu cầu
+        </h2>
+      </div>
+
+      <Table<RequirementDetail>
+        columns={columns}
+        dataSource={requests}
+        rowKey="id"
+        loading={loading}
+        pagination={{
+          current: (data?.page ?? 0) + 1,
+          pageSize: data?.size ?? 5,
+          total: data?.totalRecords ?? 0,
+          showTotal: (total, range) =>
+            `${range[0]}-${range[1]} trong tổng số ${total} mục`,
+        }}
+        onChange={handleTableChange}
+      />
+
+      {/* Edit Modal - Bỏ Modal wrapper */}
+      <RequestEditModalContent
+        open={isFormModalOpen}
+        onCancel={() => {
+          setIsFormModalOpen(false);
+          setEditingRequest(null);
+        }}
+        onSubmit={handleFormSubmit}
+        editingRequest={editingRequest}
+        setData={setData}
+      />
+
+      {/* Completion View Modal */}
+      <CompletionViewModal
+        open={completionViewModalOpen}
+        onCancel={() => {
+          setCompletionViewModalOpen(false);
+          setViewingRequest(null);
+        }}
+        description={viewingRequest?.description}
+        imageUrl={viewingRequest?.imageUrl}
+        roomTitle={viewingRequest?.roomTitle}
+      />
     </div>
-
-    <Table<RequirementDetail>
-      columns={columns}
-      dataSource={requests}
-      rowKey="id"
-      loading={loading}
-      pagination={{
-        current: (data?.page ?? 0) + 1,
-        pageSize: data?.size ?? 5,
-        total: data?.totalRecords ?? 0,
-        showTotal: (total, range) =>
-          `${range[0]}-${range[1]} of ${total} items`,
-      }}
-      onChange={handleTableChange}
-    />
-
-    {/* Edit Modal - Bỏ Modal wrapper */}
-    <RequestEditModalContent
-      open={isFormModalOpen}
-      onCancel={() => {
-        setIsFormModalOpen(false);
-        setEditingRequest(null);
-      }}
-      onSubmit={handleFormSubmit}
-      editingRequest={editingRequest}
-      setData={setData}
-    />
-
-    {/* Completion View Modal */}
-    <CompletionViewModal
-      open={completionViewModalOpen}
-      onCancel={() => {
-        setCompletionViewModalOpen(false);
-        setViewingRequest(null);
-      }}
-      description={viewingRequest?.description}
-      imageUrl={viewingRequest?.imageUrl}
-      roomTitle={viewingRequest?.roomTitle}
-    />
-  </div>
-);
+  );
 };
 
 export default RequestStatusInteractive;

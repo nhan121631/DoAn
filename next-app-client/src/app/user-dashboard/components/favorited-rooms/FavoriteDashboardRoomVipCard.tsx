@@ -1,14 +1,14 @@
 "use client";
 
 import Image from "next/image";
-import React, { useState } from "react"; 
+import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { URL_IMAGE } from "@/services/Constant";
 import { RoomInUser } from "@/types/types";
 import Link from "next/link";
 import { ButtonForVipCard } from "@/app/users/components/rooms/ButtonForVipCard";
 import { AiFillCrown } from "react-icons/ai";
-import { IoCameraOutline } from "react-icons/io5"; 
+import { IoCameraOutline } from "react-icons/io5";
 
 export interface RoomCardProps {
   room: RoomInUser;
@@ -16,19 +16,23 @@ export interface RoomCardProps {
   onFavoriteChange?: (id: string) => void;
 }
 
-
 const getAvatarSrc = (avatar?: string) => {
-  console.log('Avatar value:', avatar);
-  if (!avatar || avatar.trim() === '' || avatar === 'null' || avatar === 'undefined') {
+  console.log("Avatar value:", avatar);
+  if (
+    !avatar ||
+    avatar.trim() === "" ||
+    avatar === "null" ||
+    avatar === "undefined"
+  ) {
     return "/images/default/avatar.jpg";
   }
-  if (avatar.startsWith('/dmvvs0ags/')) {
+  if (avatar.startsWith("/dmvvs0ags/")) {
     return `https://res.cloudinary.com${avatar}`;
   }
-  if (avatar.startsWith('http') || avatar.startsWith('https://')) {
+  if (avatar.startsWith("http") || avatar.startsWith("https://")) {
     return avatar;
   }
-  if (avatar.startsWith('/')) {
+  if (avatar.startsWith("/")) {
     return avatar;
   }
   return "/images/avatar.jpg";
@@ -41,23 +45,23 @@ const FavoriteDashboardRoomVipCard: React.FC<RoomCardProps> = ({
   isFavorite,
   onFavoriteChange,
 }) => {
-  const [hoveredImageIndex, setHoveredImageIndex] = useState<number | null>(null);
+  const [hoveredImageIndex, setHoveredImageIndex] = useState<number | null>(
+    null
+  );
 
- 
-    const landlordAvatar = getAvatarSrc(room.landlord?.landlordProfile?.avatar);
+  const landlordAvatar = getAvatarSrc(room.landlord?.landlordProfile?.avatar);
 
-
-    const getContactInfo = () => {
+  const getContactInfo = () => {
     const phone = room.landlord?.landlordProfile?.phoneNumber;
     const email = room.landlord?.landlordProfile?.email;
-    
-    if (phone && phone.trim() !== '' && phone !== 'null') {
+
+    if (phone && phone.trim() !== "" && phone !== "null") {
       return phone;
     }
-    if (email && email.trim() !== '' && email !== 'null') {
+    if (email && email.trim() !== "" && email !== "null") {
       return email;
     }
-    return "VIP Post"; 
+    return "VIP Post";
   };
 
   const conveniences =
@@ -113,7 +117,7 @@ const FavoriteDashboardRoomVipCard: React.FC<RoomCardProps> = ({
                 const imageUrl = img?.url
                   ? URL_IMAGE + img.url
                   : "/images/room-placeholder.jpg";
-                
+
                 return (
                   <div
                     key={idx}
@@ -220,20 +224,21 @@ const FavoriteDashboardRoomVipCard: React.FC<RoomCardProps> = ({
             )}
           </div>
         )}
-        
+
         {/* FOOTER */}
         <div className="flex items-center justify-between gap-3 pt-4 mt-auto border-t border-yellow-200">
           <div className="flex items-center gap-3">
-            
             <div className="relative w-10 h-10 overflow-hidden bg-gray-200 border-2 border-yellow-300 rounded-full">
               <Image
                 src={landlordAvatar}
-                alt={`${room.landlord.landlordProfile.fullName || 'Landlord'}'s avatar`}
+                alt={`${
+                  room.landlord.landlordProfile.fullName || "Landlord"
+                }'s avatar`}
                 width={40}
                 height={40}
                 className="object-cover w-full h-full"
                 onError={(e) => {
-                  console.error('Avatar load error:', e);
+                  console.error("Avatar load error:", e);
                   e.currentTarget.src = "/images/default/avatar.jpg";
                 }}
               />
@@ -243,8 +248,8 @@ const FavoriteDashboardRoomVipCard: React.FC<RoomCardProps> = ({
                 {room.landlord.landlordProfile.fullName}
               </span>
               <div className="text-xs font-medium text-yellow-600">
-              {getContactInfo()}
-            </div>
+                {getContactInfo()}
+              </div>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -258,7 +263,7 @@ const FavoriteDashboardRoomVipCard: React.FC<RoomCardProps> = ({
               href={`/detail/${room.id}`}
               className="px-4 py-2 text-sm font-semibold text-yellow-700 transition-colors border border-yellow-300 rounded-lg bg-yellow-50 hover:bg-yellow-100"
             >
-              See Detail
+              Xem chi tiết
             </Link>
           </div>
         </div>

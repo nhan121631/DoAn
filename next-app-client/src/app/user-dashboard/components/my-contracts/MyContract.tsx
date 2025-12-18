@@ -21,10 +21,10 @@ import { ContractService } from "@/services/ContractService";
 import { ContractData } from "@/types/types";
 
 const statusMap: Record<number, { text: string; color: string }> = {
-  0: { text: "Active", color: "green" },
-  1: { text: "Terminated", color: "red" },
-  2: { text: "Expired", color: "orange" },
-  3: { text: "Pending", color: "blue" },
+  0: { text: "Đang hiệu lực", color: "green" },
+  1: { text: "Đã chấm dứt", color: "red" },
+  2: { text: "Hết hạn", color: "orange" },
+  3: { text: "Chờ duyệt", color: "blue" },
 };
 
 const MyContract: React.FC = () => {
@@ -41,7 +41,7 @@ const MyContract: React.FC = () => {
       if (status === "loading") return;
 
       if (!session?.user?.id) {
-        setError("Please log in to view your contracts");
+        setError("Vui lòng đăng nhập để xem hợp đồng của bạn");
         setLoading(false);
         return;
       }
@@ -68,7 +68,7 @@ const MyContract: React.FC = () => {
       <div className="flex flex-col justify-center items-center h-96 space-y-3">
         <Spin size="large" />
         <span className="text-center whitespace-nowrap">
-          Loading contracts...
+          Đang tải hợp đồng...
         </span>
       </div>
     );
@@ -89,21 +89,21 @@ const MyContract: React.FC = () => {
 
   const columns: ColumnsType<ContractData> = [
     {
-      title: "Room",
+      title: "Phòng",
       dataIndex: "roomTitle",
       key: "roomTitle",
       sorter: (a, b) => a.roomTitle.localeCompare(b.roomTitle),
       width: "20%",
     },
     {
-      title: "Landlord",
+      title: "Chủ trọ",
       dataIndex: "landlordName",
       key: "landlordName",
       sorter: (a, b) => a.landlordName.localeCompare(b.landlordName),
       width: "15%",
     },
     {
-      title: "Start Date",
+      title: "Ngày bắt đầu",
       dataIndex: "startDate",
       key: "startDate",
       render: (date: string) => new Date(date).toLocaleDateString(),
@@ -112,7 +112,7 @@ const MyContract: React.FC = () => {
       width: "12%",
     },
     {
-      title: "End Date",
+      title: "Ngày kết thúc",
       dataIndex: "endDate",
       key: "endDate",
       render: (date: string) => new Date(date).toLocaleDateString(),
@@ -121,7 +121,7 @@ const MyContract: React.FC = () => {
       width: "12%",
     },
     {
-      title: "Rent (vnđ)",
+      title: "Tiền thuê (vnđ)",
       dataIndex: "monthlyRent",
       key: "monthlyRent",
       align: "right" as const,
@@ -130,7 +130,7 @@ const MyContract: React.FC = () => {
       width: "12%",
     },
     {
-      title: "Status",
+      title: "Trạng thái",
       dataIndex: "status",
       key: "status",
       render: (status: number) => {
@@ -146,7 +146,7 @@ const MyContract: React.FC = () => {
       width: "12%",
     },
     {
-      title: "Action",
+      title: "Thao tác",
       key: "action",
       render: (_, record) => (
         <Button
@@ -156,7 +156,7 @@ const MyContract: React.FC = () => {
             router.push(`/user-dashboard/my-contracts/${record.id}`)
           }
         >
-          View Detail
+          Xem chi tiết
         </Button>
       ),
       width: "15%",
@@ -166,15 +166,15 @@ const MyContract: React.FC = () => {
   return (
     <div className="space-y-6">
       {error ? (
-        <Alert message="Error" description={error} type="error" showIcon />
+        <Alert message="Lỗi" description={error} type="error" showIcon />
       ) : null}
       <Card
-        title={<span className="text-2xl font-bold">My Contracts</span>}
+        title={<span className="text-2xl font-bold">Hợp đồng của tôi</span>}
         className="shadow-md"
         extra={
           <Space>
             <Input
-              placeholder="Search contracts..."
+              placeholder="Tìm kiếm hợp đồng..."
               prefix={<SearchOutlined />}
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
@@ -182,7 +182,7 @@ const MyContract: React.FC = () => {
               allowClear
             />
             <Select
-              placeholder="Filter by status"
+              placeholder="Lọc theo trạng thái"
               value={statusFilter}
               onChange={setStatusFilter}
               style={{ width: 150 }}
@@ -208,7 +208,7 @@ const MyContract: React.FC = () => {
             showSizeChanger: true,
             showQuickJumper: true,
             showTotal: (total, range) =>
-              `${range[0]}-${range[1]} of ${total} contracts`,
+              `${range[0]}-${range[1]} trong tổng ${total} hợp đồng`,
             pageSizeOptions: ["5", "10", "20", "50"],
           }}
           locale={{
@@ -216,8 +216,8 @@ const MyContract: React.FC = () => {
               <Empty
                 description={
                   searchText || statusFilter !== null
-                    ? "No contracts match your search criteria"
-                    : "No contracts found"
+                    ? "Không có hợp đồng nào phù hợp với tiêu chí tìm kiếm"
+                    : "Không có hợp đồng nào"
                 }
                 image={Empty.PRESENTED_IMAGE_SIMPLE}
               />

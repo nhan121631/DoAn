@@ -22,27 +22,27 @@ export interface IRegisterInputs {
 
 const schema = yup
   .object({
-    fullName: yup.string().required("Please enter your Full Name."),
+    fullName: yup.string().required("Vui lòng nhập họ và tên."),
     email: yup
       .string()
-      .email("Invalid email.")
-      .required("Please enter your email."),
+      .email("Email không hợp lệ.")
+      .required("Vui lòng nhập email."),
     username: yup
       .string()
-      .required("Please enter your user name.")
-      .matches(/^[a-zA-Z0-9]{3,30}$/, "Invalid user name."),
+      .required("Vui lòng nhập tên đăng nhập.")
+      .matches(/^[a-zA-Z0-9]{3,30}$/, "Tên đăng nhập không hợp lệ."),
     password: yup
       .string()
-      .min(6, "Password must be at least 6 characters.")
-      .required("Please enter your password."),
+      .min(6, "Mật khẩu phải có ít nhất 6 ký tự.")
+      .required("Vui lòng nhập mật khẩu."),
     repeatPassword: yup
       .string()
-      .oneOf([yup.ref("password")], "Passwords must match.")
-      .required("Please repeat your password."),
+      .oneOf([yup.ref("password")], "Mật khẩu nhập lại không khớp.")
+      .required("Vui lòng nhập lại mật khẩu."),
     accountType: yup
       .string()
-      .oneOf(["0", "1"], "Please select an account type.")
-      .required("Please select an account type."),
+      .oneOf(["0", "1"], "Vui lòng chọn loại tài khoản.")
+      .required("Vui lòng chọn loại tài khoản."),
   })
   .required();
 export default function RegisterForm() {
@@ -73,7 +73,7 @@ export default function RegisterForm() {
     try {
       await RegisterService(values);
       messageApi.success({
-        content: "Registration successful!",
+        content: "Đăng ký thành công!",
         duration: 2,
       });
       reset();
@@ -91,7 +91,7 @@ export default function RegisterForm() {
       {contextHolder}
       <div className="mb-4">
         <label htmlFor="registerFullName" className="sr-only">
-          Full Name
+          Họ và tên
         </label>
         <input
           type="text"
@@ -99,7 +99,7 @@ export default function RegisterForm() {
           className={`w-full p-3 border ${
             errors.fullName ? "border-red-500" : "border-gray-300"
           } rounded-md focus:outline-none focus:ring-2 focus:ring-white text-white`}
-          placeholder="Full Name"
+          placeholder="Họ và tên"
           {...register("fullName")}
         />
         {errors.fullName && (
@@ -133,7 +133,7 @@ export default function RegisterForm() {
 
       <div className="mb-4">
         <label htmlFor="registerUserName" className="sr-only">
-          UserName
+          Tên đăng nhập
         </label>
         <input
           type="text"
@@ -141,7 +141,7 @@ export default function RegisterForm() {
           className={`w-full p-3 border ${
             errors.username ? "border-red-500" : "border-gray-300"
           } rounded-md focus:outline-none focus:ring-2 focus:ring-white text-white`}
-          placeholder="User Name"
+          placeholder="Tên đăng nhập"
           {...register("username")}
         />
         {errors.username && (
@@ -156,7 +156,7 @@ export default function RegisterForm() {
 
       <div className="mb-4">
         <label htmlFor="registerPassword" className="sr-only">
-          Password
+          Mật khẩu
         </label>
         <div className="relative">
           <input
@@ -165,7 +165,7 @@ export default function RegisterForm() {
             className={`w-full p-3 border ${
               errors.password ? "border-red-500" : "border-gray-300"
             } rounded-md focus:outline-none focus:ring-2 focus:ring-white text-white pr-10`}
-            placeholder="Password"
+            placeholder="Mật khẩu"
             {...register("password")}
           />
           <span
@@ -186,7 +186,7 @@ export default function RegisterForm() {
       {/* Repeat Password Input */}
       <div className="mb-4">
         <label htmlFor="repeatPassword" className="sr-only">
-          Repeat Password
+          Nhập lại mật khẩu
         </label>
         <input
           type={showRegisterPassword ? "text" : "password"}
@@ -194,7 +194,7 @@ export default function RegisterForm() {
           className={`w-full p-3 border ${
             errors.repeatPassword ? "border-red-500" : "border-gray-300"
           } rounded-md focus:outline-none focus:ring-2 focus:ring-white text-white`}
-          placeholder="Repeat Password"
+          placeholder="Nhập lại mật khẩu"
           {...register("repeatPassword")}
         />
         {errors.repeatPassword && (
@@ -207,7 +207,7 @@ export default function RegisterForm() {
 
       {/* Account Type Radio Buttons */}
       <div className="mb-6">
-        <p className="mb-2 text-sm text-gray-200">Account Type</p>
+        <p className="mb-2 text-sm text-gray-200">Loại tài khoản</p>
         <div className="flex flex-wrap gap-x-4 gap-y-2">
           <label className="inline-flex items-center text-gray-200">
             <input
@@ -216,7 +216,7 @@ export default function RegisterForm() {
               {...register("accountType")}
               className="w-4 h-4 text-orange-500 form-radio"
             />
-            <span className="ml-2">User</span>
+            <span className="ml-2">Người dùng</span>
           </label>
           <label className="inline-flex items-center text-gray-200">
             <input
@@ -225,7 +225,7 @@ export default function RegisterForm() {
               {...register("accountType")}
               className="w-4 h-4 text-orange-500 form-radio"
             />
-            <span className="ml-2">Landlord</span>
+            <span className="ml-2">Chủ nhà</span>
           </label>
         </div>
         {errors.accountType && (
@@ -241,7 +241,7 @@ export default function RegisterForm() {
         type="submit"
         className="w-full py-3 text-lg font-semibold text-black transition duration-300 bg-white rounded-md hover:bg-gray-200"
       >
-        Create Account
+        Đăng ký tài khoản
       </button>
     </form>
   );

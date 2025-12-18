@@ -247,44 +247,44 @@ function RentalHistory() {
 
   const columns = [
     {
-      title: "Landlord Name",
+      title: "Tên chủ nhà",
       dataIndex: "name_landlord",
       sorter: (a: any, b: any) =>
         a.name_landlord.localeCompare(b.name_landlord),
       key: "name_landlord",
     },
-    { title: "Phone", dataIndex: "phone_landlord" },
+    { title: "Số điện thoại", dataIndex: "phone_landlord" },
     {
-      title: "Room",
+      title: "Phòng",
       dataIndex: "room",
       sorter: (a: RentalData, b: RentalData) => a.room.localeCompare(b.room),
     },
     {
-      title: "Address",
+      title: "Địa chỉ",
       dataIndex: "address",
       sorter: (a: RentalData, b: RentalData) =>
         a.address.localeCompare(b.address),
     },
     {
-      title: "Rental Date",
+      title: "Ngày thuê",
       dataIndex: "rentalDate",
       sorter: (a: RentalData, b: RentalData) =>
         new Date(a.rentalDate).getTime() - new Date(b.rentalDate).getTime(),
     },
     {
-      title: "Expires",
+      title: "Ngày hết hạn",
       dataIndex: "expires",
       sorter: (a: RentalData, b: RentalData) =>
         new Date(a.expires).getTime() - new Date(b.expires).getTime(),
     },
     {
-      title: "Tenants",
+      title: "Số người",
       align: "right" as const,
       dataIndex: "tenants",
       sorter: (a: RentalData, b: RentalData) => a.tenants - b.tenants,
     },
     {
-      title: "Price",
+      title: "Giá thuê",
       dataIndex: "price",
       align: "right" as const,
       sorter: (a: RentalData, b: RentalData) => {
@@ -293,14 +293,14 @@ function RentalHistory() {
       },
     },
     {
-      title: "Image Proof",
+      title: "Ảnh hóa đơn",
       dataIndex: "imageProof",
       align: "center" as const,
       render: (text: string) => {
         if (!text) {
           return (
             <div className="flex items-center justify-center w-16 h-16 text-xs text-gray-500 bg-gray-200 rounded">
-              No Image
+              Không có ảnh
             </div>
           );
         }
@@ -311,7 +311,7 @@ function RentalHistory() {
           >
             <Image
               src={`${URL_IMAGE}${text}`}
-              alt="Bill Transfer"
+              alt="Ảnh hóa đơn"
               width={64}
               height={64}
               className="object-cover border border-gray-300 rounded"
@@ -322,7 +322,7 @@ function RentalHistory() {
       },
     },
     {
-      title: "Status",
+      title: "Trạng thái",
       dataIndex: "status",
       sorter: (a: RentalData, b: RentalData) => a.status - b.status,
       render: (_: any, record: RentalData) => {
@@ -330,7 +330,7 @@ function RentalHistory() {
           case 0:
             return (
               <Tag color="orange" style={{ fontWeight: 400 }}>
-                Pending
+                Chờ xác nhận
               </Tag>
             );
           case 1:
@@ -340,19 +340,19 @@ function RentalHistory() {
                 size="small"
                 onClick={() => handleAccept(record.key, record.idRoom)}
               >
-                Confirm Deposit
+                Xác nhận đặt cọc
               </Button>
             );
           case 2:
             return (
               <Tag color="red" style={{ fontWeight: 400 }}>
-                Rejected
+                Đã từ chối
               </Tag>
             );
           case 3:
             return (
               <Tag color="blue" style={{ fontWeight: 400 }}>
-                Waiting for Deposit
+                Chờ chuyển khoản cọc
               </Tag>
             );
           case 4: {
@@ -362,20 +362,20 @@ function RentalHistory() {
             if (today < rentalDate) {
               return (
                 <Tag color="green" style={{ fontWeight: 400 }}>
-                  Deposited
+                  Đã đặt cọc
                 </Tag>
               );
             } else {
               if (today > expiresDate) {
                 return (
                   <Tag color="red" style={{ fontWeight: 400 }}>
-                    Expired
+                    Đã hết hạn
                   </Tag>
                 );
               }
               return (
                 <Tag color="green" style={{ fontWeight: 400 }}>
-                  Renting
+                  Đang thuê
                 </Tag>
               );
             }
@@ -386,7 +386,7 @@ function RentalHistory() {
       },
     },
     {
-      title: "Request Action",
+      title: "Yêu cầu",
       key: "requestAction",
       render: (_: any, record: RentalData) => (
         <Space size="middle">
@@ -403,24 +403,24 @@ function RentalHistory() {
                 // await createRequestNotification(record.idRoom, session?.user.id, "You have a new request from a tenant!");
               }
             }}
-            title="Add Request"
+            title="Thêm yêu cầu"
             disabled={
               record.status !== 4 || new Date() > new Date(record.expires)
             }
           >
-            <IoMdAddCircleOutline size={18} /> Sent new request
+            <IoMdAddCircleOutline size={18} /> Gửi yêu cầu mới
           </Button>
         </Space>
       ),
     },
     {
-      title: "Available",
+      title: "Trạng thái phòng",
       key: "available",
       render: (_: any, record: RentalData) => {
         if (record.isRemoved === 1) {
-          return <Tag color="red">Removed by owner</Tag>;
+          return <Tag color="red">Đã bị chủ nhà xóa</Tag>;
         }
-        return <Tag color="green">Active</Tag>;
+        return <Tag color="green">Đang hoạt động</Tag>;
       },
     },
   ];
@@ -429,7 +429,7 @@ function RentalHistory() {
     <div style={{ padding: 24 }}>
       {contextHolder}
       <h2 className="text-2xl font-bold mb-4 dark:!text-white">
-        Rental History
+        Lịch sử thuê phòng
       </h2>
       <Table
         columns={columns}
@@ -474,7 +474,7 @@ function RentalHistory() {
           <div className="flex items-center justify-center">
             <Image
               src={selectedImage}
-              alt="Bill Transfer - Full Size"
+              alt="Ảnh hóa đơn - Xem lớn"
               width={800}
               height={600}
               style={{

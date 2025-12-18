@@ -182,20 +182,20 @@ export default function ModalProfile({
       centered
       width={560}
       title={
-        <span className="font-bold text-lg">Edit Personal Information</span>
+        <span className="font-bold text-lg">Chỉnh sửa thông tin cá nhân</span>
       }
       styles={{ body: { paddingTop: 24, paddingBottom: 8 } }}
     >
       <Form form={form} layout="vertical" onFinish={onSave}>
         <div className="flex flex-col items-center mb-4">
           <div className="relative w-24 h-24 mb-2 rounded-full overflow-hidden border-2 border-blue-500">
-  <Image
-    src={previewUrl || avatarUrl || "/images/default/avatar.jpg"}
-    alt="Avatar"
-    fill
-    className="object-cover"
-  />
-</div>
+            <Image
+              src={previewUrl || avatarUrl || "/images/default/avatar.jpg"}
+              alt="Avatar"
+              fill
+              className="object-cover"
+            />
+          </div>
           <Form.Item
             name="avatar"
             valuePropName="fileList"
@@ -207,7 +207,7 @@ export default function ModalProfile({
               beforeUpload={(file) => {
                 const isImage = file.type.startsWith("image/");
                 if (!isImage) {
-                  window?.alert("Only image files are allowed!");
+                  window?.alert("Chỉ cho phép tải lên tệp hình ảnh!");
                 }
                 return isImage ? false : Upload.LIST_IGNORE;
               }}
@@ -215,39 +215,39 @@ export default function ModalProfile({
               accept="image/*"
               onChange={handleAvatarChange}
             >
-              <Button icon={<UploadOutlined />}>Upload Image</Button>
+              <Button icon={<UploadOutlined />}>Tải ảnh lên</Button>
             </Upload>
           </Form.Item>
         </div>
 
         <Form.Item
           name="name"
-          label="Full Name"
-          rules={[{ required: true, message: "Please enter your full name" }]}
+          label="Họ và tên"
+          rules={[{ required: true, message: "Vui lòng nhập họ và tên" }]}
         >
-          <Input prefix={<FaUser />} placeholder="Full Name" />
+          <Input prefix={<FaUser />} placeholder="Họ và tên" />
         </Form.Item>
 
         <Form.Item
           name="phone"
-          label="Phone Number"
+          label="Số điện thoại"
           rules={[
-            // { required: true, message: "Please enter your phone number" },
+            // { required: true, message: "Vui lòng nhập số điện thoại" },
             {
               pattern: /^\d{10,15}$/,
-              message: "Phone number must be 10-15 digits",
+              message: "Số điện thoại phải từ 10-15 số",
             },
           ]}
         >
-          <Input prefix={<IoIosPhonePortrait />} placeholder="Phone Number" />
+          <Input prefix={<IoIosPhonePortrait />} placeholder="Số điện thoại" />
         </Form.Item>
 
         <Form.Item
           name="email"
           label="Email"
           rules={[
-            { required: true, message: "Please enter your email" },
-            { type: "email", message: "Invalid email format" },
+            { required: true, message: "Vui lòng nhập email" },
+            { type: "email", message: "Định dạng email không hợp lệ" },
           ]}
         >
           <Input prefix={<MdOutlineMail />} placeholder="Email" />
@@ -255,7 +255,7 @@ export default function ModalProfile({
 
         <div className="flex gap-2">
           <Form.Item
-            label="Province"
+            label="Tỉnh/Thành phố"
             name="province"
             className="flex-1"
             rules={[
@@ -267,7 +267,7 @@ export default function ModalProfile({
                     form.getFieldValue("ward") ||
                     form.getFieldValue("address");
                   return anyFilled && !value
-                    ? Promise.reject("Please select province")
+                    ? Promise.reject("Vui lòng chọn tỉnh/thành phố")
                     : Promise.resolve();
                 },
               },
@@ -276,7 +276,7 @@ export default function ModalProfile({
             <Select
               showSearch
               allowClear
-              placeholder="Select province"
+              placeholder="Chọn tỉnh/thành phố"
               options={provinces}
               onChange={handleProvinceChange}
               optionFilterProp="label"
@@ -284,7 +284,7 @@ export default function ModalProfile({
           </Form.Item>
 
           <Form.Item
-            label="District"
+            label="Quận/Huyện"
             name="district"
             className="flex-1"
             rules={[
@@ -296,7 +296,7 @@ export default function ModalProfile({
                     form.getFieldValue("ward") ||
                     form.getFieldValue("address");
                   return anyFilled && !value
-                    ? Promise.reject("Please select district")
+                    ? Promise.reject("Vui lòng chọn quận/huyện")
                     : Promise.resolve();
                 },
               },
@@ -305,7 +305,7 @@ export default function ModalProfile({
             <Select
               showSearch
               allowClear
-              placeholder="Select district"
+              placeholder="Chọn quận/huyện"
               options={districts}
               loading={loadingDistricts}
               disabled={!selectedProvince}
@@ -315,7 +315,7 @@ export default function ModalProfile({
           </Form.Item>
 
           <Form.Item
-            label="Ward"
+            label="Phường/Xã"
             name="ward"
             className="flex-1"
             rules={[
@@ -327,7 +327,7 @@ export default function ModalProfile({
                     form.getFieldValue("district") ||
                     form.getFieldValue("address");
                   return anyFilled && !value
-                    ? Promise.reject("Please select ward")
+                    ? Promise.reject("Vui lòng chọn phường/xã")
                     : Promise.resolve();
                 },
               },
@@ -336,7 +336,7 @@ export default function ModalProfile({
             <Select
               showSearch
               allowClear
-              placeholder="Select ward"
+              placeholder="Chọn phường/xã"
               options={wards}
               loading={loadingWards}
               disabled={!selectedDistrict}
@@ -346,7 +346,7 @@ export default function ModalProfile({
         </div>
 
         <Form.Item
-          label="Address"
+          label="Địa chỉ cụ thể"
           name="address"
           rules={[
             {
@@ -357,18 +357,18 @@ export default function ModalProfile({
                   form.getFieldValue("district") ||
                   form.getFieldValue("ward");
                 return anyFilled && !value
-                  ? Promise.reject("Please enter address")
+                  ? Promise.reject("Vui lòng nhập địa chỉ cụ thể")
                   : Promise.resolve();
               },
             },
           ]}
         >
-          <Input placeholder="Enter your address" />
+          <Input placeholder="Nhập địa chỉ cụ thể" />
         </Form.Item>
         <div className="flex justify-end gap-2 mt-4">
-          <Button onClick={handleCancel}>Cancel</Button>
+          <Button onClick={handleCancel}>Hủy</Button>
           <Button type="primary" htmlType="submit">
-            Save
+            Lưu
           </Button>
         </div>
       </Form>

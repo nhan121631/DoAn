@@ -23,16 +23,16 @@ interface ContactFormData {
 const validationSchema = yup.object({
   name: yup
     .string()
-    .required("Name is required")
-    .min(2, "Name must be at least 2 characters"),
+    .required("Vui lòng nhập họ tên")
+    .min(2, "Họ tên phải có ít nhất 2 ký tự"),
   email: yup
     .string()
-    .required("Email is required")
-    .email("Invalid email address"),
+    .required("Vui lòng nhập email")
+    .email("Email không hợp lệ"),
   message: yup
     .string()
-    .required("Message is required")
-    .min(10, "Message must be at least 10 characters"),
+    .required("Vui lòng nhập nội dung")
+    .min(10, "Nội dung phải có ít nhất 10 ký tự"),
 });
 
 export default function ContactForm() {
@@ -83,10 +83,11 @@ export default function ContactForm() {
           <CheckCircle className="w-8 h-8 text-white" />
         </div>
         <h3 className="text-xl font-semibold text-slate-900 mb-2">
-          Message sent successfully!
+          Gửi tin nhắn thành công!
         </h3>
         <p className="text-slate-600">
-          Thank you for contacting us. We will respond as soon as possible.
+          Cảm ơn bạn đã liên hệ với chúng tôi. Chúng tôi sẽ phản hồi sớm nhất có
+          thể.
         </p>
       </div>
     );
@@ -97,7 +98,7 @@ export default function ContactForm() {
       {/* Name Field */}
       <div className="group">
         <label className="block text-sm font-medium text-slate-700 mb-2">
-          Full Name <span className="text-red-500">*</span>
+          Họ và tên <span className="text-red-500">*</span>
         </label>
         <div className="relative">
           <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -113,7 +114,7 @@ export default function ContactForm() {
           </div>
           <input
             type="text"
-            placeholder="Enter your full name"
+            placeholder="Nhập họ và tên của bạn"
             {...register("name")}
             className={`w-full pl-12 pr-4 py-3 bg-slate-50 border-0 rounded-xl focus:outline-none focus:ring-2 focus:bg-white transition-all duration-200 ${
               errors.name
@@ -151,7 +152,7 @@ export default function ContactForm() {
           </div>
           <input
             type="email"
-            placeholder="your@email.com"
+            placeholder="mailcuaban@email.com"
             {...register("email")}
             className={`w-full pl-12 pr-4 py-3 bg-slate-50 border-0 rounded-xl focus:outline-none focus:ring-2 focus:bg-white transition-all duration-200 ${
               errors.email
@@ -173,7 +174,7 @@ export default function ContactForm() {
       {/* Message Field */}
       <div className="group">
         <label className="block text-sm font-medium text-slate-700 mb-2">
-          Message <span className="text-red-500">*</span>
+          Nội dung <span className="text-red-500">*</span>
         </label>
         <div className="relative">
           <div className="absolute top-3 left-0 pl-4 flex items-start pointer-events-none">
@@ -189,7 +190,7 @@ export default function ContactForm() {
           </div>
           <textarea
             rows={5}
-            placeholder="Let us know what you need..."
+            placeholder="Bạn cần hỗ trợ gì..."
             {...register("message")}
             className={`w-full pl-12 pr-4 py-3 bg-slate-50 border-0 rounded-xl resize-none focus:outline-none focus:ring-2 focus:bg-white transition-all duration-200 ${
               errors.message
@@ -222,12 +223,12 @@ export default function ContactForm() {
           {isSubmitting ? (
             <>
               <Loader2 className="w-5 h-5 animate-spin" />
-              <span>Sending...</span>
+              <span>Đang gửi...</span>
             </>
           ) : (
             <>
               <Send className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-200" />
-              <span>Send Message</span>
+              <span>Gửi liên hệ</span>
             </>
           )}
         </div>
@@ -242,7 +243,8 @@ export default function ContactForm() {
       <div className="flex items-center gap-2 text-xs text-slate-500 pt-2">
         <div className="w-2 h-2 bg-green-500 rounded-full"></div>
         <span>
-          100% privacy guaranteed. We do not share your personal data.
+          Cam kết bảo mật 100%. Chúng tôi không chia sẻ thông tin cá nhân của
+          bạn.
         </span>
       </div>
     </form>

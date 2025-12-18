@@ -36,22 +36,24 @@ interface TenantResidentsTabProps {
   onContractUpdate?: (contract: ContractData) => void;
 }
 
-
-
 export default function TenantResidentsTab({
   contract,
 }: TenantResidentsTabProps) {
   const router = useRouter();
   const [residents, setResidents] = useState<ResidentData[]>([]);
   const [loading, setLoading] = useState(false);
-  const [selectedResident, setSelectedResident] = useState<ResidentData | null>(null);
+  const [selectedResident, setSelectedResident] = useState<ResidentData | null>(
+    null
+  );
   const [messageApi, contextHolder] = message.useMessage();
 
   useEffect(() => {
     const fetchResidents = async () => {
       try {
         setLoading(true);
-        const fetchedResidents = await ResidentService.getByContract(contract.id);
+        const fetchedResidents = await ResidentService.getByContract(
+          contract.id
+        );
         setResidents(fetchedResidents);
       } catch (error) {
         console.error("Error fetching residents:", error);
@@ -69,7 +71,7 @@ export default function TenantResidentsTab({
 
   const columns: ColumnsType<ResidentData> = [
     {
-      title: "Full Name",
+      title: "Họ và tên",
       dataIndex: "fullName",
       key: "fullName",
       render: (name: string) => (
@@ -82,18 +84,18 @@ export default function TenantResidentsTab({
       ),
     },
     {
-      title: "ID Number",
+      title: "Số CMND/CCCD",
       dataIndex: "idNumber",
       key: "idNumber",
     },
     {
-      title: "Relationship",
+      title: "Quan hệ",
       dataIndex: "relationship",
       key: "relationship",
       render: (relationship: string) => <Tag color="blue">{relationship}</Tag>,
     },
     {
-      title: "Period",
+      title: "Thời gian cư trú",
       key: "period",
       render: (_: any, record: ResidentData) => (
         <div>
@@ -101,13 +103,13 @@ export default function TenantResidentsTab({
             {new Date(record.startDate).toLocaleDateString()}
           </div>
           <div className="text-gray-500 dark:text-gray-400 text-sm transition-colors duration-300">
-            to {new Date(record.endDate).toLocaleDateString()}
+            đến {new Date(record.endDate).toLocaleDateString()}
           </div>
         </div>
       ),
     },
     {
-      title: "Status",
+      title: "Trạng thái",
       dataIndex: "status",
       key: "status",
       render: (status: string) => {
@@ -125,7 +127,7 @@ export default function TenantResidentsTab({
       },
     },
     {
-      title: "Action",
+      title: "Hành động",
       key: "action",
       render: (_: any, record: ResidentData) => (
         <Space>
@@ -134,7 +136,7 @@ export default function TenantResidentsTab({
             icon={<EyeOutlined />}
             onClick={() => setSelectedResident(record)}
           >
-            View
+            Xem
           </Button>
         </Space>
       ),
@@ -144,7 +146,7 @@ export default function TenantResidentsTab({
   return (
     <div className="space-y-4">
       {contextHolder}
-      
+
       {/* Header Card with navigation to full residents page */}
       <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
         <div className="flex items-center justify-between">
@@ -152,17 +154,17 @@ export default function TenantResidentsTab({
             <TeamOutlined className="text-2xl text-blue-600" />
             <div>
               <h3 className="text-lg font-semibold text-gray-800 mb-1">
-                Residents for this Contract
+                Danh sách tạm trú của hợp đồng này
               </h3>
               <p className="text-sm text-gray-600">
-                View residents registered under this contract. For full resident management, 
-                visit the dedicated residents page.
+                Xem các tạm trú đã đăng ký trong hợp đồng này. Để quản lý tạm
+                trú đầy đủ, hãy truy cập trang quản lý tạm trú.
               </p>
             </div>
           </div>
           <Link href="/user-dashboard/residents">
             <Button type="primary" icon={<ArrowRightOutlined />} size="large">
-              Manage All Residents
+              Quản lý tất cả tạm trú
             </Button>
           </Link>
         </div>
@@ -175,11 +177,11 @@ export default function TenantResidentsTab({
             image={Empty.PRESENTED_IMAGE_SIMPLE}
             description={
               <span>
-                No residents found for this contract.
+                Không tìm thấy tạm trú nào cho hợp đồng này.
                 <br />
                 <Link href="/user-dashboard/residents">
                   <Button type="link" className="p-0">
-                    Go to Residents page to add residents
+                    Đến trang tạm trú để thêm tạm trú
                   </Button>
                 </Link>
               </span>
@@ -199,7 +201,7 @@ export default function TenantResidentsTab({
 
       {/* Resident Detail Modal */}
       <Modal
-        title="Resident Details"
+        title="Chi tiết tạm trú"
         open={!!selectedResident}
         onCancel={() => setSelectedResident(null)}
         footer={null}
@@ -209,40 +211,62 @@ export default function TenantResidentsTab({
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-sm font-medium text-gray-500">Full Name</label>
+                <label className="text-sm font-medium text-gray-500">
+                  Họ và tên
+                </label>
                 <p className="text-base">{selectedResident.fullName}</p>
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-500">ID Number</label>
+                <label className="text-sm font-medium text-gray-500">
+                  Số CMND/CCCD
+                </label>
                 <p className="text-base">{selectedResident.idNumber}</p>
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-500">Relationship</label>
+                <label className="text-sm font-medium text-gray-500">
+                  Quan hệ
+                </label>
                 <p className="text-base">
                   <Tag color="blue">{selectedResident.relationship}</Tag>
                 </p>
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-500">Status</label>
+                <label className="text-sm font-medium text-gray-500">
+                  Trạng thái
+                </label>
                 <p className="text-base">
-                  <Tag color={selectedResident.status === "DONE" ? "green" : "orange"}>
+                  <Tag
+                    color={
+                      selectedResident.status === "DONE" ? "green" : "orange"
+                    }
+                  >
                     {selectedResident.status || "PENDING"}
                   </Tag>
                 </p>
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-500">Start Date</label>
-                <p className="text-base">{new Date(selectedResident.startDate).toLocaleDateString()}</p>
+                <label className="text-sm font-medium text-gray-500">
+                  Ngày bắt đầu
+                </label>
+                <p className="text-base">
+                  {new Date(selectedResident.startDate).toLocaleDateString()}
+                </p>
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-500">End Date</label>
-                <p className="text-base">{new Date(selectedResident.endDate).toLocaleDateString()}</p>
+                <label className="text-sm font-medium text-gray-500">
+                  Ngày kết thúc
+                </label>
+                <p className="text-base">
+                  {new Date(selectedResident.endDate).toLocaleDateString()}
+                </p>
               </div>
             </div>
-            
+
             {selectedResident.note && (
               <div>
-                <label className="text-sm font-medium text-gray-500">Note</label>
+                <label className="text-sm font-medium text-gray-500">
+                  Ghi chú
+                </label>
                 <p className="text-base">{selectedResident.note}</p>
               </div>
             )}
@@ -251,7 +275,9 @@ export default function TenantResidentsTab({
             <div className="grid grid-cols-2 gap-4">
               {selectedResident.idCardFrontUrl && (
                 <div>
-                  <label className="text-sm font-medium text-gray-500">ID Card Front</label>
+                  <label className="text-sm font-medium text-gray-500">
+                    Ảnh mặt trước CMND/CCCD
+                  </label>
                   <Image
                     src={getCloudinaryImageUrl(selectedResident.idCardFrontUrl)}
                     alt="ID Card Front"
@@ -263,7 +289,9 @@ export default function TenantResidentsTab({
               )}
               {selectedResident.idCardBackUrl && (
                 <div>
-                  <label className="text-sm font-medium text-gray-500">ID Card Back</label>
+                  <label className="text-sm font-medium text-gray-500">
+                    Ảnh mặt sau CMND/CCCD
+                  </label>
                   <Image
                     src={getCloudinaryImageUrl(selectedResident.idCardBackUrl)}
                     alt="ID Card Back"

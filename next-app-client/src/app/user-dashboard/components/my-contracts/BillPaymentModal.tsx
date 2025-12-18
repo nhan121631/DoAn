@@ -73,7 +73,7 @@ function BillPaymentModal({
         }
       } catch (error) {
         console.error("Failed to process payment info:", error);
-        messageApi.error("Failed to load payment information");
+        messageApi.error("Không thể tải thông tin thanh toán");
       } finally {
         setLoading(false);
       }
@@ -114,7 +114,7 @@ function BillPaymentModal({
   // Handle confirm manual transfer
   const handleConfirmTransfer = async () => {
     if (!transferConfirmed) {
-      messageApi.warning("Please confirm that you have completed the transfer");
+      messageApi.warning("Vui lòng xác nhận bạn đã hoàn thành chuyển khoản");
       return;
     }
 
@@ -129,22 +129,22 @@ function BillPaymentModal({
       // Update bill status to "CONFIRMING" using the new API
       await BillService.updateBillStatus(contract.id, bill.id, "CONFIRMING");
 
-      messageApi.success("Transfer confirmation submitted successfully!");
+      messageApi.success("Đã gửi yêu cầu xác nhận chuyển khoản thành công!");
 
       await paymentNotification(
         contract.tenantId,
         contract.landlordId,
         contract.id,
-        "Transfer confirmation submitted successfully for room: " +
+        "Đã gửi yêu cầu xác nhận chuyển khoản thành công cho phòng: " +
           contract.contractName +
-          ". Please verify the payment."
+          ". Vui lòng xác nhận thanh toán."
       );
       onConfirm();
       setTransferConfirmed(false);
       setUploadedImage(null);
     } catch (error) {
       console.error("Failed to update bill status:", error);
-      messageApi.error("Failed to confirm transfer");
+      messageApi.error("Không thể xác nhận chuyển khoản");
     }
   };
 
@@ -165,7 +165,9 @@ function BillPaymentModal({
         bill.id,
         file
       );
-      messageApi.success("Bill payment image uploaded successfully!");
+      messageApi.success(
+        "Đã tải lên ảnh xác nhận thanh toán hóa đơn thành công!"
+      );
 
       // Create upload file object for display
       const uploadFile: UploadFile = {
@@ -180,7 +182,7 @@ function BillPaymentModal({
     } catch (error) {
       console.error("Failed to upload image:", error);
       messageApi.error(
-        error instanceof Error ? error.message : "Failed to upload image"
+        error instanceof Error ? error.message : "Không thể tải lên ảnh"
       );
       return false;
     } finally {
@@ -202,14 +204,14 @@ function BillPaymentModal({
   const copyBankNumber = () => {
     if (paymentInfo?.bankNumber) {
       navigator.clipboard.writeText(paymentInfo.bankNumber);
-      messageApi.success("Bank number copied to clipboard");
+      messageApi.success("Đã sao chép số tài khoản");
     }
   };
 
   if (loading) {
     return (
       <Modal open={open} onCancel={handleCancel} footer={null} centered>
-        <div className="text-center py-8">Loading payment information...</div>
+        <div className="text-center py-8">Đang tải thông tin thanh toán...</div>
       </Modal>
     );
   }
@@ -223,7 +225,7 @@ function BillPaymentModal({
       title={
         <div className="flex items-center gap-2">
           <BankOutlined className="text-blue-600" />
-          <span>Bill Payment - {bill?.month}</span>
+          <span>Thanh toán hóa đơn - {bill?.month}</span>
         </div>
       }
       width={600}
@@ -234,11 +236,11 @@ function BillPaymentModal({
           {/* Bill Information */}
           <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
             <h3 className="text-lg font-semibold text-gray-800 mb-3">
-              Bill Details
+              Chi tiết hóa đơn
             </h3>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-gray-600">Month:</span>
+                <span className="text-gray-600">Tháng:</span>
                 <span className="font-semibold">
                   {new Date(bill.month).toLocaleDateString("en-US", {
                     month: "long",
@@ -247,28 +249,26 @@ function BillPaymentModal({
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600">Electricity:</span>
+                <span className="text-gray-600">Tiền điện:</span>
                 <span className="font-semibold">
                   {bill.electricityFee.toLocaleString()} đ
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600">Water:</span>
+                <span className="text-gray-600">Tiền nước:</span>
                 <span className="font-semibold">
                   {bill.waterFee.toLocaleString()} đ
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600">Service:</span>
+                <span className="text-gray-600">Dịch vụ:</span>
                 <span className="font-semibold">
                   {bill.serviceFee.toLocaleString()} đ
                 </span>
               </div>
               <div className="flex justify-between border-t pt-2">
-                <span className="text-gray-800 font-semibold">
-                  Total Amount:
-                </span>
-                <span className="font-bold text-lg text-red-600">
+                <span className="text-gray-800 font-semibold">Tổng cộng:</span>
+                <span className="text-lg font-bold text-red-600">
                   {bill.totalAmount.toLocaleString()} đ
                 </span>
               </div>
@@ -278,27 +278,27 @@ function BillPaymentModal({
           {/* Manual Transfer Section */}
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
             <h3 className="text-lg font-semibold text-yellow-800 mb-3">
-              Manual Bank Transfer
+              Chuyển khoản ngân hàng thủ công
             </h3>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-gray-600">Bank Name:</span>
+                <span className="text-gray-600">Ngân hàng:</span>
                 <span className="font-semibold">{paymentInfo.bankName}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600">Account Holder:</span>
+                <span className="text-gray-600">Chủ tài khoản:</span>
                 <span className="font-semibold">
                   {paymentInfo.accountHolderName}
                 </span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-gray-600">Account Number:</span>
+                <span className="text-gray-600">Số tài khoản:</span>
                 <div className="flex items-center gap-2">
                   <span className="font-mono font-semibold text-blue-700">
                     {paymentInfo.bankNumber}
                   </span>
                   <Button size="small" onClick={copyBankNumber}>
-                    Copy
+                    Sao chép
                   </Button>
                 </div>
               </div>
@@ -329,11 +329,11 @@ function BillPaymentModal({
                   htmlFor="transferConfirmed"
                   className="text-sm text-gray-700"
                 >
-                  <strong>I confirm that:</strong>
+                  <strong>Tôi xác nhận:</strong>
                   <ul className="list-disc list-inside mt-1 space-y-1">
-                    <li>I have completed the bank transfer</li>
-                    <li>I included the correct reference information</li>
-                    <li>The amount matches exactly</li>
+                    <li>Tôi đã hoàn thành chuyển khoản</li>
+                    <li>Tôi đã nhập đúng nội dung chuyển khoản</li>
+                    <li>Số tiền chuyển khoản chính xác</li>
                   </ul>
                 </label>
               </div>
@@ -343,11 +343,11 @@ function BillPaymentModal({
           {/* Upload Bill Payment Image */}
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
             <h4 className="font-semibold text-blue-700 mb-3">
-              Upload Bill Payment Image
+              Tải lên ảnh xác nhận thanh toán
             </h4>
             <p className="text-sm text-blue-600 mb-3">
-              Please upload a screenshot or photo of your bank transfer as proof
-              of bill payment.
+              Vui lòng tải lên ảnh chụp màn hình hoặc ảnh chuyển khoản ngân hàng
+              để xác nhận thanh toán hóa đơn.
             </p>
             <Upload {...uploadProps}>
               <Button
@@ -355,7 +355,7 @@ function BillPaymentModal({
                 loading={imageUploading}
                 className="w-full"
               >
-                {imageUploading ? "Uploading..." : "Select Image"}
+                {imageUploading ? "Đang tải lên..." : "Chọn ảnh"}
               </Button>
             </Upload>
             {/* {!uploadedImage && (
@@ -368,11 +368,11 @@ function BillPaymentModal({
           {/* Contact Info */}
           <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
             <h4 className="font-semibold text-gray-800 mb-2">
-              Contact Landlord:
+              Liên hệ chủ trọ:
             </h4>
             <div className="text-sm space-y-1">
               <div>
-                📞 Phone:{" "}
+                📞 SĐT:{" "}
                 <a
                   href={`tel:${paymentInfo.phoneNumber}`}
                   className="text-blue-600"
@@ -395,14 +395,14 @@ function BillPaymentModal({
           {/* Action Buttons for Manual Transfer */}
           <div className="flex gap-3 mt-4">
             <Button onClick={handleCancel} className="flex-1">
-              Cancel
+              Hủy
             </Button>
             <Popconfirm
-              title="Confirm Manual Transfer"
-              description="Are you sure you have completed the bank transfer? The landlord will be notified to verify the payment."
+              title="Xác nhận chuyển khoản thủ công"
+              description="Bạn chắc chắn đã chuyển khoản? Chủ trọ sẽ được thông báo để xác nhận thanh toán."
               onConfirm={handleConfirmTransfer}
-              okText="Yes, I've transferred"
-              cancelText="Not yet"
+              okText="Đã chuyển khoản"
+              cancelText="Chưa chuyển"
               okButtonProps={{ loading: confirmLoading }}
               disabled={!transferConfirmed}
             >
@@ -413,14 +413,14 @@ function BillPaymentModal({
                 // disabled={!transferConfirmed || !uploadedImage}
                 disabled={!transferConfirmed}
               >
-                Confirm Manual Transfer
+                Xác nhận chuyển khoản thủ công
               </Button>
             </Popconfirm>
           </div>
         </div>
       ) : (
         <div className="text-center py-8 text-gray-500">
-          No payment information available
+          Không có thông tin thanh toán
         </div>
       )}
     </Modal>

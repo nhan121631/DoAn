@@ -35,10 +35,10 @@ interface TenantBillsTabProps {
 }
 
 const billStatusMap: Record<string, { text: string; color: string }> = {
-  PENDING: { text: "Pending", color: "orange" },
-  CONFIRMING: { text: "Confirming Payment", color: "blue" },
-  PAID: { text: "Paid", color: "green" },
-  OVERDUE: { text: "Overdue", color: "red" },
+  PENDING: { text: "Chờ thanh toán", color: "orange" },
+  CONFIRMING: { text: "Đang xác nhận", color: "blue" },
+  PAID: { text: "Đã thanh toán", color: "green" },
+  OVERDUE: { text: "Quá hạn", color: "red" },
 };
 
 export default function TenantBillsTab({ contract }: TenantBillsTabProps) {
@@ -104,7 +104,7 @@ export default function TenantBillsTab({ contract }: TenantBillsTabProps) {
   const handleDownload = async (billId: string, month: string) => {
     try {
       setLoading(true);
-      const hideLoading = messageApi.loading("Preparing download...", 0);
+      const hideLoading = messageApi.loading("Đang chuẩn bị tải xuống...", 0);
 
       // Call BillService to download the bill
       const blob = await BillService.downloadBill(contract.id, billId);
@@ -122,10 +122,10 @@ export default function TenantBillsTab({ contract }: TenantBillsTabProps) {
       document.body.removeChild(link);
 
       hideLoading();
-      messageApi.success("Bill downloaded successfully!");
+      messageApi.success("Tải hóa đơn thành công!");
     } catch (error) {
       console.error("Download failed:", error);
-      messageApi.error("Failed to download bill. Please try again.");
+      messageApi.error("Tải hóa đơn thất bại. Vui lòng thử lại.");
     } finally {
       setLoading(false);
     }
@@ -151,18 +151,18 @@ export default function TenantBillsTab({ contract }: TenantBillsTabProps) {
       if (updatedContract && updatedContract.bills) {
         setBills([...updatedContract.bills]);
         messageApi.success(
-          "Payment processed successfully! Bill status updated."
+          "Thanh toán thành công! Trạng thái hóa đơn đã được cập nhật."
         );
       } else {
         // Fallback: just reload from current contract
         setBills([...(contract.bills || [])]);
-        messageApi.success("Payment processed successfully!");
+        messageApi.success("Thanh toán thành công!");
       }
     } catch (error) {
       console.error("Failed to reload bills:", error);
       // Fallback: just reload from current contract
       setBills([...(contract.bills || [])]);
-      messageApi.success("Payment processed successfully!");
+      messageApi.success("Thanh toán thành công!");
     } finally {
       setPaymentLoading(false);
     }
@@ -212,7 +212,7 @@ export default function TenantBillsTab({ contract }: TenantBillsTabProps) {
 
   const columns: ColumnsType<BillData> = [
     {
-      title: "Month",
+      title: "Tháng",
       dataIndex: "month",
       key: "month",
       render: (month: string) =>
@@ -224,7 +224,7 @@ export default function TenantBillsTab({ contract }: TenantBillsTabProps) {
         new Date(a.month).getTime() - new Date(b.month).getTime(),
     },
     {
-      title: "Electricity",
+      title: "Tiền điện",
       dataIndex: "electricityFee",
       key: "electricityFee",
       render: (amount: number, record: BillData) => (
@@ -241,7 +241,7 @@ export default function TenantBillsTab({ contract }: TenantBillsTabProps) {
       sorter: (a, b) => a.electricityFee - b.electricityFee,
     },
     {
-      title: "Water",
+      title: "Tiền nước",
       dataIndex: "waterFee",
       key: "waterFee",
       render: (amount: number, record: BillData) => (
@@ -258,7 +258,7 @@ export default function TenantBillsTab({ contract }: TenantBillsTabProps) {
       sorter: (a, b) => a.waterFee - b.waterFee,
     },
     {
-      title: "Service",
+      title: "Dịch vụ",
       dataIndex: "serviceFee",
       key: "serviceFee",
       render: (amount: number, record: BillData) => (
@@ -266,7 +266,7 @@ export default function TenantBillsTab({ contract }: TenantBillsTabProps) {
           <div className="font-medium">{amount.toLocaleString()} đ</div>
           {record.damageFee != null && record.damageFee > 0 && (
             <div className="text-xs text-red-500">
-              + Damage Fee: {record.damageFee.toLocaleString()} đ
+              + Phí hư hỏng: {record.damageFee.toLocaleString()} đ
             </div>
           )}
         </div>
@@ -274,14 +274,14 @@ export default function TenantBillsTab({ contract }: TenantBillsTabProps) {
       sorter: (a, b) => a.serviceFee - b.serviceFee,
     },
     {
-      title: "Total Amount",
+      title: "Tổng cộng",
       dataIndex: "totalAmount",
       key: "totalAmount",
       render: (amount: number) => `${amount.toLocaleString()} đ`,
       sorter: (a, b) => a.totalAmount - b.totalAmount,
     },
     {
-      title: "Status",
+      title: "Trạng thái",
       dataIndex: "status",
       key: "status",
       render: (status: string, record: BillData) => {
@@ -306,14 +306,14 @@ export default function TenantBillsTab({ contract }: TenantBillsTabProps) {
       },
     },
     {
-      title: "Image Proof",
+      title: "Ảnh xác nhận",
       dataIndex: "imageProof",
       align: "center" as const,
       render: (text: string, record: BillData) => {
         if (!text || text === null || text === undefined) {
           return (
             <div className="w-16 h-16 bg-gray-200 flex items-center justify-center rounded text-gray-500 text-xs">
-              No Image
+              Không có ảnh
             </div>
           );
         }
@@ -338,7 +338,7 @@ export default function TenantBillsTab({ contract }: TenantBillsTabProps) {
       },
     },
     {
-      title: "Actions",
+      title: "Thao tác",
       key: "actions",
       render: (_, record) => {
         const status = record.status;
@@ -348,14 +348,14 @@ export default function TenantBillsTab({ contract }: TenantBillsTabProps) {
 
         return (
           <Space>
-            <Tooltip title="View Details">
+            <Tooltip title="Xem chi tiết">
               <Button
                 type="link"
                 icon={<EyeOutlined />}
                 onClick={() => setSelectedBill(record)}
               />
             </Tooltip>
-            <Tooltip title="Download PDF">
+            <Tooltip title="Tải PDF">
               <Button
                 type="link"
                 icon={<DownloadOutlined />}
@@ -370,31 +370,31 @@ export default function TenantBillsTab({ contract }: TenantBillsTabProps) {
                   icon={<CreditCardOutlined />}
                   onClick={() => handlePayment(record)}
                 >
-                  Pay Now
+                  Thanh toán
                 </Button>
               </Tooltip>
             )}
             {isConfirming && (
-              <Tooltip title="Payment is being confirmed by landlord">
+              <Tooltip title="Đang chờ chủ trọ xác nhận thanh toán">
                 <Button
                   type="default"
                   size="small"
                   disabled
                   icon={<CreditCardOutlined />}
                 >
-                  Confirming...
+                  Đang xác nhận...
                 </Button>
               </Tooltip>
             )}
             {isPaid && (
-              <Tooltip title="Bill has been paid">
+              <Tooltip title="Hóa đơn đã được thanh toán">
                 <Button
                   type="default"
                   size="small"
                   disabled
                   style={{ color: "green" }}
                 >
-                  Paid ✓
+                  Đã thanh toán ✓
                 </Button>
               </Tooltip>
             )}
@@ -410,35 +410,35 @@ export default function TenantBillsTab({ contract }: TenantBillsTabProps) {
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <Card size="small">
           <Statistic
-            title="Total Bills"
+            title="Tổng số hóa đơn"
             value={totalBills}
             prefix={<DollarOutlined />}
           />
         </Card>
         <Card size="small">
           <Statistic
-            title="Paid Bills"
+            title="Đã thanh toán"
             value={paidBills}
             valueStyle={{ color: "#3f8600" }}
           />
         </Card>
         <Card size="small">
           <Statistic
-            title="Pending Bills"
+            title="Chờ thanh toán"
             value={pendingBills}
             valueStyle={{ color: "#cf1322" }}
           />
         </Card>
         <Card size="small">
           <Statistic
-            title="Confirming"
+            title="Đang xác nhận"
             value={confirmingBills}
             valueStyle={{ color: "#1890ff" }}
           />
         </Card>
         <Card size="small">
           <Statistic
-            title="Unpaid Amount"
+            title="Chưa thanh toán"
             value={unpaidAmount}
             valueStyle={{ color: "#cf1322" }}
             suffix="đ"
@@ -448,12 +448,12 @@ export default function TenantBillsTab({ contract }: TenantBillsTabProps) {
 
       {/* Bills Table */}
       <Card
-        title="Bills History"
+        title="Lịch sử hóa đơn"
         className="shadow-sm"
         extra={
           <Space>
             <Input
-              placeholder="Search bills..."
+              placeholder="Tìm kiếm hóa đơn..."
               prefix={<SearchOutlined />}
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
@@ -461,7 +461,7 @@ export default function TenantBillsTab({ contract }: TenantBillsTabProps) {
               allowClear
             />
             <Select
-              placeholder="Filter by status"
+              placeholder="Lọc theo trạng thái"
               value={statusFilter}
               onChange={setStatusFilter}
               style={{ width: 180 }}
@@ -469,16 +469,16 @@ export default function TenantBillsTab({ contract }: TenantBillsTabProps) {
               suffixIcon={<FilterOutlined />}
             >
               <Select.Option value="PENDING">
-                <Tag color="orange">Pending</Tag>
+                <Tag color="orange">Chờ thanh toán</Tag>
               </Select.Option>
               <Select.Option value="CONFIRMING">
-                <Tag color="blue">Confirming</Tag>
+                <Tag color="blue">Đang xác nhận</Tag>
               </Select.Option>
               <Select.Option value="PAID">
-                <Tag color="green">Paid</Tag>
+                <Tag color="green">Đã thanh toán</Tag>
               </Select.Option>
               <Select.Option value="OVERDUE">
-                <Tag color="red">Overdue</Tag>
+                <Tag color="red">Quá hạn</Tag>
               </Select.Option>
             </Select>
           </Space>
@@ -494,7 +494,7 @@ export default function TenantBillsTab({ contract }: TenantBillsTabProps) {
             showSizeChanger: true,
             showQuickJumper: true,
             showTotal: (total, range) =>
-              `${range[0]}-${range[1]} of ${total} bills`,
+              `${range[0]}-${range[1]} trong tổng ${total} hóa đơn`,
             pageSizeOptions: ["5", "10", "20", "50"],
           }}
           scroll={{ x: 800 }}
@@ -545,20 +545,19 @@ export default function TenantBillsTab({ contract }: TenantBillsTabProps) {
 
       {/* Payment Instructions */}
       {contextHolder}
-      <Card title="Payment Information" className="shadow-sm">
+      <Card title="Thông tin thanh toán" className="shadow-sm">
         <div className="space-y-2">
           <p>
-            <strong>Payment Methods:</strong>
+            <strong>Phương thức thanh toán:</strong>
           </p>
           <ul className="list-disc list-inside space-y-1 text-sm">
-            <li>Online payment via VNPay, MoMo, ZaloPay</li>
-            <li>Bank transfer to landlord&apos;s account</li>
-            <li>Cash payment (contact landlord)</li>
+            <li>Thanh toán online qua VNPay, MoMo, ZaloPay</li>
+            <li>Chuyển khoản ngân hàng cho chủ trọ</li>
+            <li>Thanh toán tiền mặt (liên hệ chủ trọ)</li>
           </ul>
           <p className="text-sm text-gray-600 mt-4">
-            <strong>Note:</strong> Please pay your bills before the due date to
-            avoid late fees. Contact your landlord if you have any payment
-            issues.
+            <strong>Lưu ý:</strong> Vui lòng thanh toán hóa đơn trước hạn để
+            tránh bị phạt trễ hạn. Liên hệ chủ trọ nếu có vấn đề về thanh toán.
           </p>
         </div>
       </Card>

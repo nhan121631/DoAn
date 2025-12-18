@@ -39,7 +39,11 @@ const RoomCard: React.FC<RoomCardProps> = ({
 }) => {
   const [imageError, setImageError] = useState(false);
   const [messageApi, contextHolder] = message.useMessage();
-  const { favoriteRoomIds, addFavorite: addFavoriteStore, removeFavorite: removeFavoriteStore } = useFavoriteStore();
+  const {
+    favoriteRoomIds,
+    addFavorite: addFavoriteStore,
+    removeFavorite: removeFavoriteStore,
+  } = useFavoriteStore();
   const isFavorited = favoriteRoomIds.has(id);
   const [favoriteCount, setFavoriteCount] = useState(0);
 
@@ -63,17 +67,17 @@ const RoomCard: React.FC<RoomCardProps> = ({
 
   const handleFavoriteClick = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    
+
     if (!session) {
       router.push("/auth/login");
       return;
     }
 
     const wasFavorited = isFavorited;
-    
+
     if (wasFavorited) {
       removeFavoriteStore(id);
-      setFavoriteCount((prevCount) => prevCount > 0 ? prevCount - 1 : 0);
+      setFavoriteCount((prevCount) => (prevCount > 0 ? prevCount - 1 : 0));
     } else {
       addFavoriteStore(id);
       setFavoriteCount((prevCount) => prevCount + 1);
@@ -89,22 +93,23 @@ const RoomCard: React.FC<RoomCardProps> = ({
       }
 
       setTimeout(() => {
-        messageApi.success(wasFavorited ? "Removed from favorites" : "Added to favorites");
+        messageApi.success(
+          wasFavorited ? "Đã bỏ khỏi yêu thích" : "Đã thêm vào yêu thích"
+        );
       }, 100);
-
-    } catch (err) { 
+    } catch (err) {
       console.error("Failed to update favorite status:", err);
-      
+
       if (wasFavorited) {
         addFavoriteStore(id);
         setFavoriteCount((prevCount) => prevCount + 1);
       } else {
         removeFavoriteStore(id);
-        setFavoriteCount((prevCount) => prevCount > 0 ? prevCount - 1 : 0);
+        setFavoriteCount((prevCount) => (prevCount > 0 ? prevCount - 1 : 0));
       }
-      
+
       setTimeout(() => {
-        messageApi.error("Failed to update favorite status.");
+        messageApi.error("Cập nhật trạng thái yêu thích thất bại.");
       }, 100);
     }
   };
@@ -182,7 +187,7 @@ const RoomCard: React.FC<RoomCardProps> = ({
                   <div className="p-2 mb-1 transition-transform duration-300 rounded-full sm:p-3 bg-white/80 sm:mb-2 backdrop-blur-sm group-hover:scale-110">
                     <BsCamera size={16} className="mx-auto sm:w-5 sm:h-5" />
                   </div>
-                  <span className="text-xs font-medium">No Image</span>
+                  <span className="text-xs font-medium">Không có hình ảnh</span>
                 </div>
               </div>
             )}
@@ -262,8 +267,8 @@ const RoomCard: React.FC<RoomCardProps> = ({
                 href={id ? `/detail/${id}` : "#"}
                 className="block px-3 py-2 text-xs font-medium text-center text-white transition-all duration-300 rounded-lg shadow-md bg-gradient-to-r from-blue-500 to-blue-600 sm:px-4 sm:py-2 hover:from-blue-600 hover:to-blue-700 hover:scale-105 hover:shadow-lg"
               >
-                <span className="hidden xs:inline">View Details</span>
-                <span className="xs:hidden">Details</span>
+                <span className="hidden xs:inline">Xem chi tiết</span>
+                <span className="xs:hidden">Chi tiết</span>
               </Link>
             </div>
           </div>

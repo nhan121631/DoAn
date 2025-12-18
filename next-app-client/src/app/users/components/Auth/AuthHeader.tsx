@@ -30,7 +30,7 @@ export default function AuthHeader() {
           <Link href="/auth/login" passHref>
             <button className="flex items-center gap-1 p-2 text-white transition duration-300 rounded-full shadow cursor-pointer md:px-4 md:py-2 md:gap-2 hover:bg-white/30">
               <IoLogInOutline className="w-5 h-5" />
-              <span className="hidden md:inline">Login</span>
+              <span className="hidden md:inline">Đăng nhập</span>
             </button>
           </Link>
         )}

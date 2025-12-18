@@ -131,7 +131,7 @@ export default function HeaderUserDashboard({
       for (const n of unread) {
         await updateDoc(doc(db, "notifications", n.id), { isRead: true });
       }
-      messageApi.success("Marked all notifications as read");
+      messageApi.success("Đã đánh dấu tất cả là đã đọc");
     } catch (err) {
       console.error("Error mark all as read:", err);
     }
@@ -187,10 +187,10 @@ export default function HeaderUserDashboard({
     <div className="w-80">
       <div className="flex justify-between items-center p-3 border-b">
         <Typography.Title level={5} className="!m-0">
-          Notifications
+          Thông báo
         </Typography.Title>
         <Typography.Link onClick={markAllAsRead}>
-          Mark all as read
+          Đánh dấu tất cả đã đọc
         </Typography.Link>
       </div>
       <div
@@ -213,10 +213,11 @@ export default function HeaderUserDashboard({
                 title={
                   <div className="flex justify-between items-start">
                     <span className={`${!item.isRead ? "font-semibold" : ""}`}>
-                      {item.type === "booking_success" && "Rental Booking"}
-                      {item.type === "request_success" && "Rental Request"}
-                      {item.type === "resident_success" && "Rental resident"}
-                      {item.type === "payment_success" && "Payment request"}
+                      {item.type === "booking_success" &&
+                        "Đặt phòng thành công"}
+                      {item.type === "request_success" && "Yêu cầu thuê phòng"}
+                      {item.type === "resident_success" && "Tạm trú mới"}
+                      {item.type === "payment_success" && "Yêu cầu thanh toán"}
                     </span>
                     {!item.isRead && (
                       <div className="w-2 h-2 bg-blue-500 rounded-full ml-2 mt-1"></div>
@@ -242,7 +243,7 @@ export default function HeaderUserDashboard({
         {isLoadingMore && (
           <div className="text-center p-3">
             <div className="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
-            <span className="ml-2 text-sm text-gray-500">Loading more...</span>
+            <span className="ml-2 text-sm text-gray-500">Đang tải thêm...</span>
           </div>
         )}
       </div>
@@ -250,8 +251,8 @@ export default function HeaderUserDashboard({
         !isLoadingMore && (
           <div className="text-center p-3 border-t">
             <Typography.Link onClick={loadMoreNotifications}>
-              Load more notifications (
-              {notifications.length - displayedNotifications.length} remaining)
+              Tải thêm thông báo (
+              {notifications.length - displayedNotifications.length} còn lại)
             </Typography.Link>
           </div>
         )}
@@ -259,7 +260,7 @@ export default function HeaderUserDashboard({
         notifications.length > notificationsPerPage && (
           <div className="text-center p-3 border-t">
             <span className="text-sm text-gray-500">
-              All notifications loaded
+              Đã tải tất cả thông báo
             </span>
           </div>
         )}
@@ -359,16 +360,21 @@ export default function HeaderUserDashboard({
   };
 
   const navigationItems = [
-    { href: "/users#home", label: "Home", icon: HiOutlineHome, id: "home" },
+    {
+      href: "/users#home",
+      label: "Trang chủ",
+      icon: HiOutlineHome,
+      id: "home",
+    },
     {
       href: "/users#rental-rooms",
-      label: "Rental Rooms",
+      label: "Phòng cho thuê",
       icon: HiOutlineOfficeBuilding,
       id: "rental-rooms",
     },
     {
       href: "/users#landlords",
-      label: "Landlords",
+      label: "Chủ nhà",
       icon: HiOutlineUsers,
       id: "landlords",
     },
@@ -381,7 +387,7 @@ export default function HeaderUserDashboard({
     },
     {
       href: "/users#contact",
-      label: "Contact",
+      label: "Liên hệ",
       icon: HiOutlinePhone,
       id: "contact",
     },
@@ -398,7 +404,7 @@ export default function HeaderUserDashboard({
           }}
         >
           <IoIosLogOut className="text-xl transition-transform duration-200 hover:rotate-12" />
-          <span className="!font-medium">Logout</span>
+          <span className="!font-medium">Đăng xuất</span>
         </button>
       ),
     },
@@ -510,7 +516,7 @@ export default function HeaderUserDashboard({
                   className="flex items-center gap-2 px-3 py-2 text-gray-700 font-medium transition-all duration-300 rounded-lg hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 hover:text-blue-600 hover:scale-105 group"
                 >
                   <span className="hidden sm:inline transition-all duration-300 group-hover:tracking-wide">
-                    Dashboard
+                    Bảng điều khiển
                   </span>
                 </Link>
 
@@ -566,7 +572,7 @@ export default function HeaderUserDashboard({
                 >
                   <AiOutlineUserAdd className="w-5 h-5 transition-transform duration-300 group-hover:rotate-12" />
                   <span className="hidden sm:inline transition-all duration-300 group-hover:tracking-wide">
-                    Register
+                    Đăng ký
                   </span>
                 </Link>
 
@@ -574,9 +580,9 @@ export default function HeaderUserDashboard({
                   href="/auth/login"
                   className="flex items-center gap-2 px-3 py-2 text-gray-700 font-medium transition-all duration-300 rounded-lg hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 hover:text-blue-600 hover:scale-105 group"
                 >
-                  <IoLogInOutline className="w-5 h-5 transition-transform duration-300 group-hover:scale-110" />
+                  <IoLogInOutline className="w-5 h-5 transition-all duration-300 group-hover:scale-110" />
                   <span className="hidden sm:inline transition-all duration-300 group-hover:tracking-wide">
-                    Login
+                    Đăng nhập
                   </span>
                 </Link>
 
@@ -594,7 +600,7 @@ export default function HeaderUserDashboard({
 
                   <FaRegEdit className="relative w-4 h-4 transition-transform duration-300 group-hover:rotate-12" />
                   <span className="relative hidden sm:inline transition-all duration-300 group-hover:tracking-wide">
-                    Create Post
+                    Đăng bài
                   </span>
                 </Link>
               </div>

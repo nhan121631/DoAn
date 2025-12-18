@@ -31,11 +31,11 @@ export default async function FeaturedListingsCard() {
     const now = new Date();
     const date = new Date(dateString);
     const diff = Math.floor((now.getTime() - date.getTime()) / 1000); // seconds
-    if (diff < 0) return "Just now";
-    if (diff < 60) return `${diff} seconds ago`;
-    if (diff < 3600) return `${Math.floor(diff / 60)} minutes ago`;
-    if (diff < 86400) return `${Math.floor(diff / 3600)} hours ago`;
-    return `${Math.floor(diff / 86400)} days ago`;
+    if (diff < 0) return "Vừa xong";
+    if (diff < 60) return `${diff} giây trước`;
+    if (diff < 3600) return `${Math.floor(diff / 60)} phút trước`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)} giờ trước`;
+    return `${Math.floor(diff / 86400)} ngày trước`;
   }
   return (
     <div
@@ -53,7 +53,7 @@ export default async function FeaturedListingsCard() {
           <circle cx="10" cy="10" r="9" fill="#f87171" opacity="0.15" />
           <circle cx="10" cy="10" r="4" fill="#f87171" />
         </svg>
-        Room VIP Listings
+        Danh sách phòng VIP
       </h3>
       <div className="flex flex-col gap-2 w-full">
         {roomVips.data.map((listing: RoomInUser, index: number) => (
@@ -76,7 +76,9 @@ export default async function FeaturedListingsCard() {
                   />
                 ) : (
                   <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                    <span className="text-gray-400 text-xs">No Image</span>
+                    <span className="text-gray-400 text-xs">
+                      Không có hình ảnh
+                    </span>
                   </div>
                 )}
                 {/* {listing.isHot && (
@@ -94,7 +96,7 @@ export default async function FeaturedListingsCard() {
                     ? Number(listing.priceMonth).toLocaleString("vi-VN")
                     : 0}
                   <span className="text-xs font-semibold text-gray-500 ml-1">
-                    ₫/month
+                    ₫/tháng
                   </span>
                 </p>
                 <p className="text-xs text-gray-500 group-hover:text-gray-700 transition-colors duration-200">

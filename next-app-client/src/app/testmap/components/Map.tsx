@@ -453,7 +453,7 @@ const MapRoom: React.FC<Props> = ({ onRoomClick }) => {
         <div className="absolute inset-0 bg-gray-100 flex items-center justify-center z-20">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading map...</p>
+            <p className="text-gray-600">Đang tải bản đồ...</p>
           </div>
         </div>
       )}
@@ -493,7 +493,7 @@ const MapRoom: React.FC<Props> = ({ onRoomClick }) => {
               d="M6 18L18 6M6 6l12 12"
             />
           </svg>
-          <span>Close Map</span>
+          <span>Đóng bản đồ</span>
         </Link>
       </div>
 

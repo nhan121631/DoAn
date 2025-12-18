@@ -198,10 +198,10 @@ export default function RentalRoomsWithLocation({
         <div className="text-center space-y-4">
           <div className="text-6xl">🏠</div>
           <h3 className="text-2xl font-bold text-gray-700">
-            No rooms available
+            Không có phòng nào khả dụng
           </h3>
           <p className="text-gray-500">
-            Please try again later or contact support
+            Vui lòng thử lại sau hoặc liên hệ hỗ trợ
           </p>
         </div>
       </div>
@@ -220,7 +220,7 @@ export default function RentalRoomsWithLocation({
           <div className="flex items-center justify-center gap-3">
             <div className="w-6 h-6 border-2 border-blue-500/30 border-t-blue-500 rounded-full animate-spin"></div>
             <span className="text-lg font-medium text-blue-700">
-              🔍 Searching for rooms near your location...
+              🔍 Đang tìm phòng gần vị trí của bạn...
             </span>
           </div>
           {location?.address && (
@@ -246,13 +246,13 @@ export default function RentalRoomsWithLocation({
                 </div>
                 <div>
                   <h4 className="text-lg font-bold text-blue-800">
-                    Location-Based Results
+                    Kết quả theo vị trí
                   </h4>
                   <p className="text-sm text-blue-600 mt-1">
-                    Showing{" "}
+                    Hiển thị{" "}
                     {(vipRooms?.totalRecords || 0) +
                       (normalRooms?.totalRecords || 0)}{" "}
-                    rooms sorted by distance from:
+                    phòng được sắp xếp theo khoảng cách từ:
                   </p>
                   <p className="text-sm font-semibold text-blue-800 bg-white/70 px-3 py-1 rounded-full inline-block mt-2">
                     {location?.address}
@@ -268,9 +268,9 @@ export default function RentalRoomsWithLocation({
                   // console.log("🧹 Cleared location data - returning to default view");
                 }}
                 className="px-4 py-2 text-sm bg-white border border-blue-300 text-blue-700 rounded-xl hover:bg-blue-50 transition-colors duration-200"
-                title="Clear location search and return to default view"
+                title="Xóa tìm kiếm vị trí và trở về mặc định"
               >
-                ❌ Clear Location
+                ❌ Xóa vị trí
               </button>
             </div>
           </div>
@@ -286,18 +286,19 @@ export default function RentalRoomsWithLocation({
                 <HiSparkles className="text-yellow-500 text-2xl" />
                 <div className="text-center">
                   <h3 className="text-3xl font-bold bg-gradient-to-r from-yellow-500 to-orange-500 bg-clip-text text-transparent">
-                    Premium Listings
+                    Phòng VIP nổi bật
                   </h3>
                   {((guestRooms && location) || (userRooms && location)) && (
                     <div className="text-sm text-blue-600 mt-2 flex items-center justify-center gap-2">
                       <span className="bg-blue-100 px-3 py-1 rounded-full font-medium">
-                        📍 Sorted by distance from: {location?.address}
+                        📍 Sắp xếp theo khoảng cách từ: {location?.address}
                       </span>
                     </div>
                   )}
                   {isGuestUser && !(guestRooms && location) && (
                     <div className="text-sm text-gray-500 mt-2">
-                      📍 Select a location above to see rooms sorted by distance
+                      📍 Hãy chọn vị trí phía trên để xem phòng sắp xếp theo
+                      khoảng cách
                     </div>
                   )}
                 </div>
@@ -305,8 +306,8 @@ export default function RentalRoomsWithLocation({
               </div>
               <p className="text-gray-600">
                 {isUsingLocationData
-                  ? "Premium rooms sorted by proximity to your location"
-                  : "Hand-picked premium rooms for the discerning renter"}
+                  ? "Các phòng VIP được sắp xếp theo vị trí gần bạn nhất"
+                  : "Danh sách phòng VIP được chọn lọc dành cho người thuê"}
               </p>
             </div>
           </div>
@@ -378,17 +379,17 @@ export default function RentalRoomsWithLocation({
                         className="transition-transform group-hover:-translate-x-1"
                       />
                     )}
-                    <span className="hidden sm:inline">Previous</span>
+                    <span className="hidden sm:inline">Trước</span>
                   </button>
 
                   <div className="flex flex-col items-center px-6 py-2 bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/50 shadow-sm">
                     <span className="text-lg font-bold bg-gradient-to-r from-yellow-500 to-orange-500 bg-clip-text text-transparent">
-                      Page {displayPage + 1} / {vipRooms.totalPages}
+                      Trang {displayPage + 1} / {vipRooms.totalPages}
                     </span>
                     <span className="text-xs text-gray-500 font-medium">
-                      {vipRooms.totalRecords} premium rooms
-                      {isUsingLocationData && " (location-sorted)"}
-                      {isLoadingPage && " (loading...)"}
+                      {vipRooms.totalRecords} phòng VIP nổi bật
+                      {isUsingLocationData && " (sắp xếp theo vị trí)"}
+                      {isLoadingPage && " (đang tải...)"}
                     </span>
                   </div>
 
@@ -407,7 +408,7 @@ export default function RentalRoomsWithLocation({
                         : "bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-blue-500/30"
                     }`}
                   >
-                    <span className="hidden sm:inline">Next</span>
+                    <span className="hidden sm:inline">Tiếp</span>
                     {isLoadingPage &&
                     optimisticPage ===
                       Math.min(vipRooms.totalPages - 1, displayPage + 1) ? (

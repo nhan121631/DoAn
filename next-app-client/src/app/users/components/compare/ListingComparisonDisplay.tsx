@@ -26,19 +26,19 @@ import {
 
 import { PiElevatorLight } from "react-icons/pi";
 
-// Enhanced amenities with better labels and icons
+// Danh sách tiện nghi với nhãn và biểu tượng
 const allPossibleConvenients = [
-  { key: "furnished", label: "Furnished", icon: Package },
-  { key: "washing_machine", label: "Washing Machine", icon: Package },
-  { key: "no_curfew", label: "No Curfew", icon: Clock },
-  { key: "mezzanine", label: "Mezzanine", icon: Layers },
-  { key: "fridge", label: "Refrigerator", icon: Refrigerator },
-  { key: "kitchen_shelf", label: "Kitchen Shelf", icon: ChefHat },
-  { key: "aircon", label: "Air Conditioning", icon: Wind },
-  { key: "private_entry", label: "Private Entry", icon: Key },
-  { key: "elevator", label: "Elevator", icon: PiElevatorLight },
-  { key: "security_24h", label: "24h Security", icon: Shield },
-  { key: "garage", label: "Garage", icon: Car },
+  { key: "furnished", label: "Đầy đủ nội thất", icon: Package },
+  { key: "washing_machine", label: "Máy giặt", icon: Package },
+  { key: "no_curfew", label: "Không giới nghiêm", icon: Clock },
+  { key: "mezzanine", label: "Gác lửng", icon: Layers },
+  { key: "fridge", label: "Tủ lạnh", icon: Refrigerator },
+  { key: "kitchen_shelf", label: "Kệ bếp", icon: ChefHat },
+  { key: "aircon", label: "Điều hòa", icon: Wind },
+  { key: "private_entry", label: "Lối đi riêng", icon: Key },
+  { key: "elevator", label: "Thang máy", icon: PiElevatorLight },
+  { key: "security_24h", label: "Bảo vệ 24h", icon: Shield },
+  { key: "garage", label: "Chỗ để xe", icon: Car },
 ];
 
 export default function ListingComparisonDisplay({
@@ -57,11 +57,11 @@ export default function ListingComparisonDisplay({
         </div>
         <div className="max-w-md px-6 text-center">
           <h3 className="mb-3 text-2xl font-bold text-blue-800">
-            Ready to Compare Rooms?
+            Sẵn sàng so sánh phòng?
           </h3>
           <p className="leading-relaxed text-blue-600">
-            Select two rooms from your search results to see a detailed
-            side-by-side comparison of features, prices, and amenities.
+            Hãy chọn hai phòng từ kết quả tìm kiếm để xem so sánh chi tiết về
+            đặc điểm, giá cả và tiện nghi.
           </p>
         </div>
       </div>
@@ -96,7 +96,7 @@ export default function ListingComparisonDisplay({
             <div className="p-2 rounded-lg bg-white/20">
               <Bed className="w-5 h-5" />
             </div>
-            <span className="text-sm font-medium opacity-90">Room 1</span>
+            <span className="text-sm font-medium opacity-90">Phòng 1</span>
           </div>
           <h2 className="text-xl font-bold truncate">{listing1.title}</h2>
         </div>
@@ -105,7 +105,7 @@ export default function ListingComparisonDisplay({
             <div className="p-2 rounded-lg bg-white/20">
               <Bed className="w-5 h-5" />
             </div>
-            <span className="text-sm font-medium opacity-90">Room 2</span>
+            <span className="text-sm font-medium opacity-90">Phòng 2</span>
           </div>
           <h2 className="text-xl font-bold truncate">{listing2.title}</h2>
         </div>
@@ -166,8 +166,8 @@ export default function ListingComparisonDisplay({
               ) : (
                 <div className="flex flex-col items-center justify-center w-full h-full text-gray-500 bg-gradient-to-br from-gray-100 to-gray-200">
                   <Package className="w-12 h-12 mb-3 opacity-50" />
-                  <p className="text-lg font-medium">No Images Available</p>
-                  <p className="text-sm">Images will appear here</p>
+                  <p className="text-lg font-medium">Không có hình ảnh</p>
+                  <p className="text-sm">Hình ảnh sẽ xuất hiện ở đây</p>
                 </div>
               )}
               <style jsx>{`
@@ -185,22 +185,22 @@ export default function ListingComparisonDisplay({
         <div className="p-6 border border-blue-200 shadow-lg bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl">
           <h3 className="flex items-center gap-2 mb-4 text-lg font-semibold text-blue-800">
             <Bed className="w-5 h-5" />
-            Book Room 1
+            Đặt phòng 1
           </h3>
           <BookingForm
             roomId={listing1.id}
-            roomTitle={listing1.title || "Room for rent"}
+            roomTitle={listing1.title || "Phòng cho thuê"}
             priceMonth={listing1.priceMonth || 0}
           />
         </div>
         <div className="p-6 border border-purple-200 shadow-lg bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl">
           <h3 className="flex items-center gap-2 mb-4 text-lg font-semibold text-purple-800">
             <Bed className="w-5 h-5" />
-            Book Room 2
+            Đặt phòng 2
           </h3>
           <BookingForm
             roomId={listing2.id}
-            roomTitle={listing2.title || "Room for rent"}
+            roomTitle={listing2.title || "Phòng cho thuê"}
             priceMonth={listing2.priceMonth || 0}
           />
         </div>
@@ -209,9 +209,7 @@ export default function ListingComparisonDisplay({
       {/* Comparison Table */}
       <div className="overflow-hidden bg-white border border-gray-200 shadow-lg rounded-2xl">
         <div className="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100">
-          <h3 className="text-xl font-bold text-gray-800">
-            Detailed Comparison
-          </h3>
+          <h3 className="text-xl font-bold text-gray-800">So sánh chi tiết</h3>
         </div>
 
         <div className="p-6">
@@ -221,27 +219,27 @@ export default function ListingComparisonDisplay({
             <div className="grid grid-cols-1 gap-4 p-4 border border-green-200 md:grid-cols-3 bg-green-50 rounded-xl">
               <div className="flex items-center gap-2 font-semibold text-gray-800 md:col-span-1">
                 <DollarSign className="w-5 h-5 text-green-600" />
-                Monthly Price
+                Giá thuê/tháng
               </div>
               <div className="md:col-span-1">
                 <div className="text-lg font-bold text-green-700">
                   {typeof listing1.priceMonth === "number" ? (
                     <>₫{listing1.priceMonth.toLocaleString("vi-VN")}</>
                   ) : (
-                    <span className="text-gray-500">N/A</span>
+                    <span className="text-gray-500">Không có</span>
                   )}
                 </div>
-                <div className="mt-1 text-xs text-green-600">Room 1</div>
+                <div className="mt-1 text-xs text-green-600">Phòng 1</div>
               </div>
               <div className="md:col-span-1">
                 <div className="text-lg font-bold text-green-700">
                   {typeof listing2.priceMonth === "number" ? (
                     <>₫{listing2.priceMonth.toLocaleString("vi-VN")}</>
                   ) : (
-                    <span className="text-gray-500">N/A</span>
+                    <span className="text-gray-500">Không có</span>
                   )}
                 </div>
-                <div className="mt-1 text-xs text-green-600">Room 2</div>
+                <div className="mt-1 text-xs text-green-600">Phòng 2</div>
               </div>
             </div>
 
@@ -249,19 +247,19 @@ export default function ListingComparisonDisplay({
             <div className="grid grid-cols-1 gap-4 p-4 border border-blue-200 md:grid-cols-3 bg-blue-50 rounded-xl">
               <div className="flex items-center gap-2 font-semibold text-gray-800 md:col-span-1">
                 <Square className="w-5 h-5 text-blue-600" />
-                Area
+                Diện tích
               </div>
               <div className="md:col-span-1">
                 <div className="text-lg font-semibold text-blue-700">
                   {listing1.area} m²
                 </div>
-                <div className="mt-1 text-xs text-blue-600">Room 1</div>
+                <div className="mt-1 text-xs text-blue-600">Phòng 1</div>
               </div>
               <div className="md:col-span-1">
                 <div className="text-lg font-semibold text-blue-700">
-                  {listing2.area ? `${listing2.area} m²` : "N/A"}
+                  {listing2.area ? `${listing2.area} m²` : "Không có"}
                 </div>
-                <div className="mt-1 text-xs text-blue-600">Room 2</div>
+                <div className="mt-1 text-xs text-blue-600">Phòng 2</div>
               </div>
             </div>
 
@@ -269,33 +267,37 @@ export default function ListingComparisonDisplay({
             <div className="grid grid-cols-1 gap-4 p-4 border border-indigo-200 md:grid-cols-3 bg-indigo-50 rounded-xl">
               <div className="flex items-center gap-2 font-semibold text-gray-800 md:col-span-1">
                 <Ruler className="w-5 h-5 text-indigo-600" />
-                Dimensions
+                Kích thước phòng
               </div>
               <div className="md:col-span-1">
                 <div className="space-y-1 text-sm font-semibold text-indigo-700">
                   <div>
-                    Length:{" "}
-                    {listing1.roomLength ? `${listing1.roomLength}m` : "N/A"}
+                    Dài:{" "}
+                    {listing1.roomLength
+                      ? `${listing1.roomLength}m`
+                      : "Không có"}
                   </div>
                   <div>
-                    Width:{" "}
-                    {listing1.roomWidth ? `${listing1.roomWidth}m` : "N/A"}
+                    Rộng:{" "}
+                    {listing1.roomWidth ? `${listing1.roomWidth}m` : "Không có"}
                   </div>
                 </div>
-                <div className="mt-1 text-xs text-indigo-600">Room 1</div>
+                <div className="mt-1 text-xs text-indigo-600">Phòng 1</div>
               </div>
               <div className="md:col-span-1">
                 <div className="space-y-1 text-sm font-semibold text-indigo-700">
                   <div>
-                    Length:{" "}
-                    {listing2.roomLength ? `${listing2.roomLength}m` : "N/A"}
+                    Dài:{" "}
+                    {listing2.roomLength
+                      ? `${listing2.roomLength}m`
+                      : "Không có"}
                   </div>
                   <div>
-                    Width:{" "}
-                    {listing2.roomWidth ? `${listing2.roomWidth}m` : "N/A"}
+                    Rộng:{" "}
+                    {listing2.roomWidth ? `${listing2.roomWidth}m` : "Không có"}
                   </div>
                 </div>
-                <div className="mt-1 text-xs text-indigo-600">Room 2</div>
+                <div className="mt-1 text-xs text-indigo-600">Phòng 2</div>
               </div>
             </div>
 
@@ -303,19 +305,23 @@ export default function ListingComparisonDisplay({
             <div className="grid grid-cols-1 gap-4 p-4 border md:grid-cols-3 bg-cyan-50 rounded-xl border-cyan-200">
               <div className="flex items-center gap-2 font-semibold text-gray-800 md:col-span-1">
                 <Users className="w-5 h-5 text-cyan-600" />
-                Max People
+                Số người tối đa
               </div>
               <div className="md:col-span-1">
                 <div className="text-lg font-semibold text-cyan-700">
-                  {listing1.maxPeople ? `${listing1.maxPeople} people` : "N/A"}
+                  {listing1.maxPeople
+                    ? `${listing1.maxPeople} người`
+                    : "Không có"}
                 </div>
-                <div className="mt-1 text-xs text-cyan-600">Room 1</div>
+                <div className="mt-1 text-xs text-cyan-600">Phòng 1</div>
               </div>
               <div className="md:col-span-1">
                 <div className="text-lg font-semibold text-cyan-700">
-                  {listing2.maxPeople ? `${listing2.maxPeople} people` : "N/A"}
+                  {listing2.maxPeople
+                    ? `${listing2.maxPeople} người`
+                    : "Không có"}
                 </div>
-                <div className="mt-1 text-xs text-cyan-600">Room 2</div>
+                <div className="mt-1 text-xs text-cyan-600">Phòng 2</div>
               </div>
             </div>
 
@@ -324,45 +330,45 @@ export default function ListingComparisonDisplay({
               <div className="flex items-center gap-2 font-semibold text-gray-800 md:col-span-1">
                 <Zap className="w-5 h-5 text-yellow-600" />
                 <Droplets className="w-5 h-5 ml-1 text-blue-400" />
-                Utility Costs
+                Chi phí điện nước
               </div>
               <div className="md:col-span-1">
                 <div className="space-y-1 text-sm font-semibold text-gray-700">
                   <div className="flex items-center gap-1">
                     <Zap className="w-3 h-3 text-yellow-500" />
-                    Electricity:{" "}
+                    Điện:{" "}
                     {listing1.elecPrice
                       ? `₫${listing1.elecPrice.toLocaleString("vi-VN")}/kWh`
-                      : "Per bill"}
+                      : "Theo hóa đơn"}
                   </div>
                   <div className="flex items-center gap-1">
                     <Droplets className="w-3 h-3 text-blue-500" />
-                    Water:{" "}
+                    Nước:{" "}
                     {listing1.waterPrice
                       ? `₫${listing1.waterPrice.toLocaleString("vi-VN")}/m³`
-                      : "Per bill"}
+                      : "Theo hóa đơn"}
                   </div>
                 </div>
-                <div className="mt-1 text-xs text-yellow-600">Room 1</div>
+                <div className="mt-1 text-xs text-yellow-600">Phòng 1</div>
               </div>
               <div className="md:col-span-1">
                 <div className="space-y-1 text-sm font-semibold text-gray-700">
                   <div className="flex items-center gap-1">
                     <Zap className="w-3 h-3 text-yellow-500" />
-                    Electricity:{" "}
+                    Điện:{" "}
                     {listing2.elecPrice
                       ? `₫${listing2.elecPrice.toLocaleString("vi-VN")}/kWh`
-                      : "Per bill"}
+                      : "Theo hóa đơn"}
                   </div>
                   <div className="flex items-center gap-1">
                     <Droplets className="w-3 h-3 text-blue-500" />
-                    Water:{" "}
+                    Nước:{" "}
                     {listing2.waterPrice
                       ? `₫${listing2.waterPrice.toLocaleString("vi-VN")}/m³`
-                      : "Per bill"}
+                      : "Theo hóa đơn"}
                   </div>
                 </div>
-                <div className="mt-1 text-xs text-yellow-600">Room 2</div>
+                <div className="mt-1 text-xs text-yellow-600">Phòng 2</div>
               </div>
             </div>
 
@@ -370,19 +376,19 @@ export default function ListingComparisonDisplay({
             <div className="grid grid-cols-1 gap-4 p-4 border border-purple-200 md:grid-cols-3 bg-purple-50 rounded-xl">
               <div className="flex items-center gap-2 font-semibold text-gray-800 md:col-span-1">
                 <MapPin className="w-5 h-5 text-purple-600" />
-                Location
+                Vị trí
               </div>
               <div className="md:col-span-1">
                 <div className="text-sm leading-relaxed text-gray-700">
                   {formatAddress(listing1)}
                 </div>
-                <div className="mt-1 text-xs text-purple-600">Room 1</div>
+                <div className="mt-1 text-xs text-purple-600">Phòng 1</div>
               </div>
               <div className="md:col-span-1">
                 <div className="text-sm leading-relaxed text-gray-700">
                   {formatAddress(listing2)}
                 </div>
-                <div className="mt-1 text-xs text-purple-600">Room 2</div>
+                <div className="mt-1 text-xs text-purple-600">Phòng 2</div>
               </div>
             </div>
 
@@ -390,23 +396,21 @@ export default function ListingComparisonDisplay({
             <div className="grid grid-cols-1 gap-4 p-4 border border-orange-200 md:grid-cols-3 bg-orange-50 rounded-xl">
               <div className="flex items-center gap-2 font-semibold text-gray-800 md:col-span-1">
                 <FileText className="w-5 h-5 text-orange-600" />
-                Description
+                Mô tả
               </div>
               <div className="md:col-span-1">
                 <div className="text-sm leading-relaxed text-gray-700 line-clamp-3">
                   {listing1.description}
                 </div>
-                <div className="mt-1 text-xs text-orange-600">Room 1</div>
+                <div className="mt-1 text-xs text-orange-600">Phòng 1</div>
               </div>
               <div className="md:col-span-1">
                 <div className="text-sm leading-relaxed text-gray-700 line-clamp-3">
                   {listing2.description || (
-                    <span className="italic text-gray-500">
-                      No description available
-                    </span>
+                    <span className="italic text-gray-500">Không có mô tả</span>
                   )}
                 </div>
-                <div className="mt-1 text-xs text-orange-600">Room 2</div>
+                <div className="mt-1 text-xs text-orange-600">Phòng 2</div>
               </div>
             </div>
           </div>
@@ -418,7 +422,7 @@ export default function ListingComparisonDisplay({
                 <Package className="w-5 h-5 text-gray-600" />
               </div>
               <h4 className="text-xl font-bold text-gray-800">
-                Amenities & Features
+                Tiện nghi & Đặc điểm
               </h4>
             </div>
 
@@ -455,7 +459,9 @@ export default function ListingComparisonDisplay({
                         ) : (
                           <X className="w-5 h-5 mx-auto text-red-400" />
                         )}
-                        <div className="mt-1 text-xs text-gray-500">Room 1</div>
+                        <div className="mt-1 text-xs text-gray-500">
+                          Phòng 1
+                        </div>
                       </div>
 
                       <div className="text-center">
@@ -466,7 +472,9 @@ export default function ListingComparisonDisplay({
                         ) : (
                           <div className="w-5 h-5 mx-auto bg-gray-300 rounded-full" />
                         )}
-                        <div className="mt-1 text-xs text-gray-500">Room 2</div>
+                        <div className="mt-1 text-xs text-gray-500">
+                          Phòng 2
+                        </div>
                       </div>
                     </div>
                   </div>

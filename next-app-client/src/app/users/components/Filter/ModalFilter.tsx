@@ -128,12 +128,12 @@ export default function ModalFilter({
           },
           session
         );
-        messageApi.success("Update successful!");
+        messageApi.success("Cập nhật thành công!");
         handleClose();
       }
     } catch (error) {
       if (error instanceof Error) {
-        messageApi.error("Update failed! " + error.message);
+        messageApi.error("Cập nhật thất bại! " + error.message);
         // If response has JSON error body, log details
         if ((error as any).response) {
           try {
@@ -144,7 +144,7 @@ export default function ModalFilter({
           }
         }
       } else {
-        messageApi.error("Update failed!");
+        messageApi.error("Cập nhật thất bại!");
       }
       console.error("Error updating user preferences:", error);
     }
@@ -155,7 +155,7 @@ export default function ModalFilter({
       open={true}
       onCancel={handleClose}
       // onOk removed, only using custom button
-      title="Update Address"
+      title="Cập nhật địa chỉ"
       footer={null}
       width={600}
       styles={{ body: { maxHeight: "70vh", overflowY: "auto", padding: 24 } }}
@@ -163,23 +163,23 @@ export default function ModalFilter({
     >
       {contextHolder}
       <Form form={form} layout="vertical">
-        <Form.Item label="Specific Address" name="specificAddress">
+        <Form.Item label="Địa chỉ cụ thể" name="specificAddress">
           <Input
-            placeholder="Enter specific address (house number, street name, etc.)"
+            placeholder="Nhập địa chỉ cụ thể (số nhà, tên đường, ... )"
             allowClear
           />
         </Form.Item>
         <div className="flex gap-4 justify-between">
           <Form.Item
-            label="Province/City"
+            label="Tỉnh/Thành phố"
             name="province"
             rules={[
-              { required: true, message: "Please select province/city!" },
+              { required: true, message: "Vui lòng chọn tỉnh/thành phố!" },
             ]}
           >
             <Select
               options={provinces}
-              placeholder="Select Province/City"
+              placeholder="Chọn tỉnh/thành phố"
               onChange={handleProvinceChange}
               allowClear
               showSearch
@@ -187,13 +187,13 @@ export default function ModalFilter({
             />
           </Form.Item>
           <Form.Item
-            label="District"
+            label="Quận/Huyện"
             name="district"
-            rules={[{ required: true, message: "Please select district!" }]}
+            rules={[{ required: true, message: "Vui lòng chọn quận/huyện!" }]}
           >
             <Select
               options={districts}
-              placeholder="Select District"
+              placeholder="Chọn quận/huyện"
               onChange={handleDistrictChange}
               loading={loadingDistricts}
               allowClear
@@ -204,13 +204,13 @@ export default function ModalFilter({
             />
           </Form.Item>
           <Form.Item
-            label="Ward"
+            label="Phường/Xã"
             name="ward"
-            rules={[{ required: true, message: "Please select ward!" }]}
+            rules={[{ required: true, message: "Vui lòng chọn phường/xã!" }]}
           >
             <Select
               options={wards}
-              placeholder="Select Ward"
+              placeholder="Chọn phường/xã"
               loading={loadingWards}
               allowClear
               showSearch
@@ -223,12 +223,12 @@ export default function ModalFilter({
         <div className="flex gap-4 justify-center">
           <Form.Item>
             <Button type="primary" block onClick={handleSave}>
-              Save
+              Lưu
             </Button>
           </Form.Item>
           <Form.Item>
             <Button type="default" block onClick={handleClose}>
-              Close
+              Đóng
             </Button>
           </Form.Item>
         </div>

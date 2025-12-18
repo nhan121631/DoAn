@@ -19,14 +19,14 @@ export default function ContactPage() {
         <div className="text-center mb-16">
           <div className="inline-flex items-center gap-2 px-4 py-2 mb-6 text-sm font-medium text-indigo-600 bg-indigo-100 rounded-full">
             <MessageCircle className="w-4 h-4" />
-            Contact Us
+            Liên hệ với chúng tôi
           </div>
           <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-slate-900 via-blue-900 to-indigo-900 bg-clip-text text-transparent mb-6">
-            Ready to Support You
+            Sẵn sàng hỗ trợ bạn
           </h1>
           <p className="text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed">
-            We are always ready to listen and support you. Please leave your
-            information and we will respond as soon as possible.
+            Chúng tôi luôn sẵn sàng lắng nghe và hỗ trợ bạn. Vui lòng để lại
+            thông tin, chúng tôi sẽ phản hồi sớm nhất có thể.
           </p>
         </div>
 
@@ -41,7 +41,7 @@ export default function ContactPage() {
                   <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-lg flex items-center justify-center">
                     <MapPin className="w-4 h-4 text-white" />
                   </div>
-                  Our Location
+                  Địa chỉ của chúng tôi
                 </h3>
                 <div className="rounded-xl overflow-hidden">
                   <MapSection
@@ -62,7 +62,7 @@ export default function ContactPage() {
                   <div className="w-8 h-8 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-lg flex items-center justify-center">
                     <MessageCircle className="w-4 h-4 text-white" />
                   </div>
-                  Send a Message
+                  Gửi tin nhắn
                 </h3>
                 <ContactForm />
               </div>
@@ -80,7 +80,7 @@ export default function ContactPage() {
                 <Phone className="w-8 h-8 text-white" />
               </div>
               <h3 className="text-lg font-semibold text-slate-900 mb-2">
-                Phone
+                Điện thoại
               </h3>
               <a
                 href="tel:+84382972543"
@@ -89,7 +89,7 @@ export default function ContactPage() {
                 +84 382 972 543
               </a>
               <p className="text-sm text-slate-500 mt-1">
-                24/7 customer support
+                Hỗ trợ khách hàng 24/7
               </p>
             </div>
           </div>
@@ -111,7 +111,7 @@ export default function ContactPage() {
                 contact@ants123.com
               </a>
               <p className="text-sm text-slate-500 mt-1">
-                Response within 2 hours
+                Phản hồi trong vòng 2 giờ
               </p>
             </div>
           </div>
@@ -124,13 +124,11 @@ export default function ContactPage() {
                 <MapPin className="w-8 h-8 text-white" />
               </div>
               <h3 className="text-lg font-semibold text-slate-900 mb-2">
-                Address
+                Địa chỉ
               </h3>
-              <p className="text-slate-600 font-medium">90 Nguyen Thuc Tu</p>
-              <p className="text-slate-500 text-sm">Da Nang, Vietnam</p>
-              <p className="text-sm text-slate-500 mt-1">
-                Open 8:00 AM - 6:00 PM
-              </p>
+              <p className="text-slate-600 font-medium">90 Nguyễn Thúc Tự</p>
+              <p className="text-slate-500 text-sm">Đà Nẵng, Việt Nam</p>
+              <p className="text-sm text-slate-500 mt-1">Mở cửa 8:00 - 18:00</p>
             </div>
           </div>
         </div>
@@ -139,7 +137,7 @@ export default function ContactPage() {
         <div className="text-center mt-16">
           <div className="inline-flex items-center gap-2 px-6 py-3 text-sm text-slate-600 bg-white/60 backdrop-blur-sm rounded-full border border-slate-200/50">
             <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-            Our support team is online
+            Đội ngũ hỗ trợ đang trực tuyến
           </div>
         </div>
       </div>

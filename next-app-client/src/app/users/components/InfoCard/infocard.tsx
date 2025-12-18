@@ -15,22 +15,22 @@ export default function InfoCard() {
   const members: Member[] = [
     // {
     //   name: "Vo Huynh Trung",
-    //   title: "Developer",
-    //   quote: "Creativity meets functionality. Our design approach ensures that every screen not only looks stunning but also feels effortless to use.",
+    //   title: "Lập trình viên",
+    //   quote: "Sự sáng tạo kết hợp với tính thực tiễn. Phong cách thiết kế của chúng tôi đảm bảo mỗi màn hình không chỉ đẹp mắt mà còn dễ sử dụng.",
     //   avatarSrc: "/images/trungg.png",
     // },
     {
       name: "Nguyen Viet Khoi",
       title: "Developer",
       quote:
-        "Designing a seamless user experience is at the heart of what we do. We focus on clean layouts, intuitive flows, and every pixel with purpose.",
+        "Thiết kế trải nghiệm người dùng liền mạch là trọng tâm của chúng tôi. Chúng tôi chú trọng bố cục rõ ràng, luồng thao tác trực quan và từng chi tiết đều có ý nghĩa.",
       avatarSrc: "/images/khoi.png",
     },
     {
       name: "Pham Phu Nhan",
       title: "Developer",
       quote:
-        "We believe great design tells a story. From typography to color choices, we craft every detail to deliver both beauty and clarity to our users.",
+        "Chúng tôi tin rằng thiết kế tuyệt vời sẽ kể một câu chuyện. Từ kiểu chữ đến màu sắc, mọi chi tiết đều được chăm chút để mang lại vẻ đẹp và sự rõ ràng cho người dùng.",
       avatarSrc: "/images/nhann.png",
     },
   ];
@@ -52,7 +52,7 @@ export default function InfoCard() {
   return (
     <div className="relative bg-gray-800 p-8 rounded-lg shadow-lg flex flex-col space-y-6">
       <h1 className="text-2xl font-bold mb-6">
-        Meet the awesome people behind this project!
+        Gặp gỡ những người tuyệt vời đứng sau dự án này!
       </h1>
       <div className="flex items-center space-x-4">
         <Image

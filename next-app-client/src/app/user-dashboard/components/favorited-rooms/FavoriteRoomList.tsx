@@ -73,7 +73,7 @@ export default function FavoriteRoomList() {
     return (
       <div className="flex flex-col items-center justify-center py-20">
         <Spin size="large" />
-        <p className="mt-4 text-lg text-gray-500">Loading your favorite rooms...</p>
+        <p className="mt-4 text-lg text-gray-500">Đang tải danh sách phòng yêu thích...</p>
       </div>
     );
   }
@@ -83,7 +83,7 @@ export default function FavoriteRoomList() {
       <div className="flex flex-col items-center justify-center py-20">
         <div className="text-center text-red-500">
           <div className="mb-4 text-4xl">⚠️</div>
-          <p className="text-lg font-semibold">Error loading rooms</p>
+          <p className="text-lg font-semibold">Lỗi khi tải phòng</p>
           <p className="text-sm text-gray-600">{error}</p>
         </div>
       </div>
@@ -98,10 +98,10 @@ export default function FavoriteRoomList() {
           description={
             <div className="text-center">
               <p className="mb-2 text-lg font-semibold text-gray-600">
-                You have no favorite rooms.
+                Bạn chưa có phòng yêu thích nào.
               </p>
               <p className="text-sm text-gray-400">
-                Start exploring and add rooms to your favorites!
+                Hãy bắt đầu khám phá và thêm phòng vào danh sách yêu thích của bạn!
               </p>
             </div>
           }
@@ -152,16 +152,16 @@ export default function FavoriteRoomList() {
           aria-disabled={currentPage === 0}
         >
           <BiChevronLeft size={20} />
-          <span className="hidden sm:inline">Previous Page</span>
+          <span className="hidden sm:inline">Trang trước</span>
         </button>
 
         <div className="flex flex-col items-center px-4">
           <span className="text-base font-semibold text-gray-700">
-            Page <span className="text-blue-600">{currentPage + 1}</span> /{" "}
+            Trang <span className="text-blue-600">{currentPage + 1}</span> /{" "}
             <span className="text-blue-600">{totalPages || 1}</span>
           </span>
           <span className="text-xs text-gray-400">
-            {rooms.length} rooms displayed
+            {rooms.length} phòng được hiển thị
           </span>
         </div>
 
@@ -175,7 +175,7 @@ export default function FavoriteRoomList() {
           }`}
           aria-disabled={currentPage + 1 >= totalPages || totalPages === 0}
         >
-          <span className="hidden sm:inline">Next Page</span>
+          <span className="hidden sm:inline">Trang tiếp theo</span>
           <BiChevronRight size={20} />
         </button>
       </div>

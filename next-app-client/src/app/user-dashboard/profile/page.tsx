@@ -16,7 +16,7 @@ export default async function ProfileInfo() {
   return (
     <div className="flex flex-col flex-1 min-h-screen w-full bg-white dark:bg-[#001529] text-gray-900 dark:text-white p-8 transition-colors duration-300">
       <div className="flex items-center justify-between mb-8">
-        <h1 className="text-2xl font-bold">Profile Information</h1>
+        <h1 className="text-2xl font-bold">Thông tin cá nhân</h1>
         <ButtonEditProfile userProfile={userProfile} />
       </div>
       <div className="flex flex-col gap-8 md:flex-row">
@@ -42,7 +42,7 @@ export default async function ProfileInfo() {
 
           {/* Tên user */}
           <span className="mt-2 text-lg font-semibold">
-            {userProfile?.fullName || "No Name"}
+            {userProfile?.fullName || "Chưa có tên"}
           </span>
         </div>
         {/* Right: Personal Information */}
@@ -52,8 +52,8 @@ export default async function ProfileInfo() {
               <FaUser />
             </span>
             <div>
-              <div className="text-lg font-semibold">Name</div>
-              <div>{userProfile?.fullName || "Not added yet"}</div>
+              <div className="text-lg font-semibold">Họ và tên</div>
+              <div>{userProfile?.fullName || "Chưa cập nhật"}</div>
             </div>
           </div>
           <div className="flex bg-gray-100 dark:bg-[#17223b] rounded-lg p-6 items-center gap-4">
@@ -61,8 +61,8 @@ export default async function ProfileInfo() {
               <IoIosPhonePortrait />
             </span>
             <div>
-              <div className="text-lg font-semibold">Phone Number</div>
-              <div>{userProfile?.phoneNumber || "Not added yet"}</div>
+              <div className="text-lg font-semibold">Số điện thoại</div>
+              <div>{userProfile?.phoneNumber || "Chưa cập nhật"}</div>
             </div>
           </div>
           <div className="flex bg-gray-100 dark:bg-[#17223b] rounded-lg p-6 items-center gap-4">
@@ -71,7 +71,7 @@ export default async function ProfileInfo() {
             </span>
             <div>
               <div className="text-lg font-semibold">Email</div>
-              <div>{userProfile?.email || "Not added yet"}</div>
+              <div>{userProfile?.email || "Chưa cập nhật"}</div>
             </div>
           </div>
           <div className="flex bg-gray-100 dark:bg-[#17223b] rounded-lg p-6 items-center gap-4">
@@ -79,7 +79,7 @@ export default async function ProfileInfo() {
               <FaMapMarkerAlt />
             </span>
             <div>
-              <div className="text-lg font-semibold">Address</div>
+              <div className="text-lg font-semibold">Địa chỉ</div>
               <div>
                 {userProfile?.address &&
                 userProfile.address.street &&
@@ -87,7 +87,7 @@ export default async function ProfileInfo() {
                 userProfile.address.ward.district?.name &&
                 userProfile.address.ward.district.province?.name
                   ? `${userProfile.address.street}, ${userProfile.address.ward.name}, ${userProfile.address.ward.district.name}, ${userProfile.address.ward.district.province.name}`
-                  : "Not added yet"}
+                  : "Chưa cập nhật"}
               </div>
             </div>
           </div>

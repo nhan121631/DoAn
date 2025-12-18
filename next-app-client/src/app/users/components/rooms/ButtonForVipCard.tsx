@@ -50,12 +50,12 @@ export function ButtonForVipCard({
       return;
     }
 
-    const wasFavorite = isFavorite; 
-    
+    const wasFavorite = isFavorite;
+
     if (wasFavorite) {
       removeFavorite(room.id);
       if (onFavoriteChange) onFavoriteChange(room.id);
-      setFavoriteCount((prevCount) => prevCount > 0 ? prevCount - 1 : 0);
+      setFavoriteCount((prevCount) => (prevCount > 0 ? prevCount - 1 : 0));
     } else {
       addFavorite(room.id);
       setFavoriteCount((prevCount) => prevCount + 1);
@@ -67,37 +67,49 @@ export function ButtonForVipCard({
       });
 
       if (!res.ok) {
-        throw new Error("Failed to update favorite status on the server.");
+        throw new Error(
+          "Không thể cập nhật trạng thái yêu thích trên máy chủ."
+        );
       }
-      
-      messageApi.success(wasFavorite ? "Removed from favorites" : "Added to favorites");
-  
-  } catch (err) { 
-    console.error("Failed to update favorite status:", err);
-    
-    if (wasFavorite) {
-      addFavorite(room.id); 
-      setFavoriteCount((prevCount) => prevCount + 1);
-    } else {
-      removeFavorite(room.id);
-      setFavoriteCount((prevCount) => prevCount > 0 ? prevCount - 1 : 0);
+
+      messageApi.success(
+        wasFavorite
+          ? "Đã xóa khỏi danh sách yêu thích"
+          : "Đã thêm vào danh sách yêu thích"
+      );
+    } catch (err) {
+      console.error("Failed to update favorite status:", err);
+
+      if (wasFavorite) {
+        addFavorite(room.id);
+        setFavoriteCount((prevCount) => prevCount + 1);
+      } else {
+        removeFavorite(room.id);
+        setFavoriteCount((prevCount) => (prevCount > 0 ? prevCount - 1 : 0));
+      }
+      messageApi.error("Cập nhật trạng thái yêu thích thất bại.");
     }
-    messageApi.error("Failed to update favorite status.");
-  }
-};
-  
+  };
 
   if (showHeartOnly) {
     return (
       <>
         {contextHolder}
         <button
-          aria-label="Favorite"
+          aria-label="Yêu thích"
           className={`flex items-center gap-2 px-4 py-2 transition-all duration-200 rounded-full border shadow-sm hover:shadow-md focus:ring-2 focus:ring-red-200
-            ${isFavorite ? "text-red-500 bg-white border-red-300 hover:border-red-400 hover:bg-red-50" : "text-gray-500 bg-white border-red-300 hover:text-red-500 hover:border-red-400 hover:bg-red-50"}`}
+            ${
+              isFavorite
+                ? "text-red-500 bg-white border-red-300 hover:border-red-400 hover:bg-red-50"
+                : "text-gray-500 bg-white border-red-300 hover:text-red-500 hover:border-red-400 hover:bg-red-50"
+            }`}
           onClick={handleFavorite}
           type="button"
-          title={isFavorite ? "Remove from favorites" : "Add to favorites"}
+          title={
+            isFavorite
+              ? "Xóa khỏi danh sách yêu thích"
+              : "Thêm vào danh sách yêu thích"
+          }
         >
           <FaHeart size={16} />
           <span className="text-sm font-bold text-blue-500">
@@ -112,12 +124,20 @@ export function ButtonForVipCard({
     <>
       {contextHolder}
       <button
-        aria-label="Favorite"
+        aria-label="Yêu thích"
         className={`flex items-center gap-1.5 px-3 py-1.5 transition-all duration-200 rounded-full border shadow-sm hover:shadow-md focus:ring-2 focus:ring-red-200
-          ${isFavorite ? "text-red-500 bg-white border-red-300 hover:border-red-400 hover:bg-red-50" : "text-gray-500 bg-white border-red-300 hover:text-red-500 hover:border-red-400 hover:bg-red-50"}`}
+          ${
+            isFavorite
+              ? "text-red-500 bg-white border-red-300 hover:border-red-400 hover:bg-red-50"
+              : "text-gray-500 bg-white border-red-300 hover:text-red-500 hover:border-red-400 hover:bg-red-50"
+          }`}
         onClick={handleFavorite}
         type="button"
-        title={isFavorite ? "Remove from favorites" : "Add to favorites"}
+        title={
+          isFavorite
+            ? "Xóa khỏi danh sách yêu thích"
+            : "Thêm vào danh sách yêu thích"
+        }
       >
         <FaHeart size={16} />
         <span className="text-sm font-bold text-blue-500">{favoriteCount}</span>

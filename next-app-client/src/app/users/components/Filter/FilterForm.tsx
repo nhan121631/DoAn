@@ -81,7 +81,7 @@ const CustomSelect = ({
         }`}
       >
         <span className={selectedOption ? "text-gray-900" : "text-gray-500"}>
-          {loading ? "Loading..." : selectedOption?.label || placeholder}
+          {loading ? "Đang tải..." : selectedOption?.label || placeholder}
         </span>
 
         <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1">
@@ -127,7 +127,7 @@ const CustomSelect = ({
             <div className="relative">
               <input
                 type="text"
-                placeholder="Search..."
+                placeholder="Tìm kiếm..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full px-4 py-2.5 pl-10 text-sm border border-gray-200/60 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all duration-200 bg-white/80"
@@ -195,7 +195,7 @@ const CustomSelect = ({
                       d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-6-4h6M7 8a3 3 0 016 0M7 8H5a2 2 0 00-2 2v6a2 2 0 002 2h14a2 2 0 002-2V10a2 2 0 00-2-2h-2"
                     />
                   </svg>
-                  <span>No results found</span>
+                  <span>Không tìm thấy kết quả</span>
                 </div>
               </div>
             )}
@@ -441,9 +441,11 @@ export default function FilterForm() {
         {/* Header with gradient */}
         <div className="text-center pb-4 border-b  border-gradient-to-r from-transparent via-blue-200/50 to-transparent">
           <h2 className="text-xl font-bold bg-gradient-to-r from-blue-700 via-indigo-700 to-purple-700 bg-clip-text text-transparent tracking-wide">
-            Advanced Filters
+            Bộ lọc nâng cao
           </h2>
-          <p className="text-sm text-gray-500 mt-1">Find your perfect room</p>
+          <p className="text-sm text-gray-500 mt-1">
+            Tìm phòng phù hợp với bạn
+          </p>
         </div>
 
         {/*
@@ -537,7 +539,7 @@ export default function FilterForm() {
                   />
                 </svg>
               </div>
-              <h3 className="font-bold text-base text-gray-800">Convenients</h3>
+              <h3 className="font-bold text-base text-gray-800">Tiện nghi</h3>
             </div>
 
             {selectedConvenients.length > 0 && (
@@ -606,9 +608,9 @@ export default function FilterForm() {
               disabled={isLoading}
             >
               {isLoading ? (
-                <LoadingSpinner size="sm" text="Clearing..." />
+                <LoadingSpinner size="sm" text="Đang xóa..." />
               ) : (
-                "Clear all selections"
+                "Xóa tất cả lựa chọn"
               )}
             </button>
           )}

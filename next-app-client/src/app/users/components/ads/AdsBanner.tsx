@@ -27,7 +27,7 @@ export default function AdsBanner({
         setAds(data);
         setError(null);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to fetch ads');
+        setError(err instanceof Error ? err.message : "Failed to fetch ads");
         setAds([]);
       } finally {
         setIsLoading(false);
@@ -38,11 +38,12 @@ export default function AdsBanner({
 
     // Refresh ads every 5 minutes
     const interval = setInterval(fetchActiveAdsByPosition, 5 * 60 * 1000);
-    
+
     return () => clearInterval(interval);
   }, [position]);
 
   // Don't render if loading, error, or no ads
+  // Không hiển thị nếu đang tải, lỗi hoặc không có quảng cáo
   if (isLoading || error || !ads || ads.length === 0) {
     return null;
   }
@@ -52,39 +53,26 @@ export default function AdsBanner({
 
   // Build image URL with Cloudinary base
   const getFullImageUrl = (imageUrl: string) => {
-    console.log('🔍 [AdsBanner] Processing image URL:', imageUrl);
-    
-    // If it's already a full URL (starts with http), return as-is
-    if (imageUrl.startsWith('http')) {
-      console.log('🖼️ [AdsBanner] Full URL detected, using as-is:', imageUrl);
+    // Tiếng Việt: Xử lý đường dẫn ảnh quảng cáo
+    if (imageUrl.startsWith("http")) {
       return imageUrl;
     }
-    
-    // If it's a relative path starting with /, combine with URL_IMAGE
-    if (imageUrl.startsWith('/')) {
-      const fullUrl = `${URL_IMAGE}${imageUrl}`;
-      console.log('🖼️ [AdsBanner] Building full URL:', {
-        original: imageUrl,
-        URL_IMAGE: URL_IMAGE,
-        fullUrl: fullUrl
-      });
-      return fullUrl;
+    if (imageUrl.startsWith("/")) {
+      return `${URL_IMAGE}${imageUrl}`;
     }
-    
-    // Otherwise, return as-is (might be already processed)
-    console.log('🖼️ [AdsBanner] Using image URL as-is:', imageUrl);
     return imageUrl;
   };
 
   // Log active ad data for debugging
-  console.log('📊 [AdsBanner] Active ad data:', {
+  console.log("📊 [AdsBanner] Active ad data:", {
     position,
     activeAd,
     imageUrl: activeAd.imageUrl,
-    fullImageUrl: getFullImageUrl(activeAd.imageUrl)
+    fullImageUrl: getFullImageUrl(activeAd.imageUrl),
   });
 
-  const baseClasses = "hidden lg:flex flex-col items-center justify-start sticky top-24 z-20 mt-5";
+  const baseClasses =
+    "hidden lg:flex flex-col items-center justify-start sticky top-24 z-20 mt-5";
   const positionClasses = {
     LEFT: "left-0",
     RIGHT: "right-0",
@@ -116,18 +104,22 @@ export default function AdsBanner({
             sizes="(max-width: 640px) 100vw, 130px"
             priority={false}
             style={{ height: "auto", width: "100%" }}
-            onLoad={() => console.log('✅ [AdsBanner] Image loaded successfully:', getFullImageUrl(activeAd.imageUrl))}
+            onLoad={() =>
+              console.log(
+                "✅ [AdsBanner] Đã tải ảnh thành công:",
+                getFullImageUrl(activeAd.imageUrl)
+              )
+            }
             onError={(e) => {
-              console.error('❌ [AdsBanner] Image failed to load:', {
+              console.error("❌ [AdsBanner] Lỗi tải ảnh:", {
                 src: getFullImageUrl(activeAd.imageUrl),
                 error: e,
-                originalUrl: activeAd.imageUrl
+                originalUrl: activeAd.imageUrl,
               });
             }}
           />
         </div>
-        
-        {/* Optional overlay with title */}
+
         {activeAd.title && (
           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-300 flex items-end">
             <div className="w-full p-2 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
@@ -138,8 +130,7 @@ export default function AdsBanner({
           </div>
         )}
       </a>
-      
-      {/* Multiple ads indicator */}
+
       {ads.length > 1 && (
         <div className="flex gap-1 mt-2">
           {ads.slice(0, 3).map((_, index: number) => (
@@ -151,7 +142,9 @@ export default function AdsBanner({
             />
           ))}
           {ads.length > 3 && (
-            <span className="text-xs text-gray-500 ml-1">+{ads.length - 3}</span>
+            <span className="text-xs text-gray-500 ml-1">
+              +{ads.length - 3}
+            </span>
           )}
         </div>
       )}

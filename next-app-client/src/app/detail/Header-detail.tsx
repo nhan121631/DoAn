@@ -65,7 +65,7 @@ export default function HeaderUserDashboard() {
             signOut({ callbackUrl: "/auth/login" });
           }}
         >
-          <IoIosLogOut className="text-2xl" /> Logout
+          <IoIosLogOut className="text-2xl" /> Đăng xuất
         </button>
       ),
     },
@@ -94,7 +94,7 @@ export default function HeaderUserDashboard() {
               onClick={(e) => handleNavigateToSection(e, "home", "/users")}
               className="flex items-center gap-1 p-2 !text-white transition duration-300 rounded-full cursor-pointer md:px-4 md:py-2 md:gap-2 hover:!bg-white/30"
             >
-              Home
+              Trang chủ
             </Link>
           </li>
           <li>
@@ -105,7 +105,7 @@ export default function HeaderUserDashboard() {
               }
               className="flex items-center gap-1 p-2 !text-white transition duration-300 rounded-full cursor-pointer md:px-4 md:py-2 md:gap-2 hover:!bg-white/30"
             >
-              Rental rooms
+              Phòng cho thuê
             </Link>
           </li>
           <li>
@@ -114,7 +114,7 @@ export default function HeaderUserDashboard() {
               onClick={(e) => handleNavigateToSection(e, "landlords", "/users")}
               className="flex items-center gap-1 p-2 !text-white transition duration-300 rounded-full cursor-pointer md:px-4 md:py-2 md:gap-2 hover:!bg-white/30"
             >
-              Landlords
+              Chủ trọ
             </Link>
           </li>
           <li>
@@ -123,7 +123,7 @@ export default function HeaderUserDashboard() {
               onClick={(e) => handleNavigateToSection(e, "contact", "/users")}
               className="flex items-center gap-1 p-2 !text-white transition duration-300 rounded-full cursor-pointer md:px-4 md:py-2 md:gap-2 hover:!bg-white/30"
             >
-              Contact
+              Liên hệ
             </Link>
           </li>
         </ul>
@@ -137,7 +137,7 @@ export default function HeaderUserDashboard() {
               className="flex items-center gap-1 p-2 text-white transition duration-300 rounded-full shadow cursor-pointer md:px-4 md:py-2 md:gap-2 hover:bg-white/30"
             >
               {/* <AiOutlineUserAdd className="w-5 h-5" /> */}
-              <span className="hidden md:inline">Dashboard</span>
+              <span className="hidden md:inline">Bảng điều khiển</span>
             </Link>
             <Dropdown
               menu={{ items }}
@@ -159,21 +159,21 @@ export default function HeaderUserDashboard() {
               className="flex items-center gap-1 p-2 text-white transition duration-300 rounded-full shadow cursor-pointer md:px-4 md:py-2 md:gap-2 hover:bg-white/30"
             >
               <AiOutlineUserAdd className="w-5 h-5" />
-              <span className="hidden md:inline">Register</span>
+              <span className="hidden md:inline">Đăng ký</span>
             </Link>
             <Link
               href="/auth/login"
               className="flex items-center gap-1 p-2 text-white transition duration-300 rounded-full shadow cursor-pointer md:px-4 md:py-2 md:gap-2 hover:bg-white/30"
             >
               <IoLogInOutline className="w-5 h-5" />
-              <span className="hidden md:inline">Login</span>
+              <span className="hidden md:inline">Đăng nhập</span>
             </Link>
             <Link
               href="/users/register"
               className="flex items-center gap-1 p-2 transition duration-300 bg-white rounded-full shadow cursor-pointer hover:bg-gray-300 text-stone-900 md:px-4 md:py-2 md:gap-2"
             >
               <FaRegEdit className="w-5 h-5" />
-              <span className="hidden md:inline">Create Post</span>
+              <span className="hidden md:inline">Đăng bài</span>
             </Link>
           </>
         )}
@@ -219,7 +219,7 @@ export default function HeaderUserDashboard() {
                 toggleMobileMenu();
               }}
             >
-              Home
+              Trang chủ
             </Link>
           </li>
           <li className="w-full">
@@ -231,7 +231,7 @@ export default function HeaderUserDashboard() {
                 toggleMobileMenu();
               }}
             >
-              Rental rooms
+              Phòng cho thuê
             </Link>
           </li>
           <li className="w-full">
@@ -243,7 +243,7 @@ export default function HeaderUserDashboard() {
                 toggleMobileMenu();
               }}
             >
-              Landlords
+              Chủ trọ
             </Link>
           </li>
           <li className="w-full">
@@ -255,7 +255,7 @@ export default function HeaderUserDashboard() {
                 toggleMobileMenu();
               }}
             >
-              Contact
+              Liên hệ
             </Link>
           </li>
         </ul>

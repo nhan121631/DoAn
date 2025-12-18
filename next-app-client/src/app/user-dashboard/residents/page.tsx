@@ -47,13 +47,13 @@ const { Title } = Typography;
 const { TextArea } = Input;
 
 const relationshipOptions = [
-  { value: "MySelf", label: "MySelf" },
-  { value: "Wife/Husband", label: "Wife/Husband" },
-  { value: "Child", label: "Child" },
-  { value: "Father/Mother", label: "Father/Mother" },
-  { value: "Brother/Sister", label: "Brother/Sister" },
-  { value: "Friend", label: "Friend" },
-  { value: "Other", label: "Other" },
+  { value: "MySelf", label: "Bản thân" },
+  { value: "Wife/Husband", label: "Vợ/Chồng" },
+  { value: "Child", label: "Con" },
+  { value: "Father/Mother", label: "Bố/Mẹ" },
+  { value: "Brother/Sister", label: "Anh/Chị/Em" },
+  { value: "Friend", label: "Bạn bè" },
+  { value: "Other", label: "Khác" },
 ];
 
 // Helper function to convert Cloudinary relative path to full URL
@@ -364,7 +364,7 @@ export default function TenantResidentsPage() {
 
   const columns: ColumnsType<ExtendedResidentData> = [
     {
-      title: "Full Name",
+      title: "Họ và tên",
       dataIndex: "fullName",
       key: "fullName",
       render: (name: string) => (
@@ -377,30 +377,30 @@ export default function TenantResidentsPage() {
       ),
     },
     {
-      title: "ID Number",
+      title: "Số CMND/CCCD",
       dataIndex: "idNumber",
       key: "idNumber",
     },
     {
-      title: "Relationship",
+      title: "Quan hệ",
       dataIndex: "relationship",
       key: "relationship",
       render: (relationship: string) => <Tag color="blue">{relationship}</Tag>,
     },
     {
-      title: "Room Title",
+      title: "Tên phòng",
       key: "roomTitle",
       render: (_: any, record: ExtendedResidentData) => (
         <div className="max-w-xs">
           <span className="text-sm text-gray-700 dark:text-gray-300 line-clamp-2">
-            {record.contractInfo?.roomTitle || "N/A"}
+            {record.contractInfo?.roomTitle || "Không có"}
           </span>
         </div>
       ),
       ellipsis: true,
     },
     {
-      title: "Period",
+      title: "Thời gian cư trú",
       key: "period",
       render: (_: any, record: ExtendedResidentData) => (
         <div>
@@ -408,13 +408,13 @@ export default function TenantResidentsPage() {
             {new Date(record.startDate).toLocaleDateString()}
           </div>
           <div className="text-sm text-gray-500 transition-colors duration-300 dark:text-gray-400">
-            to {new Date(record.endDate).toLocaleDateString()}
+            đến {new Date(record.endDate).toLocaleDateString()}
           </div>
         </div>
       ),
     },
     {
-      title: "Status",
+      title: "Trạng thái",
       dataIndex: "status",
       key: "status",
       render: (status: string) => {
@@ -432,24 +432,24 @@ export default function TenantResidentsPage() {
       },
     },
     {
-      title: "Note",
+      title: "Ghi chú",
       dataIndex: "note",
       key: "note",
       ellipsis: true,
     },
     {
-      title: "Action",
+      title: "Thao tác",
       key: "action",
       render: (_: any, record: ExtendedResidentData) => (
         <Space>
-          <Tooltip title="View Details">
+          <Tooltip title="Xem chi tiết">
             <Button
               type="default"
               icon={<EyeOutlined />}
               onClick={() => setSelectedResident(record)}
             />
           </Tooltip>
-          <Tooltip title="Edit">
+          <Tooltip title="Chỉnh sửa">
             <Button
               icon={<EditOutlined />}
               onClick={() => {
@@ -465,15 +465,15 @@ export default function TenantResidentsPage() {
               }}
             />
           </Tooltip>
-          <Tooltip title="Delete">
+          <Tooltip title="Xóa">
             <Popconfirm
-              title="Delete resident"
-              description="Are you sure you want to delete this resident?"
+              title="Xóa tạm trú"
+              description="Bạn có chắc chắn muốn xóa tạm trú này?"
               onConfirm={() =>
                 handleDeleteResident(record.id, record.contractId!)
               }
-              okText="Yes"
-              cancelText="No"
+              okText="Đồng ý"
+              cancelText="Hủy"
             >
               <Button icon={<DeleteOutlined />} danger />
             </Popconfirm>
@@ -489,7 +489,7 @@ export default function TenantResidentsPage() {
         title={
           <div className="flex items-center justify-between">
             <Title level={3} style={{ margin: 0 }}>
-              My Residents
+              Các tạm trú của tôi
             </Title>
           </div>
         }
@@ -498,7 +498,7 @@ export default function TenantResidentsPage() {
           <div className="flex items-center gap-3">
             {/* Search */}
             <Input
-              placeholder="Search by name, ID, room..."
+              placeholder="Tìm kiếm theo tên, số CMND, phòng..."
               prefix={<SearchOutlined />}
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
@@ -508,7 +508,7 @@ export default function TenantResidentsPage() {
 
             {/* Relationship Filter */}
             <Select
-              placeholder="Filter by relationship"
+              placeholder="Lọc theo quan hệ"
               value={relationshipFilter}
               onChange={setRelationshipFilter}
               style={{ width: 180 }}
@@ -519,7 +519,7 @@ export default function TenantResidentsPage() {
 
             {/* Clear Filters */}
             {(searchText || relationshipFilter) && (
-              <Button onClick={clearFilters}>Clear Filters</Button>
+              <Button onClick={clearFilters}>Xóa lọc</Button>
             )}
 
             {/* Add Button */}
@@ -528,7 +528,7 @@ export default function TenantResidentsPage() {
               icon={<PlusOutlined />}
               onClick={() => setAddResidentOpen(true)}
             >
-              Add Resident
+              Thêm tạm trú
             </Button>
           </div>
         }
@@ -552,7 +552,7 @@ export default function TenantResidentsPage() {
 
       {/* Resident Detail Modal */}
       <Modal
-        title="Resident Details"
+        title="Chi tiết tạm trú"
         open={!!selectedResident}
         onCancel={() => setSelectedResident(null)}
         footer={null}
@@ -563,19 +563,19 @@ export default function TenantResidentsPage() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="text-sm font-medium text-gray-500">
-                  Full Name
+                  Họ và tên
                 </label>
                 <p className="text-base">{selectedResident.fullName}</p>
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-500">
-                  ID Number
+                  Số CMND/CCCD
                 </label>
                 <p className="text-base">{selectedResident.idNumber}</p>
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-500">
-                  Relationship
+                  Quan hệ
                 </label>
                 <p className="text-base">
                   <Tag color="blue">{selectedResident.relationship}</Tag>
@@ -583,7 +583,7 @@ export default function TenantResidentsPage() {
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-500">
-                  Status
+                  Trạng thái
                 </label>
                 <p className="text-base">
                   <Tag
@@ -597,7 +597,7 @@ export default function TenantResidentsPage() {
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-500">
-                  Start Date
+                  Ngày bắt đầu
                 </label>
                 <p className="text-base">
                   {new Date(selectedResident.startDate).toLocaleDateString()}
@@ -605,7 +605,7 @@ export default function TenantResidentsPage() {
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-500">
-                  End Date
+                  Ngày kết thúc
                 </label>
                 <p className="text-base">
                   {new Date(selectedResident.endDate).toLocaleDateString()}
@@ -617,12 +617,12 @@ export default function TenantResidentsPage() {
             {selectedResident.contractInfo && (
               <div className="pt-4 border-t">
                 <h4 className="mb-3 text-base font-medium text-gray-700">
-                  Contract Information
+                  Thông tin hợp đồng
                 </h4>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="text-sm font-medium text-gray-500">
-                      Contract Name
+                      Tên hợp đồng
                     </label>
                     <p className="text-base">
                       {selectedResident.contractInfo.contractName}
@@ -630,7 +630,7 @@ export default function TenantResidentsPage() {
                   </div>
                   <div>
                     <label className="text-sm font-medium text-gray-500">
-                      Room Title
+                      Tên phòng
                     </label>
                     <p className="text-base line-clamp-2">
                       {selectedResident.contractInfo.roomTitle}
@@ -638,7 +638,7 @@ export default function TenantResidentsPage() {
                   </div>
                   <div>
                     <label className="text-sm font-medium text-gray-500">
-                      Landlord
+                      Chủ nhà
                     </label>
                     <p className="text-base">
                       {selectedResident.contractInfo.landlordName}
@@ -646,10 +646,10 @@ export default function TenantResidentsPage() {
                   </div>
                   <div>
                     <label className="text-sm font-medium text-gray-500">
-                      Monthly Rent
+                      Giá thuê/tháng
                     </label>
                     <p className="text-base">
-                      ${selectedResident.contractInfo.monthlyRent}
+                      {selectedResident.contractInfo.monthlyRent}₫
                     </p>
                   </div>
                 </div>
@@ -659,7 +659,7 @@ export default function TenantResidentsPage() {
             {selectedResident.note && (
               <div className="pt-4 border-t">
                 <label className="text-sm font-medium text-gray-500">
-                  Note
+                  Ghi chú
                 </label>
                 <p className="text-base">{selectedResident.note}</p>
               </div>
@@ -670,7 +670,7 @@ export default function TenantResidentsPage() {
               {selectedResident.idCardFrontUrl && (
                 <div>
                   <label className="text-sm font-medium text-gray-500">
-                    ID Card Front
+                    Ảnh mặt trước CMND/CCCD
                   </label>
                   <Image
                     src={getCloudinaryUrl(selectedResident.idCardFrontUrl)}
@@ -684,7 +684,7 @@ export default function TenantResidentsPage() {
               {selectedResident.idCardBackUrl && (
                 <div>
                   <label className="text-sm font-medium text-gray-500">
-                    ID Card Back
+                    Ảnh mặt sau CMND/CCCD
                   </label>
                   <Image
                     src={getCloudinaryUrl(selectedResident.idCardBackUrl)}
@@ -704,7 +704,7 @@ export default function TenantResidentsPage() {
 
       {/* Add Resident Modal */}
       <Modal
-        title="Add Resident"
+        title="Thêm tạm trú"
         open={addResidentOpen}
         onCancel={() => {
           setAddResidentOpen(false);
@@ -723,52 +723,52 @@ export default function TenantResidentsPage() {
           }}
         >
           <Form.Item
-            label="Contract"
+            label="Hợp đồng"
             name="contractId"
-            rules={[{ required: true, message: "Please select a contract!" }]}
+            rules={[{ required: true, message: "Vui lòng chọn hợp đồng!" }]}
           >
             <Select
-              placeholder="Select contract"
+              placeholder="Chọn hợp đồng"
               loading={loadingContracts}
               options={availableContracts.map((contract) => ({
                 value: contract.id,
-                label: `${contract.roomTitle || "Unknown Room"} - ${
-                  contract.contractName || "No Contract Name"
+                label: `${contract.roomTitle || "Không rõ phòng"} - ${
+                  contract.contractName || "Không có tên hợp đồng"
                 }`,
               }))}
             />
           </Form.Item>
 
           <Form.Item
-            label="Full Name"
+            label="Họ và tên"
             name="fullName"
-            rules={[{ required: true, message: "Please enter full name!" }]}
+            rules={[{ required: true, message: "Vui lòng nhập họ và tên!" }]}
           >
-            <Input placeholder="Enter full name" />
+            <Input placeholder="Nhập họ và tên" />
           </Form.Item>
 
           <Form.Item
-            label="ID Number"
+            label="Số CMND/CCCD"
             name="idNumber"
-            rules={[{ required: true, message: "Please enter ID number!" }]}
+            rules={[{ required: true, message: "Vui lòng nhập số CMND/CCCD!" }]}
           >
-            <Input placeholder="Enter ID number" />
+            <Input placeholder="Nhập số CMND/CCCD" />
           </Form.Item>
 
           <Form.Item
-            label="Relationship"
+            label="Quan hệ"
             name="relationship"
-            rules={[{ required: true, message: "Please select relationship!" }]}
+            rules={[{ required: true, message: "Vui lòng chọn quan hệ!" }]}
           >
             <Select options={relationshipOptions} />
           </Form.Item>
 
           <div className="grid grid-cols-2 gap-4">
             <Form.Item
-              label="Start Date"
+              label="Ngày bắt đầu"
               name="startDate"
               rules={[
-                { required: true, message: "Please select start date!" },
+                { required: true, message: "Vui lòng chọn ngày bắt đầu!" },
                 { validator: validateStartDateAdd },
               ]}
             >
@@ -776,10 +776,10 @@ export default function TenantResidentsPage() {
             </Form.Item>
 
             <Form.Item
-              label="End Date"
+              label="Ngày kết thúc"
               name="endDate"
               rules={[
-                { required: true, message: "Please select end date!" },
+                { required: true, message: "Vui lòng chọn ngày kết thúc!" },
                 { validator: validateEndDateAdd },
               ]}
             >
@@ -789,7 +789,7 @@ export default function TenantResidentsPage() {
 
           {/* ID Card Upload */}
           <div className="grid grid-cols-2 gap-4">
-            <Form.Item label="ID Card Front">
+            <Form.Item label="Ảnh mặt trước CMND/CCCD">
               <Upload.Dragger
                 name="frontImage"
                 multiple={false}
@@ -810,13 +810,13 @@ export default function TenantResidentsPage() {
                     <p className="ant-upload-drag-icon">
                       <InboxOutlined />
                     </p>
-                    <p className="ant-upload-text">Upload ID Front</p>
+                    <p className="ant-upload-text">Tải ảnh mặt trước</p>
                   </div>
                 )}
               </Upload.Dragger>
             </Form.Item>
 
-            <Form.Item label="ID Card Back">
+            <Form.Item label="Ảnh mặt sau CMND/CCCD">
               <Upload.Dragger
                 name="backImage"
                 multiple={false}
@@ -837,15 +837,15 @@ export default function TenantResidentsPage() {
                     <p className="ant-upload-drag-icon">
                       <InboxOutlined />
                     </p>
-                    <p className="ant-upload-text">Upload ID Back</p>
+                    <p className="ant-upload-text">Tải ảnh mặt sau</p>
                   </div>
                 )}
               </Upload.Dragger>
             </Form.Item>
           </div>
 
-          <Form.Item label="Note" name="note">
-            <TextArea rows={3} placeholder="Enter any additional notes..." />
+          <Form.Item label="Ghi chú" name="note">
+            <TextArea rows={3} placeholder="Nhập ghi chú thêm..." />
           </Form.Item>
 
           <Form.Item>
@@ -856,10 +856,10 @@ export default function TenantResidentsPage() {
                   // Form will be reset by destroyOnClose
                 }}
               >
-                Cancel
+                Hủy
               </Button>
               <Button type="primary" htmlType="submit" loading={loading}>
-                Add Resident
+                Thêm cư dân
               </Button>
             </div>
           </Form.Item>
@@ -868,7 +868,7 @@ export default function TenantResidentsPage() {
 
       {/* Edit Resident Modal */}
       <Modal
-        title="Edit Resident"
+        title="Chỉnh sửa cư dân"
         open={!!editResident}
         onCancel={() => {
           setEditResident(null);
@@ -881,35 +881,35 @@ export default function TenantResidentsPage() {
       >
         <Form form={editForm} layout="vertical" onFinish={handleEditResident}>
           <Form.Item
-            label="Full Name"
+            label="Họ và tên"
             name="fullName"
-            rules={[{ required: true, message: "Please enter full name!" }]}
+            rules={[{ required: true, message: "Vui lòng nhập họ và tên!" }]}
           >
-            <Input placeholder="Enter full name" />
+            <Input placeholder="Nhập họ và tên" />
           </Form.Item>
 
           <Form.Item
-            label="ID Number"
+            label="Số CMND/CCCD"
             name="idNumber"
-            rules={[{ required: true, message: "Please enter ID number!" }]}
+            rules={[{ required: true, message: "Vui lòng nhập số CMND/CCCD!" }]}
           >
-            <Input placeholder="Enter ID number" />
+            <Input placeholder="Nhập số CMND/CCCD" />
           </Form.Item>
 
           <Form.Item
-            label="Relationship"
+            label="Quan hệ"
             name="relationship"
-            rules={[{ required: true, message: "Please select relationship!" }]}
+            rules={[{ required: true, message: "Vui lòng chọn quan hệ!" }]}
           >
             <Select options={relationshipOptions} />
           </Form.Item>
 
           <div className="grid grid-cols-2 gap-4">
             <Form.Item
-              label="Start Date"
+              label="Ngày bắt đầu"
               name="startDate"
               rules={[
-                { required: true, message: "Please select start date!" },
+                { required: true, message: "Vui lòng chọn ngày bắt đầu!" },
                 { validator: validateStartDateEdit },
               ]}
             >
@@ -917,10 +917,10 @@ export default function TenantResidentsPage() {
             </Form.Item>
 
             <Form.Item
-              label="End Date"
+              label="Ngày kết thúc"
               name="endDate"
               rules={[
-                { required: true, message: "Please select end date!" },
+                { required: true, message: "Vui lòng chọn ngày kết thúc!" },
                 { validator: validateEndDateEdit },
               ]}
             >
@@ -930,7 +930,7 @@ export default function TenantResidentsPage() {
 
           {/* ID Card Upload */}
           <div className="grid grid-cols-2 gap-4">
-            <Form.Item label="ID Card Front">
+            <Form.Item label="Ảnh mặt trước CMND/CCCD">
               <Upload.Dragger
                 name="frontImage"
                 multiple={false}
@@ -951,13 +951,13 @@ export default function TenantResidentsPage() {
                     <p className="ant-upload-drag-icon">
                       <InboxOutlined />
                     </p>
-                    <p className="ant-upload-text">Upload ID Front</p>
+                    <p className="ant-upload-text">Tải ảnh mặt trước</p>
                   </div>
                 )}
               </Upload.Dragger>
             </Form.Item>
 
-            <Form.Item label="ID Card Back">
+            <Form.Item label="Ảnh mặt sau CMND/CCCD">
               <Upload.Dragger
                 name="backImage"
                 multiple={false}
@@ -978,15 +978,15 @@ export default function TenantResidentsPage() {
                     <p className="ant-upload-drag-icon">
                       <InboxOutlined />
                     </p>
-                    <p className="ant-upload-text">Upload ID Back</p>
+                    <p className="ant-upload-text">Tải ảnh mặt sau</p>
                   </div>
                 )}
               </Upload.Dragger>
             </Form.Item>
           </div>
 
-          <Form.Item label="Note" name="note">
-            <TextArea rows={3} placeholder="Enter any additional notes..." />
+          <Form.Item label="Ghi chú" name="note">
+            <TextArea rows={3} placeholder="Nhập ghi chú thêm..." />
           </Form.Item>
 
           <Form.Item>
@@ -997,10 +997,10 @@ export default function TenantResidentsPage() {
                   // Form will be reset by destroyOnClose
                 }}
               >
-                Cancel
+                Hủy
               </Button>
               <Button type="primary" htmlType="submit" loading={loading}>
-                Update Resident
+                Cập nhật cư dân
               </Button>
             </div>
           </Form.Item>

@@ -13,10 +13,12 @@ export default function NoLookingForFilter() {
         loop
         autoplay
       />
-      <h2 className="mt-4 text-2xl font-bold text-gray-700">No rooms found</h2>
+      <h2 className="mt-4 text-2xl font-bold text-gray-700">
+        Không tìm thấy phòng nào
+      </h2>
       <p className="mt-2 text-gray-500 text-center max-w-xs">
-        Sorry, we couldn&#39;t find any rooms matching your search. Try
-        adjusting your filters or search again.
+        Xin lỗi, chúng tôi không tìm thấy phòng nào phù hợp với tìm kiếm của
+        bạn. Hãy thử điều chỉnh bộ lọc hoặc tìm kiếm lại.
       </p>
       {/* <Link
         href="/users"

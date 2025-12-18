@@ -22,71 +22,69 @@ export default function DetailPage() {
       <div className="mt-6 p-5 rounded-lg bg-[#f9f9f9] shadow-sm flex flex-col gap-4">
         <div className="flex items-center mb-2">
           <span className="text-[#e53935] font-bold text-xl mr-2">
-            Newly built, clean, airy room for rent, only 3.6M/month
+            Phòng mới xây, sạch sẽ, thoáng mát cho thuê, chỉ 3.6 triệu/tháng
           </span>
         </div>
         <div className="flex items-center gap-4 mb-2">
           <span className="text-lg font-bold text-green-700">
-            3.8 million/month
+            3.8 triệu/tháng
           </span>
           <span className="text-base text-gray-500">· 20 m²</span>
         </div>
         <div className="text-gray-700 text-[15px] mb-1 flex justify-start">
-          <span className="w-1/5">Ward</span>
+          <span className="w-1/5">Phường</span>
           <a href="#" className="w-4/5 ml-1 text-blue-600 underline">
-            Go Vap District
+            Quận Gò Vấp
           </a>
         </div>
         <div className="text-gray-700 text-[15px] mb-1 flex justify-start">
-          <span className="w-1/5">City/Province:</span>
+          <span className="w-1/5">Tỉnh/Thành phố:</span>
           <a href="#" className="w-4/5 ml-1 text-blue-600 underline">
-            Ho Chi Minh City
+            TP. Hồ Chí Minh
           </a>
         </div>
         <div className="text-gray-700 text-[15px] mb-1 flex justify-start">
-          <span className="w-1/5">Address:</span>
+          <span className="w-1/5">Địa chỉ:</span>
           <span className="w-4/5 ml-1">
-            171/14/18 Duong Nguyen Tu Gian, Ward 12, Go Vap District
+            171/14/18 Đường Nguyễn Tư Giản, Phường 12, Quận Gò Vấp
           </span>
         </div>
         <div className="text-gray-700 text-[15px] mb-1 flex justify-start">
           <span className="w-1/5">Ngày đăng:</span>
-          <span className="ml-1">Sunday, 13:42 20/07/2025</span>
+          <span className="ml-1">Chủ nhật, 13:42 20/07/2025</span>
         </div>
         <div className="text-gray-700 text-[15px] mb-1 flex justify-start">
           <span className="w-1/5">Hết hạn:</span>
-          <span className="ml-1">Wednesday, 13:42 30/07/2025</span>
+          <span className="ml-1">Thứ tư, 13:42 30/07/2025</span>
         </div>
-        <div className="mt-2 text-sm text-gray-500">Updated: 1 hour ago</div>
+        <div className="mt-2 text-sm text-gray-500">Cập nhật: 1 giờ trước</div>
 
         <hr className="my-5 text-gray-300" />
 
-        <h2 className="mb-2 text-lg font-bold text-gray-800">Description</h2>
+        <h2 className="mb-2 text-lg font-bold text-gray-800">Mô tả</h2>
         <ul className="list-disc pl-5 space-y-1 text-gray-700 text-[15px]">
+          <li>Phòng mới xây, sạch sẽ, đầy đủ nội thất, có ban công, cửa sổ.</li>
+          <li>Chỉ 3.5 triệu/phòng (2-3 người).</li>
           <li>
-            Brand new, clean room with full furniture, balcony, and window.
-          </li>
-          <li>Only 3.5M/room (2-3 people).</li>
-          <li>
-            Electricity: 3,800 VND/kWh, Water: 100,000 VND/person/month, Service
-            fee: 200,000 VND/room (3rd person +50,000 VND).
+            Điện: 3.800đ/kWh, Nước: 100.000đ/người/tháng, Phí dịch vụ:
+            200.000đ/phòng (người thứ 3 +50.000đ).
           </li>
           <li>
-            Great location near Emart, market, all amenities, wide alley for
-            trucks, absolutely secure area.
+            Vị trí thuận tiện gần Emart, chợ, đầy đủ tiện ích, hẻm xe tải, khu
+            vực an ninh tuyệt đối.
           </li>
           <li>
-            Fully furnished: balcony, window, mezzanine, fan, air conditioner,
-            fridge, sofa, desk, shoe rack, bookshelf, wardrobe, shared washing
-            machine, drying yard, kitchen, parking.
+            Đầy đủ nội thất: ban công, cửa sổ, gác lửng, quạt, máy lạnh, tủ
+            lạnh, sofa, bàn làm việc, kệ giày, kệ sách, tủ quần áo, máy giặt
+            chung, sân phơi, bếp, chỗ để xe.
           </li>
-          <li>Clean, airy space – free cleaning service included.</li>
+          <li>Không gian sạch sẽ, thoáng mát – miễn phí dọn vệ sinh.</li>
           <li>
-            24/7 camera, fingerprint lock, flexible hours, no landlord living on
-            site, absolute security.
+            Camera 24/7, khóa vân tay, giờ giấc tự do, không chung chủ, an ninh
+            tuyệt đối.
           </li>
-          <li>Address: 171/14/18 Nguyen Tu Gian, Ward 12, Go Vap</li>
-          <li>Contact: 0906.646.585 (Thao)</li>
+          <li>Địa chỉ: 171/14/18 Nguyễn Tư Giản, Phường 12, Gò Vấp</li>
+          <li>Liên hệ: 0906.646.585 (Thảo)</li>
         </ul>
 
         {/* <Convenient /> */}

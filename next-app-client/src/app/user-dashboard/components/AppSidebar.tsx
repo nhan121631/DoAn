@@ -106,7 +106,9 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
                 <ImProfile />
               </span>
             ),
-            label: <Link href="/user-dashboard/profile">Profile</Link>,
+            label: (
+              <Link href="/user-dashboard/profile">Thông tin cá nhân</Link>
+            ),
           },
           {
             key: "2",
@@ -123,7 +125,7 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
               </span>
             ),
             label: (
-              <Link href="/user-dashboard/my-contracts">My Contracts</Link>
+              <Link href="/user-dashboard/my-contracts">Hợp đồng của tôi</Link>
             ),
           },
           {
@@ -141,7 +143,7 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
               </span>
             ),
             label: (
-              <Link href="/user-dashboard/rental-history">Rental History</Link>
+              <Link href="/user-dashboard/rental-history">Lịch sử thuê</Link>
             ),
           },
 
@@ -160,7 +162,9 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
               </span>
             ),
             label: (
-              <Link href="/user-dashboard/request-status">Request Status</Link>
+              <Link href="/user-dashboard/request-status">
+                Trạng thái yêu cầu
+              </Link>
             ),
           },
           {
@@ -179,7 +183,7 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
             ),
             label: (
               <Link href="/user-dashboard/favorited-rooms">
-                Favorited Rooms
+                Phòng đã yêu thích
               </Link>
             ),
           },
@@ -197,11 +201,7 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
                 <TeamOutlined />
               </span>
             ),
-            label: (
-              <Link href="/user-dashboard/residents">
-                Residents
-              </Link>
-            ),
+            label: <Link href="/user-dashboard/residents">Tạm trú</Link>,
           },
           {
             key: "7",
@@ -218,9 +218,7 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
               </span>
             ),
             label: (
-              <Link href="/user-dashboard/change-password">
-                Change Password
-              </Link>
+              <Link href="/user-dashboard/change-password">Đổi mật khẩu</Link>
             ),
           },
           {
@@ -237,7 +235,7 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
                 <MdOutlineMessage />
               </span>
             ),
-            label: <Link href="/user-dashboard/message">Message</Link>,
+            label: <Link href="/user-dashboard/message">Tin nhắn</Link>,
           },
         ]}
       />

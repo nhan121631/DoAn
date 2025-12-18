@@ -21,11 +21,11 @@ interface ILoginInputs {
 
 const schema = yup
   .object({
-    username: yup.string().required("Please enter phone number or email"),
+    username: yup.string().required("Hãy nhập tên đăng nhập."),
     password: yup
       .string()
-      .min(6, "Password must be at least 6 characters.")
-      .required("Please enter your password."),
+      .min(6, "Mật khẩu phải có ít nhất 6 ký tự.")
+      .required("Hãy nhập mật khẩu."),
   })
   .required();
 
@@ -112,7 +112,7 @@ export default function AuthForms({ csrfToken }: { csrfToken?: string }) {
       });
 
       if (!res?.error) {
-        setMessageState({ type: "success", content: "Login successful!" });
+        setMessageState({ type: "success", content: "Đăng nhập thành công!" });
         // useEffect sẽ xử lý redirect khi session được cập nhật
       } else {
         setMessageState({ type: "error", content: res.error });
@@ -120,7 +120,7 @@ export default function AuthForms({ csrfToken }: { csrfToken?: string }) {
     } catch (error: any) {
       setMessageState({
         type: "error",
-        content: error?.message || "Login failed. Please try again.",
+        content: error?.message || "Đăng nhập thất bại. Vui lòng thử lại.",
       });
     }
   };
@@ -137,7 +137,7 @@ export default function AuthForms({ csrfToken }: { csrfToken?: string }) {
       if (!res?.error) {
         setMessageState({
           type: "success",
-          content: "Google login successful!",
+          content: "Đăng nhập Google thành công!",
         });
         // useEffect sẽ xử lý redirect
       } else {
@@ -146,7 +146,7 @@ export default function AuthForms({ csrfToken }: { csrfToken?: string }) {
     } catch (error: any) {
       setMessageState({
         type: "error",
-        content: error?.message || "Google login failed. Please try again.",
+        content: error?.message || "Đăng nhập Google thất bại. Vui lòng thử lại.",
       });
     }
   };
@@ -171,7 +171,7 @@ export default function AuthForms({ csrfToken }: { csrfToken?: string }) {
               : "text-black hover:text-pink-50"
           }`}
         >
-          Log in
+          Đăng nhập
         </Link>
         <Link
           href="/auth/register"
@@ -181,7 +181,7 @@ export default function AuthForms({ csrfToken }: { csrfToken?: string }) {
               : "text-black hover:text-pink-50"
           }`}
         >
-          Create a new account
+          Tạo tài khoản mới
         </Link>
       </div>
 
@@ -193,7 +193,7 @@ export default function AuthForms({ csrfToken }: { csrfToken?: string }) {
           <div className="mb-4">
             <input
               type="text"
-              placeholder="Username"
+              placeholder="Tên đăng nhập"
               className={`w-full p-3 border ${
                 errors.username ? "border-red-500" : "border-gray-300"
               } rounded-md focus:outline-none focus:ring-2 focus:ring-white text-white`}
@@ -212,7 +212,7 @@ export default function AuthForms({ csrfToken }: { csrfToken?: string }) {
             <div className="relative">
               <input
                 type={showLoginPassword ? "text" : "password"}
-                placeholder="Password"
+                placeholder="Mật khẩu"
                 className={`w-full p-3 border ${
                   errors.password ? "border-red-500" : "border-gray-300"
                 } rounded-md focus:outline-none focus:ring-2 focus:ring-white text-white pr-10`}
@@ -239,7 +239,7 @@ export default function AuthForms({ csrfToken }: { csrfToken?: string }) {
             type="submit"
             className="w-full py-3 text-lg font-semibold text-black bg-white rounded-md hover:bg-gray-200"
           >
-            Log in
+            Đăng nhập
           </button>
 
           {/* Google Login */}
@@ -267,7 +267,7 @@ export default function AuthForms({ csrfToken }: { csrfToken?: string }) {
             href="/auth/forgot-password"
             className="text-sm text-gray-200 hover:underline"
           >
-            Forgot your password?
+            Quên mật khẩu?
           </Link>
         </div>
       )}
@@ -275,15 +275,15 @@ export default function AuthForms({ csrfToken }: { csrfToken?: string }) {
       {/* Terms */}
       <div className="mt-8 text-xs text-center text-gray-400">
         <p>
-          By logging in or creating an account, you agree to our{" "}
+          Bằng cách đăng nhập hoặc tạo tài khoản, bạn đồng ý với các điều khoản của chúng tôi{" "}
           <Link href="/terms" className="text-white hover:underline">
-            terms of service
+            điều khoản dịch vụ
           </Link>{" "}
-          as well as{" "}
+          cũng như{" "}
           <Link href="/privacy" className="text-white hover:underline">
-            privacy policy
+            chính sách bảo mật
           </Link>{" "}
-          of ours
+          của chúng tôi
         </p>
       </div>
     </div>

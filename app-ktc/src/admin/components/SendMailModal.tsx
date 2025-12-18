@@ -68,7 +68,7 @@ function SendMailModal({
             }
           }}
         >
-          <Form.Item label="Từ">
+          <Form.Item label="Đến">
             <Input value={landlordEmail} disabled />
           </Form.Item>
           <Form.Item
