@@ -348,7 +348,7 @@ const MonthlyTransactionChart = ({
               <Bar
                 dataKey="Nạp VNPAY"
                 fill="#3B82F6"
-                name="Nạp VNPAY"
+                name="Nạp vào ví"
                 radius={[2, 2, 0, 0]}
               />
 
