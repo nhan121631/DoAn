@@ -1,12 +1,1 @@
 Timestamp,Room Title,Status,Reason
-
-"2025-11-30 14:35:54","Room Test","REJECTED","Ảnh 696bc4b9-58ec-46bf-a239-35328418ba76_ta%CC%89i_xu%C3%B4%CC%81ng_n1ezg9.webp chứa nội dung bạo lực; phản cảm"
-"2025-11-30 15:19:51","Room Test","REJECTED","Lỗi: Không tìm thấy MODEL_ACCESS_KEY trong file .env"
-"2025-11-30 15:21:48","Room Tests","APPROVED","Đạt tiêu chuẩn duyệt"
-"2025-11-30 15:33:03","Room Tests nguu","APPROVED","Đạt tiêu chuẩn duyệt"
-"2025-11-30 15:42:03","Room Tests nguuu","REJECTED","Tiêu đề/mô tả chứa từ khóa không phù hợp: 'nguuu'; Vui lòng sử dụng tiêu đề nghiêm túc cho phòng trọ"
-"2025-11-30 15:42:50","Room Tests","REJECTED","Tiêu đề/mô tả chứa từ khóa không phù hợp: 'test'; Vui lòng sử dụng tiêu đề nghiêm túc cho phòng trọ"
-"2025-11-30 15:54:03","phòng trọ ở ngũ hành sơn đẹp","REJECTED","Mô tả chứa từ ngữ không phù hợp: 'địt me'"
-"2025-11-30 15:54:39","phòng trọ ở ngũ hành sơn đẹp","APPROVED","Đạt tiêu chuẩn duyệt"
-"2025-11-30 15:55:32","phòng trọ ở ngũ hành sơn đẹp","REJECTED","Ảnh '4024c5aa-aba2-4ed7-9d52-2684ac6dcb11_ta%CC%89i_xu%C3%B4%CC%81ng_e2ddkc.webp' chứa nội dung bạo lực"
-"2025-11-30 16:07:54","phòng trọ ở ngũ hành sơn đẹp lắm","REJECTED","Hình ảnh chứa nội dung bạo lực; phản cảm"
