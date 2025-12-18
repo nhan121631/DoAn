@@ -40,13 +40,13 @@ const CompletionModal: React.FC<CompletionModalProps> = ({
     beforeUpload: (file: File) => {
       const isImage = file.type.startsWith('image/');
       if (!isImage) {
-        message.error('You can only upload image files!');
+        message.error('Bạn chỉ có thể tải lên các tệp hình ảnh!');
         return false;
       }
       
       const isLt5M = file.size / 1024 / 1024 < 5;
       if (!isLt5M) {
-        message.error('Image must smaller than 5MB!');
+        message.error('Ảnh phải nhỏ hơn 5MB!');
         return false;
       }
 
@@ -63,7 +63,7 @@ const CompletionModal: React.FC<CompletionModalProps> = ({
 
   return (
     <Modal
-      title="Complete Request"
+      title="Hoàn thành yêu cầu"
       open={open}
       onCancel={handleCancel}
       footer={null}
@@ -76,22 +76,22 @@ const CompletionModal: React.FC<CompletionModalProps> = ({
         onFinish={handleFinish}
       >
         <Form.Item
-          label="Upload Completion Image (Optional)"
+          label="Tải lên ảnh hoàn thành (Tùy chọn)"
           name="image"
         >
           <Upload {...uploadProps}>
             <Button icon={<UploadOutlined />}>
-              Select Image
+              Chọn ảnh
             </Button>
           </Upload>
         </Form.Item>
 
         <Form.Item className="mb-0 text-right">
           <Button onClick={handleCancel} className="mr-2">
-            Cancel
+            Hủy
           </Button>
           <Button type="primary" htmlType="submit" loading={loading}>
-            Complete Request
+            Hoàn thành yêu cầu
           </Button>
         </Form.Item>
       </Form>

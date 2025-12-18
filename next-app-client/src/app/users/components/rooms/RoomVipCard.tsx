@@ -44,7 +44,7 @@ export default function RoomVipCard({
   const handleCompare = () => {
     if (items.length >= 2) {
       messageApi.warning({
-        content: "You can only compare up to 2 rooms.",
+        content: "Bạn chỉ có thể so sánh tối đa 2 phòng cùng lúc.",
         duration: 1.5,
       });
       return;
@@ -56,11 +56,11 @@ export default function RoomVipCard({
     const now = new Date();
     const date = new Date(dateString);
     const diff = Math.floor((now.getTime() - date.getTime()) / 1000);
-    if (diff < 0) return "Just now";
-    if (diff < 60) return `${diff} seconds ago`;
-    if (diff < 3600) return `${Math.floor(diff / 60)} minutes ago`;
-    if (diff < 86400) return `${Math.floor(diff / 3600)} hours ago`;
-    return `${Math.floor(diff / 86400)} days ago`;
+    if (diff < 0) return "Vừa xong";
+    if (diff < 60) return `${diff} giây trước`;
+    if (diff < 3600) return `${Math.floor(diff / 60)} phút trước`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)} giờ trước`;
+    return `${Math.floor(diff / 86400)} ngày trước`;
   }
 
   const conveniences = (room.conveniences || []).map((c) =>
@@ -447,7 +447,7 @@ export default function RoomVipCard({
               <div className="space-y-1.5 sm:space-y-2 pt-1.5 sm:pt-2 border-t border-slate-100">
                 <div>
                   <span className="text-sm text-slate-600">
-                    Price per month
+                    Giá thuê/tháng:
                   </span>
                   <div className="flex items-baseline gap-1">
                     <span className="text-xl font-bold sm:text-2xl text-emerald-600">
@@ -467,7 +467,7 @@ export default function RoomVipCard({
                     aria-label="View room details"
                     className="flex-1 px-2.5 sm:px-3 py-1.5 sm:py-2 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white text-sm font-semibold rounded-lg sm:rounded-xl transition-all duration-300 hover:shadow-lg hover:scale-105 active:scale-95 shadow-orange-500/25"
                   >
-                    View room
+                    Xem phòng
                   </button>
 
                   <button
@@ -492,7 +492,7 @@ export default function RoomVipCard({
                           className="w-4 h-4"
                           aria-hidden="true"
                         />
-                        <span className="sr-only">Added to compare</span>
+                        <span className="sr-only">Đã thêm vào so sánh</span>
                       </>
                     ) : (
                       <>
@@ -500,7 +500,7 @@ export default function RoomVipCard({
                           className="w-4 h-4"
                           aria-hidden="true"
                         />
-                        <span className="sr-only">Add to compare</span>
+                        <span className="sr-only">Thêm vào so sánh</span>
                       </>
                     )}
                   </button>
@@ -538,7 +538,7 @@ export default function RoomVipCard({
               <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse flex-shrink-0"></div>
               <div className="flex-1 min-w-0">
                 <div className="text-xs font-medium text-slate-500">
-                  Contact
+                  Liên hệ chủ nhà:
                 </div>
                 <div className="text-sm font-semibold truncate text-slate-800">
                   {(() => {

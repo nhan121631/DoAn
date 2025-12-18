@@ -21,7 +21,7 @@ const InvoiceExportFormContent: React.FC<{
   useEffect(() => {
     if (contractToExport) {
       form.setFieldsValue({
-        invoiceName: `Invoice for ${contractToExport.monthlyRent} - ${contractToExport.tenantName}`,
+        invoiceName: `Hóa đơn cho ${contractToExport.monthlyRent} - ${contractToExport.tenantName}`,
       });
     } else {
       form.resetFields();
@@ -40,49 +40,60 @@ const InvoiceExportFormContent: React.FC<{
       initialValues={{ installationCost: 0 }} // Mặc định chi phí lắp đặt là 0
     >
       <Form.Item
-        label="Invoice Name"
+        label="Tên hóa đơn"
         name="invoiceName"
-        rules={[{ required: true, message: "Please enter invoice name!" }]}
+        rules={[{ required: true, message: "Vui lòng nhập tên hóa đơn!" }]}
       >
-        <Input placeholder="e.g., Invoice for Contract No. 001" />
+        <Input placeholder="ví dụ: Hóa đơn cho hợp đồng số 001" />
       </Form.Item>
 
       {contractToExport && (
         <>
-          <Form.Item label="Contract Name">
+          <Form.Item label="Tên hợp đồng">
             <Input value={contractToExport.contractName} disabled />
           </Form.Item>
-          <Form.Item label="Room">
+          <Form.Item label="Phòng">
             <Input value={contractToExport.roomTitle} disabled />
           </Form.Item>
-          <Form.Item label="Room Price">
-            <Input value={contractToExport.monthlyRent.toLocaleString("en-US") + " VND/month"} disabled />
+          <Form.Item label="Giá phòng">
+            <Input
+              value={
+                contractToExport.monthlyRent.toLocaleString("en-US") +
+                " VND/tháng"
+              }
+              disabled
+            />
           </Form.Item>
-          <Form.Item label="Lease Start Date">
+          <Form.Item label="Ngày bắt đầu thuê">
             <Input value={contractToExport.startDate} disabled />
           </Form.Item>
-          <Form.Item label="Duration">
-            <Input value={`${contractToExport.startDate} - ${contractToExport.endDate}`} disabled />
+          <Form.Item label="Thời hạn hợp đồng">
+            <Input
+              value={`${contractToExport.startDate} - ${contractToExport.endDate}`}
+              disabled
+            />
           </Form.Item>
-          <Form.Item label="Tenant Name">
+          <Form.Item label="Tên người thuê">
             <Input value={contractToExport.tenantName} disabled />
           </Form.Item>
         </>
       )}
 
       <Form.Item
-        label="Installation Cost (Optional)"
+        label="Chi phí lắp đặt (Tùy chọn)"
         name="installationCost"
-        rules={[{ pattern: /^\d+(\.\d{1,2})?$/, message: 'Please enter a valid number!' }]}
+        rules={[
+          { pattern: /^\d+(\.\d{1,2})?$/, message: "Vui lòng nhập số hợp lệ!" },
+        ]}
       >
-        <Input type="number" placeholder="e.g., 500000" />
+        <Input type="number" placeholder="ví dụ: 500000" />
       </Form.Item>
 
       <Form.Item>
         <div className="flex justify-end gap-2 mt-4">
-          <Button onClick={onCancel}>Cancel</Button>
+          <Button onClick={onCancel}>Hủy</Button>
           <Button type="primary" htmlType="submit">
-            Export Invoice
+            Xuất hóa đơn
           </Button>
         </div>
       </Form.Item>
@@ -96,10 +107,9 @@ const InvoiceExportModal: React.FC<InvoiceExportModalProps> = ({
   onSubmit,
   contractToExport,
 }) => {
-
   return (
     <Modal
-      title="Export Checkout Invoice"
+      title="Xuất hóa đơn thanh toán"
       open={open}
       onCancel={onCancel}
       footer={null}

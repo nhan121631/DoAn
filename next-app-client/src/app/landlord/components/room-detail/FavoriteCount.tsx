@@ -21,7 +21,7 @@ export default function FavoriteCount({ roomId }: { roomId: string }) {
   return (
     <span className="flex items-center font-semibold text-red-500 dark:text-red-400">
       {/* <FaHeart className="mr-1" /> {favoriteCount} like */}
-      <FaHeart className="mr-1" /> {favoriteCount} Favorite
+      <FaHeart className="mr-1" /> {favoriteCount} Yêu thích
       {favoriteCount > 1 ? "s" : ""}
     </span>
   );

@@ -21,7 +21,7 @@ export default function StatusButton({
     const newStatus = status === 0 ? 1 : 0;
 
     setLoading(true);
-    
+
     startTransition(() => {
       updateRequestStatus(id, newStatus)
         .then(() => {
@@ -37,10 +37,12 @@ export default function StatusButton({
 
   return (
     <Popconfirm
-      title={status === 0 ? "Mark as completed?" : "Mark as not processed?"}
+      title={
+        status === 0 ? "Đánh dấu là hoàn thành?" : "Đánh dấu là chưa xử lý?"
+      }
       onConfirm={handleStatusChange}
-      okText="Yes"
-      cancelText="No"
+      okText="Có"
+      cancelText="Không"
     >
       {contextHolder}
       <Button
@@ -48,7 +50,7 @@ export default function StatusButton({
         size="small"
         loading={loading}
       >
-        {status === 0 ? "Not processed" : "Completed"}
+        {status === 0 ? "Chưa xử lý" : "Hoàn thành"}
       </Button>
     </Popconfirm>
   );

@@ -40,7 +40,7 @@ export default function OpenImages({
               isActive ? "bg-white text-black" : "bg-transparent text-white"
             }`}
           >
-            Images
+            Ảnh
           </div>
           <div
             onClick={() => setIsActive(false)}
@@ -48,7 +48,7 @@ export default function OpenImages({
               isActive ? "bg-transparent text-white" : "bg-white text-black"
             }`}
           >
-            Map
+            Bản đồ
           </div>
           <button
             className="absolute top-2 right-2 text-white rounded-xl p-2 hover:text-gray-400"

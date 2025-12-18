@@ -112,11 +112,15 @@ export default function BookingForm({
       );
 
       await createBooking(bookingData);
-      await createBookingNotification(roomId, session?.user.id, "You have a new booking from a tenant for room: " + roomTitle);
+      await createBookingNotification(
+        roomId,
+        session?.user.id,
+        "Bạn có một đặt phòng mới từ người thuê cho phòng: " + roomTitle
+      );
 
       // Hiển thị thông báo thành công
       messageApi.success({
-        content: "Booking created successfully!",
+        content: "Đặt phòng thành công!",
         duration: 2,
       });
 
@@ -131,7 +135,7 @@ export default function BookingForm({
     } catch (error: unknown) {
       console.error("BookingForm - Error occurred:", error);
 
-      let errorMessage = "Failed to create booking";
+      let errorMessage = "Đặt phòng thất bại. Vui lòng thử lại.";
 
       if (error instanceof Error) {
         console.error("BookingForm - Error message:", error.message);
@@ -166,14 +170,14 @@ export default function BookingForm({
         className="w-full font-semibold bg-blue-600 border-blue-600 hover:bg-blue-700"
         onClick={showModal}
       >
-        Book This Room
+        Đặt phòng ngay
       </Button>
 
       <Modal
         title={
           <div className="flex items-center gap-2">
             <CalendarOutlined className="text-blue-600" />
-            <span className="text-lg font-semibold">Book Room</span>
+            <span className="text-lg font-semibold">Đặt phòng</span>
           </div>
         }
         open={isModalVisible}
@@ -185,7 +189,7 @@ export default function BookingForm({
         <div className="p-4 mb-4 rounded-lg bg-gray-50">
           <h3 className="mb-2 font-semibold text-gray-800">{roomTitle}</h3>
           <p className="font-bold text-green-600">
-            {priceMonth?.toLocaleString("vi-VN")} VND/month
+            {priceMonth?.toLocaleString("vi-VN")} VND/tháng
           </p>
         </div>
         {isModalVisible && (
@@ -201,16 +205,18 @@ export default function BookingForm({
             <div className="p-3 mb-4 border border-blue-200 rounded-lg bg-blue-50">
               <div className="flex items-center gap-2 mb-2">
                 <CalendarOutlined className="text-blue-600" />
-                <span className="font-medium text-gray-700">Rental Period</span>
+                <span className="font-medium text-gray-700">
+                  Thời gian thuê
+                </span>
               </div>
               <div className="text-sm text-gray-600">
                 <p>
-                  <strong>Start Date:</strong> {dayjs().format("DD/MM/YYYY")}{" "}
-                  (Today)
+                  <strong>Ngày bắt đầu:</strong> {dayjs().format("DD/MM/YYYY")}{" "}
+                  (Hôm nay)
                 </p>
                 {rentalEndDate && (
                   <p>
-                    <strong>End Date:</strong>{" "}
+                    <strong>Ngày kết thúc:</strong>{" "}
                     {rentalEndDate.format("DD/MM/YYYY")}
                   </p>
                 )}
@@ -219,7 +225,7 @@ export default function BookingForm({
 
             <Form.Item
               name="rentalMonths"
-              label="Rental Duration (Months)"
+              label="Thời gian thuê (Tháng)"
               rules={[
                 {
                   type: "number",
@@ -230,13 +236,13 @@ export default function BookingForm({
             >
               <Select
                 className="w-full"
-                placeholder="Select number of months (Default: 1 month)"
+                placeholder="Chọn số tháng (Mặc định: 1 tháng)"
                 onChange={(value) => calculateEndDate(value)}
                 suffixIcon={<ClockCircleOutlined />}
               >
                 {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((month) => (
                   <Select.Option key={month} value={month}>
-                    {month} {month === 1 ? "Month" : "Months"}
+                    {month} {month === 1 ? "Tháng" : "Tháng"}
                   </Select.Option>
                 ))}
               </Select>
@@ -246,7 +252,9 @@ export default function BookingForm({
               <div className="p-3 mb-4 border border-green-200 rounded-lg bg-green-50">
                 <div className="flex items-center gap-2 mb-1">
                   <CalendarOutlined className="text-green-600" />
-                  <span className="font-medium text-gray-700">Total Cost</span>
+                  <span className="font-medium text-gray-700">
+                    Tổng chi phí
+                  </span>
                 </div>
                 <p className="text-lg font-bold text-green-600">
                   {(
@@ -255,21 +263,24 @@ export default function BookingForm({
                   VND
                 </p>
                 <p className="text-sm text-gray-600">
-                  {form.getFieldValue("rentalMonths") || 1} months ×{" "}
-                  {priceMonth.toLocaleString("vi-VN")} VND/month
+                  {form.getFieldValue("rentalMonths") || 1} tháng ×{" "}
+                  {priceMonth.toLocaleString("vi-VN")} VND/tháng
                 </p>
               </div>
             )}
 
             <Form.Item
               name="tenantCount"
-              label="Number of Tenants"
+              label="Số lượng người thuê"
               rules={[
-                { required: true, message: "Please enter number of tenants" },
+                {
+                  required: true,
+                  message: "Vui lòng nhập số lượng người thuê",
+                },
                 {
                   type: "number",
                   min: 1,
-                  message: "At least 1 tenant required",
+                  message: "Ít nhất 1 người thuê",
                 },
               ]}
             >
@@ -278,13 +289,13 @@ export default function BookingForm({
                 min={1}
                 max={10}
                 prefix={<UserOutlined />}
-                placeholder="Enter number of tenants"
+                placeholder="Nhập số lượng người thuê"
               />
             </Form.Item>
 
             <div className="flex gap-3 mt-6">
               <Button onClick={handleCancel} className="flex-1">
-                Cancel
+                Hủy
               </Button>
               <Button
                 type="primary"
@@ -292,7 +303,7 @@ export default function BookingForm({
                 loading={loading}
                 className="flex-1 bg-blue-600 hover:bg-blue-700"
               >
-                Confirm Booking
+                Xác nhận đặt phòng
               </Button>
             </div>
           </Form>
@@ -301,25 +312,25 @@ export default function BookingForm({
 
       {/* Modal xác nhận chuyển trang */}
       <Modal
-        title="Booking Successful!"
+        title="Đặt phòng thành công!"
         open={isConfirmModalVisible}
         onCancel={handleConfirmModalClose}
         footer={[
           <Button key="stay" onClick={handleStayHere}>
-            Stay Here
+            Ở lại đây
           </Button>,
           <Button
             key="history"
             type="primary"
             onClick={handleViewRentalHistory}
           >
-            View Rental History
+            Xem Lịch Sử Thuê
           </Button>,
         ]}
         centered
         width={400}
       >
-        <p>Would you like to view your rental history or stay on this page?</p>
+        <p>Bạn muốn xem lịch sử thuê hay ở lại trang này?</p>
       </Modal>
     </>
   );

@@ -68,11 +68,13 @@ export default function Banner() {
         <div className="z-10 max-w-3xl mx-auto text-center">
           <h1 className="mb-4 text-4xl font-bold">Ants</h1>
           <div className="mb-2 text-2xl font-semibold">
-            Find Your Perfect Room, Anytime, Anywhere
+            Tìm phòng, căn hộ và nhà cho sinh viên và người lao động
           </div>
           <div className="mb-2 text-gray-200">
-            All-in-one rental solution for students and workers. Search,
-            compare, and move in – effortlessly
+            Nền tảng cho thuê nhà hàng đầu dành cho sinh viên và người lao động.
+            Tìm kiếm phòng, căn hộ và nhà với giá cả phải chăng, tiện nghi hiện
+            đại và vị trí thuận tiện. Đặt phòng dễ dàng, nhanh chóng và an toàn
+            với Ants ngay hôm nay!
           </div>
         </div>
 

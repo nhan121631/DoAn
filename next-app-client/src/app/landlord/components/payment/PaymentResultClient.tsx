@@ -55,7 +55,7 @@ export default function PaymentResultClient() {
           mappedData = {
             transactionStatus: {
               success: false,
-              message: raw.message || "Payment failed",
+              message: raw.message || "Thanh toán không thành công",
             },
             vnp_TxnRef: "",
             amount: 0,
@@ -64,7 +64,7 @@ export default function PaymentResultClient() {
         } else {
           const tx = raw.transaction;
           mappedData = {
-            transactionStatus: { success: true, message: "Payment successful" },
+            transactionStatus: { success: true, message: "Thanh toán thành công" },
             vnp_TxnRef: tx.transactionCode,
             amount: tx.amount,
             vnp_OrderInfo: tx.description || "",
@@ -75,7 +75,7 @@ export default function PaymentResultClient() {
 
         setPaymentData(mappedData);
       } catch (err) {
-        setError("An error occurred while processing the payment result");
+        setError("Đã xảy ra lỗi trong quá trình xử lý kết quả thanh toán");
         console.error("Payment confirm error:", err);
       } finally {
         setLoading(false);
@@ -85,7 +85,7 @@ export default function PaymentResultClient() {
     if (searchParams?.toString()) {
       fetchPaymentResult();
     } else {
-      setError("No payment information found");
+      setError("Không tìm thấy thông tin thanh toán");
       setLoading(false);
     }
   }, [searchParams]);
@@ -94,7 +94,7 @@ export default function PaymentResultClient() {
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Processing payment result...</p>
+          <p className="mt-4 text-gray-600">Đang xử lý kết quả thanh toán...</p>
         </div>
       </div>
     );
@@ -107,14 +107,14 @@ export default function PaymentResultClient() {
           <div className="text-center">
             <div className="text-red-500 text-6xl mb-4">❌</div>
             <h2 className="text-2xl font-bold text-gray-900 mb-2">
-              An error occurred
+              Đã xảy ra lỗi
             </h2>
             <p className="text-gray-600 mb-6">{error}</p>
             <a
               href="/landlord/add-funds"
               className="inline-block px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
             >
-              ← Back to Add Funds
+              ← Quay lại trang Nạp tiền
             </a>
           </div>
         </div>
@@ -126,7 +126,7 @@ export default function PaymentResultClient() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
-          <p className="text-gray-600">No payment data found</p>
+          <p className="text-gray-600">Không tìm thấy thông tin thanh toán</p>
         </div>
       </div>
     );

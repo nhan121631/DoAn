@@ -185,7 +185,7 @@ export default function ManageChatPage() {
       const isAdmin = adminIds.has(user.id);
       if (isAdmin && !isLandlord) {
         // Simple UI feedback; replace with message API if available
-        alert("Only landlords can start a conversation with Admin.");
+        alert("Chỉ chủ nhà mới có thể trò chuyện với quản trị viên.");
         return;
       }
 
@@ -202,7 +202,7 @@ export default function ManageChatPage() {
       try {
         await markConversationAsRead(landlordId, user.id);
         console.log(
-          `ManageChat: Successfully marked conversation with ${user.id} as read`
+          `ManageChat: Đã đánh dấu cuộc trò chuyện với ${user.id} là đã đọc`
         );
 
         // Remove protection after a delay to allow Firebase to propagate
@@ -211,7 +211,7 @@ export default function ManageChatPage() {
         }, 2000); // 2 seconds should be enough for Firebase to sync
       } catch (error) {
         console.error(
-          "ManageChat: Failed to mark conversation as read:",
+          "ManageChat: Không thể đánh dấu cuộc trò chuyện là đã đọc:",
           error
         );
         // Remove protection and revert the optimistic update if marking as read failed

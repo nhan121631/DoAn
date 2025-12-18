@@ -140,13 +140,13 @@ export default function ChartsTemplate() {
 
       if (startDate && endDate) {
         if (endDate.isBefore(startDate)) {
-          setDateError("End date must be after start date.");
+          setDateError("Ngày kết thúc phải sau ngày bắt đầu.");
           return;
         }
         // Tính số tháng giữa 2 mốc
         const monthDiff = endDate.diff(startDate, "month") + 1;
         if (monthDiff > 12) {
-          setDateError("You can only select up to 12 months.");
+          setDateError("Bạn chỉ có thể chọn tối đa 12 tháng.");
           return;
         }
         try {
@@ -169,8 +169,8 @@ export default function ChartsTemplate() {
           );
           setDataRevenueRooms(resRevenue);
         } catch (error) {
-          console.error("Error fetching maintenance statistics:", error);
-          setDateError("Error loading statistics data.");
+          console.error("Error fetching thống kê bảo trì:", error);
+          setDateError("Lỗi khi tải dữ liệu thống kê.");
         }
       } else {
         // Nếu không có startDate/endDate, gọi API mặc định (12 tháng gần nhất)
@@ -183,10 +183,7 @@ export default function ChartsTemplate() {
           const restRevenue = await getLandlordRevenueStatistics();
           setDataRevenueRooms(restRevenue);
         } catch (error) {
-          console.error(
-            "Error fetching default maintenance statistics:",
-            error
-          );
+          console.error("Error fetching thống kê bảo trì mặc định:", error);
         }
       }
     };
@@ -240,23 +237,25 @@ export default function ChartsTemplate() {
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3 dark:text-white dark:bg-[#001529]">
           <div>
             <h1 className="text-2xl font-bold tracking-tight">
-              Statistics Dashboard
+              Bảng điều khiển thống kê
             </h1>
-            <p className="text-slate-500">Overview of key metrics and trends</p>
+            <p className="text-slate-500">
+              Tổng quan về các chỉ số và xu hướng chính
+            </p>
           </div>
           <div className="flex items-center gap-2">
             {/* Form startDate và endDate antd */}
             <div className="flex items-center gap-2">
               <DatePicker
                 picker="month"
-                placeholder="Month start"
+                placeholder="Tháng bắt đầu"
                 value={startDate}
                 onChange={(date) => setStartDate(date)}
                 style={{ width: 140 }}
               />
               <DatePicker
                 picker="month"
-                placeholder="Month end"
+                placeholder="Tháng kết thúc"
                 value={endDate}
                 onChange={(date) => setEndDate(date)}
                 style={{ width: 140 }}
@@ -272,15 +271,15 @@ export default function ChartsTemplate() {
         <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <CardStatistics title="Total Rooms Posted" value={totalPostedRooms} />
           <CardStatistics
-            title="Total Rented Rooms"
+            title="Tổng phòng đã thuê"
             value={`${totalRentedRooms}`}
           />
           <CardStatistics
-            title="Total Viewed Rooms"
+            title="Tổng số view phòng"
             value={`${totalViewedRooms}`}
           />
           <CardStatistics
-            title="Total Favorited Rooms"
+            title="Tổng số phòng yêu thích"
             value={`${totalFavoritedRooms}`}
           />
         </div>
@@ -288,7 +287,7 @@ export default function ChartsTemplate() {
         {/* Charts Grid */}
         <div className="grid gap-6 lg:grid-cols-2">
           <ChartCard
-            title="Maintenance & Room Posting Fee (per Day)"
+            title="Phí bảo trì & đăng phòng (mỗi ngày)"
             icon={<PieChartIcon className="h-5 w-5 text-sky-500" />}
             // right={
             //   <span className="text-xs text-slate-500">Nguồn: mock data</span>
@@ -320,7 +319,7 @@ export default function ChartsTemplate() {
                   stroke="#0ea5e9"
                   strokeWidth={2}
                   dot={false}
-                  name="Maintenance Fee"
+                  name="Phí bảo trì"
                 />
                 <Line
                   yAxisId="right"
@@ -329,14 +328,14 @@ export default function ChartsTemplate() {
                   stroke="#07c53d"
                   strokeWidth={2}
                   dot={false}
-                  name="Post Room Fee"
+                  name="Phí đăng phòng"
                 />
               </LineChart>
             </ResponsiveContainer>
           </ChartCard>
 
           <ChartCard
-            title="Revenue"
+            title="Doanh thu"
             icon={<PieChartIcon className="h-5 w-5 text-amber-500" />}
           >
             <ResponsiveContainer width="100%" height="100%">
@@ -355,7 +354,7 @@ export default function ChartsTemplate() {
                 <Legend />
                 <Bar
                   dataKey="revenue"
-                  name="Revenue"
+                  name="Doanh thu"
                   fill="#8b5cf6"
                   radius={[6, 6, 0, 0]}
                 />

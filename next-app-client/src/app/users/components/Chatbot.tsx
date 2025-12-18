@@ -97,7 +97,7 @@ export default function Chatbot() {
   const [history, setHistory] = useSessionChatHistory([
     {
       role: "assistant",
-      text: "Hello! I'm Ants AI Assistant. I can help you find suitable rental rooms. What kind of room are you looking for?",
+      text: "Xin chào! Tôi là Trợ lý AI của Ants. Tôi có thể giúp bạn tìm phòng cho thuê phù hợp. Bạn đang tìm loại phòng nào?",
     },
   ]);
   const [input, setInput] = useState("");
@@ -163,7 +163,7 @@ export default function Chatbot() {
     const initialHistory = [
       {
         role: "assistant",
-        text: "Hello! I'm Ants AI Assistant. I can help you find suitable rental rooms. What kind of room are you looking for?",
+        text: "Xin chào! Tôi là Trợ lý AI của Ants. Tôi có thể giúp bạn tìm phòng cho thuê phù hợp. Bạn đang tìm loại phòng nào?",
       },
     ];
     setHistory(initialHistory);
@@ -203,7 +203,7 @@ export default function Chatbot() {
           <div className="px-4 py-3 border-b border-gray-200 bg-blue-600 text-white rounded-t-xl flex justify-between items-center">
             <span className="font-semibold flex gap-2 items-center  ">
               <IoMdChatboxes />
-              Ants AI Assistant
+              Trợ lý AI Ants
             </span>
             <div className="flex gap-2">
               <button
@@ -310,7 +310,7 @@ export default function Chatbot() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Enter your message..."
+                placeholder="Nhập tin nhắn của bạn..."
                 className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
                 disabled={loading}
               />
@@ -323,10 +323,7 @@ export default function Chatbot() {
               </button>
             </div>
             <div className="text-xs text-gray-500 mt-2 text-center">
-              <p>
-                💡 Questions about rental rooms, prices, locations, or
-                amenities?
-              </p>
+              <p>Câu hỏi về tìm phòng cho thuê.</p>
             </div>
           </div>
         </div>

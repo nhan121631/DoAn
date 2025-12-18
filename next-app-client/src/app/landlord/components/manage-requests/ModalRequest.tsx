@@ -1,8 +1,8 @@
 "use client";
-import React from 'react';
-import { Modal, Descriptions, Tag } from 'antd';
-import { Requirement } from '@/types/types';
-import Image from 'next/image';
+import React from "react";
+import { Modal, Descriptions, Tag } from "antd";
+import { Requirement } from "@/types/types";
+import Image from "next/image";
 
 interface RequestDetailModalProps {
   open: boolean;
@@ -18,24 +18,24 @@ const RequestDetailModal: React.FC<RequestDetailModalProps> = ({
   if (!request) return null;
 
   // Debug log
-  console.log('Request imageUrl:', request.imageUrl);
+  console.log("Request imageUrl:", request.imageUrl);
 
   const getStatusTag = (status: number) => {
     switch (status) {
       case 0:
-        return <Tag color="blue">Not processed</Tag>;
+        return <Tag color="blue">Đang chờ</Tag>;
       case 1:
-        return <Tag color="green">Completed</Tag>;
+        return <Tag color="green">Hoàn thành</Tag>;
       case 2:
-        return <Tag color="red">Rejected</Tag>;
+        return <Tag color="red">Từ chối</Tag>;
       default:
-        return <Tag>Unknown</Tag>;
+        return <Tag>Không xác định</Tag>;
     }
   };
 
   const getImageUrl = (imageUrl?: string): string => {
-    if (!imageUrl) return '';
-    if (imageUrl.startsWith('http')) {
+    if (!imageUrl) return "";
+    if (imageUrl.startsWith("http")) {
       return imageUrl;
     }
     return `https://res.cloudinary.com${imageUrl}`;
@@ -51,7 +51,7 @@ const RequestDetailModal: React.FC<RequestDetailModalProps> = ({
 
   return (
     <Modal
-      title="Request Details"
+      title="Chi tiết yêu cầu"
       open={open}
       onCancel={onCancel}
       footer={null}
@@ -65,40 +65,48 @@ const RequestDetailModal: React.FC<RequestDetailModalProps> = ({
           size="middle"
           items={[
             {
-              key: 'roomName',
-              label: 'Room Name',
-              children: <span className="font-medium">{extendedRequest.roomTitle || 'N/A'}</span>,
+              key: "roomName",
+              label: "Tên phòng",
+              children: (
+                <span className="font-medium">
+                  {extendedRequest.roomTitle || "N/A"}
+                </span>
+              ),
             },
             {
-              key: 'customerName',
-              label: 'Customer Name',
-              children: extendedRequest.userName || 'N/A',
+              key: "customerName",
+              label: "Tên khách hàng",
+              children: extendedRequest.userName || "N/A",
             },
             {
-              key: 'email',
-              label: 'Email',
-              children: extendedRequest.email || 'N/A',
+              key: "email",
+              label: "Email",
+              children: extendedRequest.email || "N/A",
             },
             {
-              key: 'createdDate',
-              label: 'Created Date',
-              children: extendedRequest.createdDate ? 
-                new Date(extendedRequest.createdDate).toLocaleString('vi-VN', {
-                  day: '2-digit',
-                  month: '2-digit',
-                  year: 'numeric',
-                  hour: '2-digit',
-                  minute: '2-digit',
-                }) : 'N/A',
+              key: "createdDate",
+              label: "Ngày tạo",
+              children: extendedRequest.createdDate
+                ? new Date(extendedRequest.createdDate).toLocaleString(
+                    "vi-VN",
+                    {
+                      day: "2-digit",
+                      month: "2-digit",
+                      year: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    }
+                  )
+                : "N/A",
             },
             {
-              key: 'status',
-              label: 'Status',
+              key: "status",
+              label: "Trạng thái",
               children: getStatusTag(request.status),
             },
             {
-              key: 'description',
-              label: 'Request Description',
+              key: "description",
+              label: "Mô tả yêu cầu",
               children: (
                 <div className="overflow-y-auto whitespace-pre-wrap max-h-32">
                   {request.description}
@@ -111,19 +119,29 @@ const RequestDetailModal: React.FC<RequestDetailModalProps> = ({
         {/* Image Section */}
         {extendedRequest.imageUrl ? (
           <div className="mt-4">
-            <h4 className="mb-2 text-lg font-medium">Attached Image:</h4>
+            <h4 className="mb-2 text-lg font-medium">Ảnh đính kèm:</h4>
             <div className="flex justify-center">
-              <div className="relative" style={{ maxHeight: '400px', maxWidth: '100%' }}>
+              <div
+                className="relative"
+                style={{ maxHeight: "400px", maxWidth: "100%" }}
+              >
                 <Image
                   src={getImageUrl(extendedRequest.imageUrl)}
-                  alt="Request image"
+                  alt="Ảnh yêu cầu"
                   width={400}
                   height={300}
-                  style={{ maxHeight: '400px', maxWidth: '100%', objectFit: 'contain' }}
-                  onLoad={() => console.log('Image loaded successfully')}
+                  style={{
+                    maxHeight: "400px",
+                    maxWidth: "100%",
+                    objectFit: "contain",
+                  }}
+                  onLoad={() => console.log("Ảnh đã tải thành công")}
                   onError={(e) => {
-                    console.error('Image failed to load:', e);
-                    console.log('Attempted URL:', getImageUrl(extendedRequest.imageUrl));
+                    console.error("Ảnh tải không thành công:", e);
+                    console.log(
+                      "URL đã thử:",
+                      getImageUrl(extendedRequest.imageUrl)
+                    );
                   }}
                 />
               </div>
@@ -132,7 +150,7 @@ const RequestDetailModal: React.FC<RequestDetailModalProps> = ({
         ) : (
           <div className="mt-4 text-center text-gray-500">
             <div className="flex items-center justify-center h-40 bg-gray-100 border-2 border-gray-300 border-dashed">
-              <p>No image attached to this request</p>
+              <p>Không có ảnh đính kèm cho yêu cầu này</p>
             </div>
           </div>
         )}

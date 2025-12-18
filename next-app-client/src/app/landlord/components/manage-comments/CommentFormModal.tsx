@@ -33,27 +33,27 @@ const CommentFormContent: React.FC<{
 
   return (
     <Form form={form} layout="vertical" onFinish={handleFinish}>
-      <Form.Item label="Room">
+      <Form.Item label="Phòng">
         <Input value={originalComment?.roomTitle} disabled />
       </Form.Item>
-      <Form.Item label="User">
+      <Form.Item label="Người dùng">
         <Input value={originalComment?.userName} disabled />
       </Form.Item>
-      <Form.Item label="Comment">
+      <Form.Item label="Bình luận">
         <Input.TextArea value={originalComment?.comment} rows={4} disabled />
       </Form.Item>
       <Form.Item
-        label={originalComment?.reply ? "Edit Reply" : "Reply"}
+        label={originalComment?.reply ? "Chỉnh sửa phản hồi" : "Phản hồi"}
         name="reply"
-        rules={[{ required: true, message: "Please enter your reply!" }]}
+        rules={[{ required: true, message: "Vui lòng nhập phản hồi của bạn!" }]}
       >
-        <Input.TextArea rows={3} placeholder="Enter your reply" />
+        <Input.TextArea rows={3} placeholder="Nhập phản hồi của bạn" />
       </Form.Item>
       <Form.Item>
         <div className="flex justify-end gap-2 mt-4">
-          <Button onClick={onCancel}>Cancel</Button>
+          <Button onClick={onCancel}>Hủy</Button>
           <Button type="primary" htmlType="submit">
-            {originalComment?.reply ? "Update Reply" : "Send Reply"}
+            {originalComment?.reply ? "Cập nhật phản hồi" : "Gửi phản hồi"}
           </Button>
         </div>
       </Form.Item>
@@ -69,7 +69,7 @@ const CommentFormModal: React.FC<CommentFormModalProps> = ({
 }) => {
   return (
     <Modal
-      title="Reply to Comment"
+      title="Phản hồi bình luận"
       open={open}
       onCancel={onCancel}
       footer={null}

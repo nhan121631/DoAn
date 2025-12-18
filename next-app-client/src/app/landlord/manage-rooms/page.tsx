@@ -59,7 +59,7 @@ function TableManageRoom() {
       });
     } catch (error: any) {
       messageApi.error({
-        content: "Failed to fetch rooms " + error.message,
+        content: "Lỗi tải phòng " + error.message,
         duration: 3,
       });
       console.error("Error fetching rooms:", error.message);
@@ -131,13 +131,13 @@ function TableManageRoom() {
     try {
       await hideShowRoom(record.id, record.hidden === 1 ? 0 : 1);
       messageApi.success({
-        content: `Room is now ${record.hidden === 1 ? "visible" : "hidden"}`,
+        content: `Phòng hiện ${record.hidden === 1 ? "hiển thị" : "ẩn"}`,
         duration: 3,
       });
       fetchRooms(pagination.current, pagination.pageSize);
     } catch (error: any) {
       messageApi.error({
-        content: error.message || "Failed to update room visibility",
+        content: error.message || "Lỗi cập nhật trạng thái hiển thị phòng",
         duration: 3,
       });
     }
@@ -157,13 +157,13 @@ function TableManageRoom() {
 
   const columns: ColumnsType<any> = [
     {
-      title: "Room Name",
+      title: "Tên phòng",
       dataIndex: "title",
       key: "title",
       sorter: (a, b) => a.title.localeCompare(b.title),
     },
     {
-      title: "Address",
+      title: "Địa chỉ",
       key: "address",
       render: (_, record) =>
         [
@@ -176,7 +176,7 @@ function TableManageRoom() {
           .join(", "),
     },
     {
-      title: "Price/month",
+      title: "Giá/tháng",
       dataIndex: "priceMonth",
       key: "priceMonth",
       align: "right" as const,
@@ -184,7 +184,7 @@ function TableManageRoom() {
       render: (priceMonth) => priceMonth.toLocaleString("vi-VN") + " ₫",
     },
     {
-      title: "Deposit",
+      title: "Tiền đặt cọc",
       dataIndex: "priceDeposit",
       key: "priceDeposit",
       align: "right" as const,
@@ -192,7 +192,7 @@ function TableManageRoom() {
       sorter: (a, b) => a.priceDeposit - b.priceDeposit,
     },
     {
-      title: "Post Start",
+      title: "Ngày bắt đầu đăng",
       dataIndex: "postStartDate",
       key: "postStartDate",
       render: (date) =>
@@ -213,7 +213,7 @@ function TableManageRoom() {
       },
     },
     {
-      title: "Post End",
+      title: "Ngày kết thúc đăng",
       dataIndex: "postEndDate",
       key: "postEndDate",
       render: (date) =>
@@ -234,7 +234,7 @@ function TableManageRoom() {
       },
     },
     {
-      title: "Extend",
+      title: "Gia hạn",
       key: "extend",
       render: (_, record) => {
         const now = new Date();
@@ -246,13 +246,13 @@ function TableManageRoom() {
 
         // Nếu bài đã bị xóa hoặc vẫn còn hiệu lực thì không hiển thị nút Extend, thay vào đó hiển thị trạng thái phù hợp
         if (isRemoved) {
-          return <Tag color="red">Removed</Tag>;
+          return <Tag color="red">Đã xóa</Tag>;
         }
         if (isReject) {
-          return <Tag color="orange">Rejected Post</Tag>;
+          return <Tag color="orange">Bài đăng bị từ chối</Tag>;
         }
         if (isStillValid) {
-          return <Tag color="green">Still valid</Tag>;
+          return <Tag color="green">Còn hiệu lực</Tag>;
         }
 
         // Format min date là ngày hiện tại + 1 ngày nữa
@@ -315,13 +315,13 @@ function TableManageRoom() {
                 <thead className="bg-gray-100 dark:bg-[#232b3b]">
                   <tr>
                     <th className="px-4 py-2 text-left font-semibold">
-                      Post Type
+                      Loại bài đăng
                     </th>
                     <th className="px-4 py-2 text-left font-semibold">
-                      Price/Day (₫)
+                      Giá/ngày (₫)
                     </th>
                     <th className="px-4 py-2 text-center font-semibold">
-                      Select
+                      Chọn
                     </th>
                   </tr>
                 </thead>
@@ -382,15 +382,15 @@ function TableManageRoom() {
                   console.log("postEndDate", postEndDate);
                   console.log("postStartDate", postStartDate);
                   messageApi.success({
-                    content: `Extend until ${extendDates[record.id]} for "${
+                    content: `Gia hạn đến ${extendDates[record.id]} cho "${
                       record.title
-                    }", waiting for approval`,
+                    }", đang chờ phê duyệt`,
                     duration: 3,
                   });
                   fetchRooms(pagination.current, pagination.pageSize);
                 } catch (error: any) {
                   messageApi.error({
-                    content: error.message || "Failed to extend post",
+                    content: error.message || "Lỗi gia hạn bài đăng",
                     duration: 3,
                   });
                 }
@@ -406,7 +406,7 @@ function TableManageRoom() {
         return (
           <Popover
             content={popoverContent}
-            title="Select new end date"
+            title="Chọn ngày kết thúc mới"
             trigger="click"
             open={extendingKey === record.id}
             onOpenChange={(visible) => {
@@ -422,7 +422,7 @@ function TableManageRoom() {
             }}
           >
             <Button size="small" type="primary">
-              Extend
+              Gia hạn
             </Button>
           </Popover>
         );
@@ -434,34 +434,34 @@ function TableManageRoom() {
       },
     },
     {
-      title: "Available",
+      title: "Tình trạng",
       dataIndex: "available",
       key: "available",
       render: (available) =>
         available === 1 ? (
-          <Tag color="green">Rented</Tag>
+          <Tag color="green">Đã thuê</Tag>
         ) : (
-          <Tag color="blue">Available</Tag>
+          <Tag color="blue">Có sẵn</Tag>
         ),
       sorter: (a, b) => a.available - b.available,
     },
     {
-      title: "Approval",
+      title: "Phê duyệt",
       dataIndex: "approval",
       key: "approval",
       sorter: (a, b) => a.approval - b.approval,
       render: (approval) => {
         if (approval === 0) {
-          return <Tag color="orange">Pending</Tag>;
+          return <Tag color="orange">Đang chờ</Tag>;
         } else if (approval === 1) {
-          return <Tag color="green">Approved</Tag>;
+          return <Tag color="green">Đã phê duyệt</Tag>;
         } else {
-          return <Tag color="red">Rejected</Tag>;
+          return <Tag color="red">Bị từ chối</Tag>;
         }
       },
     },
     {
-      title: "Hide/Show",
+      title: "Ẩn/Hiện",
       dataIndex: "hidden",
       key: "hidden",
       render: (hidden, record) => {
@@ -472,11 +472,11 @@ function TableManageRoom() {
 
         // Nếu bài đã bị xóa thì hiển thị trạng thái
         if (isRemoved) {
-          return <Tag color="red">Removed</Tag>;
+          return <Tag color="red">Đã bị xóa</Tag>;
         }
         // Nếu bài đã hết hạn thì hiển thị trạng thái
         if (isExpired) {
-          return <Tag color="gray">Post expired</Tag>;
+          return <Tag color="gray">Bài đăng đã hết hạn</Tag>;
         }
 
         // Nếu không bị xóa và chưa hết hạn thì hiển thị nút Hide/Show
@@ -484,13 +484,13 @@ function TableManageRoom() {
           <Popconfirm
             title={
               hidden === 1
-                ? "Do you want to show this post again?"
-                : "Are you sure you want to hide this post?"
+                ? "Bạn có muốn hiển thị lại bài đăng này không?"
+                : "Bạn có chắc muốn ẩn bài đăng này không?"
             }
             onConfirm={() => toggleHidden(record)}
           >
             <Button size="small" type={hidden === 1 ? "default" : "primary"}>
-              {hidden === 1 ? "Show" : "Hide"}
+              {hidden === 1 ? "Hiện" : "Ẩn"}
             </Button>
           </Popconfirm>
         );
@@ -499,7 +499,7 @@ function TableManageRoom() {
       defaultSortOrder: "ascend",
     },
     {
-      title: "Actions",
+      title: "Hành động",
       key: "actions",
       render: (_, record) => {
         const now = new Date();
@@ -510,7 +510,7 @@ function TableManageRoom() {
         if (record.isRemoved === 1) {
           return (
             <span style={{ color: "red", fontWeight: 600 }}>
-              Removed by admin
+              Đã bị xóa bởi quản trị viên
             </span>
           );
         }
@@ -518,7 +518,7 @@ function TableManageRoom() {
         if (!isStillValid) {
           return (
             <span style={{ color: "gray", fontWeight: 600 }}>
-              This post has expired
+              Bài đăng đã hết hạn
             </span>
           );
         }
@@ -547,9 +547,9 @@ function TableManageRoom() {
       <div className="flex items-center justify-between mb-4">
         <div className="mb-4">
           <h2 className="text-2xl font-semibold dark:!text-white">
-            Manage Rooms
+            Quản lý phòng
           </h2>
-          <p className="text-lg text-gray-500">Room Post Management.</p>
+          <p className="text-lg text-gray-500">Quản lý bài đăng phòng.</p>
         </div>
         <div>
           <Button
@@ -557,7 +557,7 @@ function TableManageRoom() {
             icon={<AiOutlinePlus size={18} />}
             onClick={() => router.push("/landlord/manage-rooms/add-room")}
           >
-            Add Room
+            Thêm phòng
           </Button>
         </div>
       </div>

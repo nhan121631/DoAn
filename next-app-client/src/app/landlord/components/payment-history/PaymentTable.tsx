@@ -23,7 +23,7 @@ interface PaymentTableProps {
 
 const defaultColumns: ColumnsType<any> = [
   {
-    title: "Transaction Code",
+    title: "Mã giao dịch",
     dataIndex: "transactionCode",
     key: "transactionCode",
     width: 180,
@@ -32,7 +32,7 @@ const defaultColumns: ColumnsType<any> = [
     ),
   },
   {
-    title: "Amount",
+    title: "Số tiền",
     dataIndex: "amount",
     key: "amount",
     width: 140,
@@ -53,31 +53,31 @@ const defaultColumns: ColumnsType<any> = [
     ),
   },
   {
-    title: "Bank",
+    title: "Ngân hàng",
     dataIndex: "bankTransactionName",
     key: "bankTransactionName",
     width: 120,
     render: (bank: string) => bank || "N/A",
   },
   {
-    title: "Status",
+    title: "Trạng thái",
     key: "status",
     width: 120,
     render: (_: any, record: any) => (
       <Tag color={record.status === 1 ? "green" : "red"}>
-        {record.status === 1 ? "Success" : "Failed"}
+        {record.status === 1 ? "Thành công" : "Thất bại"}
       </Tag>
     ),
   },
   {
-    title: "Date",
+    title: "Ngày",
     dataIndex: "transactionDate",
     key: "transactionDate",
     width: 160,
     render: (transactionDate: string) => formatDate(transactionDate),
   },
   {
-    title: "Description",
+    title: "Mô tả",
     dataIndex: "description",
     key: "description",
     width: 200,
@@ -98,10 +98,10 @@ function PaymentTable({ payments, columns }: PaymentTableProps) {
           <div className="text-center py-12">
             <div className="text-gray-400 text-6xl mb-4">💳</div>
             <h3 className="text-xl font-semibold text-gray-600 mb-2">
-              No transactions yet
+              Chưa có giao dịch
             </h3>
             <p className="text-gray-500">
-              Payment history will be displayed here
+              Lịch sử thanh toán sẽ được hiển thị tại đây
             </p>
           </div>
         ),

@@ -105,7 +105,7 @@ export const Slide = ({ images, address }: Props) => {
               )
             ) : (
               <div className="w-full h-[180px] flex items-center justify-center bg-gray-200 text-gray-500">
-                No image available
+                Không có hình ảnh
               </div>
             )}
           </div>

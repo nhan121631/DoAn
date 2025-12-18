@@ -17,9 +17,9 @@ const robotoMono = Roboto_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Ants - Find rooms, apartments, and houses for students and workers",
+  title: "Ants - Tìm phòng, căn hộ và nhà cho sinh viên và người lao động",
   description:
-    "Ants - Find rooms, apartments, and houses for students and workers. Search, compare, and move in easily and quickly.",
+    "Ants - Nền tảng cho thuê nhà hàng đầu dành cho sinh viên và người lao động. Tìm kiếm phòng, căn hộ và nhà với giá cả phải chăng, tiện nghi hiện đại và vị trí thuận tiện. Đặt phòng dễ dàng, nhanh chóng và an toàn với Ants ngay hôm nay!",
 };
 
 export default function RootLayout({

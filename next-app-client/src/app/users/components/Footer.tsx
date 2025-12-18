@@ -30,15 +30,15 @@ export default function Footer() {
           {/* Customer Reviews */}
           <div className="flex flex-col space-y-6 md:space-y-8 text-center lg:text-left animate-fade-in-up">
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold leading-tight bg-gradient-to-r from-yellow-400 via-pink-400 to-purple-400 bg-clip-text text-transparent">
-              Customer Reviews
+              Khách hàng nói về chúng tôi
             </h2>
             <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start space-y-4 sm:space-y-0 sm:space-x-8">
               <div className="text-center group cursor-pointer">
                 <p className="text-3xl sm:text-4xl font-bold text-yellow-400 transition-all duration-300 group-hover:scale-110 group-hover:text-yellow-300">
-                  10m+
+                  10 triệu+
                 </p>
                 <p className="text-gray-300 text-sm sm:text-base transition-colors duration-300 group-hover:text-white">
-                  Happy People
+                  Khách hàng hài lòng
                 </p>
               </div>
               <div className="text-center group cursor-pointer">
@@ -46,7 +46,7 @@ export default function Footer() {
                   4.88
                 </p>
                 <p className="text-gray-300 text-sm sm:text-base transition-colors duration-300 group-hover:text-white">
-                  Overall rating
+                  Đánh giá tổng thể
                 </p>
                 <div className="flex justify-center text-yellow-400 mt-1">
                   {[...Array(5)].map((_, i) => (
@@ -80,15 +80,15 @@ export default function Footer() {
               {/* About Section */}
               <div className="text-center sm:text-left">
                 <p className=" text-base sm:text-lg mb-4 font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-                  ABOUT ANTS.COM
+                  VỀ ANTS.COM
                 </p>
                 <ul className="space-y-2 text-gray-300 text-sm sm:text-base">
                   {[
-                    "About Us",
-                    "Operating Regulations",
-                    "Terms of Use",
-                    "Privacy Policy",
-                    "Contact Us",
+                    "Về chúng tôi",
+                    "Quy định hoạt động",
+                    "Điều khoản sử dụng",
+                    "Chính sách bảo mật",
+                    "Liên hệ",
                   ].map((item, index) => (
                     <li
                       key={item}
@@ -110,15 +110,15 @@ export default function Footer() {
               {/* Customer Section */}
               <div className="text-center sm:text-left">
                 <p className="text-base sm:text-lg mb-4 font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-                  FOR CUSTOMERS
+                  DÀNH CHO KHÁCH HÀNG
                 </p>
                 <ul className="space-y-2 text-gray-300 text-sm sm:text-base">
                   {[
-                    "FAQ",
-                    "Posting Guide",
-                    "Service Price List",
-                    "Posting Regulations",
-                    "Complaint Resolution",
+                    "Câu hỏi thường gặp",
+                    "Hướng dẫn đăng bài",
+                    "Bảng giá dịch vụ",
+                    "Quy định đăng bài",
+                    "Giải quyết khiếu nại",
                   ].map((item, index) => (
                     <li
                       key={item}
@@ -142,12 +142,12 @@ export default function Footer() {
           {/* Contact Information */}
           <div className="text-center md:text-left animate-fade-in-up animation-delay-600">
             <p className="text-base sm:text-lg mb-4 md:mb-6 font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-              CONTACT US
+              LIÊN HỆ
             </p>
             <ul className="space-y-3 sm:space-y-4 text-gray-300 text-sm sm:text-base">
               <li className="flex items-center justify-center md:justify-start gap-2 sm:gap-3 group hover:text-white transition-colors duration-300 animate-slide-in-right">
                 <MdPhone className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-400 flex-shrink-0 group-hover:animate-bounce" />
-                <span>+84 382 972 543</span>
+                <span>+84 388 953 628</span>
               </li>
               <li className="flex items-center justify-center md:justify-start gap-2 sm:gap-3 group hover:text-white transition-colors duration-300 animate-slide-in-right animation-delay-100">
                 <MdEmail className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-400 flex-shrink-0 group-hover:animate-bounce" />
@@ -156,7 +156,8 @@ export default function Footer() {
               <li className="flex items-start justify-center md:justify-start gap-2 sm:gap-3 group hover:text-white transition-colors duration-300 animate-slide-in-right animation-delay-200">
                 <MdLocationOn className="h-5 w-5 sm:h-6 sm:w-6 text-yellow-400 flex-shrink-0 mt-0.5 group-hover:animate-bounce" />
                 <span className="text-center md:text-left">
-                  90 Nguyen Thuc Tu Street, Da Nang, Vietnam
+                  90 Nguyễn Thức Tự Phường Hòa Hải, Quận Ngũ Hành Sơn, Thành phố
+                  Đà Nẵng
                 </span>
               </li>
             </ul>
@@ -167,7 +168,7 @@ export default function Footer() {
             {/* Payment Methods */}
             <div className="text-center xl:text-left">
               <p className="text-base sm:text-lg mb-4 md:mb-6 font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-                PAYMENT METHODS
+                PHƯƠNG THỨC THANH TOÁN
               </p>
               <div className="flex justify-center xl:justify-start gap-2 sm:gap-3 md:gap-4 flex-wrap">
                 <div className="p-2 bg-gradient-to-br from-blue-700 to-blue-900 rounded-lg shadow-lg flex items-center justify-center w-16 h-10 sm:w-20 sm:h-12 md:w-20 md:h-14 transition-all duration-300 hover:scale-110 hover:shadow-blue-500/25 animate-float">
@@ -198,7 +199,7 @@ export default function Footer() {
             {/* Social Media */}
             <div className="text-center xl:text-left">
               <p className="text-base sm:text-lg mb-4 md:mb-6 font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-                FOLLOW US
+                KẾT NỐI VỚI CHÚNG TÔI
               </p>
               <div className="flex justify-center xl:justify-start items-center gap-3 sm:gap-4 flex-wrap">
                 <a

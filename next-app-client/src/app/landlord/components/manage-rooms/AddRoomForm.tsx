@@ -553,7 +553,7 @@ const AddRoomForm: React.FC<{ onFinish?: (values: RoomData) => void }> = (
   }, []);
 
   if (!session) {
-    return <div>Please log in to add a room.</div>;
+    return <div>Vui lòng đăng nhập để thêm phòng.</div>;
   }
 
   console.log("isHaveBank:", isHaveBank);
@@ -575,7 +575,7 @@ const AddRoomForm: React.FC<{ onFinish?: (values: RoomData) => void }> = (
         setDistricts(options);
       }
     } catch (error) {
-      console.error("Failed to fetch districts:", error);
+      console.error("Failed to fetch quận/huyện:", error);
       setDistricts([]);
     } finally {
       setLoadingDistricts(false);
@@ -667,15 +667,15 @@ const AddRoomForm: React.FC<{ onFinish?: (values: RoomData) => void }> = (
       for (const videoFile of videoFiles) {
         try {
           console.log(
-            "Starting upload for video:",
+            "Bắt đầu tải lên video:",
             videoFile.name,
-            "to room:",
+            "cho phòng:",
             roomId
           );
 
           messageApi.open({
             type: "loading",
-            content: `Uploading video: ${videoFile.name}...`,
+            content: `Đang tải lên video: ${videoFile.name}...`,
             duration: 0,
             key: `uploading_${videoFile.name}`,
           });
@@ -696,15 +696,15 @@ const AddRoomForm: React.FC<{ onFinish?: (values: RoomData) => void }> = (
           await onFileChange({ file: videoFile });
 
           console.log(
-            "Calling upload function with roomId:",
+            "Calling upload function với roomId:",
             roomId,
-            "and videoFile:",
+            "và videoFile:",
             videoFile.name
           );
           await upload(roomId, videoFile);
           messageApi.open({
             type: "success",
-            content: `Video ${videoFile.name} uploaded successfully!`,
+            content: `Video ${videoFile.name} tải lên thành công!`,
             duration: 1.5,
             key: `uploading_${videoFile.name}`,
           });
@@ -712,11 +712,11 @@ const AddRoomForm: React.FC<{ onFinish?: (values: RoomData) => void }> = (
           allVideoSuccess = false;
           messageApi.open({
             type: "error",
-            content: `Failed to upload video: ${videoFile.name}`,
+            content: `Tải lên video thất bại: ${videoFile.name}`,
             duration: 2,
             key: `uploading_${videoFile.name}`,
           });
-          console.error("Video upload failed:", videoError);
+          console.error("Tải lên video thất bại:", videoError);
         }
       }
 
@@ -724,23 +724,23 @@ const AddRoomForm: React.FC<{ onFinish?: (values: RoomData) => void }> = (
       if (videoFiles.length > 0) {
         if (allVideoSuccess) {
           messageApi.success({
-            content: "Room information & all videos uploaded successfully!",
+            content: "Thông tin phòng & tất cả video đã tải lên thành công!",
             duration: 1.5,
           });
         } else {
           messageApi.warning({
-            content: "Room created, but some videos failed to upload.",
+            content: "Phòng đã được tạo, nhưng một số video tải lên thất bại.",
             duration: 2,
           });
         }
       } else {
         messageApi.success({
-          content: "Room information submitted successfully!",
+          content: "Thông tin phòng đã được gửi thành công!",
           duration: 1.5,
         });
       }
       console.log("Kết quả:", result);
-      console.log("Submitted Room Data:", roomData);
+      console.log("Dữ liệu phòng đã gửi:", roomData);
 
       form.resetFields();
       setFileList([]);
@@ -761,15 +761,25 @@ const AddRoomForm: React.FC<{ onFinish?: (values: RoomData) => void }> = (
       abortRef.current.aborted = false;
     } catch (error: any) {
       messageApi.error({
-        content:
-          error.message ||
-          "An error occurred while submitting room information",
+        content: error.message || "Đã xảy ra lỗi khi gửi thông tin phòng",
         duration: 1.5,
       });
       // console.error("Validation failed:", error.message);
     }
   };
-
+  const allPossibleConvenients = [
+    { key: "furnished", label: "Đầy đủ tiện nghi" },
+    { key: "washing_machine", label: "Máy giặt" },
+    { key: "no_curfew", label: "Không giới nghiêm" },
+    { key: "mezzanine", label: "Gác lửng" },
+    { key: "fridge", label: "Tủ lạnh" },
+    { key: "kitchen_shelf", label: "Tủ bếp" },
+    { key: "aircon", label: "Điều hòa" },
+    { key: "private_entry", label: "Lối vào riêng" },
+    { key: "elevator", label: "Thang máy" },
+    { key: "security_24h", label: "An ninh 24/7" },
+    { key: "garage", label: "Bãi đậu xe/Garage" },
+  ];
   return (
     <>
       {contextHolder}
@@ -777,11 +787,11 @@ const AddRoomForm: React.FC<{ onFinish?: (values: RoomData) => void }> = (
         <div className="flex-1 flex justify-center items-center bg-gradient-to-r from-amber-400 to-yellow-500 rounded-lg shadow-md p-6">
           <div className="text-center">
             <div className="text-white font-semibold text-xl mb-2">
-              Bank Account Required
+              Yêu cầu tài khoản ngân hàng
             </div>
             <p className="text-amber-50 text-sm">
-              Please link a bank account in <strong>your profile</strong> to add
-              your room!!!
+              Vui lòng liên kết <strong>tài khoản ngân hàng</strong> trong hồ sơ
+              của bạn để thêm phòng!!!
             </p>
           </div>
         </div>
@@ -809,11 +819,11 @@ const AddRoomForm: React.FC<{ onFinish?: (values: RoomData) => void }> = (
               <div className="bg-white dark:bg-[#232b3b] border border-gray-200 dark:border-gray-700 rounded-lg p-4 shadow-sm">
                 <div className="mb-3">
                   <h4 className="font-semibold text-base bg-gray-50 dark:bg-[#1b2636] p-2 rounded-md">
-                    Room Information
+                    Thông tin phòng
                   </h4>
                 </div>
                 <div className="flex flex-col gap-3">
-                  <Form.Item label="Room Images" required>
+                  <Form.Item label="Ảnh phòng" required>
                     <Upload
                       listType="picture-card"
                       fileList={fileList}
@@ -828,20 +838,20 @@ const AddRoomForm: React.FC<{ onFinish?: (values: RoomData) => void }> = (
                       {fileList.length >= 8 ? null : (
                         <div>
                           <PlusOutlined />
-                          <div style={{ marginTop: 8 }}>Upload</div>
+                          <div style={{ marginTop: 8 }}>Tải lên</div>
                         </div>
                       )}
                     </Upload>
                   </Form.Item>
 
                   <Form.Item
-                    label="Room Name"
+                    label="Tên phòng"
                     name="name"
                     rules={[
-                      { required: true, message: "Please enter room name" },
+                      { required: true, message: "Vui lòng nhập tên phòng" },
                     ]}
                   >
-                    <Input placeholder="Enter room name" />
+                    <Input placeholder="Nhập tên phòng" />
                   </Form.Item>
                 </div>
               </div>
@@ -850,21 +860,24 @@ const AddRoomForm: React.FC<{ onFinish?: (values: RoomData) => void }> = (
               <div className="bg-white dark:bg-[#232b3b] border border-gray-200 dark:border-gray-700 rounded-lg p-4 shadow-sm">
                 <div className="mb-3">
                   <h4 className="font-semibold text-base bg-gray-50 dark:bg-[#1b2636] p-2 rounded-md">
-                    Location
+                    Vị trí
                   </h4>
                 </div>
                 <div className="flex gap-2">
                   <Form.Item
-                    label="Province/City"
+                    label="Tỉnh/Thành phố"
                     name="province"
                     rules={[
-                      { required: true, message: "Select province/city" },
+                      {
+                        required: true,
+                        message: "Vui lòng chọn tỉnh/thành phố",
+                      },
                     ]}
                     className="flex-1"
                   >
                     <Select
                       showSearch
-                      placeholder="Select province/city"
+                      placeholder="Chọn tỉnh/thành phố"
                       options={provinces}
                       optionFilterProp="label"
                       filterOption={(input, option) =>
@@ -877,13 +890,15 @@ const AddRoomForm: React.FC<{ onFinish?: (values: RoomData) => void }> = (
                   </Form.Item>
 
                   <Form.Item
-                    label="District"
+                    label="Quận/Huyện"
                     name="district"
-                    rules={[{ required: true, message: "Select district" }]}
+                    rules={[
+                      { required: true, message: "Vui lòng chọn quận/huyện" },
+                    ]}
                     className="flex-1"
                   >
                     <Select
-                      placeholder="Select district"
+                      placeholder="Chọn quận/huyện"
                       options={districts}
                       disabled={!selectedProvince}
                       loading={loadingDistricts}
@@ -899,13 +914,15 @@ const AddRoomForm: React.FC<{ onFinish?: (values: RoomData) => void }> = (
                   </Form.Item>
 
                   <Form.Item
-                    label="Ward"
+                    label="Phường/Xã"
                     name="ward"
-                    rules={[{ required: true, message: "Select ward" }]}
+                    rules={[
+                      { required: true, message: "Vui lòng chọn phường/xã" },
+                    ]}
                     className="flex-1"
                   >
                     <Select
-                      placeholder="Select ward"
+                      placeholder="Chọn phường/xã"
                       options={wards}
                       disabled={!selectedDistrict}
                       loading={loadingWards}
@@ -921,11 +938,11 @@ const AddRoomForm: React.FC<{ onFinish?: (values: RoomData) => void }> = (
                 </div>
 
                 <Form.Item
-                  label="Address"
+                  label="Địa chỉ"
                   name="address"
-                  rules={[{ required: true, message: "Enter address" }]}
+                  rules={[{ required: true, message: "Vui lòng nhập địa chỉ" }]}
                 >
-                  <Input placeholder="Enter address" />
+                  <Input placeholder="Nhập địa chỉ" />
                 </Form.Item>
               </div>
 
@@ -933,7 +950,7 @@ const AddRoomForm: React.FC<{ onFinish?: (values: RoomData) => void }> = (
               <div className="bg-white dark:bg-[#232b3b] border border-gray-200 dark:border-gray-700 rounded-lg p-4 shadow-sm">
                 <div className="mb-3">
                   <h4 className="font-semibold text-base bg-gray-50 dark:bg-[#1b2636] p-2 rounded-md">
-                    Room Details & Pricing
+                    Chi tiết phòng & Giá cả
                   </h4>
                 </div>
                 <div className="flex flex-col gap-3">
@@ -951,7 +968,7 @@ const AddRoomForm: React.FC<{ onFinish?: (values: RoomData) => void }> = (
                      */}
 
                     <Form.Item
-                      label="Room Length (m)"
+                      label="Chiều dài phòng (m)"
                       name="roomLength"
                       normalize={(value) => {
                         const n =
@@ -964,7 +981,7 @@ const AddRoomForm: React.FC<{ onFinish?: (values: RoomData) => void }> = (
                           required: true,
                           type: "number",
                           min: 0.1,
-                          message: "Enter room length",
+                          message: "Vui lòng nhập chiều dài phòng",
                         },
                       ]}
                     >
@@ -972,7 +989,7 @@ const AddRoomForm: React.FC<{ onFinish?: (values: RoomData) => void }> = (
                         options={["2", "2.5", "3", "3.5", "4", "4.5", "5"].map(
                           (v) => ({ value: v })
                         )}
-                        placeholder="Type or choose preset"
+                        placeholder="Nhập hoặc chọn giá trị"
                         style={{ width: "100%" }}
                         onSelect={(value) => {
                           const n = parseFloat(String(value));
@@ -990,7 +1007,7 @@ const AddRoomForm: React.FC<{ onFinish?: (values: RoomData) => void }> = (
                     </Form.Item>
 
                     <Form.Item
-                      label="Room Width (m)"
+                      label="Chiều rộng phòng (m)"
                       name="roomWidth"
                       normalize={(value) => {
                         const n =
@@ -1003,7 +1020,7 @@ const AddRoomForm: React.FC<{ onFinish?: (values: RoomData) => void }> = (
                           required: true,
                           type: "number",
                           min: 0.1,
-                          message: "Enter room width",
+                          message: "Vui lòng nhập chiều rộng phòng",
                         },
                       ]}
                     >
@@ -1011,7 +1028,7 @@ const AddRoomForm: React.FC<{ onFinish?: (values: RoomData) => void }> = (
                         options={["2", "2.5", "3", "3.5", "4", "4.5", "5"].map(
                           (v) => ({ value: v })
                         )}
-                        placeholder="Type or choose preset"
+                        placeholder="Nhập hoặc chọn giá trị"
                         style={{ width: "100%" }}
                         onSelect={(value) => {
                           const n = parseFloat(String(value));
@@ -1029,13 +1046,18 @@ const AddRoomForm: React.FC<{ onFinish?: (values: RoomData) => void }> = (
                     </Form.Item>
 
                     <Form.Item
-                      label="Max People"
+                      label="Số người tối đa"
                       name="maxPeople"
                       className="flex-1"
-                      rules={[{ required: true, message: "Select max people" }]}
+                      rules={[
+                        {
+                          required: true,
+                          message: "Vui lòng chọn số người tối đa",
+                        },
+                      ]}
                     >
                       <Select
-                        placeholder="Select max people"
+                        placeholder="Chọn số người tối đa"
                         options={Array.from({ length: 8 }, (_, i) => ({
                           label: `${i + 1}`,
                           value: i + 1,
@@ -1047,7 +1069,7 @@ const AddRoomForm: React.FC<{ onFinish?: (values: RoomData) => void }> = (
 
                   <div className="flex gap-2">
                     <Form.Item
-                      label="Electricity Price (₫/kW)"
+                      label="Giá điện (₫/kW)"
                       name="elecPrice"
                       className="flex-1"
                       rules={[
@@ -1055,7 +1077,7 @@ const AddRoomForm: React.FC<{ onFinish?: (values: RoomData) => void }> = (
                           required: true,
                           type: "number",
                           min: 0,
-                          message: "Enter electricity price",
+                          message: "Vui lòng nhập giá điện",
                         },
                       ]}
                     >
@@ -1071,7 +1093,7 @@ const AddRoomForm: React.FC<{ onFinish?: (values: RoomData) => void }> = (
                     </Form.Item>
 
                     <Form.Item
-                      label="Water Price (₫/m³)"
+                      label="Giá nước (₫/m³)"
                       name="waterPrice"
                       className="flex-1"
                       rules={[
@@ -1079,7 +1101,7 @@ const AddRoomForm: React.FC<{ onFinish?: (values: RoomData) => void }> = (
                           required: true,
                           type: "number",
                           min: 0,
-                          message: "Enter water price",
+                          message: "Vui lòng nhập giá nước",
                         },
                       ]}
                     >
@@ -1097,7 +1119,7 @@ const AddRoomForm: React.FC<{ onFinish?: (values: RoomData) => void }> = (
 
                   <div className="flex gap-2">
                     <Form.Item
-                      label="Monthly Price"
+                      label="Giá thuê theo tháng"
                       name="priceMonth"
                       className="flex-1"
                       rules={[
@@ -1105,7 +1127,7 @@ const AddRoomForm: React.FC<{ onFinish?: (values: RoomData) => void }> = (
                           required: true,
                           type: "number",
                           min: 1000,
-                          message: "Enter monthly price",
+                          message: "Vui lòng nhập giá thuê theo tháng",
                         },
                       ]}
                     >
@@ -1121,7 +1143,7 @@ const AddRoomForm: React.FC<{ onFinish?: (values: RoomData) => void }> = (
                     </Form.Item>
 
                     <Form.Item
-                      label="Deposit Price"
+                      label="Giá đặt cọc"
                       name="priceDeposit"
                       className="flex-1"
                       rules={[
@@ -1129,7 +1151,7 @@ const AddRoomForm: React.FC<{ onFinish?: (values: RoomData) => void }> = (
                           required: true,
                           type: "number",
                           min: 1000,
-                          message: "Enter deposit price",
+                          message: "Vui lòng nhập giá đặt cọc",
                         },
                       ]}
                     >
@@ -1153,19 +1175,23 @@ const AddRoomForm: React.FC<{ onFinish?: (values: RoomData) => void }> = (
               <div className="bg-white dark:bg-[#232b3b] border border-gray-200 dark:border-gray-700 rounded-lg p-4 shadow-sm">
                 <div className="mb-3">
                   <h4 className="font-semibold text-base bg-gray-50 dark:bg-[#1b2636] p-2 rounded-md">
-                    Convenient Part
+                    Phần Tiện Ích
                   </h4>
                 </div>
                 <Form.Item
-                  label="Convenients"
+                  label="Tiện ích"
                   name="convenients"
-                  rules={[{ required: true, message: "Select convenients" }]}
+                  rules={[
+                    { required: true, message: "Vui lòng chọn tiện ích" },
+                  ]}
                 >
                   <Select
                     mode="multiple"
-                    placeholder="Select convenients"
+                    placeholder="Chọn tiện ích"
                     options={convenients.map((c) => ({
-                      label: c.name,
+                      label:
+                        allPossibleConvenients.find((apc) => apc.key === c.name)
+                          ?.label || c.name,
                       value: c.id,
                     }))}
                     style={{ width: "100%" }}
@@ -1176,30 +1202,32 @@ const AddRoomForm: React.FC<{ onFinish?: (values: RoomData) => void }> = (
               <div className="bg-white dark:bg-[#232b3b] border border-gray-200 dark:border-gray-700 rounded-lg p-4 shadow-sm">
                 <div className="mb-3">
                   <h4 className="font-semibold text-base bg-gray-50 dark:bg-[#1b2636] p-2 rounded-md">
-                    Post Price Information
+                    Thông Tin Giá Bài Đăng
                   </h4>
                 </div>
 
                 <Form.Item
-                  label="Post Type"
+                  label="Loại Bài Đăng"
                   name="typepostId"
-                  rules={[{ required: true, message: "Select post type" }]}
+                  rules={[
+                    { required: true, message: "Vui lòng chọn loại bài đăng" },
+                  ]}
                 >
                   <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
                     <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                       <thead className="bg-gray-100 dark:bg-[#232b3b]">
                         <tr>
                           <th className="px-4 py-2 text-left font-semibold">
-                            Post Type
+                            Loại Bài Đăng
                           </th>
                           <th className="px-4 py-2 text-left font-semibold">
-                            Price/Day (₫)
+                            Giá/Ngày (₫)
                           </th>
                           <th className="px-4 py-2 text-left font-semibold">
-                            Description
+                            Mô tả
                           </th>
                           <th className="px-4 py-2 text-center font-semibold">
-                            Select
+                            Chọn
                           </th>
                         </tr>
                       </thead>
@@ -1239,7 +1267,7 @@ const AddRoomForm: React.FC<{ onFinish?: (values: RoomData) => void }> = (
                 </Form.Item>
 
                 <Form.Item
-                  label="Start Date"
+                  label="Ngày Bắt Đầu"
                   name="startDate"
                   initialValue={startDate}
                   rules={[]}
@@ -1253,9 +1281,11 @@ const AddRoomForm: React.FC<{ onFinish?: (values: RoomData) => void }> = (
                 </Form.Item>
 
                 <Form.Item
-                  label="End Date"
+                  label="Ngày Kết Thúc"
                   name="endDate"
-                  rules={[{ required: true, message: "Select end date" }]}
+                  rules={[
+                    { required: true, message: "Vui lòng chọn ngày kết thúc" },
+                  ]}
                 >
                   <Input
                     type="date"
@@ -1271,7 +1301,7 @@ const AddRoomForm: React.FC<{ onFinish?: (values: RoomData) => void }> = (
                 </Form.Item>
 
                 <div className="mb-2">
-                  <label className="font-semibold">Total Post Price:</label>
+                  <label className="font-semibold">Tổng Giá Bài Đăng:</label>
                   <div className="text-lg text-blue-600 font-bold">
                     {totalPrice.toLocaleString("vi-VN")} ₫
                   </div>
@@ -1283,16 +1313,16 @@ const AddRoomForm: React.FC<{ onFinish?: (values: RoomData) => void }> = (
           {/* Full width: Description + Submit */}
           <div className=" my-4 mx-2 bg-white dark:bg-[#232b3b] border border-gray-200 dark:border-gray-700 rounded-lg p-4 shadow-sm">
             <Form.Item
-              label="Description"
+              label="Mô tả"
               name="description"
               rules={[
                 {
                   max: 2000,
-                  message: "Description must be at most 2000 characters.",
+                  message: "Mô tả phải có tối đa 2000 ký tự.",
                 },
               ]}
             >
-              <Input.TextArea rows={10} placeholder="Description (optional)" />
+              <Input.TextArea rows={10} placeholder="Mô tả (tùy chọn)" />
             </Form.Item>
             <Form.Item>
               <Button
@@ -1301,7 +1331,7 @@ const AddRoomForm: React.FC<{ onFinish?: (values: RoomData) => void }> = (
                 className="w-full"
                 onClick={() => handleSubmit()}
               >
-                Add Room
+                Thêm Phòng
               </Button>
             </Form.Item>
           </div>

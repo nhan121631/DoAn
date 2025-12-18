@@ -28,7 +28,7 @@ export default async function ProfileInfo() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <h1 className="text-2xl font-bold text-transparent bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text">
-                Profile Dashboard
+                Hồ sợ cá nhân
               </h1>
             </div>
             <ButtonEditProfile userProfile={userProfile} />
@@ -71,7 +71,7 @@ export default async function ProfileInfo() {
                   {userProfile?.fullName || "Welcome User"}
                 </h2>
                 <p className="mb-8 text-gray-500 dark:text-gray-400">
-                  Premium Member
+                  Thành viên Prenium
                 </p>
 
                 {/* Balance Card */}
@@ -81,7 +81,7 @@ export default async function ProfileInfo() {
 
                   <div className="relative">
                     <p className="mb-2 text-sm text-blue-100">
-                      Account Balance
+                      Số dư ví của bạn
                     </p>
                     <p className="mb-1 text-3xl font-bold text-white">
                       {typeof wallet?.balance !== null &&
@@ -92,7 +92,7 @@ export default async function ProfileInfo() {
                     </p>
                     <div className="flex items-center gap-2 text-sm text-blue-200">
                       <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                      <span>Active</span>
+                      <span>Đang hoạt động</span>
                     </div>
                   </div>
                 </div>
@@ -112,10 +112,10 @@ export default async function ProfileInfo() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3 className="mb-1 text-lg font-semibold text-gray-800 dark:text-white">
-                      Full Name
+                      Họ và tên
                     </h3>
                     <p className="text-gray-600 truncate dark:text-gray-300">
-                      {userProfile?.fullName || "Not provided"}
+                      {userProfile?.fullName || "Chưa cung cấp"}
                     </p>
                   </div>
                 </div>
@@ -130,10 +130,10 @@ export default async function ProfileInfo() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3 className="mb-1 text-lg font-semibold text-gray-800 dark:text-white">
-                      Phone Number
+                      Số điện thoại
                     </h3>
                     <p className="text-gray-600 truncate dark:text-gray-300">
-                      {userProfile?.phoneNumber || "Not provided"}
+                      {userProfile?.phoneNumber || "Chưa cung cấp"}
                     </p>
                   </div>
                 </div>
@@ -148,10 +148,10 @@ export default async function ProfileInfo() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3 className="mb-1 text-lg font-semibold text-gray-800 dark:text-white">
-                      Email Address
+                      Địa chỉ email
                     </h3>
                     <p className="text-gray-600 truncate dark:text-gray-300">
-                      {userProfile?.email || "Not provided"}
+                      {userProfile?.email || "Chưa cung cấp"}
                     </p>
                   </div>
                 </div>
@@ -166,7 +166,7 @@ export default async function ProfileInfo() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3 className="mb-1 text-lg font-semibold text-gray-800 dark:text-white">
-                      Address
+                      Địa chỉ
                     </h3>
                     <p className="text-sm leading-relaxed text-gray-600 dark:text-gray-300">
                       {userProfile?.address &&
@@ -175,7 +175,7 @@ export default async function ProfileInfo() {
                       userProfile.address.ward.district?.name &&
                       userProfile.address.ward.district.province?.name
                         ? `${userProfile.address.street}, ${userProfile.address.ward.name}, ${userProfile.address.ward.district.name}, ${userProfile.address.ward.district.province.name}`
-                        : "Not provided"}
+                        : "Chưa cung cấp"}
                     </p>
                   </div>
                 </div>
@@ -195,7 +195,7 @@ export default async function ProfileInfo() {
                     <p className="text-gray-600 dark:text-gray-300">
                       {userProfile?.bankNumber && userProfile?.accoutHolderName
                         ? `${userProfile.bankNumber} - ${userProfile.accoutHolderName}`
-                        : "Not provided"}
+                        : "Chưa cung cấp"}
                     </p>
                   </div>
                 </div>

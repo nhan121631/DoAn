@@ -14,8 +14,8 @@ interface BillDetailModalProps {
 }
 
 const billStatusMap = {
-  1: { text: "PAID", color: "green" },
-  0: { text: "UNPAID", color: "red" },
+  1: { text: "ĐÃ THANH TOÁN", color: "green" },
+  0: { text: "CHƯA THANH TOÁN", color: "red" },
 };
 
 export default function BillDetailModal({
@@ -38,27 +38,27 @@ export default function BillDetailModal({
           {/* Header hóa đơn */}
           <div className="text-center mb-6 border-b dark:border-gray-600 pb-4 transition-colors duration-300">
             <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-2 transition-colors duration-300">
-              RENTAL BILL
+              HÓA ĐƠN THUÊ PHÒNG
             </h2>
             <p className="text-gray-600 dark:text-gray-300 transition-colors duration-300">
-              RENTAL BILL
+              HÓA ĐƠN THUÊ PHÒNG
             </p>
             <div className="mt-3 text-sm text-gray-500 dark:text-gray-400 transition-colors duration-300">
-              <p>Date: {new Date().toLocaleDateString("vi-VN")}</p>
-              <p>Bill ID: #{selectedBill.id}</p>
+              <p>Ngày: {new Date().toLocaleDateString("vi-VN")}</p>
+              <p>Mã hóa đơn: #{selectedBill.id}</p>
             </div>
           </div>
 
           {/* Customer Information */}
           <div className="mb-6">
             <h3 className="text-lg font-semibold mb-3 text-gray-700 dark:text-gray-200 transition-colors duration-300">
-              CUSTOMER INFORMATION
+              THÔNG TIN KHÁCH HÀNG
             </h3>
             <div className="bg-gray-50 dark:bg-[#22304a] p-4 rounded-lg transition-colors duration-300">
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <span className="font-medium text-gray-600 dark:text-gray-300 transition-colors duration-300">
-                    Name:{" "}
+                    Tên:{" "}
                   </span>
                   <p className="text-gray-800 dark:text-white font-bold text-lg transition-colors duration-300">
                     {contract?.tenantName}
@@ -66,7 +66,7 @@ export default function BillDetailModal({
                 </div>
                 <div>
                   <span className="font-medium text-gray-600 dark:text-gray-300 transition-colors duration-300">
-                    Phone:
+                    Số điện thoại:
                   </span>
                   <p className="text-gray-800 dark:text-white font-bold text-lg transition-colors duration-300">
                     {contract?.tenantPhone}
@@ -74,7 +74,7 @@ export default function BillDetailModal({
                 </div>
                 <div>
                   <span className="font-medium text-gray-600 dark:text-gray-300 transition-colors duration-300">
-                    Room:
+                    Phòng:
                   </span>
                   <p className="text-gray-800 dark:text-white transition-colors duration-300">
                     {contract?.roomTitle}
@@ -82,7 +82,7 @@ export default function BillDetailModal({
                 </div>
                 <div>
                   <span className="font-medium text-gray-600 dark:text-gray-300 transition-colors duration-300">
-                    Month:
+                    Tháng:
                   </span>
                   <p className="text-gray-800 dark:text-white font-semiboldtransition-colors duration-300">
                     {selectedBill.month}
@@ -95,24 +95,24 @@ export default function BillDetailModal({
           {/* Chi tiết hóa đơn */}
           <div className="mb-6">
             <h3 className="text-lg font-semibold mb-3 text-gray-700 dark:text-gray-200 transition-colors duration-300">
-              BILL DETAILS
+              CHI TIẾT HÓA ĐƠN
             </h3>
             <div className="border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden transition-colors duration-300">
               <table className="w-full">
                 <thead className="bg-gray-100 dark:bg-[#17223b] transition-colors duration-300">
                   <tr>
                     <th className="text-left py-3 px-4 font-semibold text-gray-700 dark:text-gray-200 transition-colors duration-300">
-                      Item
+                      Mục
                     </th>
                     <th className="text-right py-3 px-4 font-semibold text-gray-700 dark:text-gray-200 transition-colors duration-300">
-                      Amount
+                      Số tiền
                     </th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr className="border-t dark:border-gray-600 transition-colors duration-300">
                     <td className="py-3 px-4 text-gray-700 dark:text-gray-300 transition-colors duration-300">
-                      Electricity
+                      Điện
                     </td>
                     <td className="py-3 px-4 text-right text-gray-800 dark:text-white transition-colors duration-300">
                       {selectedBill.electricityFee?.toLocaleString("vi-VN")} đ
@@ -120,7 +120,7 @@ export default function BillDetailModal({
                   </tr>
                   <tr className="border-t dark:border-gray-600 bg-gray-50 dark:bg-[#22304a] transition-colors duration-300">
                     <td className="py-3 px-4 text-gray-700 dark:text-gray-300 transition-colors duration-300">
-                      Water
+                      Nước
                     </td>
                     <td className="py-3 px-4 text-right text-gray-800 dark:text-white transition-colors duration-300">
                       {selectedBill.waterFee?.toLocaleString("vi-VN")} đ
@@ -128,7 +128,7 @@ export default function BillDetailModal({
                   </tr>
                   <tr className="border-t dark:border-gray-600 transition-colors duration-300">
                     <td className="py-3 px-4 text-gray-700 dark:text-gray-300 transition-colors duration-300">
-                      Service Fee
+                      Phí Phòng
                     </td>
                     <td className="py-3 px-4 text-right text-gray-800 dark:text-white transition-colors duration-300">
                       {selectedBill.serviceFee?.toLocaleString("vi-VN")} đ
@@ -138,7 +138,7 @@ export default function BillDetailModal({
                     selectedBill.damageFee > 0 && (
                       <tr className="border-t dark:border-gray-600 bg-red-50 dark:bg-red-900/20 transition-colors duration-300">
                         <td className="py-3 px-4 text-red-700 dark:text-red-300 font-medium transition-colors duration-300">
-                          Other Fees
+                          Phí khác
                         </td>
                         <td className="py-3 px-4 text-right text-red-800 dark:text-red-200 font-medium transition-colors duration-300">
                           {selectedBill.damageFee?.toLocaleString("vi-VN")} đ
@@ -148,7 +148,7 @@ export default function BillDetailModal({
                   {selectedBill.note && (
                     <tr className="border-t dark:border-gray-600 bg-yellow-50 dark:bg-yellow-900/20 transition-colors duration-300">
                       <td className="py-3 px-4 text-yellow-700 dark:text-yellow-300 font-medium transition-colors duration-300">
-                        Note
+                        Ghi chú
                       </td>
                       <td className="py-3 px-4 text-left text-yellow-800 dark:text-yellow-200 font-medium transition-colors duration-300">
                         {selectedBill.note}
@@ -157,7 +157,7 @@ export default function BillDetailModal({
                   )}
                   <tr className="border-t dark:border-gray-600 border-gray-300 bg-blue-50 dark:bg-[#17223b] transition-colors duration-300">
                     <td className="py-4 px-4 font-bold text-lg text-gray-800 dark:text-white transition-colors duration-300">
-                      TOTAL
+                      TỔNG CỘNG
                     </td>
                     <td className="py-4 px-4 text-right font-bold text-lg text-blue-600 dark:text-blue-400 transition-colors duration-300">
                       {selectedBill.totalAmount?.toLocaleString("vi-VN")} đ
@@ -171,10 +171,10 @@ export default function BillDetailModal({
           {/* Footer */}
           <div className="text-center pt-4 border-t border-gray-200 dark:border-gray-600 transition-colors duration-300">
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-2 transition-colors duration-300">
-              Thank you for trusting and using our services!
+              Cảm ơn bạn đã tin tưởng và sử dụng dịch vụ của chúng tôi!
             </p>
             <p className="text-xs text-gray-400 dark:text-gray-500 transition-colors duration-300">
-              Please pay on time. Contact: {contract?.landlordName}
+              Vui lòng thanh toán đúng hạn. Liên hệ: {contract?.landlordName}
             </p>
           </div>
         </div>

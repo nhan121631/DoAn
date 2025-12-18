@@ -1,26 +1,23 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import { ColumnsType } from "antd/es/table";
-import { Table, Popconfirm, Button, message, Tag } from "antd";
-import React, { useEffect } from "react";
 import { EyeOutlined } from "@ant-design/icons";
+import { Button, message, Popconfirm, Table, Tag } from "antd";
+import { ColumnsType } from "antd/es/table";
+import { useEffect } from "react";
 
-import { useState } from "react";
-import { PaginatedResponse, Requirement } from "@/types/types";
+import { requestProcessedNotification } from "@/services/NotificationService";
 import {
   getRequestsByLandlordId,
   rejectRequirement,
   updateRequirementStatus,
   updateRequirementWithImage,
 } from "@/services/Requirements";
+import { PaginatedResponse, Requirement } from "@/types/types";
 import { useSession } from "next-auth/react";
-import {
-  createRequestNotification,
-  requestProcessedNotification,
-} from "@/services/NotificationService";
-import RequestDetailModal from "../components/manage-requests/ModalRequest";
+import { useState } from "react";
 import CompletionModal from "../components/manage-requests/CompletionModal";
+import RequestDetailModal from "../components/manage-requests/ModalRequest";
 
 export default function ManageRequests() {
   const [requests, setRequests] = useState<Requirement[]>([]);
@@ -32,7 +29,8 @@ export default function ManageRequests() {
     null
   );
   const [completionModalOpen, setCompletionModalOpen] = useState(false);
-  const [completingRequest, setCompletingRequest] = useState<Requirement | null>(null);
+  const [completingRequest, setCompletingRequest] =
+    useState<Requirement | null>(null);
   const [completionLoading, setCompletionLoading] = useState(false);
 
   const fetchData = async (page = 0, size = 5) => {
@@ -78,11 +76,11 @@ export default function ManageRequests() {
       await requestProcessedNotification(
         session?.user.id,
         userId,
-        "Request " + description + " successfully processed by landlord."
+        "Yêu cầu " + description + " đã được chủ nhà xử lý thành công."
       );
       // Send notification to tenant
       messageApi.success({
-        content: "Status updated successfully!",
+        content: "Cập nhật trạng thái thành công!",
         duration: 2,
       });
     } catch (error: any) {
@@ -93,7 +91,7 @@ export default function ManageRequests() {
     }
   };
 
-//completed request
+  //completed request
   const handleCompleteRequest = (record: Requirement) => {
     setCompletingRequest(record);
     setCompletionModalOpen(true);
@@ -104,14 +102,16 @@ export default function ManageRequests() {
 
     setCompletionLoading(true);
     try {
-      await updateRequirementWithImage(completingRequest.id, completingRequest.description, imageFile);
-      
+      await updateRequirementWithImage(
+        completingRequest.id,
+        completingRequest.description,
+        imageFile
+      );
+
       // Update local state
       setRequests((prev) =>
         prev.map((item) =>
-          item.id === completingRequest.id 
-            ? { ...item, status: 1} 
-            : item
+          item.id === completingRequest.id ? { ...item, status: 1 } : item
         )
       );
 
@@ -119,11 +119,11 @@ export default function ManageRequests() {
       await requestProcessedNotification(
         session?.user.id,
         completingRequest.userId,
-        `Request "${completingRequest.description}" has been completed by landlord.`
+        `Yêu cầu "${completingRequest.description}" đã được chủ nhà hoàn thành.`
       );
 
       messageApi.success({
-        content: "Request completed successfully!",
+        content: "Yêu cầu đã được hoàn thành thành công!",
         duration: 2,
       });
 
@@ -138,7 +138,7 @@ export default function ManageRequests() {
       setCompletionLoading(false);
     }
   };
-//
+  //
   const handleReject = async (id: string) => {
     try {
       await rejectRequirement(id);
@@ -148,7 +148,7 @@ export default function ManageRequests() {
         )
       );
       messageApi.success({
-        content: "Status updated successfully!",
+        content: "Cập nhật trạng thái thành công!",
         duration: 2,
       });
       const userId = requests.find((req) => req.id === id)?.userId;
@@ -156,7 +156,7 @@ export default function ManageRequests() {
       await requestProcessedNotification(
         session?.user.id,
         userId,
-        "Request " + description + " has been rejected by landlord."
+        "Yêu cầu " + description + " đã bị chủ nhà từ chối."
       );
     } catch (error: any) {
       messageApi.error({
@@ -189,12 +189,12 @@ export default function ManageRequests() {
         (paging?.page ?? 0) * (paging?.size ?? 5) + index + 1,
     },
     {
-      title: "Room Name",
+      title: "Tên phòng",
       dataIndex: "roomTitle",
       key: "roomTitle",
     },
     {
-      title: "Customer Name",
+      title: "Tên khách hàng",
       dataIndex: "userName",
       key: "userName",
     },
@@ -204,7 +204,7 @@ export default function ManageRequests() {
       key: "email",
     },
     {
-      title: "Request Description",
+      title: "Mô tả yêu cầu",
       dataIndex: "description",
       key: "description",
       render: (text: string) => (
@@ -214,7 +214,7 @@ export default function ManageRequests() {
       ),
     },
     {
-      title: "Created Date",
+      title: "Ngày tạo",
       dataIndex: "createdDate",
       key: "createdDate",
       width: 120,
@@ -230,7 +230,7 @@ export default function ManageRequests() {
         new Date(a.createdDate).getTime() - new Date(b.createdDate).getTime(),
     },
     {
-      title: "Detail",
+      title: "Chi tiết",
       key: "detail",
       width: 80,
       render: (_, record) => (
@@ -239,7 +239,7 @@ export default function ManageRequests() {
           icon={<EyeOutlined />}
           onClick={() => handleViewDetail(record)}
           className="text-blue-500 hover:text-blue-700"
-          title="View Details"
+          title="Xem chi tiết"
         />
       ),
     },
@@ -268,37 +268,36 @@ export default function ManageRequests() {
     //     ),
     // },
     {
-  title: "Status",
-  dataIndex: "status",
-  key: "status",
-  render: (status, record) =>
-    status === 0 ? (
-      
-      <Button 
-        type="primary" 
-        size="small"
-        onClick={() => handleCompleteRequest(record)}
-      >
-        Not processed
-      </Button>
-    ) : status === 1 ? (
-      <Tag color="green">Completed</Tag>
-    ) : (
-      <Tag color="red">Rejected</Tag>
-    ),
-},
+      title: "Trạng thái",
+      dataIndex: "status",
+      key: "status",
+      render: (status, record) =>
+        status === 0 ? (
+          <Button
+            type="primary"
+            size="small"
+            onClick={() => handleCompleteRequest(record)}
+          >
+            Chưa xử lý
+          </Button>
+        ) : status === 1 ? (
+          <Tag color="green">Đã hoàn thành</Tag>
+        ) : (
+          <Tag color="red">Đã từ chối</Tag>
+        ),
+    },
 
     {
-      title: "Action",
+      title: "Hành động",
       dataIndex: "action",
       key: "action",
       render: (_, record) =>
         record.status === 0 ? (
           <Popconfirm
-            title="Are you sure?"
+            title="Bạn có chắc chắn?"
             onConfirm={() => handleReject(record.id)}
-            okText="Yes"
-            cancelText="No"
+            okText="Có"
+            cancelText="Không"
           >
             <Button
               type="default"
@@ -309,13 +308,13 @@ export default function ManageRequests() {
                 borderColor: "red",
               }}
             >
-              Reject
+              Từ chối
             </Button>
           </Popconfirm>
         ) : record.status === 1 ? (
-          <Tag color="default">Completed</Tag>
+          <Tag color="default">Đã hoàn thành</Tag>
         ) : (
-          <Tag color="default">Rejected</Tag>
+          <Tag color="default">Đã từ chối</Tag>
         ),
     },
   ];
@@ -325,9 +324,9 @@ export default function ManageRequests() {
       {contextHolder}
       <div className="mb-4">
         <h2 className="text-2xl font-semibold dark:!text-white">
-          Manage Requests
+          Quản lý yêu cầu
         </h2>
-        <p className="text-lg text-gray-500">Room Request Management</p>
+        <p className="text-lg text-gray-500">Quản lý yêu cầu phòng</p>
       </div>
       <Table
         columns={columns}
