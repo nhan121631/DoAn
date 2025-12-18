@@ -89,7 +89,7 @@ function AppSidebar({ collapsed }: AppSidebarProps) {
           {
             key: "7",
             icon: <MdOutlineChat />,
-            label: <Link to="/admin/chat">Chat</Link>,
+            label: <Link to="/admin/chat">Tin nhắn</Link>,
           },
         ]}
       />

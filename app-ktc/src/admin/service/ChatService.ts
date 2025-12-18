@@ -15,7 +15,7 @@ import {
   deleteDoc,
   getDocs,
 } from "firebase/firestore";
-import { URL_API, URL_IMAGE } from "./Constant";
+import { API_URL, URL_IMAGE } from "./Constant";
 
 // Interface for chat user data
 export interface ChatUser {
@@ -243,7 +243,7 @@ export const uploadImageToBackend = async (
 
   try {
     // Use the same API as next-app-client
-    const response = await fetch(`${URL_API}/chat/upload-image`, {
+    const response = await fetch(`${API_URL}/chat/upload-image`, {
       method: "POST",
       body: formData,
     });

@@ -493,6 +493,7 @@ public class RoomService {
                 // Lưu dữ liệu cũ để so sánh
                 String oldTitle = room.getTitle();
                 String oldDescription = room.getDescription();
+                int oldApproval = room.getApproval(); // ⭐ Lưu approval cũ
                 List<Image> oldImages = imageJpaRepository.findByRoomId(id);
 
                 // Cập nhật thông tin cơ bản
@@ -623,10 +624,60 @@ public class RoomService {
 
                 List<Image> updatedImages = imagesToKeep;
 
-                // ✅ Chỉ setApproval = 0 nếu có thay đổi title, description hoặc image
-                if (!Objects.equals(oldTitle, request.getTitle()) ||
+                // Chỉ setApproval = 0 nếu có thay đổi title, description hoặc image
+                boolean needsReApproval = !Objects.equals(oldTitle, request.getTitle()) ||
                                 !Objects.equals(oldDescription, request.getDescription()) ||
-                                imageChanged) {
+                                imageChanged;
+
+                if (needsReApproval && oldApproval == 2) {
+                        // Phòng đã bị reject (approval=2), giờ update lại → phải trừ tiền lại
+                        User user = room.getUser();
+
+                        // Tính số ngày post
+                        LocalDate startDate = room.getPost_start_date().toInstant()
+                                        .atZone(ZoneId.systemDefault()).toLocalDate();
+                        LocalDate endDate = room.getPost_end_date().toInstant()
+                                        .atZone(ZoneId.systemDefault()).toLocalDate();
+                        long diffDays = ChronoUnit.DAYS.between(startDate, endDate);
+                        if (diffDays == 0) {
+                                diffDays = 1;
+                        }
+
+                        // Tính tiền cần trả
+                        Double pricePerDay = room.getPostType().getPricePerDay();
+                        if (pricePerDay == null) {
+                                throw new IllegalArgumentException("PostType does not have price per day set");
+                        }
+                        Double totalPrice = diffDays * pricePerDay;
+
+                        // Kiểm tra số dư
+                        Double balance = user.getWallet().getBalance();
+                        if (totalPrice > balance) {
+                                throw new IllegalArgumentException(
+                                                "User does not have enough balance to re-submit this room after rejection");
+                        }
+
+                        // Trừ tiền
+                        user.getWallet().setBalance(balance - totalPrice);
+                        userJpaRepository.save(user);
+
+                        // Tạo transaction
+                        Transaction transaction = new Transaction();
+                        transaction.setAmount(totalPrice);
+                        transaction.setDescription("Re-submit room post after rejection: " + room.getTitle());
+                        transaction.setTransactionDate(new Date());
+                        transaction.setTransactionCode(generateUniqueTransactionCode("RESUBMIT", user.getId()));
+                        transaction.setBankTransactionName("Ants Wallet");
+                        transaction.setStatus(1); // thành công
+                        transaction.setTransactionType(0); // type 0: trừ tiền
+                        transaction.setWallet(user.getWallet());
+                        transactionsJpaRepository.save(transaction);
+
+                        System.out.println("💰 Re-submit after rejection: Charged " + totalPrice + " VND for room: "
+                                        + room.getTitle());
+                }
+
+                if (needsReApproval) {
                         room.setApproval(0);
                 }
 
