@@ -43,7 +43,7 @@ export default function CompareRoom() {
 
           {/* Tooltip */}
           <div className="absolute left-16 top-1/2 transform -translate-y-1/2 bg-gray-800 text-white px-3 py-2 rounded-lg text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap pointer-events-none">
-            Compare Rooms ({items.length}/2)
+            So sánh phòng ({items.length}/2)
             <div className="absolute left-0 top-1/2 transform -translate-x-1 -translate-y-1/2 w-0 h-0 border-r-4 border-r-gray-800 border-t-4 border-t-transparent border-b-4 border-b-transparent"></div>
           </div>
         </div>
@@ -57,7 +57,7 @@ export default function CompareRoom() {
               <FaBalanceScale className="text-white text-sm" />
             </div>
             <span className="text-xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
-              Compare Rooms
+              So sánh phòng
             </span>
           </div>
         }
@@ -98,7 +98,7 @@ export default function CompareRoom() {
                 router.push("/compare");
               }}
             >
-              Compare Now
+              So sánh ngay
             </Button>
 
             {items.length > 0 && (
@@ -110,7 +110,7 @@ export default function CompareRoom() {
                 className="h-10 rounded-xl font-medium border-2 hover:bg-red-50 transition-all duration-300"
                 onClick={clearItems}
               >
-                Clear All
+                Xóa tất cả
               </Button>
             )}
           </div>
@@ -121,14 +121,14 @@ export default function CompareRoom() {
           <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
             <div className="flex items-center justify-between mb-3">
               <span className="text-sm font-medium text-gray-600">
-                Selected: {items.length}/2
+                Đã chọn: {items.length}/2
               </span>
               <span className="text-xs text-gray-400">
                 {items.length === 0
-                  ? "Start comparing"
+                  ? "Bắt đầu so sánh"
                   : items.length === 1
-                  ? "Add 1 more"
-                  : "Ready to compare!"}
+                  ? "Thêm 1 phòng nữa"
+                  : "Sẵn sàng so sánh!"}
               </span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2">
@@ -200,11 +200,11 @@ export default function CompareRoom() {
                 <FaPlus className="text-2xl text-gray-400" />
               </div>
               <h3 className="text-lg font-semibold text-gray-700 mb-2">
-                No Rooms Selected
+                Chưa có phòng nào được chọn
               </h3>
               <p className="text-gray-500 text-sm max-w-xs mx-auto">
-                Browse rooms and add them to comparison to see differences side
-                by side
+                Duyệt các phòng và thêm chúng vào so sánh để xem sự khác biệt
+                bên cạnh nhau
               </p>
             </div>
           )}
@@ -216,7 +216,7 @@ export default function CompareRoom() {
             >
               <FaPlus className="text-2xl text-gray-400 mx-auto mb-2" />
               <p className="text-sm text-gray-600 font-medium">
-                Add one more room to compare
+                Thêm phòng nữa để so sánh
               </p>
             </div>
           )}

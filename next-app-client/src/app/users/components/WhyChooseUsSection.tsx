@@ -4,24 +4,25 @@ export default function WhyChooseUsSection() {
   const features = [
     {
       icon: "/Icon.svg",
-      title: "Find your dream room with us",
+      title: "Tìm phòng dễ dàng",
       description:
-        "We help you find a room by offering a smart real estate experience",
+        "Chúng tôi giúp bạn tìm phòng bằng cách cung cấp trải nghiệm bất động sản thông minh",
     },
     {
       icon: "/Agent.svg",
-      title: "Experienced agents",
-      description: "Find an experienced agent who knows your market best",
+      title: "Đại lý giàu kinh nghiệm",
+      description:
+        "Tìm một đại lý giàu kinh nghiệm, người hiểu rõ thị trường của bạn nhất",
     },
     {
       icon: "/Rentroom.svg",
-      title: "Rent rooms",
-      description: "Millions of rooms in your favourite cities",
+      title: "Thuê phòng",
+      description: "Hàng triệu phòng ở các thành phố yêu thích của bạn",
     },
     {
       icon: "/Ownroom.svg",
-      title: "List your own room",
-      description: "Sign up now and sell or rent your own rooms",
+      title: "Đăng phòng của bạn",
+      description: "Đăng ký ngay để bán hoặc cho thuê phòng của bạn",
     },
   ];
 
@@ -38,21 +39,21 @@ export default function WhyChooseUsSection() {
         {/* Header Section */}
         <div className="text-center max-w-3xl mx-auto mb-16">
           <div className="inline-flex items-center px-4 py-2 bg-blue-100 text-blue-700 text-sm font-medium rounded-full mb-6">
-            ✨ Why Choose Us
+            ✨ Tại sao chọn chúng tôi
           </div>
 
           <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6 leading-tight">
-            Your Perfect Room,
+            Phòng hoàn hảo của bạn,
             <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-blue-800 bg-clip-text text-transparent">
               {" "}
-              Simplified
+              Đơn giản hóa
             </span>
           </h2>
 
           <p className="text-lg text-gray-600 leading-relaxed max-w-2xl mx-auto">
-            We provide verified listings, trusted landlords, and seamless rental
-            experiences. Find your perfect room with our advanced search
-            filters, virtual tours, and 24/7 customer support.
+            Chúng tôi cung cấp danh sách đã được xác minh, chủ nhà đáng tin cậy
+            và trải nghiệm thuê phòng liền mạch. Tìm phòng hoàn hảo của bạn với
+            các bộ lọc tìm kiếm nâng cao, tour ảo và hỗ trợ khách hàng 24/7.
           </p>
         </div>
 
@@ -100,7 +101,8 @@ export default function WhyChooseUsSection() {
         <div className="mt-20 text-center">
           <div className="inline-flex items-center gap-2 text-sm text-gray-500 bg-white/50 px-6 py-3 rounded-full border border-gray-200">
             <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-            Safe, fast, and reliable - your home is just a click away
+            An toàn, nhanh chóng và đáng tin cậy - ngôi nhà của bạn chỉ cách một
+            cú nhấp chuột
           </div>
         </div>
       </div>

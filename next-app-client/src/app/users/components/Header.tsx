@@ -42,10 +42,10 @@ export default function Header() {
       }
     };
 
-    window.addEventListener('avatarUpdated', handleAvatarUpdate);
-    
+    window.addEventListener("avatarUpdated", handleAvatarUpdate);
+
     return () => {
-      window.removeEventListener('avatarUpdated', handleAvatarUpdate);
+      window.removeEventListener("avatarUpdated", handleAvatarUpdate);
     };
   }, []);
 
@@ -78,7 +78,7 @@ export default function Header() {
           }}
         >
           <IoIosLogOut className="text-lg" />
-          Logout
+          Đăng xuất
         </button>
       ),
     },
@@ -108,7 +108,7 @@ export default function Header() {
               onClick={(e) => handleSmoothScroll(e, "home")}
               className="px-4 py-2 text-gray-700 font-medium rounded-lg hover:bg-gray-100 hover:text-gray-900 transition-all duration-200"
             >
-              Home
+              Trang chủ
             </Link>
           </li>
           <li>
@@ -117,7 +117,7 @@ export default function Header() {
               onClick={(e) => handleSmoothScroll(e, "rental-rooms")}
               className="px-4 py-2 text-gray-700 font-medium rounded-lg hover:bg-gray-100 hover:text-gray-900 transition-all duration-200"
             >
-              Rental rooms
+              Phòng cho thuê
             </Link>
           </li>
           <li>
@@ -126,7 +126,7 @@ export default function Header() {
               onClick={(e) => handleSmoothScroll(e, "landlords")}
               className="px-4 py-2 text-gray-700 font-medium rounded-lg hover:bg-gray-100 hover:text-gray-900 transition-all duration-200"
             >
-              Landlords
+              Chủ nhà
             </Link>
           </li>
           <li>
@@ -135,7 +135,7 @@ export default function Header() {
               onClick={(e) => handleSmoothScroll(e, "contact")}
               className="px-4 py-2 text-gray-700 font-medium rounded-lg hover:bg-gray-100 hover:text-gray-900 transition-all duration-200"
             >
-              Contact
+              Liên hệ
             </Link>
           </li>
         </ul>
@@ -163,7 +163,6 @@ export default function Header() {
               <div className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors duration-200">
                 <Avatar
                   src={currentAvatarUrl}
-
                   size={36}
                   className="border border-gray-200"
                 />
@@ -181,7 +180,7 @@ export default function Header() {
               className="hidden md:flex items-center gap-2 px-4 py-2 text-gray-600 font-medium rounded-lg hover:bg-gray-100 hover:text-gray-900 transition-all duration-200"
             >
               <AiOutlineUserAdd className="w-4 h-4" />
-              Register
+              Đăng ký
             </Link>
 
             {/* Login Link */}
@@ -190,7 +189,7 @@ export default function Header() {
               className="hidden md:flex items-center gap-2 px-4 py-2 text-gray-600 font-medium rounded-lg hover:bg-gray-100 hover:text-gray-900 transition-all duration-200"
             >
               <IoLogInOutline className="w-4 h-4" />
-              Login
+              Đăng nhập
             </Link>
 
             {/* Create Post Button */}
@@ -199,8 +198,8 @@ export default function Header() {
               className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white font-medium rounded-lg hover:bg-gray-800 transition-colors duration-200 shadow-sm"
             >
               <FaRegEdit className="w-4 h-4" />
-              <span className="hidden md:inline">Create Post</span>
-              <span className="md:hidden">Post</span>
+              <span className="hidden md:inline">Tạo bài viết</span>
+              <span className="md:hidden">Bài viết</span>
             </Link>
           </>
         )}
@@ -267,7 +266,7 @@ export default function Header() {
                   }}
                   className="block px-4 py-3 text-gray-700 font-medium rounded-lg hover:bg-gray-100 transition-colors duration-200"
                 >
-                  Home
+                  Trang chủ
                 </Link>
               </li>
               <li>
@@ -279,7 +278,7 @@ export default function Header() {
                   }}
                   className="block px-4 py-3 text-gray-700 font-medium rounded-lg hover:bg-gray-100 transition-colors duration-200"
                 >
-                  Rental rooms
+                  Phòng cho thuê
                 </Link>
               </li>
               <li>
@@ -291,7 +290,7 @@ export default function Header() {
                   }}
                   className="block px-4 py-3 text-gray-700 font-medium rounded-lg hover:bg-gray-100 transition-colors duration-200"
                 >
-                  Landlords
+                  Chủ nhà
                 </Link>
               </li>
               <li>
@@ -303,7 +302,7 @@ export default function Header() {
                   }}
                   className="block px-4 py-3 text-gray-700 font-medium rounded-lg hover:bg-gray-100 transition-colors duration-200"
                 >
-                  Contact
+                  Liên hệ
                 </Link>
               </li>
             </ul>
@@ -338,7 +337,7 @@ export default function Header() {
                 className="flex items-center gap-3 px-4 py-3 text-gray-700 font-medium rounded-lg hover:bg-gray-100 transition-colors duration-200"
               >
                 <AiOutlineUserAdd className="w-4 h-4" />
-                Register
+                Đăng ký
               </Link>
               <Link
                 href="/auth/login"
@@ -346,7 +345,7 @@ export default function Header() {
                 className="flex items-center gap-3 px-4 py-3 text-gray-700 font-medium rounded-lg hover:bg-gray-100 transition-colors duration-200"
               >
                 <IoLogInOutline className="w-4 h-4" />
-                Login
+                Đăng nhập
               </Link>
             </div>
           )}
