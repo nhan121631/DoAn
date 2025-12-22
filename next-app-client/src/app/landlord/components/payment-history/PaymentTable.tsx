@@ -48,7 +48,13 @@ const defaultColumns: ColumnsType<any> = [
           fontWeight: 600,
         }}
       >
-        {amount.toLocaleString()}₫
+        {/* {amount.toLocaleString()}₫ */}
+        {record.transactionType === 0
+          ? "-"
+          : record.transactionType === 3
+          ? "~"
+          : "+"}
+        {Math.abs(amount).toLocaleString()}₫
       </span>
     ),
   },
