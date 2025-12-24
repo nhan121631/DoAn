@@ -45,6 +45,7 @@ const { Title } = Typography;
 const { TextArea } = Input;
 
 const relationshipOptions = [
+  { value: "Bản thân", label: "Bản thân" },
   { value: "Vợ/Chồng", label: "Vợ/Chồng" },
   { value: "Con", label: "Con" },
   { value: "Cha/Mẹ", label: "Cha/Mẹ" },
@@ -95,27 +96,6 @@ export default function ManageResidentsPage() {
   useEffect(() => {
     loadResidents();
   }, [session?.user?.id]);
-
-  // Cleanup forms on unmount
-  useEffect(() => {
-    return () => {
-      // Only attempt cleanup if forms exist and have the resetFields method
-      if (addForm && typeof addForm.resetFields === "function") {
-        try {
-          addForm.resetFields();
-        } catch (error) {
-          // Ignore cleanup errors
-        }
-      }
-      if (editForm && typeof editForm.resetFields === "function") {
-        try {
-          editForm.resetFields();
-        } catch (error) {
-          // Ignore cleanup errors
-        }
-      }
-    };
-  }, [addForm, editForm]);
 
   const loadResidents = async () => {
     if (!session?.user?.id) return;
@@ -176,22 +156,16 @@ export default function ManageResidentsPage() {
   };
 
   // Handle form reset and image cleanup
-  const resetForm = () => {
-    // Only reset forms if they exist and are connected
-    if (addForm && typeof addForm.resetFields === "function") {
-      try {
-        addForm.resetFields();
-      } catch (error) {
-        // Ignore form reset errors when forms are not connected
-      }
-    }
-    if (editForm && typeof editForm.resetFields === "function") {
-      try {
-        editForm.resetFields();
-      } catch (error) {
-        // Ignore form reset errors when forms are not connected
-      }
-    }
+  const resetAddForm = () => {
+    addForm.resetFields();
+    setFrontImageFile(null);
+    setBackImageFile(null);
+    setFrontImagePreview("");
+    setBackImagePreview("");
+  };
+
+  const resetEditForm = () => {
+    editForm.resetFields();
     setFrontImageFile(null);
     setBackImageFile(null);
     setFrontImagePreview("");
@@ -214,13 +188,12 @@ export default function ManageResidentsPage() {
     }
   }, [editResident]);
 
-  // Handle add resident modal opening - reset form and load contracts
+  // Handle add resident modal opening - load contracts
   useEffect(() => {
-    if (addResidentOpen && !editResident) {
-      resetForm();
+    if (addResidentOpen) {
       loadAvailableContracts();
     }
-  }, [addResidentOpen, editResident]);
+  }, [addResidentOpen]);
 
   const handleAddResident = async (values: any) => {
     try {
@@ -248,7 +221,7 @@ export default function ManageResidentsPage() {
 
       messageApi.success("Thêm tạm trú thành công!");
       setAddResidentOpen(false);
-      resetForm();
+      resetAddForm();
       loadResidents(); // Reload data
     } catch (error) {
       console.error("Failed to add resident:", error);
@@ -290,7 +263,7 @@ export default function ManageResidentsPage() {
 
       messageApi.success("Cập nhật tạm trú thành công!");
       setEditResident(null);
-      resetForm();
+      resetEditForm();
       loadResidents(); // Reload data
     } catch (error) {
       console.error("Failed to update resident:", error);
@@ -727,11 +700,10 @@ export default function ManageResidentsPage() {
         open={addResidentOpen}
         onCancel={() => {
           setAddResidentOpen(false);
-          resetForm();
+          resetAddForm();
         }}
         footer={null}
         destroyOnHidden={true}
-        forceRender={true}
       >
         <Form
           form={addForm}
@@ -880,11 +852,10 @@ export default function ManageResidentsPage() {
         open={!!editResident}
         onCancel={() => {
           setEditResident(null);
-          resetForm();
+          resetEditForm();
         }}
         footer={null}
         destroyOnHidden={true}
-        forceRender={true}
         key={editResident?.id || "edit-modal"}
       >
         {editResident && (
@@ -1024,7 +995,7 @@ export default function ManageResidentsPage() {
               <Button
                 onClick={() => {
                   setEditResident(null);
-                  resetForm();
+                  resetEditForm();
                 }}
               >
                 Hủy

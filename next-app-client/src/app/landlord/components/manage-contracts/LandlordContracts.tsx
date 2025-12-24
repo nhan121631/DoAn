@@ -168,14 +168,14 @@ const LandlordContracts: React.FC<LandlordContractsProps> = ({
             </Link>
           </Tooltip>
 
-          <Tooltip title="Chỉnh sửa hợp đồng">
+          {/* <Tooltip title="Chỉnh sửa hợp đồng">
             <Button
               type="text"
               icon={<EditOutlined />}
-              disabled={record.status !== 0} // Chỉ cho phép edit nếu status là Active
+              disabled={record.status !== 0}
               onClick={() => handleEdit(record)}
             />
-          </Tooltip>
+          </Tooltip> */}
           <Tooltip title="Xóa hợp đồng">
             <Popconfirm
               title="Bạn có chắc chắn muốn xóa hợp đồng này?"
