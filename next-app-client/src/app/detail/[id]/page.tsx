@@ -51,11 +51,10 @@ export default async function Page({
         <div className="p-8 text-center">
           <div className="mb-4 text-6xl text-gray-400">🏠</div>
           <h2 className="mb-2 text-2xl font-bold text-gray-800 dark:text-white">
-            Room not found
+            Không tìm thấy phòng
           </h2>
           <p className="text-gray-600 dark:text-gray-400">
-            The room you&#39;re looking for doesn&#39;t exist or has been
-            removed.
+            Phòng bạn đang tìm kiếm không tồn tại hoặc đã bị xóa.
           </p>
         </div>
       </div>
@@ -89,7 +88,7 @@ export default async function Page({
                       ? `${room.priceMonth.toLocaleString("vi-VN")} VND`
                       : "Contact"}
                   </span>
-                  <span className="text-white/80">/month</span>
+                  <span className="text-white/80">/tháng</span>
                 </div>
               </div>
 
@@ -120,7 +119,7 @@ export default async function Page({
                 <div className="flex gap-4 mb-4 items-left">
                   <h2 className="flex items-center gap-2 m-0 text-2xl font-bold text-gray-800 dark:text-white">
                     <Home className="w-6 h-6 text-blue-600" />
-                    Room Specifications
+                    Thông số phòng
                   </h2>
                   <div className="flex items-center gap-3 ml-4">
                     <IncreaseView roomId={room.id} />
@@ -136,10 +135,10 @@ export default async function Page({
                       </div>
                       <div>
                         <p className="mb-1 text-sm font-medium text-blue-700 dark:text-blue-300">
-                          Area
+                          Diện tích
                         </p>
                         <p className="text-xl font-bold text-blue-900 dark:text-blue-100">
-                          {room.area ? `${room.area} m²` : "Not specified"}
+                          {room.area ? `${room.area} m²` : "Không xác định"}
                         </p>
                       </div>
                     </div>
@@ -152,12 +151,12 @@ export default async function Page({
                       </div>
                       <div>
                         <p className="mb-1 text-sm font-medium text-green-700 dark:text-green-300">
-                          Length
+                          Chiều dài
                         </p>
                         <p className="text-xl font-bold text-green-900 dark:text-green-100">
                           {room.roomLength
                             ? `${room.roomLength} m`
-                            : "Not specified"}
+                            : "Không xác định"}
                         </p>
                       </div>
                     </div>
@@ -170,12 +169,12 @@ export default async function Page({
                       </div>
                       <div>
                         <p className="mb-1 text-sm font-medium text-purple-700 dark:text-purple-300">
-                          Width
+                          Chiều rộng
                         </p>
                         <p className="text-xl font-bold text-purple-900 dark:text-purple-100">
                           {room.roomWidth
                             ? `${room.roomWidth} m`
-                            : "Not specified"}
+                            : "Không xác định"}
                         </p>
                       </div>
                     </div>
@@ -188,12 +187,12 @@ export default async function Page({
                       </div>
                       <div>
                         <p className="mb-1 text-sm font-medium text-orange-700 dark:text-orange-300">
-                          Max People
+                          Số người tối đa
                         </p>
                         <p className="text-xl font-bold text-orange-900 dark:text-orange-100">
                           {room.maxPeople
-                            ? `${room.maxPeople} people`
-                            : "Not specified"}
+                            ? `${room.maxPeople} người`
+                            : "Không xác định"}
                         </p>
                       </div>
                     </div>
@@ -206,14 +205,14 @@ export default async function Page({
                       </div>
                       <div>
                         <p className="mb-1 text-sm font-medium text-yellow-700 dark:text-yellow-300">
-                          Electricity
+                          Điện
                         </p>
                         <p className="text-lg font-bold text-yellow-900 dark:text-yellow-100">
                           {room.elecPrice
                             ? `${room.elecPrice.toLocaleString(
                                 "vi-VN"
                               )} VND/kWh`
-                            : "Per bill"}
+                            : "Theo hóa đơn"}
                         </p>
                       </div>
                     </div>
@@ -226,14 +225,14 @@ export default async function Page({
                       </div>
                       <div>
                         <p className="mb-1 text-sm font-medium text-cyan-700 dark:text-cyan-300">
-                          Water
+                          Nước
                         </p>
                         <p className="text-lg font-bold text-cyan-900 dark:text-cyan-100">
                           {room.waterPrice
                             ? `${room.waterPrice.toLocaleString(
                                 "vi-VN"
                               )} VND/m³`
-                            : "Per bill"}
+                            : "Theo hóa đơn"}
                         </p>
                       </div>
                     </div>
@@ -244,45 +243,45 @@ export default async function Page({
                 <div className="mb-8">
                   <h3 className="flex items-center gap-2 mb-4 text-xl font-bold text-gray-800 dark:text-white">
                     <MapPin className="w-5 h-5 text-red-600" />
-                    Location Details
+                    Thông tin vị trí
                   </h3>
                   <div className="p-6 border border-red-200 bg-gradient-to-r from-red-50 to-pink-50 dark:from-red-900/20 dark:to-pink-900/20 rounded-xl dark:border-red-700">
                     <div className="grid grid-cols-1 gap-4 text-sm sm:grid-cols-2">
                       <div className="space-y-3">
                         <div className="flex items-start gap-2">
                           <span className="font-semibold text-red-700 dark:text-red-300 min-w-[70px]">
-                            Street:
+                            Đường:
                           </span>
                           <span className="text-gray-700 dark:text-gray-300">
-                            {room.address?.street || "Not available"}
+                            {room.address?.street || "Không xác định"}
                           </span>
                         </div>
                         <div className="flex items-start gap-2">
                           <span className="font-semibold text-red-700 dark:text-red-300 min-w-[70px]">
-                            Ward:
+                            Xã/Phường:
                           </span>
                           <span className="text-gray-700 dark:text-gray-300">
-                            {room.address?.ward?.name || "Not available"}
+                            {room.address?.ward?.name || "Không xác định"}
                           </span>
                         </div>
                       </div>
                       <div className="space-y-3">
                         <div className="flex items-start gap-2">
                           <span className="font-semibold text-red-700 dark:text-red-300 min-w-[70px]">
-                            District:
+                            Quận/Huyện:
                           </span>
                           <span className="text-gray-700 dark:text-gray-300">
                             {room.address?.ward?.district?.name ||
-                              "Not available"}
+                              "Không xác định"}
                           </span>
                         </div>
                         <div className="flex items-start gap-2">
                           <span className="font-semibold text-red-700 dark:text-red-300 min-w-[70px]">
-                            City:
+                            Thành phố:
                           </span>
                           <span className="text-gray-700 dark:text-gray-300">
                             {room.address?.ward?.district?.province?.name ||
-                              "Not available"}
+                              "Không xác định"}
                           </span>
                         </div>
                       </div>
@@ -302,12 +301,12 @@ export default async function Page({
                       </div>
                       <div>
                         <p className="mb-1 text-sm font-medium text-green-700 dark:text-green-300">
-                          Posted Date
+                          Ngày đăng tin
                         </p>
                         <p className="text-lg font-bold text-green-900 dark:text-green-100">
                           {room.postStartDate
                             ? new Date(room.postStartDate).toLocaleDateString(
-                                "en-US",
+                                "vi-VN",
                                 {
                                   weekday: "long",
                                   year: "numeric",
@@ -340,7 +339,7 @@ export default async function Page({
                   </div>
                   <div className="relative flex justify-center text-sm">
                     <span className="px-4 text-gray-500 bg-white dark:bg-gray-800 dark:text-gray-400">
-                      Room Details
+                      Chi tiết phòng
                     </span>
                   </div>
                 </div>
@@ -349,7 +348,7 @@ export default async function Page({
                 <div className="mb-8">
                   <h2 className="flex items-center gap-2 mb-4 text-xl font-bold text-gray-800 dark:text-white">
                     <FileText className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-                    Description
+                    Mô tả
                   </h2>
                   <div className="p-6 border border-gray-200 bg-gray-50 dark:bg-gray-800/50 rounded-xl dark:border-gray-700">
                     <div className="prose dark:prose-invert max-w-none">
@@ -368,7 +367,7 @@ export default async function Page({
                         <div className="py-8 text-center">
                           <FileText className="w-12 h-12 mx-auto mb-3 text-gray-400" />
                           <p className="italic text-gray-500 dark:text-gray-400">
-                            No description available for this room
+                            Không có mô tả cho phòng này.
                           </p>
                         </div>
                       )}
@@ -383,7 +382,7 @@ export default async function Page({
                   </div>
                   <div className="relative flex justify-center text-sm">
                     <span className="px-4 text-gray-500 bg-white dark:bg-gray-800 dark:text-gray-400">
-                      Community & Location
+                      Cộng đồng & Vị trí
                     </span>
                   </div>
                 </div>
@@ -392,7 +391,7 @@ export default async function Page({
                 <div className="mb-8">
                   <h2 className="flex items-center gap-2 mb-4 text-xl font-bold text-gray-800 dark:text-white">
                     <MessageSquare className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-                    Reviews & Comments
+                    Đánh giá & Nhận xét
                   </h2>
                   <div className="overflow-hidden bg-white border border-gray-200 dark:bg-gray-800/50 rounded-xl dark:border-gray-700">
                     <FeedbackLayout roomId={id} />
@@ -403,7 +402,7 @@ export default async function Page({
                 <div className="mb-8">
                   <h2 className="flex items-center gap-2 mb-4 text-xl font-bold text-gray-800 dark:text-white">
                     <Map className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-                    Location & Map
+                    Vị trí & Bản đồ
                   </h2>
                   <div className="overflow-hidden bg-white border border-gray-200 shadow-lg dark:bg-gray-800/50 rounded-xl dark:border-gray-700">
                     <MapSection

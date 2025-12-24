@@ -1055,9 +1055,9 @@ export default function BillsTab({
             <Form.Item
               label={
                 <span className="transition-colors duration-300 dark:text-gray-300">
-                  Service Fee:{" "}
+                  Phí thuê phòng:{" "}
                   {roomData?.priceMonth?.toLocaleString("vi-VN") || 0}
-                  đ/month
+                  đ/tháng
                 </span>
               }
               name="serviceFee"
