@@ -417,7 +417,7 @@ const MapRoom: React.FC<Props> = ({ onRoomClick }) => {
                     ${room.title}
                   </a>
                   <div style="color:#e53935;font-weight:600;margin:4px 0;font-size:13px;">
-                    ${room.priceMonth.toLocaleString("vi-VN")} M/month
+                    ${room.priceMonth.toLocaleString("vi-VN")} M/tháng
                   </div>
                   <div style="font-size:12px;color:#555;">
                     📐 ${room.area} m²

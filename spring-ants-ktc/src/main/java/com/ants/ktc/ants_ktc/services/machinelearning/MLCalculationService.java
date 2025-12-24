@@ -267,7 +267,7 @@ public class MLCalculationService {
     public List<RoomSuggestion> findSuggestedRoomsML(User user,
             UserPreferenceProfile profile) {
         System.out.println("[MLCalculationService] Search radius: " +
-                SEARCH_RADIUS_KM + "km, Similarity threshold: 60%");
+                SEARCH_RADIUS_KM + "km, Similarity threshold: 75%");
 
         // Get available rooms
         List<Room> availableRooms;
@@ -295,8 +295,8 @@ public class MLCalculationService {
             // Calculate similarity score using Content-Based Filtering
             double similarityScore = calculateContentBasedSimilarity(profile, room);
 
-            // Only suggest rooms with good similarity (threshold: 60%)
-            if (similarityScore >= 0.6) {
+            // Only suggest rooms with high similarity (threshold: 75%)
+            if (similarityScore >= 0.75) {
                 suggestions.add(new RoomSuggestion(room, similarityScore));
             }
         }

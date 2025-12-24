@@ -601,7 +601,7 @@ export default function UserInfoCard({ id }: { id: string }) {
                     isOnline ? "text-green-100" : "text-white/80"
                   }`}
                 >
-                  {isOnline ? "Online now" : "Offline"}
+                  {isOnline ? "Đang trực tuyến" : "Ngoại tuyến"}
                 </p>
               </div>
             </div>

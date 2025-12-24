@@ -91,7 +91,7 @@ const RoomDetailModal: React.FC<RoomDetailModalProps> = ({
             <div className="flex items-center gap-4 mb-2">
               <span className="text-lg font-bold text-green-700 dark:!text-green-400">
                 {data.priceMonth
-                  ? `${data.priceMonth.toLocaleString("vi-VN")} VND/month`
+                  ? `${data.priceMonth.toLocaleString("vi-VN")} VND/tháng`
                   : ""}
               </span>
               <span className="text-base text-gray-500 dark:!text-gray-300">
