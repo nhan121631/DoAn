@@ -160,7 +160,7 @@ DANH SÁCH FILE ĐÃ TẢI:
 
     full_prompt = f"{prompt}\n\n{room_info}\n\nHãy duyệt phòng này dựa trên thông tin và hình ảnh/video đã tải. Trả về ĐÚNG định dạng JSON yêu cầu, không có markdown, không có text thừa."
 
-    API_KEY = os.getenv("API_KEY")
+    API_KEY = os.getenv("API_KEY2")
     
     # Danh sách các model để thử (theo thứ tự ưu tiên) - Giống chatbot
     # Tất cả đều hỗ trợ vision tasks (ảnh/video)
@@ -410,7 +410,7 @@ def ai_chatbot():
     ]
     
     # Lấy API key
-    API_KEY = os.getenv("API_KEY")
+    API_KEY = os.getenv("API_KEY1")
     
     parts = []
     for turn in history:
