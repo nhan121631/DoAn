@@ -287,7 +287,7 @@ export default function ChartsTemplate() {
         {/* Charts Grid */}
         <div className="grid gap-6 lg:grid-cols-2">
           <ChartCard
-            title="Phí bảo trì & đăng phòng (mỗi ngày)"
+            title="Phí bảo trì & đăng phòng"
             icon={<PieChartIcon className="h-5 w-5 text-sky-500" />}
             // right={
             //   <span className="text-xs text-slate-500">Nguồn: mock data</span>
