@@ -16,4 +16,4 @@ public class PaginatedMaintenanceResponseDto<T> {
     private boolean hasNext;
     private boolean hasPrevious;
 
-}
+}   
