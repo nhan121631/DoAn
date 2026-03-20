@@ -29,7 +29,6 @@ import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
 import org.springframework.web.bind.annotation.RequestParam;
 
-
 @RestController
 @RequestMapping("/api/profile")
 public class ProfileController {
@@ -52,7 +51,6 @@ public class ProfileController {
     }
 
     @PatchMapping("/update")
-
     public ResponseEntity<UserProfileResponseDto> updateProfile(
             @RequestPart(value = "avatar", required = false) MultipartFile avatar,
             @RequestPart("profile") String profileJson) throws IOException {

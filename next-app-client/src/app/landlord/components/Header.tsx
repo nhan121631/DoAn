@@ -80,7 +80,7 @@ function AppHeader({ collapsed, toggleCollapsed }: AppHeaderProps) {
     const q = query(
       collection(db, "notifications"),
       where("receiverId", "==", landlordId),
-      orderBy("createdAt", "desc")
+      orderBy("createdAt", "desc"),
     );
 
     const unsub = onSnapshot(q, (snapshot) => {
@@ -89,7 +89,7 @@ function AppHeader({ collapsed, toggleCollapsed }: AppHeaderProps) {
           ({
             id: docSnap.id,
             ...docSnap.data(),
-          } as Notification)
+          }) as Notification,
       );
 
       // Chỉ hiển thị popup cho notification thực sự mới (không phải lần đầu load)
@@ -134,7 +134,7 @@ function AppHeader({ collapsed, toggleCollapsed }: AppHeaderProps) {
   const handleNotificationClick = async (
     id: string,
     type: string,
-    contractId: number | string | undefined
+    contractId: number | string | undefined,
   ) => {
     try {
       await updateDoc(doc(db, "notifications", id), { isRead: true });
@@ -162,7 +162,7 @@ function AppHeader({ collapsed, toggleCollapsed }: AppHeaderProps) {
       const nextPage = currentPage + 1;
       const newDisplayedNotifications = notifications.slice(
         0,
-        nextPage * notificationsPerPage
+        nextPage * notificationsPerPage,
       );
       setDisplayedNotifications(newDisplayedNotifications);
       setCurrentPage(nextPage);
