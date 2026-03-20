@@ -206,14 +206,14 @@ function RentalHistory() {
     const landlordId = await getLandlordByRoomId(idRoom as string);
     const getNameLandlord =
       tableData.find((item) => item.key === key)?.name_landlord ||
-      "the landlord";
+      "chủ nhà";
     const nameRoom = tableData.find((item) => item.key === key)?.room || "";
     await bookingConfirmationNotification(
       session?.user.id,
       landlordId.id,
-      "Your booking deposit is confirmed and waiting for landlord's:" +
+      "Tiền đặt cọc đặt phòng của bạn đã được xác nhận và đang chờ xác nhận của chủ nhà: " +
         getNameLandlord +
-        " confirmation at room " +
+        " tại phòng " +
         nameRoom +
         "."
     );
